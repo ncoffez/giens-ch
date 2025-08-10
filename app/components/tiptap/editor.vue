@@ -1,6 +1,5 @@
 <template>
-<div
-	class="relative bg-white dark:bg-zinc-800 rounded-lg m-2 max-w-screen-lg mx-auto shadow-glow-lg">
+	<div class="relative bg-white dark:bg-zinc-800 rounded-lg m-2 max-w-screen-lg mx-auto shadow-glow-lg">
 		<div
 			class="sticky top-0 z-10 flex text-gray-800 dark:bg-white flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 place-content-center"
 			v-if="editor">
@@ -324,33 +323,47 @@ onBeforeUnmount(() => {
 
 <style scoped>
 button {
-	@apply p-2 mx-1 my-0 rounded-lg duration-200 bg-transparent text-gray-800;
+	padding: 0.5rem;
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+	margin-top: 0rem;
+	margin-bottom: 0rem;
+	border-radius: 0.5rem;
+	transition-duration: 200ms;
+	background-color: transparent;
+	color: rgb(31 41 55); /* text-gray-800 */
 }
 
 button:disabled {
-	@apply text-gray-300 hover:bg-transparent;
+	color: rgb(209 213 219); /* text-gray-300 */
+	background-color: transparent;
 }
 
 button:hover {
-	@apply bg-gray-200;
+	background-color: rgb(229 231 235); /* bg-gray-200 */
 }
 
 button.is-active {
-	@apply bg-gray-200;
+	background-color: rgb(229 231 235); /* bg-gray-200 */
 }
 
 .separator {
-	@apply w-px h-6 bg-gray-300 mx-2;
+	width: 1px;
+	height: 1.5rem;
+	background-color: rgb(209 213 219); /* bg-gray-300 */
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
 }
 
 .dropdown-toggle {
-	@apply flex items-center;
+	display: flex;
+	align-items: center;
 }
 </style>
 
 <style>
 .tiptap p.is-editor-empty:first-child::before {
-	color: #adb5bd;
+	color: var(--text-muted);
 	content: attr(data-placeholder);
 	float: left;
 	height: 0;

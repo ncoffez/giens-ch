@@ -41,7 +41,7 @@ async function convertToAdmin() {
 		</ClientOnly>
 		<div class="flex gap-2">
 			<UButton @click="convertToAdmin()">Toggle Admin</UButton>
-			<UButton @click="logout()" loading-icon="true">Logout</UButton>
+			<UButton @click="logout()" variant="ghost" loading-icon="true">Logout</UButton>
 		</div>
 	</div>
 </template>

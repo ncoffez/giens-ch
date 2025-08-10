@@ -10,3 +10,7 @@ html,
 body {
 	@apply light:bg-neutral-50;
 }
+
+.skip-ink {
+	text-decoration-skip-ink: none;
+}

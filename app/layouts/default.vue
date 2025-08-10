@@ -8,10 +8,10 @@
 				:items="staticNavigation"
 				class="w-fit"
 				:ui="{
-					viewportWrapper: 'w-lg z-1',
+					viewportWrapper: 'w-lg',
 				}" />
 			<ClientOnly>
-				<UNavigationMenu :items="userNavigation" content-orientation="vertical" class="w-full" :ui="{}" />
+				<UNavigationMenu :items="userNavigation" content-orientation="vertical" class="w-full" />
 			</ClientOnly>
 		</div>
 		<section class="my-10 mb-20 mx-auto">
@@ -20,7 +20,7 @@
 	</div>
 	<ClientOnly>
 		<UCollapsible class="flex flex-col gap-2 max-w-screen-sm mx-auto pt-20">
-			<UButton label="Show user" color="neutral" variant="subtle" class="flex w-fit mx-auto" />
+			<UButton label="Show user" color="neutral" variant="soft" class="flex w-fit mx-auto" />
 
 			<template #content>
 				<pre class="overflow-scroll mx-auto break-all">{{ $currentUser }}</pre>
@@ -79,6 +79,12 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 		icon: "i-lucide-newspaper",
 		to: "/news",
 		children: [
+			{
+				label: "Erstellen",
+				icon: "lucide:square-pen",
+				description: "Verfasse einen neuen Newsartikel.",
+				to: "/news/new",
+			},
 			{
 				label: "Eigentümerversammlung",
 				icon: "i-lucide-files",

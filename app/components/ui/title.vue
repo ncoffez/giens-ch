@@ -10,8 +10,4 @@
 <script lang="ts" setup>
 defineProps(["title", "subtitle"]);
 </script>
-<style scoped>
-.skip-ink {
-	text-decoration-skip-ink: none;
-}
-</style>
+<style scoped></style>
