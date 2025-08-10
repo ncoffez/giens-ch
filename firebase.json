@@ -5,7 +5,7 @@
       "codebase": "nuxt",
       "runtime": "nodejs22",
       "predeploy": [
-        "npm run build"
+        "npx run build"
       ]
     }
   ],
