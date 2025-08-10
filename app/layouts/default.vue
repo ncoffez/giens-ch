@@ -1,6 +1,6 @@
 <template>
 	<div class="mx-auto md:px-8 px-4">
-		<div id="top-bar" class="flex flex-row my-4 max-w-screen-xl w-full">
+		<div id="top-bar" class="flex flex-row my-4 max-w-screen-lg mx-auto w-full">
 			<div id="logo" class="font-extrabold text-3xl leading-[1.2rem] text-start flex-grow-0 w-fit h-fit mr-8">
 				<span class="font-light text-2xl">Lotissement</span><br />Beausoleil
 			</div>
@@ -8,7 +8,7 @@
 				:items="staticNavigation"
 				class="w-fit"
 				:ui="{
-					viewportWrapper: 'w-lg',
+					viewportWrapper: 'w-lg z-1',
 				}" />
 			<ClientOnly>
 				<UNavigationMenu :items="userNavigation" content-orientation="vertical" class="w-full" :ui="{}" />
