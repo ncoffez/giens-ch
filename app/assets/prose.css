@@ -1,0 +1,158 @@
+/* Base styles for prose content */
+.prose {
+	font-size: 1rem;
+	line-height: 1.75;
+	word-break: break-word;
+}
+
+/* Headings */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+	font-weight: 600;
+}
+
+.prose h1 {
+	font-size: 1.875rem;
+	line-height: 2rem;
+	margin-top: 2.5rem;
+}
+
+.prose h2 {
+	font-size: 1.5rem;
+	line-height: 1.75rem;
+	margin-top: 2rem;
+}
+
+.prose h3 {
+	font-size: 1.125rem;
+	line-height: 1.75rem;
+	margin-top: 1.5rem;
+}
+
+.prose h4 {
+	font-size: 1rem;
+	line-height: 1.5rem;
+	margin-top: 1.25rem;
+}
+
+.prose h5 {
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.prose h6 {
+	font-size: 0.75rem;
+	line-height: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+/* Paragraphs and text elements */
+.prose p {
+	margin-top: 0.75rem;
+}
+
+.prose strong {
+	font-weight: bold;
+}
+
+.prose em {
+	font-style: italic;
+}
+
+.prose s {
+	text-decoration: line-through;
+}
+
+/* Blockquotes */
+.prose blockquote {
+	border-left: 4px solid;
+	padding-left: 1rem;
+	font-style: italic;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+/* Lists */
+.prose ul {
+	list-style-type: disc;
+	list-style-position: outside;
+	padding-left: 2rem;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+.prose ul > * + * {
+	margin-top: 0.5rem;
+}
+
+.prose ul p {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.prose ol {
+	list-style-type: decimal;
+	list-style-position: outside;
+	padding-left: 2rem;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+.prose ol > * + * {
+	margin-top: 0.75rem;
+}
+
+/* Horizontal rule */
+.prose hr {
+	margin-top: 2.5rem;
+	margin-bottom: 2.5rem;
+}
+
+/* Task lists */
+.prose ul[data-type="taskList"] {
+	list-style: none;
+	padding-left: 0;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+.prose ul[data-type="taskList"] > * + * {
+	margin-top: 0.75rem;
+}
+
+.prose ul[data-type="taskList"] li {
+	display: flex;
+	align-items: center;
+}
+
+.prose ul[data-type="taskList"] li > label {
+	flex: none;
+	margin-right: 0.75rem;
+	user-select: none;
+}
+
+.prose ul[data-type="taskList"] li > label input[type="checkbox"] {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.prose ul[data-type="taskList"] li > div {
+	flex: auto;
+}
+
+.prose ul[data-type="taskList"] li > div p {
+	margin: 0;
+}
+
+.prose img {
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	border-radius: 0.75rem;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	max-height: 30rem;
+	object-fit: contain;
+}

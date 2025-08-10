@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+:root {
+	font-family: "Open Sans", sans-serif;
+	font-optical-sizing: auto;
+}
+
+html,
+body {
+	@apply light:bg-neutral-50;
+}
