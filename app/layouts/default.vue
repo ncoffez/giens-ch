@@ -1,9 +1,8 @@
 <template>
 	<div class="mx-auto md:px-8 px-4">
-		<div id="top-bar" class="flex flex-row my-4 max-w-screen-lg mx-auto w-full">
-			<div id="logo" class="font-extrabold text-3xl leading-[1.2rem] text-start flex-grow-0 w-fit h-fit mr-8">
-				<span class="font-light text-2xl">Lotissement</span><br />Beausoleil
-			</div>
+		<!-- Desktop navigation -->
+		<div id="desktop-nav" class="flex-row my-4 max-w-screen-lg mx-auto w-full hidden sm:flex">
+			<UiLogo />
 			<UNavigationMenu
 				:items="staticNavigation"
 				class="w-fit"
@@ -14,13 +13,30 @@
 				<UNavigationMenu :items="userNavigation" content-orientation="vertical" class="w-full" />
 			</ClientOnly>
 		</div>
+		<!-- Mobile navigation -->
+		<div id="mobile-nav" class="sm:hidden flex justify-between w-full my-4 place-items-center">
+			<UDrawer direction="left">
+				<UButton color="neutral" variant="ghost" icon="lucide:menu"> </UButton>
+				<template #content>
+					<div class="p-4 w-72 flex flex-col">
+						<UNavigationMenu :items="staticNavigation" orientation="vertical" :collapsible="true" class="w-full" />
+						<ClientOnly>
+							<UNavigationMenu :items="userNavigation" orientation="vertical" class="w-full" />
+						</ClientOnly>
+					</div>
+				</template>
+			</UDrawer>
+			<UiLogo />
+		</div>
+		<!--  -->
 		<section class="my-10 mb-20 mx-auto">
 			<NuxtPage />
 		</section>
 	</div>
+	<!-- User debug in the footer -->
 	<ClientOnly>
 		<UCollapsible class="flex flex-col gap-2 max-w-screen-sm mx-auto pt-20">
-			<UButton label="Show user" color="neutral" variant="soft" class="flex w-fit mx-auto" />
+			<UButton label="Show user" color="neutral" variant="soft" class="flex mx-auto" />
 
 			<template #content>
 				<pre class="overflow-scroll mx-auto break-all">{{ $currentUser }}</pre>
@@ -32,6 +48,9 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const { $currentUser } = useNuxtApp();
+const showSidebar = ref(false);
+
+const drawer = useTemplateRef<HTMLElement>("drawer");
 const staticNavigation = ref<NavigationMenuItem[]>([
 	{
 		label: "Home",
