@@ -9,7 +9,7 @@
 		</div>
 		<UiTitle
       class="max-w-screen-lg mx-auto"
-			subtitle="Das Lotissement Beausoleil im Herzen von Giens"
+			subtitle="Die Résidence Beausoleil im Herzen von Giens"
 			title="Die familiäre Siedlung seit über 30 Jahren" />
 		<UiSlides class="mb-8" />
 		<div id="news" class="flex flex-col">

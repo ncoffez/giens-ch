@@ -48,9 +48,7 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const { $currentUser } = useNuxtApp();
-const showSidebar = ref(false);
 
-const drawer = useTemplateRef<HTMLElement>("drawer");
 const staticNavigation = ref<NavigationMenuItem[]>([
 	{
 		label: "Home",
