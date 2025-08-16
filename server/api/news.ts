@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 		let latestNews = news.filter((article) => article.label.includes(label));
 
 		if (tag) {
-			latestNews = latestNews.filter((article) => article.tags.includes(tag));
+			latestNews = latestNews.filter((article) => article.tags.map((tag) => tag.toLowerCase()).includes(tag));
 		}
 
 		return latestNews

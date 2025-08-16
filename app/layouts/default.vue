@@ -75,7 +75,7 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Reglemente",
 				icon: "i-lucide-file-text",
 				description: "Regeln fürs gemeinsame Wohlbefinden.",
-				disabled: true,
+        to: '/reglemente',
 			},
 			{
 				label: "Hausliste",
@@ -106,6 +106,7 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Eigentümerversammlung",
 				icon: "i-lucide-files",
 				description: "Erfahre was beschlossen wurde.",
+        to: "/news/eigentuemerversammlung"
 			},
 			{
 				label: "Veranstaltungen",
