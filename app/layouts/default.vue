@@ -14,9 +14,9 @@
 			</ClientOnly>
 		</div>
 		<!-- Mobile navigation -->
-		<div id="mobile-nav" class="sm:hidden flex justify-between w-full my-4 place-items-center">
-			<UDrawer direction="left">
-				<UButton color="neutral" variant="ghost" icon="lucide:menu"> </UButton>
+		<div id="mobile-nav" class="sm:hidden grid grid-cols-[1fr_1fr_1fr] w-full my-4">
+			<UDrawer direction="left" title="Giens.ch" class="justify-self-start">
+				<UButton color="neutral" variant="ghost" icon="lucide:menu" size="xl" />
 				<template #content>
 					<div class="p-4 w-72 flex flex-col">
 						<UNavigationMenu :items="staticNavigation" orientation="vertical" :collapsible="true" class="w-full" />
@@ -26,7 +26,7 @@
 					</div>
 				</template>
 			</UDrawer>
-			<UiLogo />
+			<UiLogo class="m-0!" />
 		</div>
 		<!--  -->
 		<section class="my-10 mb-20 mx-auto">
@@ -35,7 +35,7 @@
 	</div>
 	<!-- User debug in the footer -->
 	<ClientOnly>
-		<UCollapsible class="flex flex-col gap-2 max-w-screen-sm mx-auto pt-20">
+		<UCollapsible class="flex flex-col gap-2 max-w-screen-sm mx-auto py-20" v-if="$currentUser">
 			<UButton label="Show user" color="neutral" variant="soft" class="flex mx-auto" />
 
 			<template #content>

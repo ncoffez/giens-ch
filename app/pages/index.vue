@@ -8,7 +8,7 @@
 				srcset="" />
 		</div>
 		<UiTitle
-      class="max-w-screen-lg mx-auto"
+			class="max-w-screen-lg mx-auto"
 			subtitle="Die Résidence Beausoleil im Herzen von Giens"
 			title="Die familiäre Siedlung seit über 30 Jahren" />
 		<UiSlides class="mb-8" />
@@ -27,7 +27,6 @@
 	</div>
 </template>
 <script lang="ts" setup>
-import type { NewsArticle } from "~~/server/api/news";
 const { $currentUser } = useNuxtApp();
 const label = $currentUser.value ? "private" : "public";
 

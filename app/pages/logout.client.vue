@@ -11,6 +11,6 @@ async function logoutFromFirebase() {
 }
 </script>
 
-<template></template>
+<template><div>Logging out...</div></template>
 
 <style scoped></style>

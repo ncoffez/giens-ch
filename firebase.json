@@ -2,15 +2,17 @@
   "functions": [
     {
       "source": ".output/server",
-      "codebase": "nuxt",
-      "runtime": "nodejs22",
-      "predeploy": [
-        "npm run build"
+      "ignore": [
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
       ]
     }
   ],
   "hosting": {
     "public": ".output/public",
+    "cleanUrls": true,
+    "trailingSlash": false,
     "rewrites": [
       {
         "source": "**",
@@ -20,7 +22,10 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log"
     ]
   }
 }

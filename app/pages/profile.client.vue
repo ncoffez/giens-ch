@@ -1,28 +1,6 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: "is-logged-in" });
 const { $currentUser } = useNuxtApp();
-
-const logout = async () => {
-	await logoutFromFirebase();
-};
-
-async function logoutFromFirebase() {
-	const { $auth, $currentUser } = useNuxtApp();
-	$currentUser.value = null;
-	await $auth.signOut();
-	reloadNuxtApp();
-}
-
-async function convertToAdmin() {
-	const result = await $fetch("/api/user/setCustomClaim", {
-		method: "POST",
-		body: {
-			uid: $currentUser.value.uid,
-			role: "admin",
-			requester: $currentUser.value,
-		},
-	});
-}
 </script>
 
 <template>
@@ -39,9 +17,8 @@ async function convertToAdmin() {
 				</div>
 			</div>
 		</ClientOnly>
-		<div class="flex gap-2">
-			<UButton @click="convertToAdmin()">Toggle Admin</UButton>
-			<UButton @click="logout()" variant="ghost" loading-icon="true">Logout</UButton>
+		<div class="flex gap-2 place-content-center">
+			<NuxtLink to="/logout"><UButton variant="ghost" loading-icon="true">Logout</UButton></NuxtLink>
 		</div>
 	</div>
 </template>

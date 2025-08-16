@@ -16,8 +16,6 @@
 </template>
 
 <script lang="ts" setup>
-import { type NewsArticle } from "~~/server/api/news";
-
 const { $currentUser } = useNuxtApp();
 const label = $currentUser.value ? "private" : "public";
 

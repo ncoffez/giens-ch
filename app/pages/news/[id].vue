@@ -11,8 +11,6 @@
 	</article>
 </template>
 <script lang="ts" setup>
-import { type NewsArticle } from "~~/server/api/news";
-
 const route = useRoute();
 const id = route.params.id;
 const { $currentUser } = useNuxtApp();
