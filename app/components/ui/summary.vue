@@ -1,5 +1,5 @@
 <template>
-	<div id="news-entry" class="flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-12 gap-y-8 my-8 first:mt-5 items-center">
+	<div id="news-entry" class="flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-12 gap-y-8 my-16 first:mt-5 items-center">
 		<img
 			:src="imageUrl"
 			class="md:w-56 w-full h-48 rounded-xl aspect-square object-cover"

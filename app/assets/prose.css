@@ -11,65 +11,82 @@
 .prose h3,
 .prose h4,
 .prose h5,
-.prose h6 {
+.prose h6,
+h1.prose,
+h2.prose,
+h3.prose,
+h4.prose,
+h5.prose,
+h6.prose {
 	font-weight: 600;
 }
 
-.prose h1 {
+.prose h1,
+h1.prose {
 	font-size: 1.875rem;
 	line-height: 2rem;
 	margin-top: 2.5rem;
 }
 
-.prose h2 {
+.prose h2,
+h2.prose {
 	font-size: 1.5rem;
 	line-height: 1.75rem;
 	margin-top: 2rem;
 }
 
-.prose h3 {
+.prose h3,
+h3.prose {
 	font-size: 1.125rem;
 	line-height: 1.75rem;
 	margin-top: 1.5rem;
 }
 
-.prose h4 {
+.prose h4,
+h4.prose {
 	font-size: 1rem;
 	line-height: 1.5rem;
 	margin-top: 1.25rem;
 }
 
-.prose h5 {
+.prose h5,
+h5.prose {
 	font-size: 0.875rem;
 	line-height: 1.25rem;
 	margin-top: 1.25rem;
 }
 
-.prose h6 {
+.prose h6,
+h6.prose {
 	font-size: 0.75rem;
 	line-height: 1.25rem;
 	margin-top: 1.25rem;
 }
 
 /* Paragraphs and text elements */
-.prose p {
+.prose p,
+p.prose {
 	margin-top: 0.75rem;
 }
 
-.prose strong {
+.prose strong,
+strong.prose {
 	font-weight: bold;
 }
 
-.prose em {
+.prose em,
+em.prose {
 	font-style: italic;
 }
 
-.prose s {
+.prose s,
+s.prose {
 	text-decoration: line-through;
 }
 
 /* Blockquotes */
-.prose blockquote {
+.prose blockquote,
+blockquote.prose {
 	border-left: 4px solid;
 	padding-left: 1rem;
 	font-style: italic;
@@ -78,7 +95,8 @@
 }
 
 /* Lists */
-.prose ul {
+.prose ul,
+ul.prose {
 	list-style-type: disc;
 	list-style-position: outside;
 	padding-left: 2rem;
@@ -146,7 +164,8 @@
 	margin: 0;
 }
 
-.prose img {
+.prose img,
+img.prose {
 	margin-top: 2rem;
 	margin-bottom: 2rem;
 	border-radius: 0.75rem;

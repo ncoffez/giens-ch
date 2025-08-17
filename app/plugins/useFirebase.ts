@@ -25,7 +25,8 @@ export default defineNuxtPlugin((_nuxtApp) => {
 	const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
 		user.value = currentUser;
 	});
+	const userPermission = computed(() => (user.value ? "private" : "public"));
 	return {
-		provide: { db, auth, functions, currentUser: user, unsubscribe },
+		provide: { db, auth, functions, currentUser: user, unsubscribe, userPermission },
 	};
 });

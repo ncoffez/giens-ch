@@ -37,7 +37,6 @@ definePageMeta({
 });
 
 watch($currentUser, (user) => {
-	console.log($currentUser.value);
 	if (user.uid) router.push("/profile");
 });
 

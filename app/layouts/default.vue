@@ -112,11 +112,13 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Veranstaltungen",
 				icon: "i-lucide-party-popper",
 				description: "Wo die coolsten Events in der Nähe steigen.",
+        to: "/news/events"
 			},
 			{
 				label: "Markt",
 				icon: "i-lucide-store",
 				description: "Gemüse, Kleinkram und Souvenirs. Hier findest du die heissesten Spots.",
+        to: '/news/markt'
 			},
 			{
 				label: "Fotos",
@@ -124,10 +126,10 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				description: "Erinnerungen an die letzten Ferien.",
 			},
 			{
-				label: "Documents",
+				label: "Dokumente",
 				icon: "lucide:file-type",
 				description: "Relevante Dokumente zum Wohneigentum.",
-				to: "/news/dokumente",
+				to: "/news/documents",
 			},
 		],
 	},

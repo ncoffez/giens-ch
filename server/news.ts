@@ -5,7 +5,6 @@ export const news = [
 		intro: `Die jährliche Eigentümerversammlung des Lotissement Beausoleil findet dieses Jahr am 15. März statt. Es werden wichtige Themen wie Gemeinschaftsprojekte und Instandhaltung besprochen.`,
 		published: "2025-04-15T00:00:00.000Z",
 		tags: ["Wohnen", "Eigentuemerversammlung", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-meeting.jpg",
 		body: `
   <p>Die Eigentümerversammlung 2025 des <em>Lotissement Beausoleil</em> steht bevor und wird am <strong>15. März 2025</strong> in Giens abgehalten. Diese Versammlung ist ausschliesslich für die Eigentümer unserer wunderschönen Häuser gedacht und bietet eine hervorragende Gelegenheit, sich über zentrale Themen auszutauschen.</p>
@@ -31,8 +30,7 @@ export const news = [
 		title: "Lokales Frühlingsfest in Giens",
 		intro: `Das jährliche Frühlingsfest in Giens lädt alle Bewohner und Besucher des Lotissement Beausoleil zu einem Tag voller Musik, Essen und Gemeinschaft ein.`,
 		published: "2025-03-01T00:00:00.000Z",
-		tags: ["Veranstaltung", "Giens", "Gemeinschaft", "Demo"],
-		label: ["public"],
+		tags: ["Events", "Giens", "Gemeinschaft", "Demo"],
 		image: "/placeholder/giens-festival.jpg",
 		body: `
   <p>Das <strong>Frühlingsfest in Giens</strong> ist ein Highlight für die gesamte Region und findet dieses Jahr am <strong>5. April 2025</strong> statt. Bewohner des <em>Lotissement Beausoleil</em> sind herzlich eingeladen, an diesem farbenfrohen Fest teilzunehmen, das die Gemeinschaft und die Schönheit der südfranzösischen Küste feiert.</p>
@@ -58,7 +56,6 @@ export const news = [
 		intro: `Eine Familie im Lotissement Beausoleil freut sich über die Geburt eines neuen Mitglieds – ein freudiges Ereignis für die Gemeinschaft.`,
 		published: "2024-11-12T00:00:00.000Z",
 		tags: ["Familie", "Gemeinschaft", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-family.jpg",
 		body: `
   <p>Das <em>Lotissement Beausoleil</em> begrüsst ein neues Mitglied! Eine Familie aus Haus Nr. <strong>[redacted]</strong> hat kürzlich die Geburt ihres Kindes gefeiert, und die gesamte Gemeinschaft freut sich mit ihnen über dieses glückliche Ereignis.</p>
@@ -76,7 +73,6 @@ export const news = [
 		intro: `Wichtige neue Dokumente für das Lotissement Beausoleil wurden veröffentlicht, darunter aktualisierte Wartungspläne und Gemeinschaftsrichtlinien.`,
 		published: "2025-04-10T00:00:00.000Z",
 		tags: ["Dokumente", "Eigentuemerversammlung", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-documents.jpg",
 		body: `
   <p>Das Verwaltungsteam des <em>Lotissement Beausoleil</em> hat eine Reihe neuer Dokumente für die Eigentümer bereitgestellt. Diese umfassen aktualisierte <strong>Wartungspläne</strong> für die gemeinschaftlichen Bereiche sowie überarbeitete <strong>Gemeinschaftsrichtlinien</strong>, die auf den Beschlüssen der letzten Eigentümerversammlung basieren.</p>
@@ -98,8 +94,7 @@ export const news = [
 		title: "Arbeitswoche 2025 vor Ostern",
 		intro: `Die jährliche Arbeitswoche im Lotissement Beausoleil findet in der Woche vor Ostern statt. Viele Mieter und Eigentümer werden zusammenarbeiten, um das Gelände zu pflegen.`,
 		published: "2025-04-09T00:00:00.000Z",
-		tags: ["Wohnen", "Arbeitswoche", "Instandhaltung", "Demo"],
-		label: ["private"],
+		tags: ["Wohnen", "Arbeitswoche", "Reglemente", "Demo"],
 		image: "/placeholder/beausoleil-workweek.jpg",
 		body: `
   <p>Die <strong>Arbeitswoche 2025</strong> im <em>Lotissement Beausoleil</em> ist für die Woche vor Ostern, vom <strong>7. bis 11. April 2025</strong>, geplant. Diese traditionelle Veranstaltung bringt Mieter und Eigentümer zusammen, um gemeinschaftliche Instandhaltungsarbeiten durchzuführen und unser wunderschönes Gelände in Giens weiter zu verschönern.</p>
@@ -124,7 +119,6 @@ export const news = [
 		intro: `Das Lotissement Beausoleil begrüsst einen neuen Miteigentümer, der kürzlich ein Haus in unserer Gemeinschaft erworben hat.`,
 		published: "2025-02-02T00:00:00.000Z",
 		tags: ["Gemeinschaft", "Wohnen", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-newowner.jpg",
 		body: `
   <p>Wir freuen uns, einen neuen Miteigentümer im <em>Lotissement Beausoleil</em> willkommen zu heissen! Das Haus Nr. <strong>[redacted]</strong> hat kürzlich den Besitzer gewechselt, und wir sind begeistert, ein neues Mitglied in unserer Gemeinschaft aufzunehmen.</p>
@@ -141,8 +135,7 @@ export const news = [
 		title: "Sommerkonzert in Giens",
 		intro: `Ein Open-Air-Sommerkonzert in Giens verspricht einen unvergesslichen Abend für die Bewohner des Lotissement Beausoleil und alle Besucher.`,
 		published: "2024-12-22T00:00:00.000Z",
-		tags: ["Veranstaltung", "Giens", "Gemeinschaft", "Demo"],
-		label: ["public"],
+		tags: ["Events", "Giens", "Gemeinschaft", "Demo"],
 		image: "/placeholder/giens-concert.jpg",
 		body: `
   <p>Am <strong>20. Juni 2025</strong> lädt die Stadt Giens zu einem <strong>Open-Air-Sommerkonzert</strong> ein, das Musikliebhaber aus der Region und darüber hinaus anziehen wird. Die Bewohner des <em>Lotissement Beausoleil</em> sind herzlich eingeladen, diesen Abend voller Live-Musik und guter Stimmung zu geniessen.</p>
@@ -161,7 +154,6 @@ export const news = [
 		intro: `Eine neue Garteninitiative startet im Lotissement Beausoleil, um die Grünflächen noch attraktiver zu gestalten.`,
 		published: "2025-01-15T00:00:00.000Z",
 		tags: ["Wohnen", "Gemeinschaft", "Garten", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-garden.jpg",
 		body: `
   <p>Das <em>Lotissement Beausoleil</em> freut sich, eine neue <strong>Garteninitiative</strong> anzukündigen, die darauf abzielt, unsere gemeinschaftlichen Grünflächen weiter zu verschönern. Die Initiative wurde auf Vorschlag mehrerer Eigentümer ins Leben gerufen und wird von einem kleinen Team aus Freiwilligen koordiniert.</p>
@@ -185,8 +177,7 @@ export const news = [
 		title: "Kunstmarkt in Giens",
 		intro: `Ein Kunstmarkt in Giens lädt Bewohner des Lotissement Beausoleil und Besucher ein, lokale Talente zu entdecken.`,
 		published: "2025-03-01T00:00:00.000Z",
-		tags: ["Veranstaltung", "Giens", "Kunst", "Demo"],
-		label: ["public"],
+		tags: ["Events", "Eigentuemerversammlung", "Kunst", "Demo"],
 		image: "/placeholder/giens-artmarket.jpg",
 		body: `
   <p>Am <strong>15. Juli 2025</strong> verwandelt sich der Marktplatz von Giens in einen lebendigen <strong>Kunstmarkt</strong>, der Künstler aus der Region zusammenbringt. Bewohner des <em>Lotissement Beausoleil</em> sind herzlich eingeladen, diesen kulturellen Höhepunkt zu besuchen und einzigartige Werke zu entdecken.</p>
@@ -212,7 +203,6 @@ export const news = [
 		intro: `Neue Sicherheitsrichtlinien für das Lotissement Beausoleil wurden veröffentlicht, um den Schutz der Gemeinschaft zu gewährleisten.`,
 		published: "2025-03-10T00:00:00.000Z",
 		tags: ["Dokumente", "Wohnen", "Sicherheit", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-security.jpg",
 		body: `
   <p>Das Verwaltungsteam des <em>Lotissement Beausoleil</em> hat neue <strong>Sicherheitsrichtlinien</strong> veröffentlicht, die auf den Rückmeldungen der letzten Eigentümerversammlung basieren. Ziel ist es, die Sicherheit aller Bewohner und des Eigentums weiter zu verbessern.</p>
@@ -237,7 +227,6 @@ export const news = [
 		intro: `Ein Missgeschick in der neuen Garteninitiative des Lotissement Beausoleil führt zu einer unerwarteten Gurkenflut – und einem spontanen Tauschmarkt!`,
 		published: "2025-01-01T00:00:00.000Z",
 		tags: ["Garten", "Gemeinschaft", "Humor", "Demo"],
-		label: ["private"],
 		image: "/placeholder/beausoleil-cucumber.jpg",
 		body: `
   <p>Unsere ambitionierte <strong>Garteninitiative</strong> im <em>Lotissement Beausoleil</em> hat einen unerwarteten Erfolg erzielt – allerdings nicht ganz wie geplant! Anstelle der erwarteten Kräuter und Blumen hat ein Eigentümer (der anonym bleiben möchte) versehentlich eine Armee von <strong>Gurkenpflanzen</strong> ausgesät. Das Ergebnis? Unsere Grünflächen sind nun ein Gurkenparadies!</p>
@@ -255,8 +244,7 @@ export const news = [
 		title: "Das legendäre Fischerfest in Hyères",
 		intro: `Das Fischerfest in Hyères lädt die Bewohner von Lotissement Beausoleil zu einem Abend voller Seemannsgarn, frischem Fisch und tanzender Möwen ein.`,
 		published: "2025-02-15T00:00:00.000Z",
-		tags: ["Veranstaltung", "Hyères", "Humor", "Demo"],
-		label: ["public"],
+		tags: ["Events", "Hyères", "Humor", "Demo"],
 		image: "/placeholder/hyeres-fishfest.jpg",
 		body: `
   <p>Ahoi, Beausoleil-Bewohner! Das <strong>Fischerfest in Hyères</strong> am <strong>30. Juli 2025</strong> ist ein absolutes Muss für alle, die das Meer lieben – oder einfach nur Lust auf einen verrückten Abend haben. Nur eine kurze Fahrt vom <em>Lotissement Beausoleil</em> entfernt, verwandelt sich der Hafen von Hyères in eine bunte Mischung aus Markt, Tanzfläche und Fischbraterei.</p>
@@ -281,7 +269,6 @@ export const news = [
 		intro: `Ein frecher Kater aus Carqueiranne sorgt im Lotissement Beausoleil für Chaos – und wird zum inoffiziellen Maskottchen ernannt.`,
 		published: "2025-04-20T00:00:00.000Z",
 		tags: ["Gemeinschaft", "Humor", "Tiere", "Demo"],
-		label: ["public"],
 		image: "/placeholder/beausoleil-cat.jpg",
 		body: `
   <p>Achtung, Eigentümer: Ein rätselhafter Kater aus dem nahegelegenen Carqueiranne hat das <em>Lotissement Beausoleil</em> erobert! Der flauschige Eindringling, von den Kindern aus Haus Nr. [redacted] „<strong>Monsieur Schnurrbart</strong>“ getauft, wurde mehrfach dabei erwischt, wie er auf unseren Terrassen sonnenbadet, Blumenbeete umgräbt und einmal sogar eine Pizza von einem Lieferwagen stibitzte.</p>
@@ -299,8 +286,7 @@ export const news = [
 		title: "Weinfest in La Londe-les-Maures",
 		intro: `Das Weinfest in La Londe-les-Maures lockt mit edlen Tropfen und einer Prise Chaos – perfekt für die Beausoleil-Gemeinschaft!`,
 		published: "2025-03-28T00:00:00.000Z",
-		tags: ["Veranstaltung", "Wein", "Humor", "Demo"],
-		label: ["public"],
+		tags: ["Events", "Wein", "Humor", "Demo"],
 		image: "/placeholder/lalonde-winefest.jpg",
 		body: `
   <p>Weinliebhaber aufgepasst! Das <strong>Weinfest in La Londe-les-Maures</strong> am <strong>5. September 2025</strong> ist nur einen Katzensprung vom <em>Lotissement Beausoleil</em> entfernt und verspricht einen Abend voller Genuss und Gelächter. Die Winzer der Region öffnen ihre besten Fässer, und die Strassen von La Londe verwandeln sich in ein Meer aus Gläsern, Musik und leicht beschwipsten Tänzern.</p>
