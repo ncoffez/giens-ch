@@ -75,7 +75,7 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Reglemente",
 				icon: "i-lucide-file-text",
 				description: "Regeln fürs gemeinsame Wohlbefinden.",
-        to: '/reglemente',
+				to: { path: "/news/reglemente" },
 			},
 			{
 				label: "Hausliste",
@@ -106,7 +106,7 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Eigentümerversammlung",
 				icon: "i-lucide-files",
 				description: "Erfahre was beschlossen wurde.",
-        to: "/news/eigentuemerversammlung"
+				to: "/news/eigentuemerversammlung",
 			},
 			{
 				label: "Veranstaltungen",
@@ -122,6 +122,12 @@ const staticNavigation = ref<NavigationMenuItem[]>([
 				label: "Fotos",
 				icon: "i-lucide-camera",
 				description: "Erinnerungen an die letzten Ferien.",
+			},
+			{
+				label: "Documents",
+				icon: "lucide:file-type",
+				description: "Relevante Dokumente zum Wohneigentum.",
+				to: "/news/dokumente",
 			},
 		],
 	},

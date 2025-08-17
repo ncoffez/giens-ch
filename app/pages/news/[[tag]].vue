@@ -3,7 +3,7 @@
 		<ClientOnly>
 			<UiSummary
 				v-for="(article, index) of news"
-				:link="`/news/${article.id}`"
+				:link="`/article/${article.id}`"
 				:id="article.id"
 				:title="article.title"
 				:subtitle="article.intro"
@@ -16,10 +16,15 @@
 </template>
 
 <script lang="ts" setup>
+const route = useRoute();
+const tag = route.params.tag;
 const { $currentUser } = useNuxtApp();
 const label = $currentUser.value ? "private" : "public";
 
-const { data: news } = await useFetch<NewsArticle[]>("/api/news", { method: "post", body: { quantity: 15, label, tag: "eigentuemerversammlung" } });
+const { data: news } = await useFetch<NewsArticle[]>("/api/news", {
+	method: "post",
+	body: { quantity: 15, label, tag },
+});
 </script>
 
 <style scoped></style>
