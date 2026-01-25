@@ -121,11 +121,13 @@
 </template>
 
 <script lang="ts" setup>
-const { $currentUser } = useNuxtApp();
-const label = $currentUser.value ? "private" : "public";
+const { $token } = useNuxtApp();
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	method: "post",
-	body: { quantity: 3, label },
+	body: { quantity: 3 },
+	headers: computed(() => {
+		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+	}),
 });
 </script>

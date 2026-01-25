@@ -1,24 +1,31 @@
 
 import { db } from "../useFirebaseAdmin";
 import { Article } from "../utils/article";
+import { getUserPermission } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const querySnapshot = await db.collection("articles").select().get();
-		const ids = querySnapshot.docs.map((doc) => doc.id);
-
-		const body = await readBody(event);
-		const id = ids[Math.floor(Math.random() * ids.length)];
-		const label = body.label || "public";
-
-		const doc = await db.collection("articles").doc(id).get();
-		const article = { id: doc.id, ...doc.data() } as any;
-
-		// Note: The original privacy check used article.label which didn't exist in local news.ts
-		// We maintain the structure but Firestore articles use tags for privacy via labels collection
-		// For consistency with getArticle, we'll just return the article for now as randomArticle
-		// is typically used for discovery.
+		const permission = await getUserPermission(event);
 		
+		const querySnapshot = await db.collection("articles").get();
+		const news: any[] = [];
+		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() }));
+
+		const labels = await $fetch("/api/labels");
+		
+		// Filter by permission so we don't return private articles to public users
+		const filteredNews = news.filter((article) => {
+			if (permission === "private") return true;
+			const isPrivate = article.tags.some((tag: string) => {
+				const labelDoc = (labels as any[]).find((l: any) => l.id === tag.toLowerCase());
+				return labelDoc?.private;
+			});
+			return !isPrivate;
+		});
+
+		if (filteredNews.length === 0) return null;
+		
+		const article = filteredNews[Math.floor(Math.random() * filteredNews.length)];
 		return article;
 	} catch (error: any) {
 	return {

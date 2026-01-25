@@ -1,22 +1,14 @@
 import { auth } from "../../useFirebaseAdmin";
+import { getUserClaims } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	// Secure the API: Verify the requester is an admin
-	const authHeader = getHeader(event, "Authorization");
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+	const claims = await getUserClaims(event);
+	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
-	const idToken = authHeader.split("Bearer ")[1];
-	if (!idToken) {
-		throw createError({ statusCode: 401, message: "Invalid token format" });
-	}
-	try {
-		const decodedToken = await auth.verifyIdToken(idToken);
-		if (!decodedToken.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
-	} catch (error) {
-		throw createError({ statusCode: 401, message: "Invalid or expired token" });
+	if (!claims.admin) {
+		throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
 	}
 	
 	const body = await readBody(event);

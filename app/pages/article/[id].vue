@@ -48,8 +48,7 @@ import type { NewsArticle } from "~/composables/newsArticle";
 
 const route = useRoute();
 const id = route.params.id;
-const { $currentUser } = useNuxtApp();
-const label = $currentUser.value ? "private" : "public";
+const { $token } = useNuxtApp();
 
 const {
 	data: article,
@@ -57,7 +56,10 @@ const {
 	status,
 } = await useLazyFetch<NewsArticle>(`/api/getArticle`, {
 	method: "post",
-	body: { id, label },
+	body: { id },
+	headers: computed(() => {
+		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+	}),
 });
 </script>
 <style scoped></style>

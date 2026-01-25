@@ -1,12 +1,13 @@
 
 import { db } from "../useFirebaseAdmin";
 import { Article } from "../utils/article";
+import { getUserPermission } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
 		const id = body.id;
-		const label = body.label || "public";
+		const permission = await getUserPermission(event);
 
 		const doc = await db.collection("articles").doc(id).get();
 		if (!doc.exists) throw new Error("Article not found.");
@@ -15,11 +16,11 @@ export default defineEventHandler(async (event) => {
 
 		const labels = await $fetch("/api/labels");
 		const isPrivate = article.tags.some((tag: string) => {
-			const labelDoc = labels.find((l: any) => l.id === tag.toLowerCase());
+			const labelDoc = (labels as any[]).find((l: any) => l.id === tag.toLowerCase());
 			return labelDoc?.private;
 		});
 
-		if (isPrivate && label != "private") throw new Error(`Article with id ${id} is private.`);
+		if (isPrivate && permission != "private") throw new Error(`Article with id ${id} is private.`);
 
 		return article;
 	} catch (error: any) {

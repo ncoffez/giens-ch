@@ -13,9 +13,13 @@
 	</div>
 </template>
 <script lang="ts" setup>
-const { data: news } = await useFetch("/api/news", {
+const { $token } = useNuxtApp();
+const { data: news } = await useFetch<any[]>("/api/news", {
 	method: "post",
-	body: { quantity: 10, label: "private", tag: "Dokumente" },
+	body: { quantity: 10, tag: "Dokumente" },
+	headers: computed(() => {
+		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+	}),
 });
 </script>
 <style scoped></style>

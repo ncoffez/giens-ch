@@ -24,6 +24,7 @@ export default defineNuxtPlugin((_nuxtApp) => {
 	});
 
 	const claims = ref<Record<string, any>>({});
+	const token = ref<string | null>(null);
 	const authInitialized = ref(false);
 
 	const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -31,8 +32,10 @@ export default defineNuxtPlugin((_nuxtApp) => {
 		if (currentUser) {
 			const tokenResult = await getIdTokenResult(currentUser, true);
 			claims.value = tokenResult.claims;
+			token.value = tokenResult.token;
 		} else {
 			claims.value = {};
+			token.value = null;
 		}
 		authInitialized.value = true;
 	});
@@ -56,6 +59,7 @@ export default defineNuxtPlugin((_nuxtApp) => {
 			functions, 
 			currentUser: user, 
 			claims,
+			token,
 			isAdmin,
 			isPublisher,
 			isOwner,

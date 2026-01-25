@@ -13,10 +13,14 @@
 <script lang="ts" setup>
 const route = useRoute();
 const id = route.params.id;
+const { $token } = useNuxtApp();
 
-const { data: article, error } = await useLazyFetch(`/api/getArticle`, {
+const { data: article, error } = await useLazyFetch<any>(`/api/getArticle`, {
 	method: "post",
-	body: { id, label: "private" },
+	body: { id },
+	headers: computed(() => {
+		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+	}),
 });
 </script>
 

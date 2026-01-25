@@ -2,6 +2,15 @@
 	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4">
 		<ClientOnly>
 			<div v-if="isAuthorized" key="authorized-view">
+				<div v-if="$isPublisher" class="flex justify-end mb-8 pt-4">
+					<UButton
+						to="/news/new"
+						label="Neuer Artikel"
+						icon="i-lucide-plus"
+						color="primary"
+						size="lg"
+						class="rounded-full shadow-lg" />
+				</div>
 				<div id="error" v-if="error" class="py-12">
 					<h1 class="text-2xl font-bold">{{ error.statusCode }} - {{ error.name }}</h1>
 					<p class="text-neutral-500">{{ error.message }}</p>
@@ -43,7 +52,7 @@ import type { Article } from "~/utils/article";
 
 const route = useRoute();
 const tag = route.params.tag as string;
-const { $userPermission } = useNuxtApp();
+const { $token, $isPublisher } = useNuxtApp();
 
 // Fetch labels to determine if tag is private
 const { data: labels } = await useFetch<any[]>("/api/labels");
@@ -52,8 +61,12 @@ const tagIsPrivate = computed(() => labels.value?.find((label) => label.id === t
 
 const isAuthorized = computed(() => {
 	if (!tag || !tagIsPrivate.value) return true;
-	if (tagIsPrivate.value && $userPermission.value === "private") return true;
-	return false;
+	// We'll rely on the server to reject if not actually authorized, 
+	// but this UI check is still useful for immediate feedback.
+	const { $claims } = useNuxtApp();
+	const claims = $claims.value;
+	const isReader = !!(claims.admin || claims.publisher || claims.owner || claims.reader);
+	return isReader;
 });
 
 const {
@@ -62,7 +75,10 @@ const {
 	status,
 } = await useFetch<Article[]>("/api/news", {
 	method: "post",
-	body: { quantity: 15, permission: $userPermission.value, tag },
+	body: { quantity: 15, tag },
+	headers: computed(() => {
+		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+	}),
 	lazy: true,
 });
 </script>

@@ -1,24 +1,27 @@
 import { db } from "../useFirebaseAdmin";
 import { Article } from "../utils/article";
+import { getUserPermission } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const { permission, tag, quantity } = await readBody(event);
-		console.log(`Received request for news with permission: ${permission}, tag: ${tag}, quantity: ${quantity}`);
+		const { tag, quantity } = await readBody(event);
+		const permission = await getUserPermission(event);
+		console.log(`Received request for news with permission (verified): ${permission}, tag: ${tag}, quantity: ${quantity}`);
 
 		if (isNaN(quantity)) throw new Error(`quantity must be a number.`);
 		if (quantity < 1) throw new Error(`quantity must be greater than 1.`);
 
-		const querySnapshot = await db.collection("articles").get();
+		// Optimization: Basic ordering server-side
+		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(50).get();
 		const news: Article[] = [];
 		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() } as Article));
 
 		const labels = await $fetch("/api/labels");
-		let latestNews = filterByPermission(permission, news, labels);
+		let latestNews = filterByPermission(permission, news, labels as any[]);
 		if (tag) latestNews = filterByTag(tag, latestNews);
 		console.log(`Found ${latestNews.length} matching articles.`);
 
-		latestNews = sortByDate(latestNews).slice(0, quantity);
+		latestNews = latestNews.slice(0, quantity);
 		return latestNews;
 	} catch (e: any) {
 		return { data: null, error: true, message: e?.message, statusCode: 500 };

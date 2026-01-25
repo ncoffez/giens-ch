@@ -3,195 +3,116 @@
 		<div
 			class="sticky top-0 z-10 flex text-gray-800 dark:bg-white flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 place-content-center"
 			v-if="editor">
-			<button
-				title="Undo"
+			
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-undo"
 				@click="editor.chain().focus().undo().run()"
-				:disabled="!editor.can().chain().focus().undo().run()">
-				<IconsLucideUndo />
-			</button>
-			<button
-				title="Redo"
+				:disabled="!editor.can().chain().focus().undo().run()" />
+			
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-redo"
 				@click="editor.chain().focus().redo().run()"
-				:disabled="!editor.can().chain().focus().redo().run()">
-				<IconsLucideRedo />
-			</button>
+				:disabled="!editor.can().chain().focus().redo().run()" />
+
 			<div class="separator"></div>
-			<div class="relative">
-				<button
-					title="Headings"
-					@click="dropdownOpen = !dropdownOpen"
-					ref="headingDropdownButton"
-					:class="{ 'is-active': checkActiveStyle('heading') }">
-					<IconsLucideHeading1 v-if="checkActiveStyle('heading', { level: 1 })" />
-					<IconsLucideHeading2 v-else-if="checkActiveStyle('heading', { level: 2 })" />
-					<IconsLucideHeading3 v-else-if="checkActiveStyle('heading', { level: 3 })" />
-					<IconsLucideHeading4 v-else-if="checkActiveStyle('heading', { level: 4 })" />
-					<IconsLucideHeading5 v-else-if="checkActiveStyle('heading', { level: 5 })" />
-					<IconsLucideHeading6 v-else-if="checkActiveStyle('heading', { level: 6 })" />
-					<IconsLucideHeading v-else />
-				</button>
-				<div
-					v-if="dropdownOpen"
-					ref="headingDropdown"
-					class="absolute top-full mt-1 left-0 bg-white shadow-glow rounded-md flex flex-col *:rounded-none *:p-2 hover:*:bg-gray-100 *:z-10">
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-						:class="checkActiveStyle('heading', { level: 1 })">
-						<IconsLucideHeading1 />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-						:class="checkActiveStyle('heading', { level: 2 })">
-						<IconsLucideHeading2 />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-						:class="checkActiveStyle('heading', { level: 3 })">
-						<IconsLucideHeading3 />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 4 }).run()"
-						:class="checkActiveStyle('heading', { level: 4 })">
-						<IconsLucideHeading4 />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 5 }).run()"
-						:class="checkActiveStyle('heading', { level: 5 })">
-						<IconsLucideHeading5 />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleHeading({ level: 6 }).run()"
-						:class="checkActiveStyle('heading', { level: 6 })">
-						<IconsLucideHeading6 />
-					</button>
-				</div>
-			</div>
-			<div class="relative">
-				<button
-					class="flex items-center"
-					@click="listDropdownOpen = !listDropdownOpen"
-					ref="listDropdownButton"
-					title="Lists"
-					:class="checkActiveStyle('bulletList') || checkActiveStyle('orderedList') || checkActiveStyle('taskList')">
-					<IconsLucideListOrdered v-if="checkActiveStyle('orderedList')" />
-					<IconsLucideListTodo v-else-if="checkActiveStyle('taskList')" />
-					<IconsLucideList v-else />
-				</button>
-				<div
-					v-if="listDropdownOpen"
-					ref="listDropdown"
-					class="absolute top-full left-0 bg-white rounded-md shadow-glow flex flex-col">
-					<button
-						@click="editor.chain().focus().toggleBulletList().run()"
-						:class="checkActiveStyle('bulletList')"
-						title="Bullet list">
-						<IconsLucideList />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleOrderedList().run()"
-						:class="checkActiveStyle('orderedList')"
-						title="Ordered list">
-						<IconsLucideListOrdered />
-					</button>
-					<button
-						@click="editor.chain().focus().toggleTaskList().run()"
-						:class="checkActiveStyle('taskList')"
-						title="Task list">
-						<IconsLucideListTodo />
-					</button>
-				</div>
-			</div>
-			<button @click="editor.chain().focus().toggleBold().run()" :class="checkActiveStyle('bold')" title="Bold">
-				<IconsLucideBold />
-			</button>
-			<button @click="editor.chain().focus().toggleItalic().run()" :class="checkActiveStyle('italic')" title="Italic">
-				<IconsLucideItalic />
-			</button>
-			<button
+
+			<UDropdownMenu :items="headingItems" :content="{ align: 'start' }">
+				<UButton
+					color="neutral"
+					variant="ghost"
+					:icon="activeHeadingIcon"
+					trailing-icon="i-lucide-chevron-down" />
+			</UDropdownMenu>
+
+			<UDropdownMenu :items="listItems" :content="{ align: 'start' }">
+				<UButton
+					color="neutral"
+					variant="ghost"
+					:icon="activeListIcon"
+					trailing-icon="i-lucide-chevron-down" />
+			</UDropdownMenu>
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-bold"
+				@click="editor.chain().focus().toggleBold().run()"
+				:class="{ 'bg-gray-200': editor.isActive('bold') }" />
+			
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-italic"
+				@click="editor.chain().focus().toggleItalic().run()"
+				:class="{ 'bg-gray-200': editor.isActive('italic') }" />
+			
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-strikethrough"
 				@click="editor.chain().focus().toggleStrike().run()"
-				:class="checkActiveStyle('strike')"
-				title="Strikethrough">
-				<IconsLucideStrikethrough />
-			</button>
-			<button
+				:class="{ 'bg-gray-200': editor.isActive('strike') }" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-highlighter"
 				@click="editor.chain().focus().toggleHighlight().run()"
-				:class="checkActiveStyle('highlight')"
-				title="Highlight">
-				<IconsLucideHighlighter />
-			</button>
-			<button @click="setLink" :class="checkActiveStyle('link')" title="Link"><IconsLucideLink /></button>
-			<button @click="editor.chain().focus().unsetAllMarks().run()" title="Clear formatting">
-				<IconsLucideRemoveFormatting />
-			</button>
+				:class="{ 'bg-gray-200': editor.isActive('highlight') }" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-link"
+				@click="setLink"
+				:class="{ 'bg-gray-200': editor.isActive('link') }" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-remove-formatting"
+				@click="editor.chain().focus().unsetAllMarks().run()" />
+
 			<div class="separator"></div>
-			<div class="relative">
-				<button
-					class="flex"
-					@click="alignmentDropdownOpen = !alignmentDropdownOpen"
-					ref="alignmentDropdownButton"
-					title="Alignment"
-					:class="
-						checkActiveStyle(null, { textAlign: 'center' }) ||
-						checkActiveStyle(null, { textAlign: 'right' }) ||
-						checkActiveStyle(null, { textAlign: 'justify' })
-					">
-					<IconsLucideAlignCenter v-if="checkActiveStyle(null, { textAlign: 'center' })" />
-					<IconsLucideAlignRight v-else-if="checkActiveStyle(null, { textAlign: 'right' })" />
-					<IconsLucideAlignJustify v-else-if="checkActiveStyle(null, { textAlign: 'justify' })" />
-					<IconsLucideAlignLeft v-else />
-				</button>
-				<div
-					v-if="alignmentDropdownOpen"
-					ref="alignmentDropdown"
-					class="absolute top-full left-0 bg-white rounded-md shadow-glow flex flex-row">
-					<button
-						@click="editor.chain().focus().setTextAlign('left').run()"
-						:class="{ 'is-active': editor.isActive({ textAlign: 'left' }) }"
-						title="Align left">
-						<IconsLucideAlignLeft />
-					</button>
-					<button
-						@click="editor.chain().focus().setTextAlign('center').run()"
-						:class="{ 'is-active': editor.isActive({ textAlign: 'center' }) }"
-						title="Align center">
-						<IconsLucideAlignCenter />
-					</button>
-					<button
-						@click="editor.chain().focus().setTextAlign('right').run()"
-						:class="{ 'is-active': editor.isActive({ textAlign: 'right' }) }"
-						title="Align right">
-						<IconsLucideAlignRight />
-					</button>
-					<button
-						@click="editor.chain().focus().setTextAlign('justify').run()"
-						:class="{ 'is-active': editor.isActive({ textAlign: 'justify' }) }"
-						title="Align justify">
-						<IconsLucideAlignJustify />
-					</button>
-				</div>
-			</div>
-			<button
+
+			<UDropdownMenu :items="alignmentItems" :content="{ align: 'start' }">
+				<UButton
+					color="neutral"
+					variant="ghost"
+					:icon="activeAlignmentIcon"
+					trailing-icon="i-lucide-chevron-down" />
+			</UDropdownMenu>
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-text-quote"
 				@click="editor.chain().focus().toggleBlockquote().run()"
-				:class="checkActiveStyle('blockquote')"
-				title="Blockquote">
-				<IconsLucideTextQuote />
-			</button>
-			<button @click="editor.chain().focus().setHorizontalRule().run()" title="Horizontal rule">
-				<IconsLucideMinus />
-			</button>
-			<button @click="addImage" disabled title="Add image" class="inline-flex font-light text-xs gap-1">
-				<IconsLucideImagePlus /> Add
-			</button>
-			<button
-				@click="
-					if (demoArticle) {
-						editor.commands.setContent(`<h1>${demoArticle.title}</h1> ${demoArticle.body}`);
-						refresh();
-					}
-				"
-				title="Demo text">
-				<IconsLucideLetterText />
-			</button>
+				:class="{ 'bg-gray-200': editor.isActive('blockquote') }" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-minus"
+				@click="editor.chain().focus().setHorizontalRule().run()" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-image-plus"
+				disabled
+				label="Add" />
+
+			<UButton
+				color="neutral"
+				variant="ghost"
+				icon="i-lucide-letter-text"
+				@click="loadDemo"
+				title="Demo text" />
 		</div>
 		<input type="file" ref="fileInput" @change="handleFileChange" style="display: none" />
 		<editor-content :editor="editor" />
@@ -199,50 +120,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted, useTemplateRef } from "vue";
+import { ref, onBeforeUnmount, onMounted, computed, type Ref } from "vue";
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import { Placeholder } from "@tiptap/extensions";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
-import Link from "@tiptap/extension-link";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import { onClickOutside, watchDeep } from "@vueuse/core";
-import type { Level } from "@tiptap/extension-heading";
-import { IconsLucideLetterText } from "#components";
+import { watchDeep } from "@vueuse/core";
 
 const model = defineModel({ default: "<p>This is the default content.</p>" });
 const fileInput = ref(null);
-const editor: Ref<Editor | undefined> = ref(undefined);
+const editor = ref<Editor>();
 
-const {
-	data: demoArticle,
-	error,
-	refresh,
-} = await useLazyFetch(`/api/randomArticle`, {
-	method: "post",
-	body: { label: "private" },
-});
+const { $token } = useNuxtApp();
 
-// #region Dropdown handlers
-const dropdownOpen = ref(false);
-const listDropdownOpen = ref(false);
-const alignmentDropdownOpen = ref(false);
-
-const headingDropdown = useTemplateRef<HTMLElement>("headingDropdown");
-const listDropdown = useTemplateRef<HTMLElement>("listDropdown");
-const alignmentDropdown = useTemplateRef<HTMLElement>("alignmentDropdown");
-
-const headingDropdownButton = useTemplateRef<HTMLButtonElement>("headingDropdownButton");
-const listDropdownButton = useTemplateRef<HTMLButtonElement>("listDropdownButton");
-const alignmentDropdownButton = useTemplateRef<HTMLButtonElement>("alignmentDropdownButton");
-
-onClickOutside(headingDropdown, () => (dropdownOpen.value = false), { ignore: [headingDropdownButton] });
-onClickOutside(listDropdown, () => (listDropdownOpen.value = false), { ignore: [listDropdownButton] });
-onClickOutside(alignmentDropdown, () => (alignmentDropdownOpen.value = false), { ignore: [alignmentDropdownButton] });
-// #endregion
+const loadDemo = async () => {
+	try {
+		const response = await $fetch<any>(`/api/randomArticle`, {
+			method: "post",
+			headers: $token.value ? { Authorization: `Bearer ${$token.value}` } : {},
+		});
+		if (response) {
+			editor.value?.commands.setContent(`<h1>${response.title}</h1> ${response.body}`);
+		}
+	} catch (e) {
+		console.error("Failed to load demo article", e);
+	}
+};
 
 onMounted(() => {
 	editor.value = new Editor({
@@ -251,17 +158,17 @@ onMounted(() => {
 			StarterKit.configure({
 				code: false,
 				codeBlock: false,
+				link: {
+					openOnClick: "whenNotEditable",
+					protocols: ["http", "https"],
+					HTMLAttributes: {
+						rel: "noopener noreferrer",
+						target: "_blank",
+					},
+				},
 			}),
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
-			}),
-			Link.configure({
-				openOnClick: "whenNotEditable",
-				protocols: ["http", "https"],
-				HTMLAttributes: {
-					rel: "noopener noreferrer",
-					target: "_blank",
-				},
 			}),
 			Highlight.configure({
 				multicolor: true,
@@ -269,15 +176,13 @@ onMounted(() => {
 			Placeholder.configure({
 				placeholder: "Write something...",
 			}),
-			// Image,
+			Image,
 			TaskList,
 			TaskItem,
 		],
+
 		onUpdate: ({ editor }) => {
 			model.value = editor.getHTML();
-			dropdownOpen.value = false;
-			listDropdownOpen.value = false;
-			alignmentDropdownOpen.value = false;
 		},
 		editorProps: {
 			attributes: {
@@ -287,20 +192,57 @@ onMounted(() => {
 	});
 });
 
-const checkActiveStyle = (name: string | null, attributes?: Record<string, any>): string => {
-	if (!editor.value) return "";
-	if (!name && !attributes) return "";
-	if (editor.value.isActive(name || "", attributes || undefined)) return "is-active";
-	return "";
-};
+const headingItems = computed(() => [
+	[
+		{ label: "Paragraph", icon: "i-lucide-pilcrow", onSelect: () => editor.value?.chain().focus().setParagraph().run() },
+		{ label: "Heading 1", icon: "i-lucide-heading-1", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 1 }).run() },
+		{ label: "Heading 2", icon: "i-lucide-heading-2", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 2 }).run() },
+		{ label: "Heading 3", icon: "i-lucide-heading-3", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 3 }).run() },
+		{ label: "Heading 4", icon: "i-lucide-heading-4", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 4 }).run() },
+	]
+]);
 
-const selectHeading = (level: Level) => {
-	if (editor.value == null) return;
-	editor.value.chain().focus().toggleHeading({ level: level }).run();
-};
+const activeHeadingIcon = computed(() => {
+	if (editor.value?.isActive("heading", { level: 1 })) return "i-lucide-heading-1";
+	if (editor.value?.isActive("heading", { level: 2 })) return "i-lucide-heading-2";
+	if (editor.value?.isActive("heading", { level: 3 })) return "i-lucide-heading-3";
+	if (editor.value?.isActive("heading", { level: 4 })) return "i-lucide-heading-4";
+	return "i-lucide-heading";
+});
+
+const listItems = computed(() => [
+	[
+		{ label: "Bullet List", icon: "i-lucide-list", onSelect: () => editor.value?.chain().focus().toggleBulletList().run() },
+		{ label: "Ordered List", icon: "i-lucide-list-ordered", onSelect: () => editor.value?.chain().focus().toggleOrderedList().run() },
+		{ label: "Task List", icon: "i-lucide-list-todo", onSelect: () => editor.value?.chain().focus().toggleTaskList().run() },
+	]
+]);
+
+const activeListIcon = computed(() => {
+	if (editor.value?.isActive("bulletList")) return "i-lucide-list";
+	if (editor.value?.isActive("orderedList")) return "i-lucide-list-ordered";
+	if (editor.value?.isActive("taskList")) return "i-lucide-list-todo";
+	return "i-lucide-list";
+});
+
+const alignmentItems = computed(() => [
+	[
+		{ label: "Align Left", icon: "i-lucide-align-left", onSelect: () => editor.value?.chain().focus().setTextAlign("left").run() },
+		{ label: "Align Center", icon: "i-lucide-align-center", onSelect: () => editor.value?.chain().focus().setTextAlign("center").run() },
+		{ label: "Align Right", icon: "i-lucide-align-right", onSelect: () => editor.value?.chain().focus().setTextAlign("right").run() },
+		{ label: "Align Justify", icon: "i-lucide-align-justify", onSelect: () => editor.value?.chain().focus().setTextAlign("justify").run() },
+	]
+]);
+
+const activeAlignmentIcon = computed(() => {
+	if (editor.value?.isActive({ textAlign: "center" })) return "i-lucide-align-center";
+	if (editor.value?.isActive({ textAlign: "right" })) return "i-lucide-align-right";
+	if (editor.value?.isActive({ textAlign: "justify" })) return "i-lucide-align-justify";
+	return "i-lucide-align-left";
+});
 
 const setLink = () => {
-	if (editor.value == null) return;
+	if (!editor.value) return;
 	const previousUrl = editor.value.getAttributes("link").href;
 	const url = window.prompt("URL", previousUrl);
 
@@ -322,42 +264,12 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-button {
-	padding: 0.5rem;
-	margin-left: 0.25rem;
-	margin-right: 0.25rem;
-	margin-top: 0rem;
-	margin-bottom: 0rem;
-	border-radius: 0.5rem;
-	transition-duration: 200ms;
-	background-color: transparent;
-	color: rgb(31 41 55); /* text-gray-800 */
-}
-
-button:disabled {
-	color: rgb(209 213 219); /* text-gray-300 */
-	background-color: transparent;
-}
-
-button:hover {
-	background-color: rgb(229 231 235); /* bg-gray-200 */
-}
-
-button.is-active {
-	background-color: rgb(229 231 235); /* bg-gray-200 */
-}
-
 .separator {
 	width: 1px;
 	height: 1.5rem;
-	background-color: rgb(209 213 219); /* bg-gray-300 */
+	background-color: rgb(209 213 219);
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
-}
-
-.dropdown-toggle {
-	display: flex;
-	align-items: center;
 }
 </style>
 
