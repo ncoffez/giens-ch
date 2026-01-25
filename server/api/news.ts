@@ -1,4 +1,4 @@
-import { news } from "../news";
+import { db } from "../useFirebaseAdmin";
 import { Article } from "../utils/article";
 
 export default defineEventHandler(async (event) => {
@@ -8,6 +8,10 @@ export default defineEventHandler(async (event) => {
 
 		if (isNaN(quantity)) throw new Error(`quantity must be a number.`);
 		if (quantity < 1) throw new Error(`quantity must be greater than 1.`);
+
+		const querySnapshot = await db.collection("articles").get();
+		const news: Article[] = [];
+		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() } as Article));
 
 		const labels = await $fetch("/api/labels");
 		let latestNews = filterByPermission(permission, news, labels);
