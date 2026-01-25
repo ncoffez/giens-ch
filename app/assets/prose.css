@@ -1,3 +1,5 @@
+@reference "./main.css";
+
 /* Base styles for prose content */
 .prose {
 	font-size: 1rem;

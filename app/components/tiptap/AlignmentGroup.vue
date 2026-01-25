@@ -110,6 +110,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+@reference "@/assets/main.css";
+
 .toggle-button {
 	display: flex;
 	align-items: center;

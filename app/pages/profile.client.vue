@@ -18,7 +18,7 @@ const { $currentUser } = useNuxtApp();
 			</div>
 		</ClientOnly>
 		<div class="flex gap-2 place-content-center">
-			<NuxtLink to="/logout"><UButton variant="ghost" loading-icon="true">Logout</UButton></NuxtLink>
+			<NuxtLink to="/logout"><UButton variant="ghost">Abmelden</UButton></NuxtLink>
 		</div>
 	</div>
 </template>
