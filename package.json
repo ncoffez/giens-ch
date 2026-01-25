@@ -9,7 +9,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "deploy": "nuxt build && firebase deploy",
-    "start": "nuxt preview"
+    "start": "nuxt preview",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@nuxt/ui": "^3.3.0",
@@ -32,5 +34,12 @@
     "typescript": "^5.9.2",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@nuxt/test-utils": "^3.23.0",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.3.7",
+    "playwright-core": "^1.58.0",
+    "vitest": "^3.2.4"
   }
 }
