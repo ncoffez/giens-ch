@@ -88,14 +88,6 @@
 		<footer class="py-12 border-t border-gray-100 dark:border-gray-800">
 			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
 				<p>© {{ new Date().getFullYear() }} Lotissement Beausoleil, Giens</p>
-				<ClientOnly>
-					<UCollapsible v-if="$currentUser" class="flex flex-col gap-2">
-						<UButton label="Debug Info" color="neutral" variant="link" size="xs" />
-						<template #content>
-							<pre class="text-[10px] overflow-auto p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-w-md">{{ $currentUser }}</pre>
-						</template>
-					</UCollapsible>
-				</ClientOnly>
 			</div>
 		</footer>
 	</div>

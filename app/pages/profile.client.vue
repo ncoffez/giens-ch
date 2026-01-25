@@ -17,7 +17,7 @@ const accountDetails = computed(() => [
 </script>
 
 <template>
-	<div class="max-w-screen-md mx-auto w-full px-4 py-12">
+	<div class="max-w-screen-xl mx-auto w-full px-4 py-12">
 		<ClientOnly>
 			<div v-if="$currentUser" class="space-y-8">
 				<!-- Header Section -->
@@ -60,11 +60,11 @@ const accountDetails = computed(() => [
 						</template>
 						<div class="space-y-6">
 							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
-								<div class="flex items-center gap-3 text-gray-500">
+								<div class="flex items-center gap-3 text-gray-500 shrink-0">
 									<UIcon :name="item.icon" class="w-4 h-4" />
 									<span class="text-base font-medium">{{ item.label }}</span>
 								</div>
-								<span class="text-base font-bold truncate max-w-[200px]">{{ item.value }}</span>
+								<span class="text-base font-bold text-right">{{ item.value }}</span>
 							</div>
 						</div>
 					</UCard>
@@ -104,6 +104,16 @@ const accountDetails = computed(() => [
 							</NuxtLink>
 						</div>
 					</UCard>
+				</div>
+
+				<!-- Debug Info -->
+				<div class="pt-8 border-t border-gray-100 dark:border-gray-800">
+					<UCollapsible class="flex flex-col gap-4">
+						<UButton label="Debug Info (User Object)" color="neutral" variant="subtle" icon="i-lucide-bug" />
+						<template #content>
+							<pre class="text-xs overflow-auto p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">{{ $currentUser }}</pre>
+						</template>
+					</UCollapsible>
 				</div>
 			</div>
 

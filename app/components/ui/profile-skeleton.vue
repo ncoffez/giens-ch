@@ -1,5 +1,5 @@
 <template>
-	<div class="max-w-screen-md mx-auto w-full space-y-8">
+	<div class="max-w-screen-xl mx-auto w-full space-y-8">
 		<!-- Header Skeleton -->
 		<div class="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800">
 			<USkeleton class="h-24 w-24 rounded-full" />
