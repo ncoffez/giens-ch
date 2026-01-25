@@ -35,14 +35,14 @@ const accountDetails = computed(() => [
 
 					<div class="flex-1 text-center md:text-left space-y-4">
 						<div>
-							<h1 class="text-4xl font-extrabold tracking-tight">{{ $currentUser.displayName || 'Hausbewohner' }}</h1>
-							<p class="text-xl text-gray-500 mt-1 font-medium">{{ $currentUser.email }}</p>
+							<h1 class="text-2xl font-extrabold tracking-tight">{{ $currentUser.displayName || 'Hausbewohner' }}</h1>
+							<p class="text-base text-gray-500 mt-1 font-medium">{{ $currentUser.email }}</p>
 						</div>
 
 						<div class="flex flex-wrap justify-center md:justify-start gap-4">
-							<UBadge v-for="stat in stats" :key="stat.label" color="neutral" variant="subtle" size="lg" class="rounded-full px-4 py-1">
-								<span class="text-gray-400 mr-2 text-sm">{{ stat.label }}:</span>
-								<span class="font-bold text-lg">{{ stat.value }}</span>
+							<UBadge v-for="stat in stats" :key="stat.label" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1">
+								<span class="text-gray-400 mr-2 text-xs">{{ stat.label }}:</span>
+								<span class="font-bold text-base">{{ stat.value }}</span>
 							</UBadge>
 						</div>
 					</div>
@@ -54,17 +54,17 @@ const accountDetails = computed(() => [
 					<UCard class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
 						<template #header>
 							<div class="flex items-center gap-3">
-								<UIcon name="i-lucide-user" class="w-6 h-6 text-primary" />
-								<h3 class="text-xl font-bold">Account Informationen</h3>
+								<UIcon name="i-lucide-user" class="w-5 h-5 text-primary" />
+								<h3 class="text-lg font-bold">Account Informationen</h3>
 							</div>
 						</template>
 						<div class="space-y-6">
 							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
 								<div class="flex items-center gap-3 text-gray-500">
-									<UIcon :name="item.icon" class="w-5 h-5" />
-									<span class="text-lg font-medium">{{ item.label }}</span>
+									<UIcon :name="item.icon" class="w-4 h-4" />
+									<span class="text-base font-medium">{{ item.label }}</span>
 								</div>
-								<span class="text-lg font-bold truncate max-w-[200px]">{{ item.value }}</span>
+								<span class="text-base font-bold truncate max-w-[200px]">{{ item.value }}</span>
 							</div>
 						</div>
 					</UCard>
@@ -73,21 +73,21 @@ const accountDetails = computed(() => [
 					<UCard class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
 						<template #header>
 							<div class="flex items-center gap-3">
-								<UIcon name="i-lucide-shield-check" class="w-6 h-6 text-primary" />
-								<h3 class="text-xl font-bold">Sicherheit & Einstellungen</h3>
+								<UIcon name="i-lucide-shield-check" class="w-5 h-5 text-primary" />
+								<h3 class="text-lg font-bold">Sicherheit & Einstellungen</h3>
 							</div>
 						</template>
 						<div class="space-y-4">
 							<UButton 
 								block 
-								size="xl"
+								size="lg"
 								variant="outline" 
 								color="neutral" 
 								icon="i-lucide-key-round" 
 								label="Passwort ändern" />
 							<UButton 
 								block 
-								size="xl"
+								size="lg"
 								variant="outline" 
 								color="neutral" 
 								icon="i-lucide-bell" 
@@ -96,7 +96,7 @@ const accountDetails = computed(() => [
 							<NuxtLink to="/logout" class="block w-full">
 								<UButton 
 									block 
-									size="xl"
+									size="lg"
 									variant="ghost" 
 									color="error" 
 									icon="i-lucide-log-out" 

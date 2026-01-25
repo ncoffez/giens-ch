@@ -156,8 +156,8 @@ const getItems = (row: any) => [
 		</UCard>
 
 		<!-- Add User Modal -->
-		<UModal v-model="isModalOpen" title="Neuen Benutzer hinzufügen">
-			<template #content>
+		<UModal v-model:open="isModalOpen" title="Neuen Benutzer hinzufügen">
+			<template #body>
 				<div class="p-8 space-y-6">
 					<div class="space-y-2">
 						<h3 class="text-xl font-bold">Neuen Benutzer hinzufügen</h3>

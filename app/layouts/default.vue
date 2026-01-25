@@ -63,7 +63,7 @@
 				<div class="lg:hidden">
 					<UDrawer direction="right" title="Navigation">
 						<UButton color="neutral" variant="ghost" icon="i-lucide-menu" size="xl" />
-						<template #content>
+						<template #body>
 							<div class="p-6 h-full flex flex-col">
 								<div class="flex items-center justify-between mb-8">
 									<UiLogo />
