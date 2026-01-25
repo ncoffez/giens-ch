@@ -14,8 +14,9 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Framework:** Vitest with `@nuxt/test-utils`.
 - **Run all tests:** `npm run test:run`
 - **Run a single test:** `npx vitest run tests/integration/home.test.ts`
+- **STRICT MANDATE:** **Always** run the full test suite (`npm run test:run`) after any build step or significant refactor. Do not commit or declare a task complete unless all tests are green.
 - **Current Status:** A minimal regression suite exists in `tests/integration/`. 
-- **Guideline:** Always run the regression suite before committing changes. If adding a new feature, add a corresponding test in `tests/integration/`. Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
+- **Guideline:** Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
 
 ---
 
