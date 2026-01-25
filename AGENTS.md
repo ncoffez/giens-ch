@@ -11,9 +11,11 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Deploy to Firebase:** `npm run deploy` (requires `FIREBASE_ADMIN_KEY` and `FIREBASE_FRONTEND_KEY` in `.env`)
 
 ### Testing & Linting
-- **Current Status:** There is no formal testing framework (e.g., Vitest, Jest) or linter (e.g., ESLint, Prettier) configured in `package.json`. 
-- **Guideline:** Adhere strictly to existing code style to maintain consistency. When adding new features, prefer simple verification via manual testing or temporary `console.log` debugging in the dev environment.
-- **Single Test:** If Vitest is added in the future, the command would likely be `npx vitest run path/to/file.test.ts`.
+- **Framework:** Vitest with `@nuxt/test-utils`.
+- **Run all tests:** `npm run test:run`
+- **Run a single test:** `npx vitest run tests/integration/home.test.ts`
+- **Current Status:** A minimal regression suite exists in `tests/integration/`. 
+- **Guideline:** Always run the regression suite before committing changes. If adding a new feature, add a corresponding test in `tests/integration/`. Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
 
 ---
 
@@ -120,7 +122,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 1. **Understand:** Read the relevant `.vue` or `.ts` files first.
 2. **Plan:** Identify which part of the Nuxt lifecycle your change affects (Client vs. Server vs. Plugin).
 3. **Implement:** Follow the Tab-indentation and Double-quote rules strictly.
-4. **Verify:** Use `npm run dev` to verify changes if a preview environment is available.
+4. **Verify:** Use `npm run dev` to verify changes if a prevtestiew environment is available.
 5. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
 
 ---
