@@ -7,12 +7,17 @@
 					<UiLogo class="m-0!" />
 				</NuxtLink>
 				<div class="hidden lg:block">
-					<UNavigationMenu :items="navigationItems" />
+					<ClientOnly>
+						<UNavigationMenu :items="navigationItems" />
+						<template #fallback>
+							<UNavigationMenu :items="publicNavigationItems" />
+						</template>
+					</ClientOnly>
 				</div>
 			</div>
 
-			<div class="flex items-center gap-3">
-				<ClientOnly>
+			<ClientOnly>
+				<div class="flex items-center gap-3">
 					<!-- Language Switcher Placeholder -->
 					<UDropdownMenu
 						:items="languageItems"
@@ -51,7 +56,8 @@
 							</UDropdownMenu>
 						</template>
 					</div>
-				</ClientOnly>
+				</div>
+			</ClientOnly>
 
 				<!-- Mobile Menu Trigger -->
 				<div class="lg:hidden">
@@ -71,8 +77,7 @@
 						</template>
 					</UDrawer>
 				</div>
-			</div>
-		</header>
+			</header>
 
 		<!-- Main Content -->
 		<main class="flex-1 my-6 mb-20 mx-auto w-full">
@@ -83,8 +88,8 @@
 		<footer class="py-12 border-t border-gray-100 dark:border-gray-800">
 			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
 				<p>© {{ new Date().getFullYear() }} Lotissement Beausoleil, Giens</p>
-				<ClientOnly v-if="$currentUser">
-					<UCollapsible class="flex flex-col gap-2">
+				<ClientOnly>
+					<UCollapsible v-if="$currentUser" class="flex flex-col gap-2">
 						<UButton label="Debug Info" color="neutral" variant="link" size="xs" />
 						<template #content>
 							<pre class="text-[10px] overflow-auto p-4 bg-gray-50 dark:bg-gray-900 rounded-lg max-w-md">{{ $currentUser }}</pre>
@@ -126,68 +131,70 @@ const languageItems = [
 	],
 ];
 
+const publicNavigationItems: NavigationMenuItem[] = [
+	{
+		label: "Home",
+		icon: "i-lucide-house",
+		to: "/",
+	},
+	{
+		label: "Aktuelles",
+		icon: "i-lucide-newspaper",
+		children: [
+			{
+				label: "News Feed",
+				to: "/news",
+				icon: "i-lucide-layout-list",
+				description: "Alle Neuigkeiten und Updates der Siedlung.",
+			},
+			{
+				label: "Veranstaltungen",
+				to: "/news/events",
+				icon: "i-lucide-party-popper",
+				description: "Was läuft in Giens und Umgebung?",
+			},
+			{
+				label: "Markt",
+				to: "/news/markt",
+				icon: "i-lucide-store",
+				description: "Wann und wo sind die besten Märkte?",
+			},
+			{
+				label: "Fotos",
+				icon: "i-lucide-camera",
+				description: "Bildergalerien unserer Siedlung.",
+				disabled: true,
+			},
+		],
+	},
+	{
+		label: "Siedlung",
+		icon: "i-lucide-map",
+		children: [
+			{
+				label: "Anreise",
+				to: "/travel",
+				icon: "i-lucide-car",
+				description: "Tipps für eine entspannte Anreise nach Giens.",
+			},
+			{
+				label: "Über uns",
+				to: "/about",
+				icon: "i-lucide-info",
+				description: "Geschichte und Spirit des Lotissement Beausoleil.",
+			},
+			{
+				label: "Hausliste",
+				icon: "i-lucide-home",
+				description: "Übersicht aller Häuser der Siedlung.",
+				disabled: true,
+			},
+		],
+	},
+];
+
 const navigationItems = computed<NavigationMenuItem[]>(() => {
-	const items: NavigationMenuItem[] = [
-		{
-			label: "Home",
-			icon: "i-lucide-house",
-			to: "/",
-		},
-		{
-			label: "Aktuelles",
-			icon: "i-lucide-newspaper",
-			children: [
-				{
-					label: "News Feed",
-					to: "/news",
-					icon: "i-lucide-layout-list",
-					description: "Alle Neuigkeiten und Updates der Siedlung.",
-				},
-				{
-					label: "Veranstaltungen",
-					to: "/news/events",
-					icon: "i-lucide-party-popper",
-					description: "Was läuft in Giens und Umgebung?",
-				},
-				{
-					label: "Markt",
-					to: "/news/markt",
-					icon: "i-lucide-store",
-					description: "Wann und wo sind die besten Märkte?",
-				},
-				{
-					label: "Fotos",
-					icon: "i-lucide-camera",
-					description: "Bildergalerien unserer Siedlung.",
-					disabled: true,
-				},
-			],
-		},
-		{
-			label: "Siedlung",
-			icon: "i-lucide-map",
-			children: [
-				{
-					label: "Anreise",
-					to: "/travel",
-					icon: "i-lucide-car",
-					description: "Tipps für eine entspannte Anreise nach Giens.",
-				},
-				{
-					label: "Über uns",
-					to: "/about",
-					icon: "i-lucide-info",
-					description: "Geschichte und Spirit des Lotissement Beausoleil.",
-				},
-				{
-					label: "Hausliste",
-					icon: "i-lucide-home",
-					description: "Übersicht aller Häuser der Siedlung.",
-					disabled: true,
-				},
-			],
-		},
-	];
+	const items = [...publicNavigationItems];
 
 	if ($currentUser.value) {
 		items.push({

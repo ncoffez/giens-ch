@@ -92,17 +92,22 @@
 				<UButton to="/news" variant="link" color="neutral" icon="i-lucide-arrow-right" trailing>Alle News</UButton>
 			</div>
 			<div class="grid gap-8">
-				<LazyUiSummary
-					v-for="(article, index) of news"
-					:key="article.id"
-					:link="`/news/${article.id}`"
-					:id="article.id"
-					:title="article.title"
-					:subtitle="article.intro"
-					:image-url="article.image"
-					:labels="article.tags"
-					:index="index"
-					:date="new Date(article.published).toLocaleDateString('de-CH')" />
+				<template v-if="status === 'pending'">
+					<UiSummarySkeleton v-for="i in 3" :key="i" :index="i" />
+				</template>
+				<template v-else>
+					<UiSummary
+						v-for="(article, index) of news"
+						:key="article.id"
+						:link="`/article/${article.id}`"
+						:id="article.id"
+						:title="article.title"
+						:subtitle="article.intro"
+						:image-url="article.image"
+						:labels="article.tags"
+						:index="index"
+						:date="new Date(article.published).toLocaleDateString('de-CH')" />
+				</template>
 			</div>
 		</section>
 	</div>
@@ -112,7 +117,7 @@
 const { $currentUser } = useNuxtApp();
 const label = $currentUser.value ? "private" : "public";
 
-const { data: news } = await useLazyFetch<any[]>("/api/news", {
+const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	method: "post",
 	body: { quantity: 3, label },
 });
