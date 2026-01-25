@@ -2,16 +2,63 @@
 import { watch } from 'vue';
 
 const toast = useToast();
-const { data: users, status, refresh } = useFetch<any[]>("/api/users", {
-	lazy: true
+const { $auth, $currentUser, $isAdmin, $claims, $authInitialized } = useNuxtApp();
+
+const { data: users, status, refresh } = useAsyncData("admin-users-list", async () => {
+	// Wait for auth to be initialized at all
+	if (!$authInitialized.value) {
+		console.log("AdminUsers: Waiting for auth initialization...");
+		return [];
+	}
+
+	if (!$isAdmin.value) {
+		console.warn("AdminUsers: Access denied - not an admin");
+		return [];
+	}
+	
+	try {
+		const user = $auth.currentUser;
+		if (!user) {
+			console.warn("AdminUsers: No current user found in auth");
+			return [];
+		}
+		
+		const token = await user.getIdToken(true);
+		console.log("AdminUsers: Fetching with token...");
+		
+		const response = await $fetch<any[]>("/api/users", {
+			headers: { Authorization: `Bearer ${token}` }
+		});
+		
+		console.log("AdminUsers: API Response received", response?.length, "users");
+		return response;
+	} catch (e: any) {
+		console.error("AdminUsers: Fetch error", e);
+		return [];
+	}
+}, {
+	lazy: true,
+	watch: [$isAdmin, $currentUser, $authInitialized],
+	immediate: true
 });
 
 watch(users, (newUsers) => {
-	console.log("AdminUsers: fetched users", newUsers);
-}, { immediate: true });
+	if (newUsers && newUsers.length > 0) {
+		console.log("AdminUsers: users ref updated", newUsers.length);
+	}
+});
 
 const isModalOpen = ref(false);
+const isRoleModalOpen = ref(false);
 const isPending = ref(false);
+const selectedUserForRoles = ref<any>(null);
+
+const userRoles = ref({
+	admin: false,
+	publisher: false,
+	owner: false,
+	reader: false
+});
 
 const newUser = ref({
 	email: "",
@@ -21,21 +68,31 @@ const newUser = ref({
 
 const columns = [
 	{ id: "user", header: "Benutzer" },
+	{ id: "roles", header: "Rollen" },
 	{ accessorKey: "disabled", id: "status", header: "Status" },
-	{ accessorKey: "uid", header: "UID" },
 	{ id: "actions", header: "" }
 ];
+
+async function getAuthHeaders() {
+	const user = $auth.currentUser;
+	if (!user) return {};
+	const token = await user.getIdToken();
+	return { Authorization: `Bearer ${token}` };
+}
 
 async function handleAction(action: string, user: any) {
 	isPending.value = true;
 	try {
+		const headers = await getAuthHeaders();
 		const response = await $fetch("/api/admin/user-action", {
 			method: "POST",
+			headers,
 			body: { 
 				action, 
 				uid: user?.uid, 
 				email: user?.email,
-				disabled: action === "toggle-status" ? !user.disabled : undefined
+				disabled: action === "toggle-status" ? !user.disabled : undefined,
+				roles: action === "set-roles" ? userRoles.value : undefined
 			}
 		});
 
@@ -46,9 +103,9 @@ async function handleAction(action: string, user: any) {
 				color: "success"
 			});
 			if (action === "reset-password" && response.link) {
-				// Optionally show the link or just say email was sent (if we had a sender)
 				console.log("Reset link:", response.link);
 			}
+			isRoleModalOpen.value = false;
 			await refresh();
 		}
 	} catch (error: any) {
@@ -65,8 +122,10 @@ async function handleAction(action: string, user: any) {
 async function addUser() {
 	isPending.value = true;
 	try {
+		const headers = await getAuthHeaders();
 		await $fetch("/api/admin/user-action", {
 			method: "POST",
+			headers,
 			body: { action: "add", ...newUser.value }
 		});
 		toast.add({ title: "Erfolgreich", description: "Benutzer erstellt.", color: "success" });
@@ -80,8 +139,25 @@ async function addUser() {
 	}
 }
 
+function openRoleModal(user: any) {
+	selectedUserForRoles.value = user;
+	const claims = user.customClaims || {};
+	userRoles.value = {
+		admin: !!claims.admin,
+		publisher: !!claims.publisher,
+		owner: !!claims.owner,
+		reader: !!claims.reader
+	};
+	isRoleModalOpen.value = true;
+}
+
 const getItems = (row: any) => [
 	[
+		{
+			label: "Rollen verwalten",
+			icon: "i-lucide-shield-plus",
+			onSelect: () => openRoleModal(row)
+		},
 		{
 			label: "Passwort zurücksetzen",
 			icon: "i-lucide-key-round",
@@ -121,8 +197,14 @@ const getItems = (row: any) => [
 
 		<UiUserTableSkeleton v-if="status === 'pending'" />
 		
-		<UCard v-else :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
-			<UTable :data="users || []" :columns="columns" :ui="{ td: 'py-5 px-4', th: 'py-4 px-4 text-sm font-bold uppercase tracking-wider text-gray-500' }">
+		<div v-else-if="users && users.length === 0" class="p-12 text-center bg-gray-50 dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
+			<UIcon name="i-lucide-users" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
+			<p class="text-gray-500 font-medium">Keine Benutzer gefunden oder Zugriff verweigert.</p>
+			<UButton label="Erneut versuchen" variant="ghost" class="mt-4" @click="refresh" />
+		</div>
+		
+		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
+			<UTable :data="users" :columns="columns" :ui="{ td: 'py-5 px-4', th: 'py-4 px-4 text-sm font-bold uppercase tracking-wider text-gray-500' }">
 				<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />
@@ -130,6 +212,16 @@ const getItems = (row: any) => [
 							<span class="text-lg font-bold text-gray-900 dark:text-white">{{ row.original.displayName || 'Kein Name' }}</span>
 							<span class="text-sm text-gray-500 font-medium">{{ row.original.email }}</span>
 						</div>
+					</div>
+				</template>
+
+				<template #roles-cell="{ row }">
+					<div class="flex flex-wrap gap-1">
+						<UBadge v-if="row.original.customClaims?.admin" color="error" variant="solid" size="sm" class="rounded-full px-2">Admin</UBadge>
+						<UBadge v-if="row.original.customClaims?.publisher" color="primary" variant="subtle" size="sm" class="rounded-full px-2">Pub</UBadge>
+						<UBadge v-if="row.original.customClaims?.owner" color="success" variant="subtle" size="sm" class="rounded-full px-2">Besitzer</UBadge>
+						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="sm" class="rounded-full px-2">Leser</UBadge>
+						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-gray-400 italic">Keine Rollen</span>
 					</div>
 				</template>
 
@@ -143,10 +235,6 @@ const getItems = (row: any) => [
 					</UBadge>
 				</template>
 
-				<template #uid-cell="{ row }">
-					<span class="text-xs text-gray-400 font-medium tracking-tight">{{ row.original.uid }}</span>
-				</template>
-
 				<template #actions-cell="{ row }">
 					<UDropdownMenu :items="getItems(row.original)">
 						<UButton color="neutral" variant="ghost" icon="i-lucide-ellipsis-vertical" size="lg" />
@@ -154,6 +242,38 @@ const getItems = (row: any) => [
 				</template>
 			</UTable>
 		</UCard>
+
+		<!-- Role Management Modal -->
+		<UModal v-model:open="isRoleModalOpen" title="Rollen verwalten">
+			<template #body>
+				<div class="p-8 space-y-6">
+					<div class="space-y-2">
+						<h3 class="text-xl font-bold">Rollen verwalten</h3>
+						<p class="text-sm text-gray-500">Passen Sie die Berechtigungen für <b>{{ selectedUserForRoles?.email }}</b> an.</p>
+					</div>
+
+					<div class="space-y-4">
+						<div v-for="(val, role) in userRoles" :key="role" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
+							<div class="flex flex-col">
+								<span class="font-bold capitalize">{{ role }}</span>
+								<span class="text-xs text-gray-500">
+									{{ role === 'admin' ? 'Voller Zugriff auf alle Einstellungen' : 
+									   role === 'publisher' ? 'Kann Artikel bearbeiten und veröffentlichen' :
+									   role === 'owner' ? 'Zugriff auf Eigentümer-Dokumente' :
+									   'Standard-Lesezugriff' }}
+								</span>
+							</div>
+							<USwitch v-model="userRoles[role as keyof typeof userRoles]" size="lg" />
+						</div>
+					</div>
+
+					<div class="flex justify-end gap-4 pt-6">
+						<UButton color="neutral" variant="ghost" label="Abbrechen" size="lg" @click="isRoleModalOpen = false" />
+						<UButton label="Speichern" size="lg" :loading="isPending" @click="handleAction('set-roles', selectedUserForRoles)" />
+					</div>
+				</div>
+			</template>
+		</UModal>
 
 		<!-- Add User Modal -->
 		<UModal v-model:open="isModalOpen" title="Neuen Benutzer hinzufügen">

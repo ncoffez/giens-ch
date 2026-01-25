@@ -91,24 +91,31 @@
 				<UiTitle subtitle="Was gerade läuft" title="Aktuelles" class="mb-0!" />
 				<UButton to="/news" variant="link" color="neutral" icon="i-lucide-arrow-right" trailing>Alle News</UButton>
 			</div>
-			<div class="grid gap-8">
-				<template v-if="status === 'pending'">
-					<UiSummarySkeleton v-for="i in 3" :key="i" :index="i" />
+			<ClientOnly>
+				<div class="grid gap-8">
+					<template v-if="status === 'pending'">
+						<UiSummarySkeleton v-for="i in 3" :key="`skeleton-${i}`" :index="i" />
+					</template>
+					<template v-else>
+						<UiSummary
+							v-for="(article, index) of news"
+							:key="article.id"
+							:link="`/article/${article.id}`"
+							:id="article.id"
+							:title="article.title"
+							:subtitle="article.intro"
+							:image-url="article.image"
+							:labels="article.tags"
+							:index="index"
+							:date="new Date(article.published).toLocaleDateString('de-CH')" />
+					</template>
+				</div>
+				<template #fallback>
+					<div class="grid gap-8">
+						<UiSummarySkeleton v-for="i in 3" :key="`fallback-skeleton-${i}`" :index="i" />
+					</div>
 				</template>
-				<template v-else>
-					<UiSummary
-						v-for="(article, index) of news"
-						:key="article.id"
-						:link="`/article/${article.id}`"
-						:id="article.id"
-						:title="article.title"
-						:subtitle="article.intro"
-						:image-url="article.image"
-						:labels="article.tags"
-						:index="index"
-						:date="new Date(article.published).toLocaleDateString('de-CH')" />
-				</template>
-			</div>
+			</ClientOnly>
 		</section>
 	</div>
 </template>

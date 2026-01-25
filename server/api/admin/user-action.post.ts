@@ -1,11 +1,26 @@
 import { auth } from "../../useFirebaseAdmin";
 
 export default defineEventHandler(async (event) => {
-	// In a real app, you'd verify the requester is an admin here
-	// For now, we assume the middleware handles page access, but API should be protected too.
+	// Secure the API: Verify the requester is an admin
+	const authHeader = getHeader(event, "Authorization");
+	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		throw createError({ statusCode: 401, message: "Unauthorized" });
+	}
+	const idToken = authHeader.split("Bearer ")[1];
+	if (!idToken) {
+		throw createError({ statusCode: 401, message: "Invalid token format" });
+	}
+	try {
+		const decodedToken = await auth.verifyIdToken(idToken);
+		if (!decodedToken.admin) {
+			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
+		}
+	} catch (error) {
+		throw createError({ statusCode: 401, message: "Invalid or expired token" });
+	}
 	
 	const body = await readBody(event);
-	const { action, uid, email, displayName, password, disabled } = body;
+	const { action, uid, email, displayName, password, disabled, roles } = body;
 
 	try {
 		switch (action) {
@@ -39,9 +54,14 @@ export default defineEventHandler(async (event) => {
 					throw createError({ statusCode: 400, message: "Email is required" });
 				}
 				const link = await auth.generatePasswordResetLink(email);
-				// In a real app, you might send this via email. 
-				// For this prototype, we'll return it so the admin can copy it or we'll just say success.
 				return { success: true, link };
+
+			case "set-roles":
+				if (!uid || !roles) {
+					throw createError({ statusCode: 400, message: "UID and roles are required" });
+				}
+				await auth.setCustomUserClaims(uid, roles);
+				return { success: true };
 
 			default:
 				throw createError({ statusCode: 400, message: "Invalid action" });

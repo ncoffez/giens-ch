@@ -104,7 +104,7 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const { $currentUser } = useNuxtApp();
+const { $currentUser, $isAdmin, $isOwner, $isPublisher, $isReader } = useNuxtApp();
 const colorMode = useColorMode();
 
 const isDark = computed({
@@ -196,7 +196,7 @@ const publicNavigationItems: NavigationMenuItem[] = [
 const navigationItems = computed<NavigationMenuItem[]>(() => {
 	const items = [...publicNavigationItems];
 
-	if ($currentUser.value) {
+	if ($isReader.value) {
 		items.push({
 			label: "Intern",
 			icon: "i-lucide-lock",
@@ -243,17 +243,23 @@ const userItems = computed(() => {
 		];
 	}
 
-	return [
+	const items = [
 		{
 			label: "Mein Profil",
 			to: "/profile",
 			icon: "i-lucide-user",
-		},
-		{
+		}
+	];
+
+	if ($isAdmin.value) {
+		items.push({
 			label: "Verwaltung",
 			to: "/admin",
 			icon: "i-lucide-settings",
-		},
+		});
+	}
+
+	items.push(
 		{
 			type: "separator" as const,
 		},
@@ -261,8 +267,10 @@ const userItems = computed(() => {
 			label: "Abmelden",
 			to: "/logout",
 			icon: "i-lucide-log-out",
-		},
-	];
+		}
+	);
+
+	return items;
 });
 </script>
 

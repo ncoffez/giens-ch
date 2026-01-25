@@ -1,13 +1,13 @@
 <template>
 	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4">
 		<ClientOnly>
-			<div v-if="isAuthorized">
+			<div v-if="isAuthorized" key="authorized-view">
 				<div id="error" v-if="error" class="py-12">
 					<h1 class="text-2xl font-bold">{{ error.statusCode }} - {{ error.name }}</h1>
 					<p class="text-neutral-500">{{ error.message }}</p>
 				</div>
 				<template v-if="status === 'pending'">
-					<UiSummarySkeleton v-for="i in 5" :key="i" :index="i" />
+					<UiSummarySkeleton v-for="i in 5" :key="`skeleton-${i}`" :index="i" />
 				</template>
 				<template v-else-if="news && news.length > 0">
 					<UiSummary
@@ -26,9 +26,14 @@
 					<p>Keine Neuigkeiten zum gewählten Thema gefunden.</p>
 				</div>
 			</div>
-			<div v-else class="py-12">
+			<div v-else class="py-12" key="not-authorized-view">
 				<NotAuthorized :tag="tag" />
 			</div>
+			<template #fallback>
+				<div class="flex flex-col w-full">
+					<UiSummarySkeleton v-for="i in 5" :key="`fallback-skeleton-${i}`" :index="i" />
+				</div>
+			</template>
 		</ClientOnly>
 	</div>
 </template>
