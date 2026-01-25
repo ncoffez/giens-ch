@@ -6,14 +6,15 @@
 		<UiArticleSkeleton />
 	</div>
 	<div v-else-if="article" class="w-full space-y-12 mb-24">
-		<!-- Hero Section -->
-		<section class="relative w-full h-[50vh] md:h-[60vh] overflow-hidden rounded-[2.5rem] shadow-2xl">
+		<!-- Subtle Banner -->
+		<section class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem] shadow-xl bg-gray-100 dark:bg-gray-800">
 			<img
 				v-if="article.image"
 				:src="article.image"
 				class="object-cover h-full w-full brightness-105 contrast-[95%] scale-105"
-				:alt="article.title" />
-			<div v-else class="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+				:alt="article.title"
+				loading="eager" />
+			<div v-else class="w-full h-full flex items-center justify-center">
 				<UIcon name="i-lucide-image" class="w-20 h-20 text-neutral-300" />
 			</div>
 		</section>

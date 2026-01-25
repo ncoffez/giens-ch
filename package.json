@@ -14,7 +14,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@nuxt/ui": "^3.3.0",
+    "@nuxt/ui": "^4.4.0",
     "@tiptap/core": "^3.0.7",
     "@tiptap/extension-drag-handle": "^3.0.7",
     "@tiptap/extension-highlight": "^3.0.7",
@@ -25,15 +25,21 @@
     "@tiptap/extensions": "^3.0.7",
     "@tiptap/starter-kit": "^3.0.7",
     "@tiptap/vue-3": "^3.0.7",
-    "@vueuse/core": "^13.6.0",
-    "@vueuse/nuxt": "^13.5.0",
-    "firebase": "^11.6.0",
-    "firebase-admin": "^13.4.0",
-    "firebase-functions": "^6.3.2",
-    "nuxt": "^4.0.3",
+    "@vueuse/core": "^14.1.0",
+    "@vueuse/nuxt": "^14.1.0",
+    "firebase": "^12.8.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.3",
+    "nuxt": "^4.3.0",
+    "punycode": "^2.3.1",
     "typescript": "^5.9.2",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
+  },
+  "overrides": {
+    "punycode": "^2.3.1",
+    "tr46": "^5.0.0",
+    "whatwg-url": "^14.0.0"
   },
   "devDependencies": {
     "@nuxt/test-utils": "^3.23.0",

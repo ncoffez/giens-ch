@@ -2,20 +2,11 @@
 
 <template>
 	<div class="space-y-24 mb-20">
-		<!-- Hero Section -->
-		<section class="relative h-[450px] w-full rounded-3xl overflow-clip shadow-2xl">
-			<img
-				src="/giens/hyeres.webp"
-				class="w-full h-full object-cover brightness-75 contrast-125 scale-105 hover:scale-100 transition-transform duration-1000"
-				alt="Blick auf Hyères und das Meer" />
-			<div
-				class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
-				<h1 class="text-4xl md:text-7xl font-black text-white mb-4 tracking-tight">Anreise nach Giens</h1>
-				<p class="text-xl md:text-2xl text-white/90 max-w-2xl font-medium">
-					Tipps für eine entspannte Reise in den Süden.
-				</p>
-			</div>
-		</section>
+		<UiHero
+			title="Anreise nach Giens"
+			subtitle="Tipps für eine entspannte Reise in den Süden."
+			src="/giens/hyeres.webp"
+			alt="Blick auf Hyères und das Meer" />
 
 		<!-- Quick Links -->
 		<section class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-screen-lg mx-auto px-4">

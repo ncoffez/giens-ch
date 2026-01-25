@@ -1,21 +1,11 @@
 <template>
 	<div class="gap-24 flex flex-col mb-20">
-		<section class="relative">
-			<div class="rounded-[2.5rem] w-full mx-auto overflow-clip shadow-2xl h-[60vh]">
-				<img
-					class="object-cover h-full w-full brightness-110 contrast-[90%] scale-105"
-					src="/giens/hauseingang_cropped.jpg"
-					alt="Einfahrt" />
-				<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-12">
-					<div class="text-white">
-						<h1 class="text-5xl md:text-7xl font-black mb-4 tracking-tighter">Willkommen im Beausoleil</h1>
-						<p class="text-xl md:text-2xl font-medium text-white/90">
-							Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren.
-						</p>
-					</div>
-				</div>
-			</div>
-		</section>
+		<UiHero
+			title="Willkommen im Beausoleil"
+			subtitle="Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
+			src="/giens/hauseingang_cropped.jpg"
+			alt="Einfahrt"
+			height="h-[60vh] min-h-[500px]" />
 
 		<section class="max-w-screen-xl mx-auto w-full px-4">
 			<UiTitle subtitle="Was uns auszeichnet" title="Wohlfühlen und Erleben" />

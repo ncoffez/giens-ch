@@ -47,20 +47,11 @@ const items = ref<TimelineItem[]>([
 
 <template>
 	<div class="space-y-24 mb-20">
-		<!-- Hero Section -->
-		<section class="relative h-[450px] w-full rounded-3xl overflow-clip shadow-2xl">
-			<img
-				src="/giens/giens-aerial.webp"
-				class="w-full h-full object-cover brightness-90 contrast-110"
-				alt="Luftaufnahme von Giens" />
-			<div
-				class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
-				<h1 class="text-4xl md:text-7xl font-black text-white mb-4 tracking-tight">Über uns</h1>
-				<p class="text-xl md:text-2xl text-white/90 max-w-2xl font-medium">
-					Eine lebendige Gemeinschaft im Herzen der Halbinsel Giens.
-				</p>
-			</div>
-		</section>
+		<UiHero
+			title="Über uns"
+			subtitle="Eine lebendige Gemeinschaft im Herzen der Halbinsel Giens."
+			src="/giens/giens-aerial.webp"
+			alt="Luftaufnahme von Giens" />
 
 		<!-- Introduction -->
 		<section class="max-w-screen-md mx-auto px-4 text-center">

@@ -1,7 +1,7 @@
 <template>
 	<div class="w-full space-y-12">
 		<!-- Hero Skeleton -->
-		<div class="relative w-full h-[50vh] md:h-[60vh] overflow-hidden rounded-[2.5rem]">
+		<div class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem]">
 			<USkeleton class="w-full h-full" />
 		</div>
 
