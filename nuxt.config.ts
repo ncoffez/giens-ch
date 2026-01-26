@@ -18,8 +18,8 @@ export default defineNuxtConfig({
 			gen: 2,
 			httpsOptions: {
 				region: "europe-west6",
-				maxInstances: 3,
-				cpu: "gcf_gen1",
+				maxInstances: 5,
+				cpu: "gcf_gen1"
 			},
 		},
 	},

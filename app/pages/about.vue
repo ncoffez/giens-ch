@@ -77,7 +77,7 @@ const items = ref<TimelineItem[]>([
 		<section class="max-w-screen-xl mx-auto px-4 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
 			<div
 				class="order-2 md:order-1 rounded-3xl overflow-clip shadow-2xl rotate-1 md:rotate-2 hover:rotate-0 transition-transform duration-500 aspect-video md:aspect-square">
-				<img src="/giens/schaukeln.jpeg" alt="Schaukeln im Lotissement" class="w-full h-full object-cover" />
+				<img src="/giens/giensschaukeln.webp" alt="Schaukeln im Lotissement" class="w-full h-full object-cover" />
 			</div>
 			<div class="order-1 md:order-2 space-y-4 md:space-y-6">
 				<UiTitle subtitle="Gemeinschaft" title="Das Leben im Lotissement" />

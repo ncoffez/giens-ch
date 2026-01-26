@@ -9,11 +9,11 @@
 </template>
 <script lang="ts" setup>
 const images = ref([
-	"/slides/porquerolle-1.jpg",
-	"/slides/hyeres-1.jpg",
-	"/slides/hyeres-2.jpg",
-	"/slides/porquerolle-2.jpg",
-	"/slides/kite-1.jpg",
+	"/slides/slidesporquerolle-1.webp",
+	"/slides/slideshyeres-1.webp",
+	"/slides/slideshyeres-2.webp",
+	"/slides/slidesporquerolle-2.webp",
+	"/slides/slideskite-1.webp",
 ]);
 </script>
 <style scoped></style>

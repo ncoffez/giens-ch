@@ -64,14 +64,14 @@
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<img
-						src="/giens/garten.jpeg"
+						src="/giens/giensgarten.webp"
 						alt="Gartenansicht"
 						width="400"
 						height="400"
 						loading="lazy"
 						class="rounded-3xl shadow-lg rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" />
 					<img
-						src="/giens/schaukeln.jpeg"
+						src="/giens/giensschaukeln.webp"
 						alt="Schaukeln"
 						width="400"
 						height="400"

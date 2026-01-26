@@ -23,6 +23,18 @@ useHead({
 			name: "viewport",
 			content: "width=device-width, initial-scale=1"
 		}
+	],
+	link: [
+		{
+			rel: "preload",
+			as: "image",
+			href: "/giens/hauseingang_cropped-1920w.webp",
+			fetchpriority: "high"
+		},
+		{
+			rel: "preconnect",
+			href: "https://giens-ch.web.app"
+		}
 	]
 });
 
