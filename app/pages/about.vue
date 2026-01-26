@@ -95,17 +95,17 @@ const items = ref<TimelineItem[]>([
 				<div class="flex gap-6 md:gap-8 pt-4 md:pt-6 justify-center md:justify-start">
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">22</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-400">Häuser</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Häuser</span>
 					</div>
 					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-gray-800"></div>
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">30+</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-400">Jahre</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Jahre</span>
 					</div>
 					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-gray-800"></div>
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">1</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-400">Spirit</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Spirit</span>
 					</div>
 				</div>
 			</div>

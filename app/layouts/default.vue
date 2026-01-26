@@ -35,6 +35,7 @@
 						color="neutral"
 						variant="ghost"
 						class="rounded-full"
+						:aria-label="isDark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'"
 						@click="isDark = !isDark" />
 					<div class="hidden lg:block">
 						<template v-if="!$currentUser">

@@ -2,8 +2,9 @@
 	<div id="news-entry" class="flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-12 gap-y-6 my-10 md:my-16 first:mt-5 items-center w-full">
 		<img
 			:src="imageUrl"
+			:alt="title"
+			loading="lazy"
 			class="md:w-56 w-full h-56 md:h-48 rounded-2xl md:rounded-xl aspect-[16/9] md:aspect-square object-cover"
-			alt=""
 			:class="index % 2 === 0 ? 'md:-rotate-2' : 'md:rotate-2'" />
 		<div class="flex flex-col items-start gap-3 md:gap-4 flex-1 w-full">
 			<NuxtLink :to="link" class="w-full">
@@ -11,7 +12,7 @@
 			</NuxtLink>
 			<p class="text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3 md:line-clamp-none">{{ subtitle }}</p>
 			<div class="flex flex-wrap items-center gap-3">
-				<h6 class="text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap">{{ date }}</h6>
+				<div class="text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap">{{ date }}</div>
 				<div class="flex flex-wrap gap-2">
 					<UBadge color="neutral" variant="subtle" v-for="label of labels" :key="label" size="sm" class="rounded-full px-2 font-bold">{{ label }}</UBadge>
 				</div>

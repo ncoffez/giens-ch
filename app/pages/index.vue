@@ -63,8 +63,20 @@
 					</div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<img src="/giens/garten.jpeg" class="rounded-3xl shadow-lg rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" alt="Gartenansicht" />
-					<img src="/giens/schaukeln.jpeg" class="rounded-3xl shadow-lg -rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover mt-4 md:mt-8" alt="Schaukeln" />
+					<img
+						src="/giens/garten.jpeg"
+						alt="Gartenansicht"
+						width="400"
+						height="400"
+						loading="lazy"
+						class="rounded-3xl shadow-lg rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" />
+					<img
+						src="/giens/schaukeln.jpeg"
+						alt="Schaukeln"
+						width="400"
+						height="400"
+						loading="lazy"
+						class="rounded-3xl shadow-lg -rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover mt-4 md:mt-8" />
 				</div>
 			</div>
 		</section>
