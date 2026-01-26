@@ -8,7 +8,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Install dependencies:** `npm install`
 - **Start development server:** `npm run dev`
 - **Build for production:** `npm run build`
-- **Deploy to Firebase:** `npm run deploy` (requires `FIREBASE_ADMIN_KEY` and `FIREBASE_FRONTEND_KEY` in `.env`)
+- **Deploy to Firebase:** `npm run deploy`. This script now uses `firebase deploy` with `predeploy` hooks in `firebase.json` that automatically handle `npm run build` and dependency staging in `.output/server/node_modules`.
 
 ### Testing & Linting
 - **Framework:** Vitest with `@nuxt/test-utils`.

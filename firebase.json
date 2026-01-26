@@ -2,6 +2,9 @@
   "functions": [
     {
       "source": ".output/server",
+      "predeploy": [
+        "npm run build"
+      ],
       "ignore": [
         ".git",
         "firebase-debug.log",
@@ -11,6 +14,9 @@
   ],
   "hosting": {
     "public": ".output/public",
+    "predeploy": [
+      "npm run build"
+    ],
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
