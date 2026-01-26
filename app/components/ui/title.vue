@@ -1,8 +1,8 @@
 <template>
-	<div class="flex flex-col items-start text-2xl mb-12">
-		<h2 id="subtitle" class="text-2xl font-">{{ subtitle }}</h2>
+	<div class="flex flex-col items-start mb-6 md:mb-12">
+		<h6 id="subtitle" class="text-sm md:text-base font-black uppercase tracking-widest text-gray-400 mb-2">{{ subtitle }}</h6>
 		<div
-			class="skip-ink md:text-7xl text-3xl font-bold leading-tight underline underline-offset-[-15%] md:decoration-[1.3rem] decoration-[.6rem] decoration-primary/30">
+			class="skip-ink text-3xl md:text-7xl font-black leading-tight underline underline-offset-[-15%] md:decoration-[1.3rem] decoration-[.6rem] decoration-primary/30 tracking-tighter">
 			{{ title }}
 		</div>
 	</div>

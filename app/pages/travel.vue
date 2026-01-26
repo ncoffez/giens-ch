@@ -6,7 +6,8 @@
 			title="Anreise nach Giens"
 			subtitle="Tipps für eine entspannte Reise in den Süden."
 			src="/giens/hyeres.webp"
-			alt="Blick auf Hyères und das Meer" />
+			alt="Blick auf Hyères und das Meer"
+			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<!-- Quick Links -->
 		<section class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-screen-lg mx-auto px-4">
@@ -19,12 +20,23 @@
 		<section id="mit-dem-auto" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Ab Bern via Autobahn" title="Mit dem Auto" />
 			<div class="grid md:grid-cols-2 gap-12 items-start mt-12">
-				<div class="space-y-6 text-lg text-gray-700 dark:text-gray-300">
+				<div class="space-y-8 text-lg text-gray-700 dark:text-gray-300">
 					<p>
 						Die Anreise mit dem Auto ab Bern ist für viele Bewohner des Lotissement Beausoleil eine bevorzugte Option. Die
 						Strecke führt hauptsächlich über Autobahnen und beträgt etwa 700 km. Die Fahrtzeit beträgt je nach Verkehr und
 						Pausen etwa 7 bis 8 Stunden.
 					</p>
+
+					<UButton
+						to="https://www.google.com/maps/dir/?api=1&destination=Lotissement+Beausoleil,+Hyeres"
+						target="_blank"
+						size="xl"
+						color="neutral"
+						class="rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
+						icon="i-lucide-map">
+						Route planen & Verkehrslage
+					</UButton>
+
 					<div
 						class="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-2xl border-l-8 border-primary shadow-sm flex gap-4">
 						<UIcon name="i-lucide-info" class="w-8 h-8 text-primary shrink-0" />
@@ -98,8 +110,8 @@
 				class="mt-12 bg-white dark:bg-gray-950 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-xl">
 				<div class="p-8 md:p-12">
 					<p class="text-xl mb-12 text-gray-700 dark:text-gray-300">
-						Die Anreise mit dem Zug ist eine bequeme Alternative. Die SBB und SNCF bieten hervorragende Verbindungen
-						an, oft mit nur zwei Umstiegen.
+						Die Anreise mit dem Zug ist eine bequeme Alternative. SNCF bietet hervorragende Verbindungen mit dem TGV
+						an, oft mit nur zwei Umstiegen ab der Schweiz.
 					</p>
 					<div class="grid md:grid-cols-3 gap-8 relative">
 						<div class="space-y-2 relative">
@@ -123,23 +135,25 @@
 					class="bg-neutral-900 dark:bg-black p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
 					<div class="flex items-center gap-4">
 						<div class="p-3 bg-white/10 rounded-xl">
-							<UIcon name="i-lucide-info" class="w-8 h-8 text-white" />
+							<UIcon name="i-lucide-bus" class="w-8 h-8 text-white" />
 						</div>
 						<div>
-							<span class="font-bold block text-lg">Transfer ab Hyères</span>
-							<span class="text-white/80">Bus Linie 67 (20 Min) oder Taxi (10 Min) nach Giens.</span>
+							<span class="font-bold block text-lg text-white">Transfer ab Hyères</span>
+							<span class="text-white/80">Bus <strong>Linie 67</strong> (Richtung Giens) oder Taxi.</span>
 						</div>
 					</div>
-					<UButton
-						to="https://www.sbb.ch"
-						target="_blank"
-						color="neutral"
-						variant="solid"
-						size="xl"
-						class="rounded-full px-8 bg-white text-neutral-900 hover:bg-gray-100 border-none"
-						icon="i-lucide-external-link"
-						>Fahrplan SBB</UButton
-					>
+					<div class="flex gap-4">
+						<UButton
+							to="https://www.reseaumistral.com/se-deplacer/horaires/ligne-67"
+							target="_blank"
+							color="neutral"
+							variant="solid"
+							size="xl"
+							class="rounded-full px-8 bg-white text-neutral-900 hover:bg-gray-100 border-none"
+							icon="i-lucide-bus-front"
+							>Bus Linie 67</UButton
+						>
+					</div>
 				</div>
 			</div>
 		</section>

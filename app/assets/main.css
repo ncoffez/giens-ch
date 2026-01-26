@@ -8,9 +8,28 @@
 
 html,
 body {
-	@apply light:bg-neutral-50;
+	background-color: var(--color-neutral-50);
+	-webkit-tap-highlight-color: transparent;
+	scroll-behavior: smooth;
+	scrollbar-gutter: stable;
+}
+
+.dark html,
+.dark body {
+	background-color: var(--color-black);
 }
 
 .skip-ink {
 	text-decoration-skip-ink: none;
+}
+
+/* App-like transitions */
+.page-enter-active,
+.page-leave-active {
+	transition: all 0.2s;
+}
+.page-enter-from,
+.page-leave-to {
+	opacity: 0;
+	filter: blur(1rem);
 }

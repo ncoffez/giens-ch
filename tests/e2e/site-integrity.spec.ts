@@ -1,0 +1,55 @@
+import { test, expect } from "@playwright/test";
+
+test.describe("Site Integrity", () => {
+	test("should load the home page", async ({ page }) => {
+		await page.goto("/");
+		await expect(page.locator("h1")).toContainText("Willkommen im Beausoleil");
+	});
+
+	test("should have no horizontal scrollbar on mobile", async ({ page, isMobile }) => {
+		if (!isMobile) return;
+		await page.goto("/");
+		const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+		const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+		expect(scrollWidth).toBe(clientWidth);
+	});
+
+	test("language switcher should not shift layout", async ({ page, isMobile }) => {
+		await page.goto("/");
+		
+		// Capture initial position of logo
+		const logo = page.locator("#logo");
+		const initialBox = await logo.boundingBox();
+		
+		// Open language switcher - be more specific to avoid devtools button
+		await page.locator("header").getByRole("button", { name: "DE", exact: true }).click();
+		
+		// Capture position after opening
+		const finalBox = await logo.boundingBox();
+		
+		expect(initialBox?.x).toBe(finalBox?.x);
+	});
+
+	test("bottom navigation should be visible on mobile", async ({ page, isMobile }) => {
+		if (!isMobile) return;
+		await page.goto("/");
+		const mobileNav = page.locator("nav.fixed.bottom-0");
+		await expect(mobileNav).toBeVisible();
+	});
+
+	test("should navigate to travel page and show Google Maps button", async ({ page, isMobile }) => {
+		await page.goto("/");
+		
+		if (isMobile) {
+			// Use the bottom nav specifically
+			await page.locator("nav.fixed.bottom-0").getByRole("link", { name: "News", exact: true }).click();
+			await page.goto("/travel");
+		} else {
+			await page.goto("/travel");
+		}
+		
+		const mapsButton = page.getByRole("link", { name: "Route planen" });
+		await expect(mapsButton).toBeVisible();
+		await expect(mapsButton).toHaveAttribute("href", /google\.com\/maps/);
+	});
+});

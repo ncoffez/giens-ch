@@ -1,7 +1,7 @@
 <template>
-	<div id="parent" class="flex justify-center h-fit py-8">
-		<div class="flex flex-row items-center justify-center lg:gap-8 gap-4 w-[140%] rounded-xl h-fit">
-			<div v-for="image of images" class="w-80 lg:aspect-[3/5] aspect-[1/3] rounded-xl overflow-clip rotate-3">
+	<div id="parent" class="flex justify-center h-fit py-8 overflow-hidden">
+		<div class="flex flex-row items-center justify-center lg:gap-8 gap-4 w-[140%] md:w-[110%] rounded-xl h-fit">
+			<div v-for="image of images" class="w-48 md:w-80 lg:aspect-[3/5] aspect-[3/4] rounded-xl overflow-clip rotate-2 md:rotate-3 first:hidden md:first:block last:hidden md:last:block">
 				<img :src="image" class="w-full h-full object-cover saturate-[70%] brightness-110 contrast-[90%]" />
 			</div>
 		</div>

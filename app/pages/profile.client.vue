@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: "is-logged-in" });
-const { $currentUser } = useNuxtApp();
+const { $currentUser, $isAdmin } = useNuxtApp();
 
 // In a real app, these would be fetched from a DB or calculated
 const stats = [
@@ -78,6 +78,18 @@ const accountDetails = computed(() => [
 							</div>
 						</template>
 						<div class="space-y-4">
+							<template v-if="$isAdmin">
+								<UButton
+									to="/admin"
+									block
+									size="lg"
+									color="primary"
+									variant="solid"
+									icon="i-lucide-settings"
+									label="Verwaltung"
+									class="shadow-md" />
+								<USeparator class="my-4" />
+							</template>
 							<UButton 
 								block 
 								size="lg"

@@ -1,7 +1,7 @@
 <template>
 	<div class="mx-auto md:px-8 px-4 min-h-screen flex flex-col">
 		<!-- Navigation Header -->
-		<header class="flex items-center justify-between py-6 max-w-screen-xl mx-auto w-full">
+		<header class="flex items-center justify-between py-4 md:py-6 max-w-screen-xl mx-auto w-full">
 			<div class="flex items-center gap-8">
 				<NuxtLink to="/">
 					<UiLogo class="m-0!" />
@@ -17,7 +17,7 @@
 			</div>
 
 			<ClientOnly>
-				<div class="flex items-center gap-3">
+				<div class="flex items-center gap-2 md:gap-3">
 					<!-- Language Switcher Placeholder -->
 					<UDropdownMenu
 						:items="languageItems"
@@ -25,7 +25,7 @@
 						<UButton
 							color="neutral"
 							variant="ghost"
-							class="rounded-full font-bold">
+							class="rounded-full font-bold px-2 md:px-3">
 							DE
 						</UButton>
 					</UDropdownMenu>
@@ -58,31 +58,15 @@
 					</div>
 				</div>
 			</ClientOnly>
-
-				<!-- Mobile Menu Trigger -->
-				<div class="lg:hidden">
-					<UDrawer direction="right" title="Navigation">
-						<UButton color="neutral" variant="ghost" icon="i-lucide-menu" size="xl" />
-						<template #body>
-							<div class="p-6 h-full flex flex-col">
-								<div class="flex items-center justify-between mb-8">
-									<UiLogo />
-								</div>
-								<div class="flex-1 overflow-y-auto space-y-6">
-									<UNavigationMenu :items="navigationItems" orientation="vertical" />
-									<USeparator />
-									<UNavigationMenu :items="userItems" orientation="vertical" />
-								</div>
-							</div>
-						</template>
-					</UDrawer>
-				</div>
-			</header>
+		</header>
 
 		<!-- Main Content -->
-		<main class="flex-1 my-6 mb-20 mx-auto w-full">
+		<main class="flex-1 my-4 md:my-6 mb-24 md:mb-20 mx-auto w-full max-w-screen-xl">
 			<slot />
 		</main>
+
+		<!-- Mobile Navigation -->
+		<UiMobileNav />
 
 		<!-- Footer -->
 		<footer class="py-12 border-t border-gray-100 dark:border-gray-800">
@@ -324,6 +308,9 @@ const userItems = computed(() => {
 @reference "@/assets/main.css";
 
 .router-link-active {
-	@apply text-primary;
+	color: var(--color-primary-600);
+}
+.dark .router-link-active {
+	color: var(--color-primary-400);
 }
 </style>

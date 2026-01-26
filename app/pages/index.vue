@@ -5,12 +5,12 @@
 			subtitle="Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
 			src="/giens/hauseingang_cropped.jpg"
 			alt="Einfahrt"
-			height="h-[60vh] min-h-[500px]" />
+			height="h-[50vh] md:h-[60vh] min-h-[350px] md:min-h-[500px]" />
 
 		<section class="max-w-screen-xl mx-auto w-full px-4">
 			<UiTitle subtitle="Was uns auszeichnet" title="Wohlfühlen und Erleben" />
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
-				<div class="p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-8 md:mt-12">
+				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-home" class="w-8 h-8" />
 					</div>
@@ -19,7 +19,7 @@
 						Jedes Haus verfügt über eine gedeckte Terrasse (Patio) und einen privaten Parkplatz direkt vor der Tür.
 					</p>
 				</div>
-				<div class="p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-stone-600 dark:text-stone-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-bike" class="w-8 h-8" />
 					</div>
@@ -28,7 +28,7 @@
 						Fahrräder, Spielzeug und eine Bibliothek (DE/FR) stehen allen Bewohnern zur freien Nutzung zur Verfügung.
 					</p>
 				</div>
-				<div class="p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-washing-machine" class="w-8 h-8" />
 					</div>
@@ -37,7 +37,7 @@
 						Zentrale Waschmaschinen und ein grosszügiger Bereich zum Wäschetrocknen im grünen Garten.
 					</p>
 				</div>
-				<div class="p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-green-600 dark:text-green-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-leaf" class="w-8 h-8" />
 					</div>
@@ -49,27 +49,27 @@
 			</div>
 		</section>
 
-		<section class="bg-gray-50 dark:bg-gray-900/50 py-24 rounded-[3rem] border border-gray-100 dark:border-gray-800 overflow-hidden relative shadow-sm">
-			<div class="max-w-screen-xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-				<div class="space-y-8">
-					<h2 class="text-4xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">Miteinander Gestalten</h2>
-					<p class="text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
+		<section class="bg-gray-50 dark:bg-gray-900/50 py-12 md:py-24 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 overflow-hidden relative shadow-sm">
+			<div class="max-w-screen-xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+				<div class="space-y-6 md:space-y-8 text-center md:text-left">
+					<h2 class="text-3xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">Miteinander Gestalten</h2>
+					<p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
 						Zweimal im Jahr treffen wir uns als Gemeinschaft, um die Siedlung zu pflegen und neue Projekte umzusetzen. Dieser Hands-on-Spirit macht das Beausoleil zu etwas Besonderem.
 					</p>
-					<div class="flex gap-4">
+					<div class="flex justify-center md:justify-start gap-4">
 						<UButton to="/about" size="xl" color="neutral" variant="outline" class="rounded-full px-8">
 							Mehr erfahren
 						</UButton>
 					</div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<img src="/giens/garten.jpeg" class="rounded-3xl shadow-lg rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" alt="Gartenansicht" />
-					<img src="/giens/schaukeln.jpeg" class="rounded-3xl shadow-lg -rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover mt-8" alt="Schaukeln" />
+					<img src="/giens/garten.jpeg" class="rounded-3xl shadow-lg rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" alt="Gartenansicht" />
+					<img src="/giens/schaukeln.jpeg" class="rounded-3xl shadow-lg -rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover mt-4 md:mt-8" alt="Schaukeln" />
 				</div>
 			</div>
 		</section>
 
-		<section class="space-y-12">
+		<section class="space-y-8 md:space-y-12">
 			<div class="max-w-screen-xl mx-auto px-4">
 				<UiTitle subtitle="Impressionen" title="Die Schönheit von Giens" />
 			</div>
@@ -77,7 +77,7 @@
 		</section>
 
 		<section id="news" class="max-w-screen-xl mx-auto px-4 w-full">
-			<div class="flex items-end justify-between mb-12">
+			<div class="flex items-end justify-between mb-8 md:mb-12">
 				<UiTitle subtitle="Was gerade läuft" title="Aktuelles" class="mb-0!" />
 				<UButton to="/news" variant="link" color="neutral" icon="i-lucide-arrow-right" trailing>Alle News</UButton>
 			</div>
