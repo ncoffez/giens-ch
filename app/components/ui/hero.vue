@@ -1,30 +1,21 @@
 <template>
-	<section
-		class="relative w-full overflow-hidden rounded-[2.5rem] shadow-2xl bg-gray-100 dark:bg-gray-800"
-		:class="[height || 'h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]']">
+	<section class="relative w-full overflow-hidden rounded-[2.5rem] shadow-2xl bg-gray-100 dark:bg-gray-800" :class="[height || 'h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]']">
 		<picture v-if="src" class="absolute inset-0">
-			<source
-				media="(max-width: 768px)"
-				:srcset="`${src.replace(/\.(jpg|jpeg)$/i, '')}-800w.webp`" />
-			<source
-				media="(max-width: 1200px)"
-				:srcset="`${src.replace(/\.(jpg|jpeg)$/i, '')}-1200w.webp`" />
+			<source :srcset="getResponsiveImage(src, 800)" media="(max-width: 768px)" />
+			<source :srcset="getResponsiveImage(src, 1200)" media="(max-width: 1200px)" />
 			<img
-				:src="`${src.replace(/\.(jpg|jpeg)$/i, '')}-1920w.webp`"
+				:src="getResponsiveImage(src, 1920)"
 				:alt="alt"
 				class="absolute inset-0 object-cover h-full w-full brightness-110 contrast-[90%] scale-100 md:scale-105"
 				loading="eager"
 				fetchpriority="high" />
 		</picture>
-		<div
-			class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6 md:p-12">
+		<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6 md:p-12">
 			<div class="text-white max-w-4xl">
 				<h1 class="text-3xl md:text-7xl font-black mb-2 md:mb-4 tracking-tighter leading-tight">
 					{{ title }}
 				</h1>
-				<p
-					v-if="subtitle"
-					class="text-lg md:text-2xl font-medium text-white/90 leading-snug max-w-2xl">
+				<p v-if="subtitle" class="text-lg md:text-2xl font-medium text-white/90 leading-snug max-w-2xl">
 					{{ subtitle }}
 				</p>
 			</div>
@@ -45,4 +36,9 @@ withDefaults(defineProps<Props>(), {
 	height: "h-[50vh] min-h-[400px]",
 	alt: "",
 });
+
+const getResponsiveImage = (src: string | undefined, width: number): string => {
+	if (!src) return "";
+	return src.replace(/\.(jpg|jpeg|webp)$/i, "") + `-${width}w.webp`;
+};
 </script>
