@@ -5,7 +5,7 @@
 			subtitle="Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
 			src="/giens/hauseingang_cropped.jpg"
 			alt="Einfahrt"
-			height="h-[50vh] md:h-[60vh] min-h-[350px] md:min-h-[500px]" />
+			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<section class="max-w-screen-xl mx-auto w-full px-4">
 			<UiTitle subtitle="Was uns auszeichnet" title="Wohlfühlen und Erleben" />

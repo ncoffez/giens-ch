@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Article } from "~/utils/article";
+import type { Article } from "~/types";
 
 const route = useRoute();
 const router = useRouter();

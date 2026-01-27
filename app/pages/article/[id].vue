@@ -70,7 +70,7 @@
 	</div>
 </template>
 <script lang="ts" setup>
-import type { NewsArticle } from "~/composables/newsArticle";
+import type { Article } from "~/types";
 
 const route = useRoute();
 const id = route.params.id;
@@ -80,7 +80,7 @@ const {
 	data: article,
 	error,
 	status,
-} = await useLazyFetch<NewsArticle>(`/api/getArticle`, {
+} = await useLazyFetch<Article>(`/api/getArticle`, {
 	method: "post",
 	body: { id },
 	headers: computed(() => {

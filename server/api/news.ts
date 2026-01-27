@@ -1,5 +1,5 @@
 import { db } from "../useFirebaseAdmin";
-import { Article } from "../utils/article";
+import { Article } from "../../types";
 import { getUserPermission } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {

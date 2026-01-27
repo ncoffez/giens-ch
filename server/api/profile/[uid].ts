@@ -1,5 +1,5 @@
 import { auth, db } from "../../useFirebaseAdmin";
-import { Article } from "../../utils/article";
+import { Article } from "../../../types";
 
 export default defineEventHandler(async (event) => {
 	const params = event.context.params as { uid?: string };

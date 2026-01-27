@@ -2,32 +2,20 @@
 import { watch } from 'vue';
 
 const toast = useToast();
-const { $auth, $currentUser, $isAdmin, $claims, $authInitialized } = useNuxtApp();
+const { checkAdminAccess, getAuthHeaders, isCheckingAuth, authError } = useAdminAuth();
 
 const { data: users, status, refresh } = useAsyncData("admin-users-list", async () => {
-	// Wait for auth to be initialized at all
-	if (!$authInitialized.value) {
-		console.log("AdminUsers: Waiting for auth initialization...");
-		return [];
-	}
-
-	if (!$isAdmin.value) {
-		console.warn("AdminUsers: Access denied - not an admin");
+	const hasAccess = await checkAdminAccess();
+	if (!hasAccess) {
 		return [];
 	}
 	
 	try {
-		const user = $auth.currentUser;
-		if (!user) {
-			console.warn("AdminUsers: No current user found in auth");
-			return [];
-		}
-		
-		const token = await user.getIdToken(true);
+		const headers = await getAuthHeaders();
 		console.log("AdminUsers: Fetching with token...");
 		
 		const response = await $fetch<any[]>("/api/users", {
-			headers: { Authorization: `Bearer ${token}` }
+			headers
 		});
 		
 		console.log("AdminUsers: API Response received", response?.length, "users");
@@ -38,7 +26,7 @@ const { data: users, status, refresh } = useAsyncData("admin-users-list", async 
 	}
 }, {
 	lazy: true,
-	watch: [$isAdmin, $currentUser, $authInitialized],
+	watch: [authError],
 	immediate: true
 });
 
@@ -70,20 +58,13 @@ const newUser = ref({
 });
 
 const columns = [
-	{ id: "user", header: "Benutzer" },
-	{ id: "roles", header: "Rollen" },
-	{ accessorKey: "disabled", id: "status", header: "Status" },
-	{ id: "actions", header: "" }
-];
+		{ id: "user", header: "Benutzer" },
+		{ id: "roles", header: "Rollen" },
+		{ accessorKey: "disabled", id: "status", header: "Status" },
+		{ id: "actions", header: "" }
+	];
 
-async function getAuthHeaders() {
-	const user = $auth.currentUser;
-	if (!user) return {};
-	const token = await user.getIdToken();
-	return { Authorization: `Bearer ${token}` };
-}
-
-async function handleAction(action: string, user: any) {
+	async function handleAction(action: string, user: any) {
 	isPending.value = true;
 	try {
 		const headers = await getAuthHeaders();
