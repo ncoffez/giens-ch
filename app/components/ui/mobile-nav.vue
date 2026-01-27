@@ -6,7 +6,7 @@
 				:key="item.to"
 				:to="item.to"
 				class="flex flex-col items-center justify-center flex-1 gap-1 text-gray-500 dark:text-gray-400 transition-colors duration-200"
-				active-class="text-primary-600 dark:text-primary-400">
+				:class="{ 'text-primary-600 dark:text-primary-400': item.to === '/' ? $route.path === '/' : $route.path.startsWith(item.to) }">
 				<UIcon :name="item.icon" class="w-6 h-6" />
 				<span class="text-[10px] font-bold uppercase tracking-wider">{{ item.label }}</span>
 			</NuxtLink>

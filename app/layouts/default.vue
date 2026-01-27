@@ -81,6 +81,7 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const route = useRoute();
 const { $currentUser, $isAdmin, $isOwner, $isPublisher, $isReader } = useNuxtApp();
 const colorMode = useColorMode();
 
@@ -108,15 +109,17 @@ const languageItems = [
 	],
 ];
 
-const publicNavigationItems: NavigationMenuItem[] = [
+const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 	{
 		label: "Home",
 		icon: "i-lucide-house",
 		to: "/",
+		active: route.path === "/",
 	},
 	{
 		label: "Aktuelles",
 		icon: "i-lucide-newspaper",
+		active: route.path.startsWith("/news"),
 		children: [
 			{
 				label: "News Feed",
@@ -141,6 +144,7 @@ const publicNavigationItems: NavigationMenuItem[] = [
 	{
 		label: "Siedlung",
 		icon: "i-lucide-map",
+		active: route.path === "/travel" || route.path === "/about",
 		children: [
 			{
 				label: "Anreise",
@@ -156,7 +160,7 @@ const publicNavigationItems: NavigationMenuItem[] = [
 			},
 		],
 	},
-];
+]);
 
 const navigationItems = computed<NavigationMenuItem[]>(() => {
 	const items: NavigationMenuItem[] = [
@@ -164,15 +168,18 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			label: "Home",
 			icon: "i-lucide-house",
 			to: "/",
+			active: route.path === "/",
 		},
 		{
 			label: "News",
 			icon: "i-lucide-newspaper",
 			to: "/news",
+			active: route.path.startsWith("/news"),
 		},
 		{
 			label: "Siedlung",
 			icon: "i-lucide-map",
+			active: route.path === "/travel" || route.path === "/about",
 			children: [
 				{
 					label: "Anreise",

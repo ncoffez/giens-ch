@@ -6,8 +6,10 @@ const filters = defineModel<{
 	dateRange: string;
 }>({ required: true });
 
-const { $isReader } = useNuxtApp();
+const { $isReader, $isPublisher } = useNuxtApp();
 const nuxtApp = useNuxtApp();
+
+const isOpen = ref(false);
 
 const { data: labels } = await useFetch<any[]>("/api/labels", {
 	key: "labels-list",
@@ -27,7 +29,7 @@ const iconMap: Record<string, string> = {
 	'all': 'i-lucide-layout-grid'
 };
 
-const availableTags = computed(() => {
+const categoryOptions = computed(() => {
 	if (!labels.value) return [];
 	
 	const items = labels.value
@@ -39,7 +41,7 @@ const availableTags = computed(() => {
 		}));
 
 	return [
-		{ id: "all", label: "Alle", icon: iconMap['all'] },
+		{ id: "all", label: "Alle Kategorien", icon: iconMap['all'] },
 		...items
 	];
 });
@@ -60,84 +62,133 @@ const authorOptions = computed(() => [
 	{ id: 'all', label: 'Alle Autoren' },
 	...(authors.value || []).map(a => ({ id: a.id, label: a.name }))
 ]);
+
+const hasActiveFilters = computed(() => {
+	return filters.value.tag !== 'all' || filters.value.author !== 'all' || filters.value.dateRange !== 'all';
+});
+
+const activeCategoryLabel = computed(() => {
+	return categoryOptions.value.find(c => c.id === filters.value.tag)?.label || 'Kategorie';
+});
 </script>
 
 <template>
-	<div class="space-y-6 mb-12">
-		<!-- Search Bar -->
-		<div class="relative max-w-2xl mx-auto">
-			<UInput
-				v-model="filters.search"
-				icon="i-lucide-search"
-				size="xl"
-				placeholder="Suchen nach Titeln, Inhalten oder Autoren..."
-				class="w-full"
-				:ui="{ 
-					rounded: 'rounded-2xl',
-					base: 'bg-white dark:bg-gray-900/50 shadow-sm border-gray-100 dark:border-gray-800'
-				}"
-			/>
-		</div>
-
-		<!-- Category Pills -->
-		<div class="flex flex-wrap justify-center gap-2">
-			<button
-				v-for="tag in availableTags"
-				:key="tag.id"
-				@click="filters.tag = tag.id"
-				class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 border"
-				:class="[
-					filters.tag === tag.id 
-						? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105' 
-						: 'bg-white dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-800 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-gray-800'
-				]"
-			>
-				<UIcon :name="tag.icon" class="w-4 h-4" />
-				<span>{{ tag.label }}</span>
-			</button>
-		</div>
-
-		<!-- Secondary Filters -->
-		<div class="flex flex-wrap justify-center items-center gap-4 pt-2">
-			<div class="flex items-center gap-2">
-				<UIcon name="i-lucide-calendar" class="text-gray-400 w-4 h-4" />
-				<USelect
-					v-model="filters.dateRange"
-					:items="dateOptions"
-					value-key="id"
-					label-key="label"
-					variant="ghost"
-					color="neutral"
-					class="font-bold text-sm"
+	<div class="space-y-4 mb-8">
+		<!-- Main Search Row -->
+		<div class="flex items-center gap-2">
+			<div class="relative flex-1">
+				<UInput
+					v-model="filters.search"
+					icon="i-lucide-search"
+					size="xl"
+					placeholder="Suchen nach Titeln, Inhalten oder Autoren..."
+					class="w-full"
+					:ui="{ 
+						rounded: 'rounded-2xl',
+						base: 'bg-white dark:bg-gray-950/50 shadow-sm border-gray-100 dark:border-gray-800 focus:ring-primary-500/50'
+					}"
 				/>
 			</div>
-
-			<div class="w-px h-4 bg-gray-200 dark:bg-gray-800"></div>
-
-			<div class="flex items-center gap-2">
-				<UIcon name="i-lucide-user" class="text-gray-400 w-4 h-4" />
-				<USelect
-					v-model="filters.author"
-					:items="authorOptions"
-					value-key="id"
-					label-key="label"
-					variant="ghost"
-					color="neutral"
-					class="font-bold text-sm"
-				/>
-			</div>
-
 			<UButton
-				v-if="filters.search || filters.tag !== 'all' || filters.author !== 'all' || filters.dateRange !== 'all'"
-				variant="link"
-				color="error"
-				size="sm"
-				icon="i-lucide-x"
-				class="font-bold"
-				@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
+				v-if="$isPublisher"
+				to="/news/new"
+				color="primary"
+				variant="soft"
+				size="xl"
+				class="rounded-2xl px-4"
+				icon="i-lucide-plus"
 			>
-				Zurücksetzen
+				<span class="hidden lg:inline font-bold">Neu</span>
+			</UButton>
+			<UButton
+				:color="hasActiveFilters || isOpen ? 'primary' : 'neutral'"
+				:variant="hasActiveFilters || isOpen ? 'solid' : 'ghost'"
+				size="xl"
+				class="rounded-2xl px-4"
+				@click="isOpen = !isOpen"
+			>
+				<template #leading>
+					<UIcon :name="isOpen ? 'i-lucide-chevron-up' : 'i-lucide-list-filter'" class="w-5 h-5" />
+				</template>
+				<span class="hidden md:inline font-bold">Filter</span>
+				<template #trailing v-if="hasActiveFilters && !isOpen">
+					<span class="flex h-2 w-2 rounded-full bg-white animate-pulse"></span>
+				</template>
 			</UButton>
 		</div>
+
+		<!-- Expandable Filter Drawer -->
+		<UCollapsible v-model:open="isOpen">
+			<div class="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-inner space-y-6">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<!-- Category Select -->
+					<div class="space-y-2">
+						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Kategorie</label>
+						<USelectMenu
+							v-model="filters.tag"
+							:items="categoryOptions"
+							value-key="id"
+							label-key="label"
+							searchable
+							placeholder="Kategorie wählen..."
+							size="lg"
+							class="w-full"
+							:ui="{ rounded: 'rounded-xl' }"
+						>
+							<template #leading v-if="filters.tag !== 'all'">
+								<UIcon :name="categoryOptions.find(c => c.id === filters.tag)?.icon || 'i-lucide-tag'" class="w-4 h-4" />
+							</template>
+						</USelectMenu>
+					</div>
+
+					<!-- Date Select -->
+					<div class="space-y-2">
+						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Zeitraum</label>
+						<USelectMenu
+							v-model="filters.dateRange"
+							:items="dateOptions"
+							value-key="id"
+							label-key="label"
+							size="lg"
+							class="w-full"
+							:ui="{ rounded: 'rounded-xl' }"
+						/>
+					</div>
+
+					<!-- Author Select -->
+					<div class="space-y-2">
+						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Autor</label>
+						<USelectMenu
+							v-model="filters.author"
+							:items="authorOptions"
+							value-key="id"
+							label-key="label"
+							searchable
+							size="lg"
+							class="w-full"
+							:ui="{ rounded: 'rounded-xl' }"
+						/>
+					</div>
+				</div>
+
+				<div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800/50">
+					<div class="flex items-center gap-2 text-xs text-gray-500 font-medium italic">
+						<UIcon name="i-lucide-info" class="w-3.5 h-3.5" />
+						Filtern Sie nach Kategorien, Autoren oder Zeiträumen.
+					</div>
+					<UButton
+						v-if="hasActiveFilters || filters.search"
+						variant="ghost"
+						color="error"
+						size="sm"
+						icon="i-lucide-x"
+						class="font-black uppercase tracking-tighter"
+						@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
+					>
+						Alles Zurücksetzen
+					</UButton>
+				</div>
+			</div>
+		</UCollapsible>
 	</div>
 </template>

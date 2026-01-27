@@ -1,22 +1,6 @@
 <template>
-	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4">
-		<div class="flex flex-col gap-4 mb-8 pt-4">
-			<div class="flex justify-between items-center">
-				<h1 class="text-3xl font-black tracking-tight">Aktuelles</h1>
-				<ClientOnly>
-					<UButton
-						v-if="$isPublisher"
-						to="/news/new"
-						label="Neuer Artikel"
-						icon="i-lucide-plus"
-						color="primary"
-						size="lg"
-						class="rounded-full shadow-lg" />
-				</ClientOnly>
-			</div>
-			
-			<UiNewsFilter v-model="filterState" />
-		</div>
+	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4 mt-4">
+		<UiNewsFilter v-model="filterState" />
 
 		<ClientOnly>
 			<div v-if="isAuthorized" key="authorized-view">
