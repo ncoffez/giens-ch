@@ -15,8 +15,24 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Run all tests:** `npm run test:run`
 - **Run a single test:** `npx vitest run tests/integration/home.test.ts`
 - **STRICT MANDATE:** **Always** run the full test suite (`npm run test:run`) after any build step or significant refactor. Do not commit or declare a task complete unless all tests are green.
-- **Current Status:** A minimal regression suite exists in `tests/integration/`. 
+- **Current Status:** A minimal regression suite exists in `tests/integration/`.
 - **Guideline:** Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
+
+### Coverage Requirements
+- **Run coverage report:** `npm run test:coverage`
+- **Coverage thresholds (from vitest.config.ts):**
+  - **Statements:** 80%
+  - **Lines:** 80%
+  - **Functions:** 80%
+  - **Branches:** 75%
+- **STRICT MANDATE:** **Always** verify coverage after completing any task. Coverage must meet/expect thresholds before declaring work complete.
+  - If coverage decreases for any area, add tests to restore coverage
+  - Coverage reports available at `coverage/lcov-report/index.html`
+  - Some code types (auth plugins, navigation handlers) are inherently hard to test - focus on components and utilities first
+- **Test types and impact:**
+  - **Unit/Logic tests:** Validate patterns but may not execute actual code (no coverage impact)
+  - **Integration tests:** Mount components and verify they work well together (helps coverage)
+  - **E2E tests:** Validate real workflows through Playwright (helps quality but not Vitest coverage)
 
 ---
 
@@ -124,8 +140,10 @@ This document serves as a guide for agentic coding agents operating in this repo
 2. **Plan:** Identify which part of the Nuxt lifecycle your change affects (Client vs. Server vs. Plugin).
 3. **Implement:** Follow the Tab-indentation and Double-quote rules strictly.
 4. **Verify:** Use `npm run dev` to verify changes if a prevtestiew environment is available.
-5. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
-6. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
+5. **Test:** Run `npm run test:run` to ensure all tests pass. DO NOT continue if any test fails.
+6. **Coverage:** Run `npm run test:coverage` and verify all thresholds (Statements 80%, Lines 80%, Functions 80%, Branches 75%) are met. If not, add tests to restore coverage.
+7. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
+8. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
 
 ---
 
