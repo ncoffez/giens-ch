@@ -1,10 +1,15 @@
-import { db } from "../../useFirebaseAdmin";
+import { db, auth } from "../../useFirebaseAdmin";
 
 export default defineEventHandler(async (event) => {
-	// Only allow admins to run this, or at least check for a secret
-	// For now, let's just make it work as requested.
-	
 	try {
+		// Fetch actual users from the site
+		const usersResult = await auth.listUsers(50);
+		const users = usersResult.users.filter(u => !u.disabled);
+		
+		if (users.length === 0) {
+			throw new Error("No active users found to assign as authors.");
+		}
+
 		const articlesRef = db.collection("articles");
 		const snapshot = await articlesRef.get();
 		
@@ -18,19 +23,27 @@ export default defineEventHandler(async (event) => {
 		const batch = db.batch();
 		
 		snapshot.forEach((doc) => {
+			// Pick a random user
+			const randomUser = users[Math.floor(Math.random() * users.length)];
+			if (!randomUser) return;
+
 			const randomTime = startTime + Math.random() * (endTime - startTime);
 			const randomDate = new Date(randomTime).toISOString();
 			
 			batch.update(doc.ref, {
 				published: randomDate,
-				author: "Giens System",
-				authorUid: "system"
+				author: randomUser.displayName || randomUser.email || "Unbekannter Bewohner",
+				authorUid: randomUser.uid
 			});
 		});
 		
 		await batch.commit();
 		
-		return { success: true, message: `Updated ${snapshot.size} articles.` };
+		return { 
+			success: true, 
+			message: `Updated ${snapshot.size} articles.`,
+			assignedAuthors: users.map(u => u.displayName || u.email)
+		};
 	} catch (e: any) {
 		return { success: false, error: e.message };
 	}

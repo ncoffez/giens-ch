@@ -4,27 +4,45 @@ import { getUserPermission } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const { tag, quantity, search, author, dateRange } = await readBody(event);
+		const body = await readBody(event);
+		const { tag, quantity, search, author, dateRange } = body;
 		const permission = await getUserPermission(event);
-		console.log(`Received request for news with permission (verified): ${permission}, tag: ${tag}, quantity: ${quantity}, search: ${search}`);
+		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}`);
 
 		if (isNaN(quantity)) throw new Error(`quantity must be a number.`);
 		if (quantity < 1) throw new Error(`quantity must be greater than 1.`);
 
 		// Optimization: Basic ordering server-side
-		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(100).get();
+		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(150).get();
 		const news: Article[] = [];
 		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() } as Article));
 
 		const labels = await $fetch("/api/labels");
 		let latestNews = filterByPermission(permission, news, labels as any[]);
 		
-		if (tag) latestNews = filterByTag(tag, latestNews);
-		if (search) latestNews = filterBySearch(search, latestNews);
-		if (author) latestNews = filterByAuthor(author, latestNews);
-		if (dateRange) latestNews = filterByDateRange(dateRange, latestNews);
+		console.log(`Filtering ${latestNews.length} articles by permission`);
 
-		console.log(`Found ${latestNews.length} matching articles.`);
+		if (tag && tag !== 'all') {
+			latestNews = filterByTag(tag, latestNews);
+			console.log(`After tag (${tag}) filter: ${latestNews.length}`);
+		}
+		
+		if (search && search.trim()) {
+			latestNews = filterBySearch(search, latestNews);
+			console.log(`After search (${search}) filter: ${latestNews.length}`);
+		}
+		
+		if (author && author !== 'all') {
+			latestNews = filterByAuthor(author, latestNews);
+			console.log(`After author (${author}) filter: ${latestNews.length}`);
+		}
+		
+		if (dateRange && dateRange !== 'all') {
+			latestNews = filterByDateRange(dateRange, latestNews);
+			console.log(`After dateRange (${dateRange}) filter: ${latestNews.length}`);
+		}
+
+		console.log(`Final count: ${latestNews.length} matching articles.`);
 
 		latestNews = latestNews.slice(0, quantity);
 		return latestNews;
@@ -46,39 +64,61 @@ function filterByTag(tag: string, articles: Article[]) {
 }
 
 function filterBySearch(search: string, articles: Article[]) {
-	const query = search.toLowerCase();
-	return articles.filter((article) => 
-		article.title.toLowerCase().includes(query) || 
-		article.intro.toLowerCase().includes(query) ||
-		(article.author || '').toLowerCase().includes(query)
-	);
+	const query = search.toLowerCase().trim();
+	if (!query) return articles;
+	
+	return articles.filter((article) => {
+		const title = (article.title || "").toLowerCase();
+		const intro = (article.intro || "").toLowerCase();
+		const author = (article.author || "").toLowerCase();
+		const body = (article.body || "").toLowerCase(); // Search in body too for better results
+		
+		return title.includes(query) || 
+			   intro.includes(query) || 
+			   author.includes(query) ||
+			   body.includes(query);
+	});
 }
 
 function filterByAuthor(author: string, articles: Article[]) {
 	if (author === 'all') return articles;
-	return articles.filter((article) => article.authorUid === author || article.author === author);
+	return articles.filter((article) => {
+		return article.authorUid === author || article.author === author;
+	});
 }
 
 function filterByDateRange(range: string, articles: Article[]) {
+	if (range === 'all') return articles;
+	
 	const now = new Date();
 	let startDate: Date;
 
-	switch (range) {
-		case 'this-month':
-			startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-			break;
-		case 'last-6-months':
-			startDate = new Date();
-			startDate.setMonth(now.getMonth() - 6);
-			break;
-		case 'this-year':
-			startDate = new Date(now.getFullYear(), 0, 1);
-			break;
-		default:
-			return articles;
-	}
+	try {
+		switch (range) {
+			case 'this-month':
+				startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+				break;
+			case 'last-6-months':
+				startDate = new Date();
+				startDate.setMonth(now.getMonth() - 6);
+				break;
+			case 'this-year':
+				startDate = new Date(now.getFullYear(), 0, 1);
+				break;
+			default:
+				return articles;
+		}
 
-	return articles.filter((article) => new Date(article.published) >= startDate);
+		const startTime = startDate.getTime();
+		return articles.filter((article) => {
+			if (!article.published) return false;
+			const pubDate = new Date(article.published).getTime();
+			return !isNaN(pubDate) && pubDate >= startTime;
+		});
+	} catch (e) {
+		console.error("Error in filterByDateRange:", e);
+		return articles;
+	}
 }
 
 function sortByDate(articles: Article[]) {

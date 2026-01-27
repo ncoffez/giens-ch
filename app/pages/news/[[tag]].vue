@@ -77,14 +77,16 @@ watch(() => filterState.value.tag, (newTag) => {
 	const currentTag = route.params.tag || 'all';
 	if (newTag === currentTag) return;
 
+	// Use replace to avoid filling history with every filter change
 	if (newTag === 'all') {
-		navigateTo('/news');
+		navigateTo('/news', { replace: true });
 	} else {
-		navigateTo(`/news/${newTag}`);
+		navigateTo(`/news/${newTag}`, { replace: true });
 	}
 });
 
-// Sync filter with URL tag
+// Sync filter with URL tag (only if different to avoid loops)
+// Remove immediate: true to avoid setup-time loops
 watch(() => route.params.tag, (newTag) => {
 	const normalizedTag = (newTag as string) || 'all';
 	if (filterState.value.tag !== normalizedTag) {
@@ -95,9 +97,8 @@ watch(() => route.params.tag, (newTag) => {
 // Create a unique key based on filters and auth status
 const cacheKey = computed(() => {
 	const authStatus = $token.value ? "auth" : "pub";
-	const testId = import.meta.test ? Math.random().toString() : "";
 	const filterPart = `${filterState.value.search}-${filterState.value.tag}-${filterState.value.author}-${filterState.value.dateRange}`;
-	return `news-list-${filterPart}-${authStatus}${testId}`;
+	return `news-list-${filterPart}-${authStatus}`;
 });
 
 // Fetch labels to determine if tag is private
@@ -125,10 +126,10 @@ const {
 	data: news,
 	error,
 	status,
-} = await useFetch<Article[]>("/api/news", {
+	refresh
+} = await useFetch<Article[]>(() => "/api/news", {
 	key: cacheKey.value,
 	method: "post",
-	watch: [filterState],
 	body: computed(() => ({ 
 		quantity: 20, 
 		tag: filterState.value.tag,
@@ -140,7 +141,9 @@ const {
 		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
 	}),
 	getCachedData(key) {
-		if (import.meta.test) return;
+		// Disable caching in tests to avoid isolation issues
+		if (import.meta.test || (process as any).test || (process as any).env?.NODE_ENV === 'test') return;
+		
 		const cached = nuxtApp.payload.data[key] || nuxtApp.static.data[key];
 		if (!cached) return;
 
@@ -158,6 +161,13 @@ const {
 	},
 	lazy: true,
 });
+
+// Explicitly watch filters to trigger refresh
+// This is more robust than relying on useFetch's internal watch
+watch(filterState, () => {
+	console.log('Filter state changed, refreshing news...');
+	refresh();
+}, { deep: true });
 </script>
 
 <style scoped></style>
