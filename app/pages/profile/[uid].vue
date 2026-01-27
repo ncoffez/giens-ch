@@ -12,8 +12,10 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 		</div>
 		
 		<div v-else-if="error" class="text-center py-20">
-			<h1 class="text-2xl font-bold mb-4">Benutzer nicht gefunden</h1>
-			<UButton to="/news" color="neutral" variant="ghost">Zurück zur Übersicht</UButton>
+			<UIcon name="i-lucide-user-x" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+			<h1 class="text-2xl font-bold mb-2">Benutzer nicht gefunden</h1>
+			<p class="text-gray-500 mb-6 max-w-sm mx-auto">{{ error.message || 'Das angeforderte Profil existiert nicht oder ist nicht öffentlich zugänglich.' }}</p>
+			<UButton to="/news" color="neutral" variant="ghost" icon="i-lucide-arrow-left">Zurück zur Übersicht</UButton>
 		</div>
 
 		<div v-else-if="profile" class="space-y-16">
@@ -24,6 +26,10 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 					:alt="profile.displayName" 
 					size="xl" 
 					class="w-32 h-32 ring-4 ring-primary/10 shadow-xl"
+					:ui="{ 
+						rounded: 'rounded-full',
+						text: 'text-3xl font-black'
+					}"
 				/>
 				<div>
 					<h1 class="text-4xl font-black tracking-tight">{{ profile.displayName }}</h1>

@@ -17,6 +17,16 @@ const { data: labels } = await useFetch<any[]>("/api/labels", {
 	},
 });
 
+const iconMap: Record<string, string> = {
+	'association': 'i-lucide-building',
+	'news': 'i-lucide-megaphone',
+	'dokumente': 'i-lucide-file-text',
+	'photos': 'i-lucide-camera',
+	'travaux': 'i-lucide-hard-hat',
+	'events': 'i-lucide-calendar',
+	'all': 'i-lucide-layout-grid'
+};
+
 const availableTags = computed(() => {
 	if (!labels.value) return [];
 	
@@ -25,10 +35,11 @@ const availableTags = computed(() => {
 		.map(l => ({
 			id: l.id,
 			label: l.title || l.id.charAt(0).toUpperCase() + l.id.slice(1),
+			icon: iconMap[l.id.toLowerCase()] || 'i-lucide-tag'
 		}));
 
 	return [
-		{ id: "all", label: "Alle Kategorien" },
+		{ id: "all", label: "Alle", icon: iconMap['all'] },
 		...items
 	];
 });
@@ -40,8 +51,6 @@ const dateOptions = [
 	{ id: 'this-year', label: 'Dieses Jahr' },
 ];
 
-// However, the user specifically asked for an author filter.
-// Let's assume we can get authors from the current articles or a specific endpoint.
 const { data: authors } = await useFetch<{id: string, name: string}[]>("/api/authors", {
 	key: (import.meta.test ? Math.random().toString() : "authors-list"),
 	default: () => []
@@ -54,61 +63,80 @@ const authorOptions = computed(() => [
 </script>
 
 <template>
-	<div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm mb-8">
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-			<!-- Search -->
-			<UFormField label="Suche">
-				<UInput
-					v-model="filters.search"
-					icon="i-lucide-search"
-					placeholder="Titel, Inhalt oder Autor..."
-					class="w-full"
-				/>
-			</UFormField>
+	<div class="space-y-6 mb-12">
+		<!-- Search Bar -->
+		<div class="relative max-w-2xl mx-auto">
+			<UInput
+				v-model="filters.search"
+				icon="i-lucide-search"
+				size="xl"
+				placeholder="Suchen nach Titeln, Inhalten oder Autoren..."
+				class="w-full"
+				:ui="{ 
+					rounded: 'rounded-2xl',
+					base: 'bg-white dark:bg-gray-900/50 shadow-sm border-gray-100 dark:border-gray-800'
+				}"
+			/>
+		</div>
 
-			<!-- Tags -->
-			<UFormField label="Kategorie">
-				<USelect
-					v-model="filters.tag"
-					:items="availableTags"
-					value-key="id"
-					label-key="label"
-					class="w-full"
-				/>
-			</UFormField>
+		<!-- Category Pills -->
+		<div class="flex flex-wrap justify-center gap-2">
+			<button
+				v-for="tag in availableTags"
+				:key="tag.id"
+				@click="filters.tag = tag.id"
+				class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 border"
+				:class="[
+					filters.tag === tag.id 
+						? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105' 
+						: 'bg-white dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-800 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-gray-800'
+				]"
+			>
+				<UIcon :name="tag.icon" class="w-4 h-4" />
+				<span>{{ tag.label }}</span>
+			</button>
+		</div>
 
-			<!-- Date Range -->
-			<UFormField label="Zeitraum">
+		<!-- Secondary Filters -->
+		<div class="flex flex-wrap justify-center items-center gap-4 pt-2">
+			<div class="flex items-center gap-2">
+				<UIcon name="i-lucide-calendar" class="text-gray-400 w-4 h-4" />
 				<USelect
 					v-model="filters.dateRange"
 					:items="dateOptions"
 					value-key="id"
 					label-key="label"
-					class="w-full"
+					variant="ghost"
+					color="neutral"
+					class="font-bold text-sm"
 				/>
-			</UFormField>
+			</div>
 
-			<!-- Author -->
-			<UFormField label="Autor">
+			<div class="w-px h-4 bg-gray-200 dark:bg-gray-800"></div>
+
+			<div class="flex items-center gap-2">
+				<UIcon name="i-lucide-user" class="text-gray-400 w-4 h-4" />
 				<USelect
 					v-model="filters.author"
 					:items="authorOptions"
 					value-key="id"
 					label-key="label"
-					class="w-full"
+					variant="ghost"
+					color="neutral"
+					class="font-bold text-sm"
 				/>
-			</UFormField>
-		</div>
-		
-		<div class="flex justify-end mt-4" v-if="filters.search || filters.tag !== 'all' || filters.author !== 'all' || filters.dateRange !== 'all'">
+			</div>
+
 			<UButton
-				variant="ghost"
-				color="neutral"
+				v-if="filters.search || filters.tag !== 'all' || filters.author !== 'all' || filters.dateRange !== 'all'"
+				variant="link"
+				color="error"
 				size="sm"
 				icon="i-lucide-x"
+				class="font-bold"
 				@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
 			>
-				Filter zurücksetzen
+				Zurücksetzen
 			</UButton>
 		</div>
 	</div>

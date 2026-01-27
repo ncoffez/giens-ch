@@ -22,26 +22,51 @@
 					<h1 class="text-2xl font-bold">{{ error.statusCode }} - {{ error.name }}</h1>
 					<p class="text-neutral-500">{{ error.message }}</p>
 				</div>
-				<template v-if="status === 'pending'">
-					<UiSummarySkeleton v-for="i in 5" :key="`skeleton-${i}`" :index="i" />
-				</template>
-				<template v-else-if="news && news.length > 0">
-					<UiSummary
-						v-for="(article, index) of news"
-						:key="article.id"
-						:link="`/article/${article.id}`"
-						:id="article.id"
-						:title="article.title"
-						:subtitle="article.intro"
-						:image-url="article.image"
-						:labels="article.tags"
-						:author="article.author"
-						:author-uid="article.authorUid"
-						:index="index"
-						:date="new Date(article.published).toLocaleDateString('de-CH')" />
-				</template>
-				<div class="prose py-12 text-center" v-else>
-					<p>Keine Neuigkeiten zum gewählten Thema gefunden.</p>
+				<div class="relative">
+					<!-- Loading Overlay -->
+					<div 
+						v-if="status === 'pending' && news && news.length > 0" 
+						class="absolute inset-0 bg-white/50 dark:bg-gray-950/50 z-10 flex justify-center pt-20 backdrop-blur-[2px] transition-all duration-500 rounded-3xl"
+					>
+						<div class="flex flex-col items-center gap-4">
+							<UIcon name="i-lucide-loader-2" class="w-10 h-10 animate-spin text-primary" />
+							<span class="text-sm font-bold text-primary uppercase tracking-widest">Aktualisiere...</span>
+						</div>
+					</div>
+
+					<!-- Skeletons (only for initial load) -->
+					<template v-if="status === 'pending' && (!news || news.length === 0)">
+						<UiSummarySkeleton v-for="i in 5" :key="`skeleton-${i}`" :index="i" />
+					</template>
+
+					<!-- Content -->
+					<template v-else-if="news && news.length > 0">
+						<TransitionGroup 
+							name="list" 
+							tag="div" 
+							class="space-y-4 md:space-y-0"
+						>
+							<UiSummary
+								v-for="(article, index) of news"
+								:key="article.id"
+								:link="`/article/${article.id}`"
+								:id="article.id"
+								:title="article.title"
+								:subtitle="article.intro"
+								:image-url="article.image"
+								:labels="article.tags"
+								:author="article.author"
+								:author-uid="article.authorUid"
+								:index="index"
+								:date="new Date(article.published).toLocaleDateString('de-CH')" 
+							/>
+						</TransitionGroup>
+					</template>
+					<div class="prose py-20 text-center mx-auto" v-else>
+						<UIcon name="i-lucide-search-x" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
+						<p class="text-xl font-bold text-gray-500">Keine Neuigkeiten zum gewählten Thema gefunden.</p>
+						<UButton variant="link" @click="filterState = { search: '', tag: 'all', author: 'all', dateRange: 'all' }">Alle Filter zurücksetzen</UButton>
+					</div>
 				</div>
 			</div>
 			<div v-else class="py-12" key="not-authorized-view">
@@ -169,7 +194,18 @@ const {
 		}
 	},
 	lazy: true,
+	watch: [cacheKey]
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>

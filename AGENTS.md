@@ -125,6 +125,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 3. **Implement:** Follow the Tab-indentation and Double-quote rules strictly.
 4. **Verify:** Use `npm run dev` to verify changes if a prevtestiew environment is available.
 5. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
+6. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
 
 ---
 
