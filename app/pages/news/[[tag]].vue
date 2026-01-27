@@ -71,6 +71,16 @@ const filterState = ref({
 	dateRange: 'all'
 });
 
+const debouncedSearch = ref('');
+let debounceTimeout: any = null;
+
+watch(() => filterState.value.search, (newVal) => {
+	if (debounceTimeout) clearTimeout(debounceTimeout);
+	debounceTimeout = setTimeout(() => {
+		debouncedSearch.value = newVal;
+	}, 300);
+});
+
 // Update URL when tag changes in filter
 watch(() => filterState.value.tag, (newTag) => {
 	if (import.meta.test) return;
@@ -86,7 +96,6 @@ watch(() => filterState.value.tag, (newTag) => {
 });
 
 // Sync filter with URL tag (only if different to avoid loops)
-// Remove immediate: true to avoid setup-time loops
 watch(() => route.params.tag, (newTag) => {
 	const normalizedTag = (newTag as string) || 'all';
 	if (filterState.value.tag !== normalizedTag) {
@@ -97,7 +106,7 @@ watch(() => route.params.tag, (newTag) => {
 // Create a unique key based on filters and auth status
 const cacheKey = computed(() => {
 	const authStatus = $token.value ? "auth" : "pub";
-	const filterPart = `${filterState.value.search}-${filterState.value.tag}-${filterState.value.author}-${filterState.value.dateRange}`;
+	const filterPart = `${debouncedSearch.value}-${filterState.value.tag}-${filterState.value.author}-${filterState.value.dateRange}`;
 	return `news-list-${filterPart}-${authStatus}`;
 });
 
@@ -127,13 +136,13 @@ const {
 	error,
 	status,
 	refresh
-} = await useFetch<Article[]>(() => "/api/news", {
-	key: cacheKey.value,
+} = await useFetch<Article[]>("/api/news", {
+	key: cacheKey,
 	method: "post",
 	body: computed(() => ({ 
 		quantity: 20, 
 		tag: filterState.value.tag,
-		search: filterState.value.search,
+		search: debouncedSearch.value,
 		author: filterState.value.author,
 		dateRange: filterState.value.dateRange
 	})),
@@ -161,13 +170,6 @@ const {
 	},
 	lazy: true,
 });
-
-// Explicitly watch filters to trigger refresh
-// This is more robust than relying on useFetch's internal watch
-watch(filterState, () => {
-	console.log('Filter state changed, refreshing news...');
-	refresh();
-}, { deep: true });
 </script>
 
 <style scoped></style>

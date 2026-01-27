@@ -164,6 +164,11 @@ const getItems = (row: any) => [
 			onSelect: () => handleAction("reset-password", row)
 		},
 		{
+			label: "Öffentliches Profil",
+			icon: "i-lucide-user-circle",
+			onSelect: () => navigateTo(`/profile/${row.uid}`)
+		},
+		{
 			label: row.disabled ? "Konto aktivieren" : "Konto deaktivieren",
 			icon: row.disabled ? "i-lucide-user-check" : "i-lucide-user-x",
 			onSelect: () => handleAction("toggle-status", row)
@@ -209,7 +214,9 @@ const getItems = (row: any) => [
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />
 						<div class="flex flex-col">
-							<span class="text-lg font-bold text-gray-900 dark:text-white">{{ row.original.displayName || 'Kein Name' }}</span>
+							<NuxtLink :to="`/profile/${row.original.uid}`" class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary transition-colors">
+								{{ row.original.displayName || 'Kein Name' }}
+							</NuxtLink>
 							<span class="text-sm text-gray-500 font-medium">{{ row.original.email }}</span>
 						</div>
 					</div>

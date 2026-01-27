@@ -7,27 +7,26 @@ export default defineEventHandler(async (event) => {
 		const body = await readBody(event);
 		const { tag, quantity, search, author, dateRange } = body;
 		const permission = await getUserPermission(event);
-		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}`);
+		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}, permission=${permission}`);
 
 		if (isNaN(quantity)) throw new Error(`quantity must be a number.`);
-		if (quantity < 1) throw new Error(`quantity must be greater than 1.`);
+		const limitCount = 300; // Fetch more to ensure filtering doesn't miss recent items
 
-		// Optimization: Basic ordering server-side
-		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(150).get();
+		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(limitCount).get();
 		const news: Article[] = [];
 		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() } as Article));
 
 		const labels = await $fetch("/api/labels");
 		let latestNews = filterByPermission(permission, news, labels as any[]);
 		
-		console.log(`Filtering ${latestNews.length} articles by permission`);
+		console.log(`Initial count after permission filter: ${latestNews.length}`);
 
 		if (tag && tag !== 'all') {
 			latestNews = filterByTag(tag, latestNews);
 			console.log(`After tag (${tag}) filter: ${latestNews.length}`);
 		}
 		
-		if (search && search.trim()) {
+		if (search && typeof search === 'string' && search.trim()) {
 			latestNews = filterBySearch(search, latestNews);
 			console.log(`After search (${search}) filter: ${latestNews.length}`);
 		}
@@ -42,9 +41,8 @@ export default defineEventHandler(async (event) => {
 			console.log(`After dateRange (${dateRange}) filter: ${latestNews.length}`);
 		}
 
-		console.log(`Final count: ${latestNews.length} matching articles.`);
-
 		latestNews = latestNews.slice(0, quantity);
+		console.log(`Returning ${latestNews.length} articles`);
 		return latestNews;
 	} catch (e: any) {
 		return { data: null, error: true, message: e?.message, statusCode: 500 };

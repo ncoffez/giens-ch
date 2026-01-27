@@ -73,7 +73,7 @@ describe("News Filters", () => {
 		expect(component.text()).not.toContain("Marktbericht");
 	});
 
-	it("filters by search query", async () => {
+	it("filters by search query with debouncing", async () => {
 		registerEndpoint("/api/news", {
 			method: "POST",
 			handler: async (event) => {
@@ -87,15 +87,36 @@ describe("News Filters", () => {
 		const component = await mountSuspended(NewsPage);
 		await new Promise(resolve => setTimeout(resolve, 200));
 
-		// Find search input and trigger update
+		// Find search input
 		const searchInput = component.find('input[placeholder*="Titel"]');
 		await searchInput.setValue("markt");
 		
-		// Wait for fetch triggered by watch
-		await new Promise(resolve => setTimeout(resolve, 300));
+		// Wait for debounce (300ms) + fetch (200ms)
+		await new Promise(resolve => setTimeout(resolve, 600));
 		
 		expect(component.text()).toContain("Marktbericht");
 		expect(component.text()).not.toContain("Sommerfest 2025");
+	});
+
+	it("filters by combined tag and search", async () => {
+		registerEndpoint("/api/news", {
+			method: "POST",
+			handler: async (event) => {
+				const body = await readBody(event);
+				if (body.tag === "events" && body.search === "siedlung") return [mockArticles[0]];
+				if (body.tag === "events") return [mockArticles[0]];
+				return mockArticles;
+			}
+		});
+
+		const component = await mountSuspended(NewsPage, { route: "/news/events" });
+		await new Promise(resolve => setTimeout(resolve, 200));
+		
+		const searchInput = component.find('input[placeholder*="Titel"]');
+		await searchInput.setValue("siedlung");
+		await new Promise(resolve => setTimeout(resolve, 600));
+
+		expect(component.text()).toContain("Sommerfest 2025");
 	});
 
 	it("filters by author", async () => {

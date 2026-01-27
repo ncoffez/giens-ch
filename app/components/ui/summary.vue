@@ -12,18 +12,19 @@
 			</NuxtLink>
 			<p class="text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3 md:line-clamp-none">{{ subtitle }}</p>
 			<div class="flex flex-wrap items-center gap-3">
-				<div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap">
-					<span>{{ date }}</span>
+				<div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-medium whitespace-nowrap">
+					<span class="font-bold uppercase tracking-wider">{{ date }}</span>
 					<template v-if="author">
 						<span class="w-1 h-1 bg-neutral-300 dark:bg-neutral-600 rounded-full"></span>
 						<NuxtLink 
 							v-if="authorUid" 
 							:to="`/profile/${authorUid}`" 
-							class="hover:text-primary transition-colors cursor-pointer"
+							class="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
 						>
-							{{ author }}
+							<UAvatar v-if="authorUid" :src="undefined" :alt="author" size="xs" class="w-5 h-5 text-[10px]" />
+							<span class="font-semibold">{{ author }}</span>
 						</NuxtLink>
-						<span v-else>{{ author }}</span>
+						<span v-else class="font-semibold">{{ author }}</span>
 					</template>
 				</div>
 				<div class="flex flex-wrap gap-2">
