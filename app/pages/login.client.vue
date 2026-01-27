@@ -5,7 +5,7 @@
 		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
 			<UiInput type="email" label="E-Mail" v-model="state.email"></UiInput>
 			<UiInput type="password" label="Passwort" v-model="state.password"></UiInput>
-			<NuxtLink class="text-right text-xs leading-relaxed mb-1">Passwort vergessen?</NuxtLink>
+			<NuxtLink to="/reset-password" class="text-right text-xs leading-relaxed mb-1 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">Passwort vergessen?</NuxtLink>
 			<UButton
 				type="submit"
 				@click="loginToFirebase('password', state.email, state.password)"
@@ -14,16 +14,20 @@
 				>Anmelden</UButton
 			>
 		</UForm>
-		<div id="login-social" class="text-sm mt-4">Mit Social-Media anmelden</div>
+		<div id="login-social" class="text-sm mt-4 text-gray-500 dark:text-gray-400">Oder mit Social-Media anmelden</div>
 		<div class="flex gap-4 my-6">
-			<a href="#" @click.prevent="loginToFirebase('google')"> <UIcon name="fa-brands:google" class="size-6" /></a>
-			<a href="#" aria-label="Anmelden mit Apple" class="icon"><UIcon name="fa-brands:apple" class="size-6" /></a>
+			<button @click.prevent="loginToFirebase('google')" aria-label="Anmelden mit Google" class="hover:scale-110 transition-transform">
+				<UIcon name="fa-brands:google" class="size-6" />
+			</button>
+			<button @click.prevent="loginWithApple" aria-label="Anmelden mit Apple" class="hover:scale-110 transition-transform">
+				<UIcon name="fa-brands:apple" class="size-6" />
+			</button>
 		</div>
-		<div class="text-xs">Noch kein Konto? <a href="#" class="underline">Registrieren</a></div>
+		<div class="text-xs text-gray-500 dark:text-gray-400">Noch kein Konto? <NuxtLink to="/register" class="underline hover:text-primary-600 dark:hover:text-primary-400">Registrieren</NuxtLink></div>
 	</section>
 </template>
 <script lang="ts" setup>
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 
 const state = reactive({
 	email: "",
@@ -31,6 +35,7 @@ const state = reactive({
 });
 const router = useRouter();
 const { $currentUser } = useNuxtApp();
+const toast = useToast();
 
 definePageMeta({
 	middleware: "is-not-logged-in",
@@ -40,31 +45,57 @@ watch($currentUser, (user) => {
 	if (user.uid) router.push("/profile");
 });
 
-async function loginToFirebase(method: "google" | "password" = "google", email?: string, password?: string) {
+async function loginToFirebase(method: "google" | "password", email?: string, password?: string) {
 	try {
-		let newUser;
-		if (method === "google") newUser = await loginWithGoogle();
-		else if (method === "password" && (!password || !email)) throw new Error("Password or Email missing.");
-		else if (method === "password" && password && email) newUser = await loginWithPassword(email, password);
-		else throw new Error("Invalid login method.");
-		return { data: newUser, error: null, status: 200, message: "User logged in successfully." };
+		if (method === "google") {
+			await loginWithGoogle();
+		} else if (method === "password" && (!password || !email)) {
+			toast.add({ color: "error", title: "Fehler", description: "E-Mail und Passwort sind erforderlich." });
+		} else if (method === "password" && password && email) {
+			await loginWithPassword(email, password);
+		}
 	} catch (e: any) {
-		return { data: null, error: e, status: 500, message: e?.message || "Unknown error" };
+		toast.add({ color: "error", title: "Fehler", description: e?.message || "Ein Fehler ist aufgetreten." });
 	}
 }
 
 async function loginWithGoogle() {
 	const { $auth } = useNuxtApp();
 	const provider = new GoogleAuthProvider();
-	const { user } = await signInWithPopup($auth, provider);
-	return user;
+	provider.addScope("email");
+	provider.addScope("profile");
+	try {
+		await signInWithPopup($auth, provider);
+		toast.add({ color: "success", title: "Erfolg", description: "Sie haben sich erfolgreich angemeldet." });
+	} catch (e: any) {
+		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
+	}
+}
+
+async function loginWithApple() {
+	const { $auth } = useNuxtApp();
+	const provider = new OAuthProvider("apple.com");
+	provider.addScope("email");
+	provider.addScope("name");
+	try {
+		await signInWithPopup($auth, provider);
+		toast.add({ color: "success", title: "Erfolg", description: "Sie haben sich erfolgreich angemeldet." });
+	} catch (e: any) {
+		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
+	}
 }
 
 async function loginWithPassword(email: string, password: string) {
 	const { $auth } = useNuxtApp();
 	if (!email || !password) throw new Error("Email and password are required for password login.");
-	const { user } = await signInWithEmailAndPassword($auth, email, password);
-	return user;
+	try {
+		const { user } = await signInWithEmailAndPassword($auth, email, password);
+		if (!user.emailVerified) {
+			toast.add({ color: "warning", title: "Warnung", description: "Bitte verifizieren Sie Ihre E-Mail-Adresse." });
+		}
+	} catch (e: any) {
+		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
+	}
 }
 </script>
 <style scoped></style>

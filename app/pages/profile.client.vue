@@ -93,19 +93,19 @@ async function updateName() {
 					<!-- Account Info -->
 					<section class="space-y-6">
 						<div class="flex items-center gap-4">
-							<h2 class="text-xl font-bold">Account Details</h2>
+							<h2 class="text-xl font-bold">Benutzerinformationen</h2>
 							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 						</div>
-						
+
 						<div class="bg-white/50 dark:bg-gray-900/40 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-50 dark:divide-gray-800/50 overflow-hidden">
-							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between p-5 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between p-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
 								<div class="flex items-center gap-4">
 									<div class="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500">
 										<UIcon :name="item.icon" class="w-5 h-5" />
 									</div>
-									<span class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{{ item.label }}</span>
+									<span class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tight">{{ item.label }}</span>
 								</div>
-								<span class="text-base font-black tracking-tight">{{ item.value }}</span>
+								<span class="text-base font-medium tracking-tight">{{ item.value }}</span>
 							</div>
 						</div>
 					</section>
@@ -117,41 +117,44 @@ async function updateName() {
 							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 						</div>
 
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							<UButton 
-								v-if="$isAdmin"
-								to="/admin"
-								size="xl"
-								color="primary"
-								variant="soft"
-								icon="i-lucide-settings"
-								label="Systemverwaltung"
-								class="rounded-2xl font-bold shadow-sm"
-							/>
-							<UButton 
-								size="xl"
+						<div class="space-y-3">
+							<!-- Primary Action -->
+							<UButton
+								size="lg"
 								variant="outline"
 								color="neutral"
 								icon="i-lucide-key-round"
 								label="Passwort ändern"
-								class="rounded-2xl font-bold border-gray-200 dark:border-gray-700"
+								block
+								class="rounded-xl font-semibold"
 							/>
-							<UButton 
-								size="xl"
-								variant="outline"
-								color="neutral"
-								icon="i-lucide-bell"
-								label="Mitteilungen"
-								class="rounded-2xl font-bold border-gray-200 dark:border-gray-700"
+							
+							<!-- Secondary (Admin) -->
+							<UButton
+								v-if="$isAdmin"
+								to="/admin"
+								size="lg"
+								color="primary"
+								variant="soft"
+								icon="i-lucide-settings"
+								label="Systemverwaltung"
+								block
+								class="rounded-xl font-semibold"
 							/>
-							<UButton 
+							
+							<!-- Separator -->
+							<div class="border-t border-gray-100 dark:border-gray-800 my-4"></div>
+							
+							<!-- Destructive Action -->
+							<UButton
 								to="/logout"
-								size="xl"
+								size="lg"
 								variant="ghost"
 								color="error"
 								icon="i-lucide-log-out"
 								label="Abmelden"
-								class="rounded-2xl font-bold"
+								block
+								class="rounded-xl font-semibold"
 							/>
 						</div>
 					</section>

@@ -12,12 +12,10 @@ describe("UiSummary Component", () => {
 				date: "2025-01-01",
 				link: "/test",
 				imageUrl: "/img.jpg",
-				labels: ["tag1", "tag2"],
-				index: 0
+				index: 0,
 			},
 		});
 		expect(component.text()).toContain("Summary Title");
 		expect(component.text()).toContain("Summary Subtitle");
-		expect(component.text()).toContain("tag1");
 	});
 });

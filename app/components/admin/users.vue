@@ -225,12 +225,12 @@ const getItems = (row: any) => [
 		</div>
 		
 		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
-			<UTable :data="users" :columns="columns" :ui="{ td: 'py-5 px-4', th: 'py-4 px-4 text-sm font-bold uppercase tracking-wider text-gray-500' }">
-				<template #user-cell="{ row }">
+			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-gray-500' }">
+				<<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />
 						<div class="flex flex-col">
-							<NuxtLink :to="`/profile/${row.original.uid}`" class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary transition-colors">
+							<NuxtLink :to="`/profile/${row.original.uid}`" class="text-lg font-medium text-gray-900 dark:text-white hover:text-primary transition-colors">
 								{{ row.original.displayName || 'Kein Name' }}
 							</NuxtLink>
 							<span class="text-sm text-gray-500 font-medium">{{ row.original.email }}</span>
@@ -239,11 +239,11 @@ const getItems = (row: any) => [
 				</template>
 
 				<template #roles-cell="{ row }">
-					<div class="flex flex-wrap gap-1">
-						<UBadge v-if="row.original.customClaims?.admin" color="error" variant="solid" size="sm" class="rounded-full px-2">Admin</UBadge>
-						<UBadge v-if="row.original.customClaims?.publisher" color="primary" variant="subtle" size="sm" class="rounded-full px-2">Pub</UBadge>
-						<UBadge v-if="row.original.customClaims?.owner" color="success" variant="subtle" size="sm" class="rounded-full px-2">Besitzer</UBadge>
-						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="sm" class="rounded-full px-2">Leser</UBadge>
+					<div class="flex flex-wrap gap-1.5">
+						<UBadge v-if="row.original.customClaims?.admin" color="error" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Admin</UBadge>
+						<UBadge v-if="row.original.customClaims?.publisher" color="primary" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Pub</UBadge>
+						<UBadge v-if="row.original.customClaims?.owner" color="success" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Besitzer</UBadge>
+						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Leser</UBadge>
 						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-gray-400 italic">Keine Rollen</span>
 					</div>
 				</template>

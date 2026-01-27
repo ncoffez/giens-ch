@@ -87,7 +87,18 @@ const activeCategoryLabel = computed(() => {
 						rounded: 'rounded-2xl',
 						base: 'bg-white dark:bg-gray-950/50 shadow-sm border-gray-100 dark:border-gray-800 focus:ring-primary-500/50'
 					}"
-				/>
+				>
+					<template #trailing>
+						<UButton
+							v-if="filters.search.length > 0"
+							icon="i-lucide-x"
+							color="neutral"
+							variant="ghost"
+							size="xs"
+							class="rounded-full"
+							@click="filters.search = ''" />
+					</template>
+				</UInput>
 			</div>
 			<UButton
 				v-if="$isPublisher"

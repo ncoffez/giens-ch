@@ -6,11 +6,11 @@
 				<NuxtLink to="/">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
-				<div class="hidden lg:block">
+				<div class="hidden lg:block overflow-visible">
 					<ClientOnly>
-						<UNavigationMenu :items="navigationItems" />
+						<UNavigationMenu :items="navigationItems" :ui="{ content: 'w-96 min-w-96', wrapper: 'relative z-50' }" />
 						<template #fallback>
-							<UNavigationMenu :items="publicNavigationItems" />
+							<UNavigationMenu :items="publicNavigationItems" :ui="{ content: 'w-96 min-w-96', wrapper: 'relative z-50' }" />
 						</template>
 					</ClientOnly>
 				</div>
