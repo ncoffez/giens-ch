@@ -76,37 +76,50 @@
 import type { Article } from "~/utils/article";
 
 const route = useRoute();
+const router = useRouter();
 const tag = route.params.tag as string;
 const nuxtApp = useNuxtApp();
 const { $token, $isPublisher } = nuxtApp;
 
 const filterState = ref({
-	search: '',
+	search: (route.query.s as string) || '',
 	tag: tag || 'all',
-	author: 'all',
-	dateRange: 'all'
+	author: (route.query.a as string) || 'all',
+	dateRange: (route.query.d as string) || 'all'
 });
 
-// Update URL when tag changes in filter
-watch(() => filterState.value.tag, (newTag) => {
+// Update URL when filters change
+watch(filterState, (newState) => {
 	if (import.meta.test) return;
-	const currentTag = route.params.tag || 'all';
-	if (newTag === currentTag) return;
 
-	// Use replace to avoid filling history with every filter change
-	if (newTag === 'all') {
-		navigateTo('/news', { replace: true });
-	} else {
-		navigateTo(`/news/${newTag}`, { replace: true });
-	}
-});
+	const query: any = {};
+	if (newState.search) query.s = newState.search;
+	if (newState.author !== 'all') query.a = newState.author;
+	if (newState.dateRange !== 'all') query.d = newState.dateRange;
 
-// Sync filter with URL tag (only if different to avoid loops)
-watch(() => route.params.tag, (newTag) => {
-	const normalizedTag = (newTag as string) || 'all';
-	if (filterState.value.tag !== normalizedTag) {
-		filterState.value.tag = normalizedTag;
+	const currentPath = route.path;
+	const newPath = newState.tag === 'all' ? '/news' : `/news/${newState.tag}`;
+	
+	// Only navigate if path or query actually changed
+	if (currentPath !== newPath || JSON.stringify(route.query) !== JSON.stringify(query)) {
+		router.replace({
+			path: newPath,
+			query
+		});
 	}
+}, { deep: true });
+
+// Sync filter with URL (for back/forward buttons)
+watch(() => route.fullPath, () => {
+	const newTag = (route.params.tag as string) || 'all';
+	const newSearch = (route.query.s as string) || '';
+	const newAuthor = (route.query.a as string) || 'all';
+	const newDate = (route.query.d as string) || 'all';
+
+	if (filterState.value.tag !== newTag) filterState.value.tag = newTag;
+	if (filterState.value.search !== newSearch) filterState.value.search = newSearch;
+	if (filterState.value.author !== newAuthor) filterState.value.author = newAuthor;
+	if (filterState.value.dateRange !== newDate) filterState.value.dateRange = newDate;
 });
 
 // Create a unique key for the fetch
