@@ -50,8 +50,11 @@ watch(users, (newUsers) => {
 
 const isModalOpen = ref(false);
 const isRoleModalOpen = ref(false);
+const isEditNameModalOpen = ref(false);
 const isPending = ref(false);
 const selectedUserForRoles = ref<any>(null);
+const selectedUserForEdit = ref<any>(null);
+const editDisplayName = ref("");
 
 const userRoles = ref({
 	admin: false,
@@ -91,6 +94,7 @@ async function handleAction(action: string, user: any) {
 				action, 
 				uid: user?.uid, 
 				email: user?.email,
+				displayName: action === "update-name" ? editDisplayName.value : undefined,
 				disabled: action === "toggle-status" ? !user.disabled : undefined,
 				roles: action === "set-roles" ? userRoles.value : undefined
 			}
@@ -106,6 +110,7 @@ async function handleAction(action: string, user: any) {
 				console.log("Reset link:", response.link);
 			}
 			isRoleModalOpen.value = false;
+			isEditNameModalOpen.value = false;
 			await refresh();
 		}
 	} catch (error: any) {
@@ -151,8 +156,19 @@ function openRoleModal(user: any) {
 	isRoleModalOpen.value = true;
 }
 
+function openEditNameModal(user: any) {
+	selectedUserForEdit.value = user;
+	editDisplayName.value = user.displayName || "";
+	isEditNameModalOpen.value = true;
+}
+
 const getItems = (row: any) => [
 	[
+		{
+			label: "Name bearbeiten",
+			icon: "i-lucide-pencil",
+			onSelect: () => openEditNameModal(row)
+		},
 		{
 			label: "Rollen verwalten",
 			icon: "i-lucide-shield-plus",
@@ -277,6 +293,33 @@ const getItems = (row: any) => [
 					<div class="flex justify-end gap-4 pt-6">
 						<UButton color="neutral" variant="ghost" label="Abbrechen" size="lg" @click="isRoleModalOpen = false" />
 						<UButton label="Speichern" size="lg" :loading="isPending" @click="handleAction('set-roles', selectedUserForRoles)" />
+					</div>
+				</div>
+			</template>
+		</UModal>
+
+		<!-- Edit Name Modal -->
+		<UModal v-model:open="isEditNameModalOpen" title="Benutzername ändern">
+			<template #body>
+				<div class="p-8 space-y-6">
+					<div class="space-y-2">
+						<h3 class="text-xl font-bold">Benutzername bearbeiten</h3>
+						<p class="text-sm text-gray-500">Ändern Sie den Anzeigenamen für <b>{{ selectedUserForEdit?.email }}</b>.</p>
+					</div>
+
+					<UFormField label="Neuer Anzeigename" size="lg">
+						<UInput 
+							v-model="editDisplayName" 
+							placeholder="Anzeigename" 
+							class="w-full" 
+							size="lg"
+							@keyup.enter="handleAction('update-name', selectedUserForEdit)"
+						/>
+					</UFormField>
+
+					<div class="flex justify-end gap-4 pt-6">
+						<UButton color="neutral" variant="ghost" label="Abbrechen" size="lg" @click="isEditNameModalOpen = false" />
+						<UButton label="Name speichern" size="lg" :loading="isPending" @click="handleAction('update-name', selectedUserForEdit)" />
 					</div>
 				</div>
 			</template>

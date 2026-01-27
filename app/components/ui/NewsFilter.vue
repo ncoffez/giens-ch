@@ -184,77 +184,86 @@ const activeCategoryLabel = computed(() => {
 		</Transition>
 
 		<!-- Expandable Filter Drawer -->
-		<UCollapsible v-model:open="isOpen">
-			<div class="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-inner space-y-6">
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-					<!-- Category Select -->
-					<div class="space-y-2">
-						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Kategorie</label>
-						<USelectMenu
-							v-model="filters.tag"
-							:items="categoryOptions"
-							value-key="id"
-							label-key="label"
-							searchable
-							placeholder="Kategorie wählen..."
-							size="lg"
-							class="w-full"
-							:ui="{ rounded: 'rounded-xl' }"
+		<Transition
+			enter-active-class="transition-all duration-300 ease-out"
+			enter-from-class="opacity-0 -translate-y-4 max-h-0"
+			enter-to-class="opacity-100 translate-y-0 max-h-[500px]"
+			leave-active-class="transition-all duration-200 ease-in"
+			leave-from-class="opacity-100 translate-y-0 max-h-[500px]"
+			leave-to-class="opacity-0 -translate-y-4 max-h-0"
+		>
+			<div v-if="isOpen" class="overflow-hidden">
+				<div class="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-inner space-y-6">
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<!-- Category Select -->
+						<div class="space-y-2">
+							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Kategorie</label>
+							<USelectMenu
+								v-model="filters.tag"
+								:items="categoryOptions"
+								value-key="id"
+								label-key="label"
+								searchable
+								placeholder="Kategorie wählen..."
+								size="lg"
+								class="w-full"
+								:ui="{ rounded: 'rounded-xl' }"
+							>
+								<template #leading v-if="filters.tag !== 'all'">
+									<UIcon :name="categoryOptions.find(c => c.id === filters.tag)?.icon || 'i-lucide-tag'" class="w-4 h-4" />
+								</template>
+							</USelectMenu>
+						</div>
+
+						<!-- Date Select -->
+						<div class="space-y-2">
+							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Zeitraum</label>
+							<USelectMenu
+								v-model="filters.dateRange"
+								:items="dateOptions"
+								value-key="id"
+								label-key="label"
+								size="lg"
+								class="w-full"
+								:ui="{ rounded: 'rounded-xl' }"
+							/>
+						</div>
+
+						<!-- Author Select -->
+						<div class="space-y-2">
+							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Autor</label>
+							<USelectMenu
+								v-model="filters.author"
+								:items="authorOptions"
+								value-key="id"
+								label-key="label"
+								searchable
+								size="lg"
+								class="w-full"
+								:ui="{ rounded: 'rounded-xl' }"
+							/>
+						</div>
+					</div>
+
+					<div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800/50">
+						<div class="flex items-center gap-2 text-xs text-gray-500 font-medium italic">
+							<UIcon name="i-lucide-info" class="w-3.5 h-3.5" />
+							Filtern Sie nach Kategorien, Autoren oder Zeiträumen.
+						</div>
+						<UButton
+							v-if="hasActiveFilters || filters.search"
+							variant="ghost"
+							color="error"
+							size="sm"
+							icon="i-lucide-x"
+							class="font-black uppercase tracking-tighter"
+							@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
 						>
-							<template #leading v-if="filters.tag !== 'all'">
-								<UIcon :name="categoryOptions.find(c => c.id === filters.tag)?.icon || 'i-lucide-tag'" class="w-4 h-4" />
-							</template>
-						</USelectMenu>
+							Alles Zurücksetzen
+						</UButton>
 					</div>
-
-					<!-- Date Select -->
-					<div class="space-y-2">
-						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Zeitraum</label>
-						<USelectMenu
-							v-model="filters.dateRange"
-							:items="dateOptions"
-							value-key="id"
-							label-key="label"
-							size="lg"
-							class="w-full"
-							:ui="{ rounded: 'rounded-xl' }"
-						/>
-					</div>
-
-					<!-- Author Select -->
-					<div class="space-y-2">
-						<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Autor</label>
-						<USelectMenu
-							v-model="filters.author"
-							:items="authorOptions"
-							value-key="id"
-							label-key="label"
-							searchable
-							size="lg"
-							class="w-full"
-							:ui="{ rounded: 'rounded-xl' }"
-						/>
-					</div>
-				</div>
-
-				<div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800/50">
-					<div class="flex items-center gap-2 text-xs text-gray-500 font-medium italic">
-						<UIcon name="i-lucide-info" class="w-3.5 h-3.5" />
-						Filtern Sie nach Kategorien, Autoren oder Zeiträumen.
-					</div>
-					<UButton
-						v-if="hasActiveFilters || filters.search"
-						variant="ghost"
-						color="error"
-						size="sm"
-						icon="i-lucide-x"
-						class="font-black uppercase tracking-tighter"
-						@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
-					>
-						Alles Zurücksetzen
-					</UButton>
 				</div>
 			</div>
-		</UCollapsible>
+		</Transition>
 	</div>
 </template>

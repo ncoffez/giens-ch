@@ -1,133 +1,215 @@
 <script lang="ts" setup>
 definePageMeta({ middleware: "is-logged-in" });
-const { $currentUser, $isAdmin } = useNuxtApp();
+const { $currentUser, $isAdmin, $auth } = useNuxtApp();
+const toast = useToast();
 
-// In a real app, these would be fetched from a DB or calculated
+const isEditingName = ref(false);
+const newDisplayName = ref($currentUser.value?.displayName || "");
+const isPending = ref(false);
+
 const stats = [
-	{ label: "Beiträge", value: "12" },
-	{ label: "Mitglied seit", value: "Jan 2024" },
-	{ label: "Status", value: "Eigentümer" }
+	{ label: "Mitglied seit", value: $currentUser.value?.metadata?.creationTime ? new Date($currentUser.value.metadata.creationTime).toLocaleDateString('de-CH', { month: 'short', year: 'numeric' }) : 'Jan 2024', icon: "i-lucide-calendar" },
+	{ label: "Status", value: $isAdmin.value ? "Administrator" : "Mitglied", icon: "i-lucide-shield" }
 ];
 
 const accountDetails = computed(() => [
-	{ label: "E-Mail", value: $currentUser.value?.email, icon: "i-lucide-mail" },
+	{ label: "E-Mail Adresse", value: $currentUser.value?.email, icon: "i-lucide-mail" },
 	{ label: "Benutzer-ID", value: $currentUser.value?.uid, icon: "i-lucide-fingerprint" },
-	{ label: "Letzter Login", value: $currentUser.value?.metadata?.lastSignInTime ? new Date($currentUser.value.metadata.lastSignInTime).toLocaleDateString('de-CH') : 'Unbekannt', icon: "i-lucide-calendar" }
+	{ label: "Letzter Login", value: $currentUser.value?.metadata?.lastSignInTime ? new Date($currentUser.value.metadata.lastSignInTime).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unbekannt', icon: "i-lucide-history" }
 ]);
+
+async function updateName() {
+	if (!newDisplayName.value || newDisplayName.value.trim().length < 2) return;
+	
+	isPending.value = true;
+	try {
+		await $fetch("/api/profile/update", {
+			method: "POST",
+			body: { displayName: newDisplayName.value }
+		});
+		
+		// Update local state
+		if ($auth.currentUser) {
+			// This might not trigger a reactive update in $currentUser immediately depending on plugin impl
+			// But the backend is updated. We show success and close.
+			toast.add({ title: "Profil aktualisiert", description: "Ihr Name wurde erfolgreich geändert.", color: "success" });
+			isEditingName.value = false;
+			// Refresh page to sync all state
+			window.location.reload();
+		}
+	} catch (e: any) {
+		toast.add({ title: "Fehler", description: e.message, color: "error" });
+	} finally {
+		isPending.value = false;
+	}
+}
 </script>
 
 <template>
-	<div class="max-w-screen-xl mx-auto w-full px-4 py-12">
+	<div class="max-w-screen-md mx-auto w-full px-4 py-12">
 		<ClientOnly>
-			<div v-if="$currentUser" class="space-y-8">
-				<!-- Header Section -->
-				<div class="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800">
+			<div v-if="$currentUser" class="space-y-16">
+				<!-- Header Section (Inspired by Public Profile) -->
+				<div class="flex flex-col items-center text-center space-y-6">
 					<div class="relative group">
 						<UAvatar
 							:src="$currentUser.photoURL"
 							size="3xl"
 							:alt="$currentUser.displayName || $currentUser.email"
-							class="ring-4 ring-primary-50 dark:ring-primary-950 shadow-xl" />
-						<button class="absolute bottom-0 right-0 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-100 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
-							<UIcon name="i-lucide-camera" class="w-4 h-4" />
+							class="w-32 h-32 ring-4 ring-primary/10 shadow-2xl"
+							:ui="{ rounded: 'rounded-full', text: 'text-3xl font-black' }"
+						/>
+						<button class="absolute bottom-0 right-0 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg border border-gray-100 dark:border-gray-700 hover:scale-110 transition-transform">
+							<UIcon name="i-lucide-camera" class="w-4 h-4 text-primary" />
 						</button>
 					</div>
 
-					<div class="flex-1 text-center md:text-left space-y-4">
-						<div>
-							<h1 class="text-2xl font-extrabold tracking-tight">{{ $currentUser.displayName || 'Hausbewohner' }}</h1>
-							<p class="text-base text-gray-500 mt-1 font-medium">{{ $currentUser.email }}</p>
+					<div class="space-y-3">
+						<div class="flex items-center justify-center gap-3">
+							<h1 class="text-4xl font-black tracking-tight">{{ $currentUser.displayName || 'Bewohner' }}</h1>
+							<UButton 
+								icon="i-lucide-pencil" 
+								variant="ghost" 
+								color="neutral" 
+								size="sm" 
+								class="rounded-full"
+								@click="isEditingName = true"
+							/>
 						</div>
-
-						<div class="flex flex-wrap justify-center md:justify-start gap-4">
-							<UBadge v-for="stat in stats" :key="stat.label" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1">
-								<span class="text-gray-400 mr-2 text-xs">{{ stat.label }}:</span>
-								<span class="font-bold text-base">{{ stat.value }}</span>
-							</UBadge>
+						<p class="text-gray-500 font-medium italic">Mitglied des Lotissement Beausoleil</p>
+						
+						<!-- Subtle Stats Row -->
+						<div class="flex items-center justify-center gap-6 pt-2">
+							<div v-for="stat in stats" :key="stat.label" class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
+								<UIcon :name="stat.icon" class="w-3.5 h-3.5" />
+								<span>{{ stat.value }}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Settings Grid -->
-				<div class="grid md:grid-cols-2 gap-8">
+				<!-- Settings Sections -->
+				<div class="space-y-12">
 					<!-- Account Info -->
-					<UCard class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
-						<template #header>
-							<div class="flex items-center gap-3">
-								<UIcon name="i-lucide-user" class="w-5 h-5 text-primary" />
-								<h3 class="text-lg font-bold">Account Informationen</h3>
-							</div>
-						</template>
-						<div class="space-y-6">
-							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
-								<div class="flex items-center gap-3 text-gray-500 shrink-0">
-									<UIcon :name="item.icon" class="w-4 h-4" />
-									<span class="text-base font-medium">{{ item.label }}</span>
+					<section class="space-y-6">
+						<div class="flex items-center gap-4">
+							<h2 class="text-xl font-bold">Account Details</h2>
+							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+						</div>
+						
+						<div class="bg-white/50 dark:bg-gray-900/40 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-50 dark:divide-gray-800/50 overflow-hidden">
+							<div v-for="item in accountDetails" :key="item.label" class="flex items-center justify-between p-5 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+								<div class="flex items-center gap-4">
+									<div class="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500">
+										<UIcon :name="item.icon" class="w-5 h-5" />
+									</div>
+									<span class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{{ item.label }}</span>
 								</div>
-								<span class="text-base font-bold text-right">{{ item.value }}</span>
+								<span class="text-base font-black tracking-tight">{{ item.value }}</span>
 							</div>
 						</div>
-					</UCard>
+					</section>
 
-					<!-- Actions -->
-					<UCard class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
-						<template #header>
-							<div class="flex items-center gap-3">
-								<UIcon name="i-lucide-shield-check" class="w-5 h-5 text-primary" />
-								<h3 class="text-lg font-bold">Sicherheit & Einstellungen</h3>
-							</div>
-						</template>
-						<div class="space-y-4">
-							<template v-if="$isAdmin">
-								<UButton
-									to="/admin"
-									block
-									size="lg"
-									color="primary"
-									variant="solid"
-									icon="i-lucide-settings"
-									label="Verwaltung"
-									class="shadow-md" />
-								<USeparator class="my-4" />
-							</template>
-							<UButton 
-								block 
-								size="lg"
-								variant="outline" 
-								color="neutral" 
-								icon="i-lucide-key-round" 
-								label="Passwort ändern" />
-							<UButton 
-								block 
-								size="lg"
-								variant="outline" 
-								color="neutral" 
-								icon="i-lucide-bell" 
-								label="Benachrichtigungen" />
-							<USeparator class="my-4" />
-							<NuxtLink to="/logout" class="block w-full">
-								<UButton 
-									block 
-									size="lg"
-									variant="ghost" 
-									color="error" 
-									icon="i-lucide-log-out" 
-									label="Vom Konto abmelden" />
-							</NuxtLink>
+					<!-- Security & Actions -->
+					<section class="space-y-6">
+						<div class="flex items-center gap-4">
+							<h2 class="text-xl font-bold">Sicherheit & Optionen</h2>
+							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 						</div>
-					</UCard>
+
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<UButton 
+								v-if="$isAdmin"
+								to="/admin"
+								size="xl"
+								color="primary"
+								variant="soft"
+								icon="i-lucide-settings"
+								label="Systemverwaltung"
+								class="rounded-2xl font-bold shadow-sm"
+							/>
+							<UButton 
+								size="xl"
+								variant="outline"
+								color="neutral"
+								icon="i-lucide-key-round"
+								label="Passwort ändern"
+								class="rounded-2xl font-bold border-gray-200 dark:border-gray-700"
+							/>
+							<UButton 
+								size="xl"
+								variant="outline"
+								color="neutral"
+								icon="i-lucide-bell"
+								label="Mitteilungen"
+								class="rounded-2xl font-bold border-gray-200 dark:border-gray-700"
+							/>
+							<UButton 
+								to="/logout"
+								size="xl"
+								variant="ghost"
+								color="error"
+								icon="i-lucide-log-out"
+								label="Abmelden"
+								class="rounded-2xl font-bold"
+							/>
+						</div>
+					</section>
 				</div>
 
-				<!-- Debug Info -->
-				<div class="pt-8 border-t border-gray-100 dark:border-gray-800">
-					<UCollapsible class="flex flex-col gap-4">
-						<UButton label="Debug Info (User Object)" color="neutral" variant="subtle" icon="i-lucide-bug" />
+				<!-- Debug Section -->
+				<div class="pt-8 opacity-20 hover:opacity-100 transition-opacity">
+					<UCollapsible>
+						<UButton label="Entwickler-Rohdaten" color="neutral" variant="link" size="xs" icon="i-lucide-bug" />
 						<template #content>
-							<pre class="text-xs overflow-auto p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">{{ $currentUser }}</pre>
+							<pre class="text-[10px] overflow-auto p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 mt-4">{{ $currentUser }}</pre>
 						</template>
 					</UCollapsible>
 				</div>
 			</div>
+
+			<!-- Edit Name Modal -->
+			<UModal v-model:open="isEditingName" title="Name ändern">
+				<template #body>
+					<div class="p-8 space-y-6">
+						<div class="space-y-2 text-center">
+							<h3 class="text-2xl font-black tracking-tight">Name aktualisieren</h3>
+							<p class="text-sm text-gray-500">Wie sollen wir Sie in der Siedlung nennen?</p>
+						</div>
+						
+						<UFormField label="Anzeigename" size="lg" class="w-full">
+							<UInput 
+								v-model="newDisplayName" 
+								placeholder="Ihr Name" 
+								class="w-full" 
+								size="xl"
+								:ui="{ rounded: 'rounded-2xl' }"
+								@keyup.enter="updateName"
+							/>
+						</UFormField>
+						
+						<div class="flex flex-col gap-3 pt-4">
+							<UButton 
+								label="Name Speichern" 
+								size="xl" 
+								block 
+								class="rounded-2xl font-black uppercase tracking-widest" 
+								:loading="isPending" 
+								@click="updateName" 
+							/>
+							<UButton 
+								color="neutral" 
+								variant="ghost" 
+								label="Abbrechen" 
+								size="lg" 
+								block 
+								class="rounded-2xl font-bold"
+								@click="isEditingName = false" 
+							/>
+						</div>
+					</div>
+				</template>
+			</UModal>
 
 			<template #fallback>
 				<UiProfileSkeleton />
