@@ -5,12 +5,11 @@ import { getUserPermission } from "../utils/auth";
 export default defineEventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
-		const { tag, quantity, search, author, dateRange } = body;
+		const { tag, quantity, search, author, dateRange, all } = body;
 		const permission = await getUserPermission(event);
-		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}, permission=${permission}`);
+		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}, permission=${permission}, all=${all}`);
 
-		if (isNaN(quantity)) throw new Error(`quantity must be a number.`);
-		const limitCount = 300; // Fetch more to ensure filtering doesn't miss recent items
+		const limitCount = all ? 1000 : 300; 
 
 		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(limitCount).get();
 		const news: Article[] = [];
