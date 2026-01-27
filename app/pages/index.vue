@@ -108,6 +108,7 @@
 							:subtitle="article.intro"
 							:image-url="article.image"
 							:labels="article.tags"
+							:author="article.author"
 							:index="index"
 							:date="new Date(article.published).toLocaleDateString('de-CH')" />
 					</template>
@@ -132,7 +133,7 @@ const cacheKey = computed(() => {
 });
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
-	key: (process.env.NODE_ENV === 'test' ? Math.random().toString() : cacheKey.value),
+	key: cacheKey.value,
 	method: "post",
 	body: { quantity: 3 },
 	headers: computed(() => {

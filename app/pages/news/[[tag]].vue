@@ -2,25 +2,23 @@
 	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4">
 		<ClientOnly>
 			<div v-if="isAuthorized" key="authorized-view">
-				<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pt-4">
-					<UiTagFilter />
-					<UButton
-						v-if="$isPublisher"
-						to="/news/new"
-						label="Neuer Artikel"
-						icon="i-lucide-plus"
-						color="primary"
-						size="lg"
-						class="rounded-full shadow-lg self-end md:self-auto" />
+				<div class="flex flex-col gap-4 mb-8 pt-4">
+					<div class="flex justify-between items-center">
+						<h1 class="text-3xl font-black tracking-tight">Aktuelles</h1>
+						<UButton
+							v-if="$isPublisher"
+							to="/news/new"
+							label="Neuer Artikel"
+							icon="i-lucide-plus"
+							color="primary"
+							size="lg"
+							class="rounded-full shadow-lg" />
+					</div>
+					
+					<UiNewsFilter v-model="filterState" />
 				</div>
 
-				<!-- Specialized Siedlung View -->
-				<div v-if="tag === 'siedlung'" class="grid grid-cols-1 md:grid-cols-2 gap-8 py-8">
-					<UiTravelCard to="/travel" title="Anreise" icon="i-lucide-car" />
-					<UiTravelCard to="/about" title="Über uns" icon="i-lucide-info" />
-				</div>
-
-				<div id="error" v-else-if="error" class="py-12">
+				<div id="error" v-if="error" class="py-12">
 					<h1 class="text-2xl font-bold">{{ error.statusCode }} - {{ error.name }}</h1>
 					<p class="text-neutral-500">{{ error.message }}</p>
 				</div>
@@ -37,6 +35,7 @@
 						:subtitle="article.intro"
 						:image-url="article.image"
 						:labels="article.tags"
+						:author="article.author"
 						:index="index"
 						:date="new Date(article.published).toLocaleDateString('de-CH')" />
 				</template>
@@ -64,11 +63,39 @@ const tag = route.params.tag as string;
 const nuxtApp = useNuxtApp();
 const { $token, $isPublisher } = nuxtApp;
 
-// Create a unique key based on tag and auth status
+const filterState = ref({
+	search: '',
+	tag: tag || 'all',
+	author: 'all',
+	dateRange: 'all'
+});
+
+// Update URL when tag changes in filter
+watch(() => filterState.value.tag, (newTag) => {
+	const currentTag = route.params.tag || 'all';
+	if (newTag === currentTag) return;
+
+	if (newTag === 'all') {
+		navigateTo('/news');
+	} else {
+		navigateTo(`/news/${newTag}`);
+	}
+});
+
+// Sync filter with URL tag
+watch(() => route.params.tag, (newTag) => {
+	const normalizedTag = (newTag as string) || 'all';
+	if (filterState.value.tag !== normalizedTag) {
+		filterState.value.tag = normalizedTag;
+	}
+});
+
+// Create a unique key based on filters and auth status
 const cacheKey = computed(() => {
 	const authStatus = $token.value ? "auth" : "pub";
 	const testId = import.meta.test ? Math.random().toString() : "";
-	return `news-list-${tag || "all"}-${authStatus}${testId}`;
+	const filterPart = `${filterState.value.search}-${filterState.value.tag}-${filterState.value.author}-${filterState.value.dateRange}`;
+	return `news-list-${filterPart}-${authStatus}${testId}`;
 });
 
 // Fetch labels to determine if tag is private
@@ -80,12 +107,12 @@ const { data: labels } = await useFetch<any[]>("/api/labels", {
 	},
 });
 
-const tagIsPrivate = computed(() => labels.value?.find((label) => label.id === tag)?.private);
+const tagIsPrivate = computed(() => labels.value?.find((label) => label.id === filterState.value.tag)?.private);
 
 const isAuthorized = computed(() => {
-	if (!tag || !tagIsPrivate.value) return true;
-	// We'll rely on the server to reject if not actually authorized, 
-	// but this UI check is still useful for immediate feedback.
+	const currentTag = filterState.value.tag;
+	if (currentTag === 'all' || !tagIsPrivate.value) return true;
+	
 	const { $claims } = useNuxtApp();
 	const claims = $claims.value;
 	const isReader = !!(claims.admin || claims.publisher || claims.owner || claims.reader);
@@ -97,9 +124,15 @@ const {
 	error,
 	status,
 } = await useFetch<Article[]>("/api/news", {
-	key: (process.env.NODE_ENV === 'test' ? Math.random().toString() : cacheKey.value),
+	key: cacheKey.value,
 	method: "post",
-	body: { quantity: 15, tag },
+	body: computed(() => ({ 
+		quantity: 20, 
+		tag: filterState.value.tag,
+		search: filterState.value.search,
+		author: filterState.value.author,
+		dateRange: filterState.value.dateRange
+	})),
 	headers: computed(() => {
 		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
 	}),

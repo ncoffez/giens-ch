@@ -12,7 +12,13 @@
 			</NuxtLink>
 			<p class="text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-3 md:line-clamp-none">{{ subtitle }}</p>
 			<div class="flex flex-wrap items-center gap-3">
-				<div class="text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap">{{ date }}</div>
+				<div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-sm md:text-base font-bold uppercase tracking-wider whitespace-nowrap">
+					<span>{{ date }}</span>
+					<template v-if="author">
+						<span class="w-1 h-1 bg-neutral-300 dark:bg-neutral-600 rounded-full"></span>
+						<span>{{ author }}</span>
+					</template>
+				</div>
 				<div class="flex flex-wrap gap-2">
 					<UBadge color="neutral" variant="subtle" v-for="label of labels" :key="label" size="sm" class="rounded-full px-2 font-bold">{{ label }}</UBadge>
 				</div>
@@ -49,6 +55,10 @@ defineProps({
 	date: {
 		type: String,
 		required: true,
+	},
+	author: {
+		type: String,
+		required: false,
 	},
 	index: {
 		type: Number,

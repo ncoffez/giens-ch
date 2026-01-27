@@ -6,4 +6,5 @@ export interface Article {
 	tags: string[];
 	image: string;
 	body: string;
+	author?: string;
 }

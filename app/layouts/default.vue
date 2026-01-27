@@ -170,6 +170,24 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			icon: "i-lucide-newspaper",
 			to: "/news",
 		},
+		{
+			label: "Siedlung",
+			icon: "i-lucide-map",
+			children: [
+				{
+					label: "Anreise",
+					to: "/travel",
+					icon: "i-lucide-car",
+					description: "Tipps für eine entspannte Anreise nach Giens.",
+				},
+				{
+					label: "Über uns",
+					to: "/about",
+					icon: "i-lucide-info",
+					description: "Geschichte und Spirit des Lotissement Beausoleil.",
+				},
+			],
+		},
 	];
 
 	return items;
