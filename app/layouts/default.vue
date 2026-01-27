@@ -6,11 +6,11 @@
 				<NuxtLink to="/">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
-				<div class="hidden lg:block overflow-visible">
+				<div class="hidden lg:block">
 					<ClientOnly>
-						<UNavigationMenu :items="navigationItems" :ui="{ content: 'w-96 min-w-96', wrapper: 'relative z-50' }" />
+						<UNavigationMenu :items="navigationItems" />
 						<template #fallback>
-							<UNavigationMenu :items="publicNavigationItems" :ui="{ content: 'w-96 min-w-96', wrapper: 'relative z-50' }" />
+							<UNavigationMenu :items="publicNavigationItems" />
 						</template>
 					</ClientOnly>
 				</div>
@@ -142,23 +142,16 @@ const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 		],
 	},
 	{
-		label: "Siedlung",
-		icon: "i-lucide-map",
-		active: route.path === "/travel" || route.path === "/about",
-		children: [
-			{
-				label: "Anreise",
-				to: "/travel",
-				icon: "i-lucide-car",
-				description: "Tipps für eine entspannte Anreise nach Giens.",
-			},
-			{
-				label: "Über uns",
-				to: "/about",
-				icon: "i-lucide-info",
-				description: "Geschichte und Spirit des Lotissement Beausoleil.",
-			},
-		],
+		label: "Anreise",
+		to: "/travel",
+		icon: "i-lucide-car",
+		active: route.path === "/travel",
+	},
+	{
+		label: "Über uns",
+		to: "/about",
+		icon: "i-lucide-info",
+		active: route.path === "/about",
 	},
 ]);
 
@@ -177,23 +170,16 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			active: route.path.startsWith("/news"),
 		},
 		{
-			label: "Siedlung",
-			icon: "i-lucide-map",
-			active: route.path === "/travel" || route.path === "/about",
-			children: [
-				{
-					label: "Anreise",
-					to: "/travel",
-					icon: "i-lucide-car",
-					description: "Tipps für eine entspannte Anreise nach Giens.",
-				},
-				{
-					label: "Über uns",
-					to: "/about",
-					icon: "i-lucide-info",
-					description: "Geschichte und Spirit des Lotissement Beausoleil.",
-				},
-			],
+			label: "Anreise",
+			to: "/travel",
+			icon: "i-lucide-car",
+			active: route.path === "/travel",
+		},
+		{
+			label: "Über uns",
+			to: "/about",
+			icon: "i-lucide-info",
+			active: route.path === "/about",
 		},
 	];
 
