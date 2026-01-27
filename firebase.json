@@ -2,9 +2,7 @@
   "functions": [
     {
       "source": ".output/server",
-      "predeploy": [
-        "npm run build"
-      ],
+
       "ignore": [
         ".git",
         "firebase-debug.log",
