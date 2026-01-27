@@ -109,6 +109,7 @@
 							:image-url="article.image"
 							:labels="article.tags"
 							:author="article.author"
+							:author-uid="article.authorUid"
 							:index="index"
 							:date="new Date(article.published).toLocaleDateString('de-CH')" />
 					</template>

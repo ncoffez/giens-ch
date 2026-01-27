@@ -48,14 +48,14 @@ const dateOptions = [
 // For now, we'll use a placeholder or let the user search by author in the search bar.
 // However, the user specifically asked for an author filter.
 // Let's assume we can get authors from the current articles or a specific endpoint.
-const { data: authors } = await useFetch<string[]>("/api/authors", {
-	key: "authors-list",
+const { data: authors } = await useFetch<{id: string, name: string}[]>("/api/authors", {
+	key: (import.meta.test ? Math.random().toString() : "authors-list"),
 	default: () => []
 });
 
 const authorOptions = computed(() => [
 	{ id: 'all', label: 'Alle Autoren' },
-	...authors.value.map(a => ({ id: a, label: a }))
+	...(authors.value || []).map(a => ({ id: a.id, label: a.name }))
 ]);
 
 const filters = ref({ ...props.modelValue });

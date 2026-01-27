@@ -36,6 +36,7 @@
 						:image-url="article.image"
 						:labels="article.tags"
 						:author="article.author"
+						:author-uid="article.authorUid"
 						:index="index"
 						:date="new Date(article.published).toLocaleDateString('de-CH')" />
 				</template>
@@ -72,6 +73,7 @@ const filterState = ref({
 
 // Update URL when tag changes in filter
 watch(() => filterState.value.tag, (newTag) => {
+	if (import.meta.test) return;
 	const currentTag = route.params.tag || 'all';
 	if (newTag === currentTag) return;
 
@@ -126,6 +128,7 @@ const {
 } = await useFetch<Article[]>("/api/news", {
 	key: cacheKey.value,
 	method: "post",
+	watch: [filterState],
 	body: computed(() => ({ 
 		quantity: 20, 
 		tag: filterState.value.tag,

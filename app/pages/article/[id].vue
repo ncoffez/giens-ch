@@ -25,7 +25,32 @@
 				<UiTitle
 					:subtitle="new Date(article.published).toLocaleDateString('de-CH')"
 					:title="article.title" />
-				<div class="flex flex-wrap gap-2 -mt-4">
+				
+				<!-- Author Info -->
+				<div v-if="article.author" class="flex items-center gap-3 mb-8 -mt-4">
+					<NuxtLink 
+						v-if="article.authorUid" 
+						:to="`/profile/${article.authorUid}`"
+						class="flex items-center gap-2 group"
+					>
+						<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+							{{ article.author.charAt(0) }}
+						</div>
+						<span class="text-sm font-bold text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">
+							{{ article.author }}
+						</span>
+					</NuxtLink>
+					<div v-else class="flex items-center gap-2">
+						<div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs uppercase">
+							{{ article.author.charAt(0) }}
+						</div>
+						<span class="text-sm font-bold text-gray-600 dark:text-gray-400">
+							{{ article.author }}
+						</span>
+					</div>
+				</div>
+
+				<div class="flex flex-wrap gap-2">
 					<UBadge
 						v-for="tag in article.tags"
 						:key="tag"

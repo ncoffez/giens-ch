@@ -16,7 +16,14 @@
 					<span>{{ date }}</span>
 					<template v-if="author">
 						<span class="w-1 h-1 bg-neutral-300 dark:bg-neutral-600 rounded-full"></span>
-						<span>{{ author }}</span>
+						<NuxtLink 
+							v-if="authorUid" 
+							:to="`/profile/${authorUid}`" 
+							class="hover:text-primary transition-colors cursor-pointer"
+						>
+							{{ author }}
+						</NuxtLink>
+						<span v-else>{{ author }}</span>
 					</template>
 				</div>
 				<div class="flex flex-wrap gap-2">
@@ -57,6 +64,10 @@ defineProps({
 		required: true,
 	},
 	author: {
+		type: String,
+		required: false,
+	},
+	authorUid: {
 		type: String,
 		required: false,
 	},

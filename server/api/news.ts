@@ -56,7 +56,7 @@ function filterBySearch(search: string, articles: Article[]) {
 
 function filterByAuthor(author: string, articles: Article[]) {
 	if (author === 'all') return articles;
-	return articles.filter((article) => article.author === author);
+	return articles.filter((article) => article.authorUid === author || article.author === author);
 }
 
 function filterByDateRange(range: string, articles: Article[]) {

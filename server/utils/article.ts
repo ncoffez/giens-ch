@@ -7,4 +7,5 @@ export interface Article {
 	image: string;
 	body: string;
 	author?: string;
+	authorUid?: string;
 }
