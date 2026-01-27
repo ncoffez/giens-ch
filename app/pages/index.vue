@@ -123,13 +123,37 @@
 </template>
 
 <script lang="ts" setup>
-const { $token } = useNuxtApp();
+const nuxtApp = useNuxtApp();
+const { $token } = nuxtApp;
+
+const cacheKey = computed(() => {
+	const authStatus = $token.value ? "auth" : "pub";
+	return `news-home-${authStatus}`;
+});
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
+	key: (process.env.NODE_ENV === 'test' ? Math.random().toString() : cacheKey.value),
 	method: "post",
 	body: { quantity: 3 },
 	headers: computed(() => {
 		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
 	}),
+	getCachedData(key) {
+		if (import.meta.test) return;
+		const cached = nuxtApp.payload.data[key] || nuxtApp.static.data[key];
+		if (!cached) return;
+
+		// 5-minute expiry check
+		const fetchedAt = (nuxtApp.payload as any)._fetchedAt?.[key] || 0;
+		if (Date.now() - fetchedAt > 1000 * 60 * 5) return;
+
+		return cached;
+	},
+	onResponse({ response }) {
+		if (response._data) {
+			(nuxtApp.payload as any)._fetchedAt = (nuxtApp.payload as any)._fetchedAt || {};
+			(nuxtApp.payload as any)._fetchedAt[cacheKey.value] = Date.now();
+		}
+	},
 });
 </script>

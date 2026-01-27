@@ -24,7 +24,7 @@ const navItems = computed(() => {
 	];
 
 	if ($isReader.value) {
-		items.push({ label: "Intern", icon: "i-lucide-lock", to: "/news/documents" });
+		items.push({ label: "EV", icon: "i-lucide-users-round", to: "/news/eigentuemerversammlung" });
 	}
 
 	if ($currentUser.value) {

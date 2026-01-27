@@ -2,26 +2,32 @@ import { describe, it, expect, vi } from "vitest";
 import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
 import NewsPage from "../../app/pages/news/[[tag]].vue";
 
-describe("News Page", () => {
-	it("renders news articles", async () => {
-		registerEndpoint("/api/labels", {
-			method: "GET",
-			handler: () => [{ id: "public", private: false }],
-		});
+let newsResponse: any[] = [];
+let labelsResponse: any[] = [{ id: "public", private: false }];
 
-		registerEndpoint("/api/news", {
-			method: "POST",
-			handler: () => [
-				{
-					id: "1",
-					title: "News 1",
-					intro: "Intro 1",
-					published: new Date().toISOString(),
-					tags: ["public"],
-					image: "/img1.jpg",
-				},
-			],
-		});
+describe("News Page", () => {
+	registerEndpoint("/api/labels", {
+		method: "GET",
+		handler: () => labelsResponse,
+	});
+
+	registerEndpoint("/api/news", {
+		method: "POST",
+		handler: () => newsResponse,
+	});
+
+	it("renders news articles", async () => {
+		labelsResponse = [{ id: "public", private: false }];
+		newsResponse = [
+			{
+				id: "1",
+				title: "News 1",
+				intro: "Intro 1",
+				published: new Date().toISOString(),
+				tags: ["public"],
+				image: "/img1.jpg",
+			},
+		];
 
 		const component = await mountSuspended(NewsPage);
 		// Wait for lazy fetch
@@ -32,10 +38,8 @@ describe("News Page", () => {
 	});
 
 	it("shows 'No news' message when empty", async () => {
-		registerEndpoint("/api/news", {
-			method: "POST",
-			handler: () => [],
-		});
+		labelsResponse = [{ id: "public", private: false }];
+		newsResponse = [];
 
 		const component = await mountSuspended(NewsPage);
 		await new Promise(resolve => setTimeout(resolve, 100));
