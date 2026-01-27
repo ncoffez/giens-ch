@@ -117,6 +117,72 @@ const activeCategoryLabel = computed(() => {
 			</UButton>
 		</div>
 
+		<!-- Active Filter Chips (Visible when drawer is closed) -->
+		<Transition
+			enter-active-class="transition duration-200 ease-out"
+			enter-from-class="transform scale-95 opacity-0"
+			enter-to-class="transform scale-100 opacity-100"
+			leave-active-class="transition duration-150 ease-in"
+			leave-from-class="transform scale-100 opacity-100"
+			leave-to-class="transform scale-95 opacity-0"
+		>
+			<div v-if="hasActiveFilters && !isOpen" class="flex flex-wrap gap-2 px-1">
+				<UBadge
+					v-if="filters.tag !== 'all'"
+					variant="subtle"
+					color="primary"
+					class="rounded-full pl-1.5 pr-1 py-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+				>
+					<UIcon :name="categoryOptions.find(c => c.id === filters.tag)?.icon || 'i-lucide-tag'" class="w-3 h-3" />
+					<span>{{ categoryOptions.find(c => c.id === filters.tag)?.label }}</span>
+					<UButton
+						icon="i-lucide-x"
+						variant="ghost"
+						color="primary"
+						size="xs"
+						class="rounded-full p-0.5 hover:bg-primary-100 dark:hover:bg-primary-900/40"
+						@click="filters.tag = 'all'"
+					/>
+				</UBadge>
+
+				<UBadge
+					v-if="filters.author !== 'all'"
+					variant="subtle"
+					color="neutral"
+					class="rounded-full pl-1.5 pr-1 py-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+				>
+					<UIcon name="i-lucide-user" class="w-3 h-3" />
+					<span>{{ authorOptions.find(a => a.id === filters.author)?.label }}</span>
+					<UButton
+						icon="i-lucide-x"
+						variant="ghost"
+						color="neutral"
+						size="xs"
+						class="rounded-full p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+						@click="filters.author = 'all'"
+					/>
+				</UBadge>
+
+				<UBadge
+					v-if="filters.dateRange !== 'all'"
+					variant="subtle"
+					color="neutral"
+					class="rounded-full pl-1.5 pr-1 py-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+				>
+					<UIcon name="i-lucide-calendar" class="w-3 h-3" />
+					<span>{{ dateOptions.find(d => d.id === filters.dateRange)?.label }}</span>
+					<UButton
+						icon="i-lucide-x"
+						variant="ghost"
+						color="neutral"
+						size="xs"
+						class="rounded-full p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+						@click="filters.dateRange = 'all'"
+					/>
+				</UBadge>
+			</div>
+		</Transition>
+
 		<!-- Expandable Filter Drawer -->
 		<UCollapsible v-model:open="isOpen">
 			<div class="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-inner space-y-6">
