@@ -58,6 +58,12 @@ const deleteHome = async (homeId: string) => {
 
 onMounted(fetchHomes);
 watch(showDisabled, fetchHomes);
+
+watchEffect(() => {
+	if (homes.value.some(h => !h.id)) {
+		console.error("Found home without ID:", homes.value.filter(h => !h.id));
+	}
+});
 </script>
 
 <template>

@@ -12,6 +12,13 @@ const stats = [
 	{ label: "Status", value: $isAdmin.value ? "Administrator" : "Mitglied", icon: "i-lucide-shield" }
 ];
 
+const articlePage = ref(1);
+const { data: articlesData, status: articlesStatus } = await useLazyFetch("/api/profile/articles", {
+	query: computed(() => ({ page: articlePage.value })),
+});
+
+const articles = computed(() => articlesData.value?.articles || []);
+
 const accountDetails = computed(() => [
 	{ label: "E-Mail Adresse", value: $currentUser.value?.email, icon: "i-lucide-mail" },
 	{ label: "Benutzer-ID", value: $currentUser.value?.uid, icon: "i-lucide-fingerprint" },
@@ -106,6 +113,48 @@ async function updateName() {
 									<span class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tight">{{ item.label }}</span>
 								</div>
 								<span class="text-base font-medium tracking-tight">{{ item.value }}</span>
+							</div>
+						</div>
+					</section>
+
+					<!-- My Articles -->
+					<section v-if="$isAdmin || $isPublisher" class="space-y-6">
+						<div class="flex items-center gap-4">
+							<h2 class="text-xl font-bold">Meine Artikel</h2>
+							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+						</div>
+
+						<div class="bg-white/50 dark:bg-gray-900/40 backdrop-blur-sm rounded-3xl border border-gray-100 dark:border-gray-800 p-4">
+							<ClientOnly>
+								<UiArticleList :articles="articles" :loading="articlesStatus === 'pending'" />
+								<template #fallback>
+									<div class="space-y-3">
+										<div v-for="i in 3" :key="`skeleton-${i}`" class="flex items-start gap-3 p-3 rounded-xl bg-gray-100 dark:bg-gray-800">
+											<div class="w-16 h-16 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+											<div class="flex-1 min-w-0 space-y-2">
+												<div class="w-3/4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+												<div class="w-1/3 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+											</div>
+										</div>
+									</div>
+								</template>
+							</ClientOnly>
+
+							<div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+								<div class="text-xs text-gray-400">
+									Zeige {{ articles.length }}{{ articles.length === 5 ? "+" : "" }} Artikel
+								</div>
+								<UButton
+									v-if="articles.length >= 5"
+									variant="ghost"
+									color="neutral"
+									size="sm"
+									to="/news"
+									icon="i-lucide-arrow-right"
+									trailing
+								>
+									Alle News
+								</UButton>
 							</div>
 						</div>
 					</section>
