@@ -1,7 +1,7 @@
 <template>
 	<NuxtLink 
 		:to="link" 
-		class="group relative flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-8 gap-y-6 my-6 md:my-8 first:mt-5 items-stretch w-full bg-white dark:bg-gray-900/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-primary/10 hover:-translate-y-0.5 transition-all duration-300 md:min-h-[220px]"
+		class="group relative flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-8 gap-y-6 my-6 md:my-8 first:mt-5 items-stretch w-full bg-white dark:bg-gray-900/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md hover:border-primary/10 hover:-translate-y-0.5 transition-all duration-200 md:min-h-[220px]"
 	>
 		<!-- Image Container -->
 		<div class="relative md:w-56 w-full h-48 md:h-auto overflow-hidden rounded-xl flex-shrink-0 bg-gray-50 dark:bg-gray-800">
@@ -9,7 +9,7 @@
 				:src="imageUrl"
 				:alt="title"
 				loading="lazy"
-				class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+				class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 			/>
 		</div>
 
@@ -35,7 +35,7 @@
 			</div>
 
 			<div class="space-y-2 flex-1">
-				<h2 class="text-lg md:text-xl font-bold leading-snug tracking-tight text-gray-900 dark:text-white transition-colors duration-300">
+				<h2 class="text-lg md:text-xl font-bold leading-snug tracking-tight text-gray-900 dark:text-white transition-colors duration-200">
 					{{ title }}
 				</h2>
 				<p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-2 md:line-clamp-3 font-medium">
@@ -54,15 +54,15 @@
 							:src="undefined" 
 							:alt="author" 
 							size="xs" 
-							class="w-6 h-6 text-[10px] ring-2 ring-gray-100 dark:ring-gray-800 group-hover/author:ring-primary/30 transition-all" 
+							class="w-6 h-6 text-[10px] ring-2 ring-gray-100 dark:ring-gray-800 group-hover/author:ring-primary/30 transition-all duration-200" 
 						/>
-						<span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover/author:text-primary transition-colors">
+						<span class="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover/author:text-primary transition-colors duration-200">
 							{{ author }}
 						</span>
 					</div>
 				</template>
 				
-				<div class="flex items-center gap-1 text-primary text-sm font-black opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+				<div class="flex items-center gap-1 text-primary text-sm font-black opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-200">
 					<span>Lesen</span>
 					<UIcon name="i-lucide-arrow-right" class="w-4 h-4" />
 				</div>

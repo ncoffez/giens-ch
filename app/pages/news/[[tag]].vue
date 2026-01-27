@@ -1,23 +1,25 @@
 <template>
 	<div id="news" class="flex flex-col max-w-screen-lg mx-auto px-4">
+		<div class="flex flex-col gap-4 mb-8 pt-4">
+			<div class="flex justify-between items-center">
+				<h1 class="text-3xl font-black tracking-tight">Aktuelles</h1>
+				<ClientOnly>
+					<UButton
+						v-if="$isPublisher"
+						to="/news/new"
+						label="Neuer Artikel"
+						icon="i-lucide-plus"
+						color="primary"
+						size="lg"
+						class="rounded-full shadow-lg" />
+				</ClientOnly>
+			</div>
+			
+			<UiNewsFilter v-model="filterState" />
+		</div>
+
 		<ClientOnly>
 			<div v-if="isAuthorized" key="authorized-view">
-				<div class="flex flex-col gap-4 mb-8 pt-4">
-					<div class="flex justify-between items-center">
-						<h1 class="text-3xl font-black tracking-tight">Aktuelles</h1>
-						<UButton
-							v-if="$isPublisher"
-							to="/news/new"
-							label="Neuer Artikel"
-							icon="i-lucide-plus"
-							color="primary"
-							size="lg"
-							class="rounded-full shadow-lg" />
-					</div>
-					
-					<UiNewsFilter v-model="filterState" />
-				</div>
-
 				<div id="error" v-if="error" class="py-12">
 					<h1 class="text-2xl font-bold">{{ error.statusCode }} - {{ error.name }}</h1>
 					<p class="text-neutral-500">{{ error.message }}</p>
@@ -59,7 +61,7 @@
 				</div>
 			</div>
 			<div v-else class="py-12" key="not-authorized-view">
-				<NotAuthorized :tag="tag" />
+				<NotAuthorized :tag="filterState.tag" />
 			</div>
 			<template #fallback>
 				<div class="flex flex-col w-full">
@@ -227,13 +229,18 @@ const filteredNews = computed(() => {
 </script>
 
 <style scoped>
+.list-move,
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.3s ease-out;
 }
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(15px);
+}
+.list-leave-active {
+  position: absolute;
+  width: 100%;
 }
 </style>
