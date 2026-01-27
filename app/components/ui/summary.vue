@@ -33,12 +33,20 @@
 			</div>
 
 			<!-- Title and Subtitle -->
-			<div class="space-y-2 flex-1">
-				<div class="text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-white transition-colors duration-200">
-					{{ title }}
+			<div class="flex flex-col gap-2 flex-1">
+				<!-- Lock icon indicator -->
+				<div v-if="locked" class="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-semibold uppercase tracking-wide">
+					<UIcon name="i-lucide-lock" class="w-3 h-3" />
+					<span>Gesperrt</span>
 				</div>
-				<div class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-2 md:line-clamp-3">
-					{{ subtitle }}
+
+				<div class="space-y-2 flex-1">
+					<div class="text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-white transition-colors duration-200">
+						{{ title }}
+					</div>
+					<div class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-2 md:line-clamp-3">
+						{{ subtitle }}
+					</div>
 				</div>
 			</div>
 
@@ -53,22 +61,31 @@
 
 <script lang="ts" setup>
 const props = defineProps<{
-	link: string;
-	id: string;
-	title: string;
-	subtitle: string;
-	imageUrl: string;
-	date: string;
-	author?: string;
-	authorUid?: string;
-	index?: number;
+  link: string;
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  date: string;
+  author?: string;
+  authorUid?: string;
+  index?: number;
+  locked?: boolean;
 }>();
 
 const navigateToProfile = () => {
-	if (props.authorUid) {
-		navigateTo(`/profile/${props.authorUid}`);
-	}
+  if (props.authorUid) {
+    navigateTo(`/profile/${props.authorUid}`);
+  }
 };
+
+const isReader = computed(() => {
+  if (!process.client) return false;
+  const nuxtApp = useNuxtApp() as any;
+  if (!nuxtApp.$currentUser?.value) return false;
+  const claims = (nuxtApp.$currentUser.value as any).claims || {};
+  return !!(claims.admin || claims.publisher || claims.owner || claims.reader);
+});
 </script>
 
 <style scoped></style>

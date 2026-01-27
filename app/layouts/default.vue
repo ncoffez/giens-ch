@@ -38,7 +38,7 @@
 						:aria-label="isDark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'"
 						@click="isDark = !isDark" />
 					<div class="hidden lg:block">
-						<template v-if="!$currentUser">
+						<template v-if="!currentUser.value">
 							<UButton
 								to="/login"
 								label="Anmelden"
@@ -49,7 +49,7 @@
 						<template v-else>
 							<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
 								<UButton
-									:label="$currentUser.displayName || 'Profil'"
+									:label="(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? 'Profil'"
 									icon="i-lucide-circle-user"
 									color="neutral"
 									variant="ghost"
@@ -67,7 +67,9 @@
 		</main>
 
 		<!-- Mobile Navigation -->
-		<UiMobileNav />
+		<ClientOnly>
+			<UiMobileNav />
+		</ClientOnly>
 
 		<!-- Footer -->
 		<footer class="py-12 border-t border-gray-100 dark:border-gray-800">
@@ -82,8 +84,14 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const route = useRoute();
-const { $currentUser, $isAdmin, $isOwner, $isPublisher, $isReader } = useNuxtApp();
+const nuxtApp = useNuxtApp() as any;
 const colorMode = useColorMode();
+
+const currentUser = computed(() => process.client ? nuxtApp.$currentUser : null);
+const isAdmin = computed(() => process.client ? nuxtApp.$isAdmin : false);
+const isOwner = computed(() => process.client ? nuxtApp.$isOwner : false);
+const isPublisher = computed(() => process.client ? nuxtApp.$isPublisher : false);
+const isReader = computed(() => process.client ? nuxtApp.$isReader : false);
 
 const isDark = computed({
 	get() {
@@ -169,25 +177,34 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			to: "/news",
 			active: route.path.startsWith("/news"),
 		},
-		{
-			label: "Anreise",
-			to: "/travel",
-			icon: "i-lucide-car",
-			active: route.path === "/travel",
-		},
-		{
-			label: "Über uns",
-			to: "/about",
-			icon: "i-lucide-info",
-			active: route.path === "/about",
-		},
 	];
+
+	if (process.client && isOwner.value) {
+		items.push({
+			label: "Mein Haus",
+			icon: "i-lucide-building-2",
+			to: "/homes",
+			active: route.path.startsWith("/homes"),
+		});
+	}
+
+	items.push({
+		label: "Anreise",
+		to: "/travel",
+		icon: "i-lucide-car",
+		active: route.path === "/travel",
+	}, {
+		label: "Über uns",
+		to: "/about",
+		icon: "i-lucide-info",
+		active: route.path === "/about",
+	});
 
 	return items;
 });
 
 const userItems = computed(() => {
-	if (!$currentUser.value) {
+	if (!currentUser.value) {
 		return [
 			{
 				label: "Anmelden",
@@ -205,7 +222,7 @@ const userItems = computed(() => {
 		}
 	];
 
-	if ($isAdmin.value) {
+	if (process.client && isAdmin.value) {
 		items.push({
 			label: "Verwaltung",
 			to: "/admin",

@@ -6,8 +6,9 @@ const filters = defineModel<{
 	dateRange: string;
 }>({ required: true });
 
-const { $isReader, $isPublisher } = useNuxtApp();
 const nuxtApp = useNuxtApp();
+const $isReader = process.client ? nuxtApp.$isReader : null;
+const $isPublisher = process.client ? nuxtApp.$isPublisher : null;
 
 const isOpen = ref(false);
 
@@ -33,7 +34,7 @@ const categoryOptions = computed(() => {
 	if (!labels.value) return [];
 	
 	const items = labels.value
-		.filter(l => !l.private || $isReader.value)
+		.filter(l => !l.private || (process.client && $isReader?.value))
 		.map(l => ({
 			id: l.id,
 			label: l.title || l.id.charAt(0).toUpperCase() + l.id.slice(1),
@@ -100,17 +101,19 @@ const activeCategoryLabel = computed(() => {
 					</template>
 				</UInput>
 			</div>
-			<UButton
-				v-if="$isPublisher"
-				to="/news/new"
-				color="primary"
-				variant="soft"
-				size="xl"
-				class="rounded-2xl px-4"
-				icon="i-lucide-plus"
-			>
-				<span class="hidden lg:inline font-bold">Neu</span>
-			</UButton>
+			<ClientOnly>
+				<UButton
+					v-if="$isPublisher"
+					to="/news/new"
+					color="primary"
+					variant="soft"
+					size="xl"
+					class="rounded-2xl px-4"
+					icon="i-lucide-plus"
+				>
+					<span class="hidden lg:inline font-bold">Neu</span>
+				</UButton>
+			</ClientOnly>
 			<UButton
 				:color="hasActiveFilters || isOpen ? 'primary' : 'neutral'"
 				:variant="hasActiveFilters || isOpen ? 'solid' : 'ghost'"

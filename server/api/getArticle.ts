@@ -20,16 +20,27 @@ export default defineEventHandler(async (event) => {
 			return labelDoc?.private;
 		});
 
-		if (isPrivate && permission != "private") throw new Error(`Article with id ${id} is private.`);
+		const includeBody = permission === "private" && !isPrivate;
 
-		return article;
+		return {
+			id: article.id,
+			title: article.title,
+			intro: article.intro,
+			image: article.image,
+			published: article.published,
+			tags: article.tags,
+			author: article.author,
+			authorUid: article.authorUid,
+			body: includeBody ? article.body : undefined,
+			isPrivate,
+		};
 	} catch (error: any) {
-    return {
-      data: null,
-      error: true,
-      message: error?.message || 'Unknown error',
-      statusCode: 500
-    };
-  }
-})
+		return {
+			data: null,
+			error: true,
+			message: error?.message || 'Unknown error',
+			statusCode: 500, 
+		};
+	}
+});
 

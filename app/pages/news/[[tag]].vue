@@ -63,7 +63,8 @@ const route = useRoute();
 const router = useRouter();
 const tag = route.params.tag as string;
 const nuxtApp = useNuxtApp();
-const { $token, $isPublisher } = nuxtApp;
+const $token = process.client ? nuxtApp.$token : null;
+const $isPublisher = process.client ? nuxtApp.$isPublisher : null;
 
 const filterState = ref({
 	search: (route.query.s as string) || '',
@@ -108,7 +109,7 @@ watch(() => route.fullPath, () => {
 
 // Create a unique key for the fetch
 const cacheKey = computed(() => {
-	const authStatus = $token.value ? "auth" : "pub";
+	const authStatus = process.client && $token?.value ? "auth" : "pub";
 	return `news-list-all-${authStatus}`;
 });
 
@@ -127,26 +128,26 @@ const isAuthorized = computed(() => {
 	const currentTag = filterState.value.tag;
 	if (currentTag === 'all' || !tagIsPrivate.value) return true;
 	
-	const { $claims } = useNuxtApp();
-	const claims = $claims.value;
-	const isReader = !!(claims.admin || claims.publisher || claims.owner || claims.reader);
+	const $claims = process.client ? (nuxtApp as any).$claims : null;
+	const claims = $claims?.value;
+	const isReader = !!(claims?.admin || claims?.publisher || claims?.owner || claims?.reader);
 	return isReader;
 });
 
 const {
-	data: allNews,
-	error,
-	status,
-} = await useFetch<Article[]>("/api/news", {
-	key: cacheKey,
-	method: "post",
-	body: { 
-		all: true,
-		quantity: 1000
-	},
-	headers: computed(() => {
-		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
-	}),
+		data: allNews,
+		error,
+		status,
+	} = await useFetch<Article[]>("/api/news", {
+		key: cacheKey,
+		method: "post",
+		body: { 
+			all: true,
+			quantity: 1000
+		},
+		headers: computed(() => {
+			return process.client && $token?.value ? { Authorization: `Bearer ${$token.value}` } : {};
+		}),
 	getCachedData(key) {
 		if (import.meta.test || (process as any).test || (process as any).env?.NODE_ENV === 'test') return;
 		const cached = nuxtApp.payload.data[key] || nuxtApp.static.data[key];

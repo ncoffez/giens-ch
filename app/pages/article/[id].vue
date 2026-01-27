@@ -64,7 +64,27 @@
 
 			<!-- Content -->
 			<article class="prose max-w-none mx-auto lg:text-lg leading-relaxed">
-				<div v-html="article.body"></div>
+				<!-- Show body if accessible -->
+				<div v-if="canReadBody && article && article.body">
+					<div v-html="article.body"></div>
+				</div>
+				
+				<!-- Login prompt for private articles -->
+				<div v-else class="text-center py-12 space-y-6">
+					<UIcon name="i-lucide-lock" class="w-16 h-16 text-gray-300 mx-auto" />
+					<div class="space-y-4">
+						<h2 class="text-2xl font-bold">Bitte anmelden</h2>
+						<p class="text-gray-600">Dieser Artikel ist nur für authentifizierte Mitglieder sichtbar.</p>
+						<div class="flex gap-4 justify-center">
+							<NuxtLink to="/login">
+								<UButton size="xl" color="primary">Anmelden</UButton>
+							</NuxtLink>
+							<NuxtLink to="/register">
+								<UButton size="xl" variant="outline">Registrieren</UButton>
+							</NuxtLink>
+						</div>
+					</div>
+				</div>
 			</article>
 		</div>
 	</div>
@@ -74,18 +94,27 @@ import type { Article } from "~/types";
 
 const route = useRoute();
 const id = route.params.id;
-const { $token } = useNuxtApp();
+const nuxtApp = useNuxtApp() as any;
+const token = computed(() => process.client ? nuxtApp.$token?.value : null);
+const isAuthenticated = computed(() => token.value !== null);
 
 const {
-	data: article,
+	data: articleData,
 	error,
 	status,
-} = await useLazyFetch<Article>(`/api/getArticle`, {
+} = await useLazyFetch(`/api/getArticle`, {
 	method: "post",
 	body: { id },
 	headers: computed(() => {
-		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
+		return token.value ? { Authorization: `Bearer ${token.value}` } : {};
 	}),
+});
+
+const article = computed(() => articleData.value);
+const isPrivateArticle = computed(() => article.value?.isPrivate || false);
+
+const canReadBody = computed(() => {
+	return !isPrivateArticle.value || isAuthenticated.value;
 });
 </script>
 <style scoped></style>

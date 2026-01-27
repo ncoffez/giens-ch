@@ -37,3 +37,47 @@ export interface Author {
 	id: string;
 	name: string;
 }
+
+export interface HomeContact {
+	phone?: string;
+	email?: string;
+	name?: string;
+}
+
+export interface Home {
+	id: string;
+	name: string;
+	slug: string;
+	ownerId: string;
+	editors: string[];
+	photos: string[];
+	enabled: boolean;
+	contact: HomeContact;
+	wifiPassword?: string;
+	checkInInfo: string;
+	checkOutInfo: string;
+	mustKnows: string[];
+	houseRules: string;
+	blanketsInfo: string;
+	cleaningInfo: string[];
+	parkingNumber?: string;
+	washingMachineOverride?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface HomeShare {
+	id: string;
+	homeId: string;
+	createdBy: string;
+	expiresAt: string;
+	accessCount: number;
+	createdAt: string;
+}
+
+export interface GlobalSettings {
+	id: string;
+	maxHomeNumber: number;
+	washingMachineUse: string;
+	updatedAt: string;
+}

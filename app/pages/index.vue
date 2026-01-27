@@ -126,26 +126,17 @@
 
 <script lang="ts" setup>
 const nuxtApp = useNuxtApp();
-const { $token } = nuxtApp;
-
-const cacheKey = computed(() => {
-	const authStatus = $token.value ? "auth" : "pub";
-	return `news-home-${authStatus}`;
-});
+const token = computed(() => process.client ? (nuxtApp as any).$token?.value : null);
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
-	key: cacheKey.value,
+	key: "news-home",
 	method: "post",
 	body: { quantity: 3 },
-	headers: computed(() => {
-		return $token.value ? { Authorization: `Bearer ${$token.value}` } : {};
-	}),
 	getCachedData(key) {
 		if (import.meta.test) return;
-		const cached = nuxtApp.payload.data[key] || nuxtApp.static.data[key];
+		const cached = (nuxtApp.payload as any).data[key] || (nuxtApp.static.data as any)[key];
 		if (!cached) return;
 
-		// 5-minute expiry check
 		const fetchedAt = (nuxtApp.payload as any)._fetchedAt?.[key] || 0;
 		if (Date.now() - fetchedAt > 1000 * 60 * 5) return;
 
@@ -154,7 +145,7 @@ const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	onResponse({ response }) {
 		if (response._data) {
 			(nuxtApp.payload as any)._fetchedAt = (nuxtApp.payload as any)._fetchedAt || {};
-			(nuxtApp.payload as any)._fetchedAt[cacheKey.value] = Date.now();
+			(nuxtApp.payload as any)._fetchedAt["news-home"] = Date.now();
 		}
 	},
 });

@@ -15,26 +15,30 @@
 </template>
 
 <script setup lang="ts">
-const { $currentUser, $isReader } = useNuxtApp();
+	const nuxtApp = useNuxtApp() as any;
 
-const navItems = computed(() => {
-	const items = [
-		{ label: "Home", icon: "i-lucide-house", to: "/" },
-		{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
-	];
+	const navItems = computed(() => {
+		const items = [
+			{ label: "Home", icon: "i-lucide-house", to: "/" },
+			{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
+		];
 
-	if ($isReader.value) {
-		items.push({ label: "EV", icon: "i-lucide-users-round", to: "/news/eigentuemerversammlung" });
-	}
+		if (process.client && nuxtApp.$isReader?.value) {
+			items.push({ label: "EV", icon: "i-lucide-users-round", to: "/news/eigentuemerversammlung" });
+		}
 
-	if ($currentUser.value) {
-		items.push({ label: "Profil", icon: "i-lucide-circle-user", to: "/profile" });
-	} else {
-		items.push({ label: "Anmelden", icon: "i-lucide-log-in", to: "/login" });
-	}
+		if (process.client && nuxtApp.$currentUser?.value) {
+			items.push({ label: "Profil", icon: "i-lucide-circle-user", to: "/profile" });
+		} else {
+			items.push({ label: "Anmelden", icon: "i-lucide-log-in", to: "/login" });
+		}
 
-	return items;
-});
+		if (process.client && nuxtApp.$isOwner?.value) {
+			items.push({ label: "Haus", icon: "i-lucide-building-2", to: "/homes" });
+		}
+
+		return items;
+	});
 </script>
 
 <style scoped>

@@ -4,6 +4,11 @@ definePageMeta({ middleware: "is-admin" });
 const items = [
 	[
 		{
+			label: 'Häuser',
+			icon: 'i-lucide-building-2',
+			to: '/admin/homes'
+		},
+		{
 			label: 'Benutzer',
 			icon: 'i-lucide-users',
 			to: '/admin/users'
@@ -15,6 +20,11 @@ const items = [
 		}
 	],
 	[
+		{
+			label: 'Einstellungen',
+			icon: 'i-lucide-settings',
+			to: '/admin/settings'
+		},
 		{
 			label: 'Zurück zur Seite',
 			icon: 'i-lucide-arrow-left',

@@ -9,16 +9,28 @@ export default defineEventHandler(async (event) => {
 		const permission = await getUserPermission(event);
 		console.log(`API News: tag=${tag}, search=${search}, author=${author}, dateRange=${dateRange}, permission=${permission}, all=${all}`);
 
-		const limitCount = all ? 1000 : 300; 
-
+		const limitCount = all ? 1000 : 300;
 		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(limitCount).get();
-		const news: Article[] = [];
-		querySnapshot.forEach((doc) => news.push({ id: doc.id, ...doc.data() } as Article));
-
-		const labels = await $fetch("/api/labels");
-		let latestNews = filterByPermission(permission, news, labels as any[]);
+		const includeBody = permission === "private";
 		
-		console.log(`Initial count after permission filter: ${latestNews.length}`);
+		const articleMetadata: any[] = [];
+		querySnapshot.forEach((doc) => {
+			const article = doc.data();
+			articleMetadata.push({
+				id: doc.id,
+				title: (article && article.title) || "",
+				intro: (article && article.intro) || "",
+				image: (article && article.image) || "",
+				published: (article && article.published) || "",
+				tags: (article && article.tags) || [],
+				author: (article && article.author) || null,
+				authorUid: (article && article.authorUid) || null,
+				body: includeBody ? ((article && article.body) || "") : undefined,
+			});
+		});
+
+		console.log(`Initial count: ${articleMetadata.length}`);
+		let latestNews = articleMetadata;
 
 		if (tag && tag !== 'all') {
 			latestNews = filterByTag(tag, latestNews);
@@ -44,23 +56,17 @@ export default defineEventHandler(async (event) => {
 		console.log(`Returning ${latestNews.length} articles`);
 		return latestNews;
 	} catch (e: any) {
-		return { data: null, error: true, message: e?.message, statusCode: 500 };
+		console.error("Error in news API:", e);
+		return { data: null, error: true, message: e?.message || "Unknown error", statusCode: 500 };
 	}
 });
 
-function filterByPermission(permission: "public" | "private", articles: Article[], labels: any[]) {
-	if (permission === "private") return articles;
-	return articles.filter((article) => {
-		return (article.tags || []).every((tag) => !isPrivateTag(tag, labels));
-	});
-}
-
-function filterByTag(tag: string, articles: Article[]) {
+function filterByTag(tag: string, articles: any[]) {
 	if (tag === 'all') return articles;
 	return articles.filter((article) => (article.tags || []).map((t) => t.toLowerCase()).includes(tag.toLowerCase()));
 }
 
-function filterBySearch(search: string, articles: Article[]) {
+function filterBySearch(search: string, articles: any[]) {
 	const query = search.toLowerCase().trim();
 	if (!query) return articles;
 	
@@ -68,28 +74,26 @@ function filterBySearch(search: string, articles: Article[]) {
 		const title = (article.title || "").toLowerCase();
 		const intro = (article.intro || "").toLowerCase();
 		const author = (article.author || "").toLowerCase();
-		const body = (article.body || "").toLowerCase(); // Search in body too for better results
 		
 		return title.includes(query) || 
 			   intro.includes(query) || 
-			   author.includes(query) ||
-			   body.includes(query);
+			   author.includes(query);
 	});
 }
 
-function filterByAuthor(author: string, articles: Article[]) {
+function filterByAuthor(author: string, articles: any[]) {
 	if (author === 'all') return articles;
 	return articles.filter((article) => {
 		return article.authorUid === author || article.author === author;
 	});
 }
 
-function filterByDateRange(range: string, articles: Article[]) {
+function filterByDateRange(range: string, articles: any[]) {
 	if (range === 'all') return articles;
 	
 	const now = new Date();
 	let startDate: Date;
-
+	
 	try {
 		switch (range) {
 			case 'this-month':
@@ -105,7 +109,7 @@ function filterByDateRange(range: string, articles: Article[]) {
 			default:
 				return articles;
 		}
-
+	
 		const startTime = startDate.getTime();
 		return articles.filter((article) => {
 			if (!article.published) return false;
@@ -116,14 +120,4 @@ function filterByDateRange(range: string, articles: Article[]) {
 		console.error("Error in filterByDateRange:", e);
 		return articles;
 	}
-}
-
-function sortByDate(articles: Article[]) {
-	return articles.sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime());
-}
-
-function isPrivateTag(tag: string, labels: any[]) {
-	const label = labels.find((label) => label?.id === tag.toLowerCase());
-	if (!label) return undefined;
-	return label.private;
 }
