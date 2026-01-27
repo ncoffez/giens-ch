@@ -12,9 +12,7 @@
   ],
   "hosting": {
     "public": ".output/public",
-    "predeploy": [
-      "npm run build"
-    ],
+
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
