@@ -56,16 +56,16 @@ watch(() => props.home, (newHome) => {
 
 <template>
 	<UCard class="space-y-6">
-		<form @submit.prevent="save">
-			<UFormGroup label="House Rules" description="Rules for residents to follow">
-				<UTextarea v-model="form.houseRules" placeholder="Enter house rules..." rows="6" />
-			</UFormGroup>
+		<form @submit.prevent="save" class="space-y-6">
+			<UFormField label="House Rules" description="Rules for residents to follow">
+				<UTextarea v-model="form.houseRules" placeholder="Enter house rules..." :rows="6" />
+			</UFormField>
 
-			<UFormGroup label="Blankets Information" description="Information about blankets and bedding">
-				<UTextarea v-model="form.blanketsInfo" placeholder="Enter blanket information..." rows="4" />
-			</UFormGroup>
+			<UFormField label="Blankets Information" description="Information about blankets and bedding">
+				<UTextarea v-model="form.blanketsInfo" placeholder="Enter blanket information..." :rows="4" />
+			</UFormField>
 
-			<UFormGroup label="Cleaning Information" description="Cleaning instructions">
+			<UFormField label="Cleaning Information" description="Cleaning instructions">
 				<div class="space-y-2">
 					<div class="flex gap-2">
 						<UInput
@@ -85,26 +85,24 @@ watch(() => props.home, (newHome) => {
 							<UButton
 								color="red"
 								variant="ghost"
-								size="icon"
+								icon="i-lucide-x"
 								@click="removeCleaningInfo(index)"
-							>
-								<UIcon name="i-lucide-x" />
-							</UButton>
+							/>
 						</div>
 					</div>
 				</div>
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup
+			<UFormField
 				label="Washing Machine Instructions Override"
 				description="Override the global default washing machine instructions (optional)"
 			>
 				<UTextarea
 					v-model="form.washingMachineOverride"
 					placeholder="Enter custom washing machine instructions or leave empty for global default..."
-					rows="4"
+					:rows="4"
 				/>
-			</UFormGroup>
+			</UFormField>
 
 			<UButton type="submit" :loading="loading">Save Changes</UButton>
 		</form>

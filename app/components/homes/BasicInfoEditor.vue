@@ -50,29 +50,29 @@ watch(() => props.home, (newHome) => {
 <template>
 	<UCard>
 		<form @submit.prevent="save" class="space-y-6">
-			<UFormGroup label="Home Name">
+			<UFormField label="Home Name">
 				<UInput v-model="form.name" type="number" placeholder="1-30" />
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup label="Owner Name">
+			<UFormField label="Owner Name">
 				<UInput v-model="form.contact.name" placeholder="Owner's name" />
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup label="Phone">
+			<UFormField label="Phone">
 				<UInput v-model="form.contact.phone" placeholder="Phone number" type="tel" />
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup label="Email">
+			<UFormField label="Email">
 				<UInput v-model="form.contact.email" placeholder="Email address" type="email" />
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup label="WiFi Password">
+			<UFormField label="WiFi Password">
 				<UInput v-model="form.wifiPassword" placeholder="WiFi password" type="password" />
-			</UFormGroup>
+			</UFormField>
 
-			<UFormGroup label="Parking Number">
+			<UFormField label="Parking Number">
 				<UInput v-model="form.parkingNumber" placeholder="Parking spot" />
-			</UFormGroup>
+			</UFormField>
 
 			<UButton type="submit" :loading="loading">Save Changes</UButton>
 		</form>

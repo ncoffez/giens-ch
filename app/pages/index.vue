@@ -161,7 +161,7 @@
 
 <script lang="ts" setup>
 const nuxtApp = useNuxtApp();
-const token = computed(() => process.client ? (nuxtApp as any).$token?.value : null);
+const token = computed(() => import.meta.client ? (nuxtApp as any).$token?.value : null);
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	key: "news-home",

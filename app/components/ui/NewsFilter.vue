@@ -7,8 +7,8 @@ const filters = defineModel<{
 }>({ required: true });
 
 const nuxtApp = useNuxtApp();
-const $isReader = process.client ? nuxtApp.$isReader : null;
-const $isPublisher = process.client ? nuxtApp.$isPublisher : null;
+const $isReader = import.meta.client ? nuxtApp.$isReader : null;
+const $isPublisher = import.meta.client ? nuxtApp.$isPublisher : null;
 
 const isOpen = ref(false);
 
@@ -34,7 +34,7 @@ const categoryOptions = computed(() => {
 	if (!labels.value) return [];
 	
 	const items = labels.value
-		.filter(l => !l.private || (process.client && $isReader?.value))
+		.filter(l => !l.private || (import.meta.client && $isReader?.value))
 		.map(l => ({
 			id: l.id,
 			label: l.title || l.id.charAt(0).toUpperCase() + l.id.slice(1),
