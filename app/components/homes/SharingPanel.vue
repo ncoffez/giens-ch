@@ -12,8 +12,6 @@ const shareUrl = ref<string | null>(null);
 const shareCreated = ref<any | null>(null);
 
 const fetchEditors = async () => {
-	// In a real implementation, you'd need an API to fetch user details
-	// For now, we'll just show UIDs
 	editors.value = (props.home?.editors || []).map((uid: string) => ({ uid }));
 };
 
@@ -27,18 +25,18 @@ const addEditor = async () => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 			body: { email: editorEmail.value },
 		});
-		toast.add({ title: "Editor added successfully", color: "green" });
+		toast.add({ title: "Editor erfolgreich hinzugefügt", color: "green" });
 		editorEmail.value = "";
 		fetchEditors();
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to add editor", color: "red" });
+		toast.add({ title: e.data?.message || e.message || "Fehler beim Hinzufügen", color: "red" });
 	} finally {
 		loading.value = false;
 	}
 };
 
 const removeEditor = async (editorUid: string) => {
-	if (!confirm("Remove this editor?")) return;
+	if (!confirm("Diesen Editor entfernen?")) return;
 
 	try {
 		loading.value = true;
@@ -47,10 +45,10 @@ const removeEditor = async (editorUid: string) => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 			body: { editorUid },
 		});
-		toast.add({ title: "Editor removed", color: "green" });
+		toast.add({ title: "Editor entfernt", color: "green" });
 		fetchEditors();
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to remove editor", color: "red" });
+		toast.add({ title: e.data?.message || e.message || "Fehler beim Entfernen", color: "red" });
 	} finally {
 		loading.value = false;
 	}
@@ -66,9 +64,9 @@ const generateShareLink = async () => {
 		});
 		shareUrl.value = result.shareUrl;
 		shareCreated.value = result;
-		toast.add({ title: "Share link generated!", color: "green" });
+		toast.add({ title: "Freigabelink erstellt!", color: "green" });
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to generate share link", color: "red" });
+		toast.add({ title: e.data?.message || e.message || "Fehler beim Erstellen", color: "red" });
 	} finally {
 		loading.value = false;
 	}
@@ -77,83 +75,95 @@ const generateShareLink = async () => {
 const copyShareLink = () => {
 	if (!shareUrl.value) return;
 	navigator.clipboard.writeText(shareUrl.value);
-	toast.add({ title: "Link copied to clipboard", color: "green" });
+	toast.add({ title: "Link in Zwischenablage kopiert", color: "green" });
 };
 
 onMounted(fetchEditors);
 </script>
 
 <template>
-	<div class="space-y-6">
-		<UCard>
-			<h3 class="text-lg font-semibold mb-4">Share with Residents</h3>
-			<p class="text-sm text-gray-600 mb-4">
-				Generate a one-time share link that residents can use to view your home information.
-				Links expire after the specified time (max 30 days).
-			</p>
-
-			<div class="flex gap-4 items-end">
-				<div class="flex-1">
-					<UFormField label="Link expiration (days)">
-						<UInput v-model.number="daysToExpire" type="number" min="1" max="30" />
-					</UFormField>
-				</div>
-				<UButton :loading="loading" @click="generateShareLink">
-					Generate Share Link
-				</UButton>
+	<div class="space-y-16">
+		<!-- Share with Residents -->
+		<div class="space-y-8">
+			<div>
+				<h3 class="text-xl font-bold">Mit Bewohnern teilen</h3>
+				<p class="text-sm text-gray-500">Erstellen Sie einen Link, damit Gäste die Hausinfos sehen können.</p>
 			</div>
 
-			<div v-if="shareUrl" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
-				<div class="flex items-center justify-between mb-2">
-					<span class="font-medium text-blue-900">Share URL</span>
-					<UButton size="sm" variant="ghost" @click="copyShareLink">
-						<UIcon name="i-lucide-copy" class="mr-2" />
-						Copy
-					</UButton>
-				</div>
-				code class="block text-sm bg-white p-3 rounded border text-blue-800 break-all">
-					{{ shareUrl }}
-				</code>
-				<p v-if="shareCreated" class="mt-2 text-xs text-blue-700">
-					Expires: {{ new Date(shareCreated.expiresAt).toLocaleString() }}
-				</p>
-			</div>
-		</UCard>
-
-		<UCard v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)">
-			<h3 class="text-lg font-semibold mb-4">Editors</h3>
-			<p class="text-sm text-gray-600 mb-4">
-				Add other users as editors to help manage this home.
-			</p>
-
-			<div class="flex gap-2 mb-4">
-				<UInput v-model="editorEmail" placeholder="Editor's email address" />
-				<UButton :loading="loading" @click="addEditor">Add</UButton>
-			</div>
-
-			<div v-if="editors.length" class="space-y-2">
-				<div
-					v-for="editor in editors"
-					:key="editor.uid"
-					class="flex items-center justify-between p-3 bg-gray-50 rounded"
-				>
-					<div>
-						<p class="font-medium">{{ editor.uid }}</p>
-						<p class="text-xs text-gray-500">Editor</p>
+			<div class="p-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-100 dark:border-gray-800 space-y-6">
+				<div class="flex flex-col md:flex-row gap-6 items-end">
+					<div class="flex-1 w-full">
+						<UFormField label="Gültigkeit des Links (Tage)">
+							<UInput v-model.number="daysToExpire" type="number" min="1" max="30" size="lg" />
+						</UFormField>
 					</div>
-					<UButton
-						color="red"
-						variant="ghost"
-						size="icon"
-						@click="removeEditor(editor.uid)"
-					>
-						<UIcon name="i-lucide-trash-2" />
+					<UButton :loading="loading" size="lg" icon="i-lucide-link" class="rounded-full px-8 w-full md:w-auto" @click="generateShareLink">
+						Link generieren
 					</UButton>
 				</div>
+
+				<div v-if="shareUrl" class="p-6 bg-white dark:bg-gray-950 rounded-2xl border border-primary/20 shadow-sm animate-in fade-in slide-in-from-top-2">
+					<div class="flex items-center justify-between mb-4">
+						<span class="text-sm font-bold text-primary flex items-center gap-2">
+							<UIcon name="i-lucide-check-circle" />
+							Freigabe-URL
+						</span>
+						<UButton size="sm" variant="soft" icon="i-lucide-copy" @click="copyShareLink">
+							Kopieren
+						</UButton>
+					</div>
+					<code class="block text-sm p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 break-all font-mono">
+						{{ shareUrl }}
+					</code>
+					<p v-if="shareCreated" class="mt-3 text-xs text-gray-400">
+						Läuft ab am: {{ new Date(shareCreated.expiresAt).toLocaleString("de-CH") }}
+					</p>
+				</div>
 			</div>
-			<div v-else class="text-sm text-gray-500 text-center py-4">
-				No editors added yet.
+		</div>
+
+		<!-- Editors -->
+		<div v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)" class="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
+			<div>
+				<h3 class="text-xl font-bold text-gray-900 dark:text-white">Editoren verwalten</h3>
+				<p class="text-sm text-gray-500">Andere Nutzer können die Details dieses Hauses mitbearbeiten.</p>
 			</div>
-		</UCard>
+
+			<div class="space-y-6">
+				<div class="flex gap-2">
+					<UInput v-model="editorEmail" placeholder="E-Mail-Adresse des Editors" size="lg" class="flex-1" />
+					<UButton :loading="loading" size="lg" variant="soft" class="rounded-xl px-6" @click="addEditor">Hinzufügen</UButton>
+				</div>
+
+				<div v-if="editors.length" class="grid grid-cols-1 gap-3">
+					<div
+						v-for="editor in editors"
+						:key="editor.uid"
+						class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-2xl group"
+					>
+						<div class="flex items-center gap-4">
+							<div class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm">
+								<UIcon name="i-lucide-user" class="w-5 h-5 text-gray-400" />
+							</div>
+							<div>
+								<p class="font-bold text-sm">{{ editor.uid }}</p>
+								<p class="text-[10px] uppercase font-black tracking-widest text-gray-400">Editor</p>
+							</div>
+						</div>
+						<UButton
+							color="error"
+							variant="ghost"
+							icon="i-lucide-user-minus"
+							size="sm"
+							@click="removeEditor(editor.uid)"
+							class="opacity-0 group-hover:opacity-100 transition-opacity"
+						/>
+					</div>
+				</div>
+				<div v-else class="text-center py-12 bg-gray-50/30 dark:bg-gray-900/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+					<p class="text-sm text-gray-400 italic">Noch keine Editoren hinzugefügt.</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
