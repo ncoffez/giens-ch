@@ -126,12 +126,12 @@ export async function getGlobalSettings(): Promise<GlobalSettings> {
 		return { id: doc.id, ...doc.data() } as GlobalSettings;
 	}
 
-	const defaultSettings: GlobalSettings = {
-		id: "global",
-		maxHomeNumber: 30,
-		washingMachineUse: "",
-		updatedAt: new Date().toISOString(),
-	};
+const defaultSettings: GlobalSettings = {
+			id: "global",
+			maxHomeNumber: 20,
+			washingMachineUse: "",
+			updatedAt: new Date().toISOString(),
+		};
 
 	await db.collection("settings").doc("global").set(defaultSettings);
 	return defaultSettings;

@@ -33,10 +33,10 @@ const deleteHome = async () => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 		});
 
-		toast.add({ title: "Home deleted successfully", color: "green" });
-		navigateTo("/homes");
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to delete home", color: "red" });
+toast.add({ title: "Home deleted successfully", color: "success" });
+navigateTo("/homes");
+} catch (e: any) {
+toast.add({ title: e.data?.message || e.message || "Failed to delete home", color: "error" });
 	}
 };
 
@@ -65,38 +65,35 @@ watch(homeId, fetchHome);
 					</p>
 				</div>
 				<div class="flex gap-2">
-					<UButton color="red" variant="ghost" :disabled="!canDelete" @click="deleteHome">
+					<UButton color="error" variant="ghost" :disabled="!canDelete" @click="deleteHome">
 						<UIcon name="i-lucide-trash-2" />
 					</UButton>
 				</div>
 			</div>
 
-			<UTabs v-model="activeTab" :items="[
-				{ label: 'Basic Info', value: 'basic' },
-				{ label: 'Photos', value: 'photos' },
-				{ label: 'Instructions', value: 'instructions' },
-				{ label: 'Rules & Info', value: 'rules' },
-				{ label: 'Sharing', value: 'sharing' },
-			]">
-				<template #basic>
+			<UTabs v-model="activeTab">
+				<UTabsList>
+					<UTabsTrigger value="basic">Basic Info</UTabsTrigger>
+					<UTabsTrigger value="photos">Photos</UTabsTrigger>
+					<UTabsTrigger value="instructions">Instructions</UTabsTrigger>
+					<UTabsTrigger value="rules">Rules & Info</UTabsTrigger>
+					<UTabsTrigger value="sharing">Sharing</UTabsTrigger>
+				</UTabsList>
+				<UTabsContent value="basic">
 					<BasicInfoEditor :home="home" @refresh="fetchHome" />
-				</template>
-
-				<template #photos>
+				</UTabsContent>
+				<UTabsContent value="photos">
 					<PhotoGallery :home="home" @refresh="fetchHome" />
-				</template>
-
-				<template #instructions>
+				</UTabsContent>
+				<UTabsContent value="instructions">
 					<InstructionsEditor :home="home" @refresh="fetchHome" />
-				</template>
-
-				<template #rules>
+				</UTabsContent>
+				<UTabsContent value="rules">
 					<RulesEditor :home="home" @refresh="fetchHome" />
-				</template>
-
-				<template #sharing>
+				</UTabsContent>
+				<UTabsContent value="sharing">
 					<SharingPanel :home="home" />
-				</template>
+				</UTabsContent>
 			</UTabs>
 		</div>
 	</div>

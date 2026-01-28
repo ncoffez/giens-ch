@@ -1,4 +1,4 @@
-import { db } from "../../../../useFirebaseAdmin";
+import { db, auth } from "../../../../useFirebaseAdmin";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
 		}
 
 		const { enabled, ownerId, name, ...otherFields } = body;
+		const previousOwnerId = (homeDoc.data() as any)?.ownerId;
 
 		const updates: any = {
 			updatedAt: new Date().toISOString(),
@@ -34,6 +35,36 @@ export default defineEventHandler(async (event) => {
 
 		if (ownerId !== undefined) {
 			updates.ownerId = ownerId;
+
+			try {
+				if (ownerId !== "" && ownerId !== null) {
+					const userRecord = await auth.getUser(ownerId);
+					const existingClaims = userRecord.customClaims || {};
+
+					if (!existingClaims.owner) {
+						await auth.setCustomUserClaims(ownerId, {
+							...existingClaims,
+							owner: true
+						});
+					}
+				}
+
+				if (previousOwnerId && previousOwnerId !== "" && previousOwnerId !== null && previousOwnerId !== ownerId) {
+					try {
+						const prevUserRecord = await auth.getUser(previousOwnerId);
+						const prevExistingClaims = prevUserRecord.customClaims || {};
+
+						if (prevExistingClaims.owner) {
+							const { owner, ...remainingClaims } = prevExistingClaims;
+							await auth.setCustomUserClaims(previousOwnerId, remainingClaims);
+						}
+					} catch (prevClaimError) {
+						console.error("Failed to revoke previous owner claim:", prevClaimError);
+					}
+				}
+			} catch (claimError) {
+				console.error("Failed to update owner claim:", claimError);
+			}
 		}
 
 		if (name) {

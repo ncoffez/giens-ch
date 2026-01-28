@@ -17,14 +17,14 @@
 		<div class="flex flex-col items-start gap-3 flex-1 py-1">
 			<!-- Meta Information (Date + Author) -->
 			<div class="flex flex-wrap items-center gap-4">
-				<div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wide">
+				<div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wide cursor-default rounded-full px-2 py-0.5 hover:bg-neutral-200/70 transition-colors duration-200">
 					<UIcon name="i-lucide-calendar" class="w-3.5 h-3.5" />
 					<span>{{ date }}</span>
 				</div>
 				<template v-if="author">
 					<div
 						@click.stop.prevent="navigateToProfile"
-						class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors duration-200 cursor-pointer group/author"
+						class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 rounded-full px-2 py-0.5 hover:bg-neutral-200/70 transition-colors duration-200 cursor-pointer group/author"
 					>
 						<UIcon name="i-lucide-user" class="w-3.5 h-3.5 group-hover/author:scale-110 transition-transform duration-200" />
 						<span>{{ author }}</span>
@@ -51,7 +51,7 @@
 			</div>
 
 			<!-- Read Action -->
-			<div class="flex items-center gap-1 text-primary text-sm font-bold opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-200">
+			<div class="flex items-center gap-1 text-primary text-sm font-bold opacity-60 -translate-x-2 transition-all duration-200 rounded-full px-2 py-0.5 hover:opacity-100 hover:bg-primary/5 hover:text-primary/80 hover:translate-x-0 cursor-pointer group-read">
 				<span>Lesen</span>
 				<UIcon name="i-lucide-arrow-right" class="w-4 h-4" />
 			</div>

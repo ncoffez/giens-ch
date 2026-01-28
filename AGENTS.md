@@ -109,6 +109,14 @@ This document serves as a guide for agentic coding agents operating in this repo
 - Common components: `<UButton>`, `<UInput>`, `<UCard>`, `<UIcon>`, `<UModal>`.
 - Custom UI wrappers are in `app/components/ui/` (e.g., `<UiTitle>`, `<UiSummary>`). Always check here before creating a new basic UI component.
 
+### Icon System
+- **Icon Format:** Use `i-lucide-icon` with Lucide icons (e.g., `name="i-lucide-home"`, `name="i-lucide-handshake"`).
+- **Troubleshooting:** If icons fail to load and show `[Icon] failed to load icon 'lucide:icon-name'` in console:
+  1. Check icon name is correct (spelling, lucide prefix)
+  2. Clean Nuxt cache: `rm -rf .nuxt`
+  3. Clean node cache: `rm -rf node_modules/.cache`
+  4. Restart dev server: `npm run dev`
+
 ### Error Handling
 - **Server:** Use `throw createError({ statusCode: ..., message: "..." })`. Never return raw error objects.
 - **Client:** Use `@nuxt/ui` notifications (`useToast()`) to display errors to users.
