@@ -115,10 +115,19 @@ export default defineEventHandler(async (event) => {
 
 	// 7. Profile Update Guard
 	try {
+		// Update Firebase Auth profile
 		await auth.updateUser(uid, { photoURL: publicUrl });
 		console.log("[Profile Upload] Firebase Auth profile updated successfully");
+
+		// Persist to Firestore users collection
+		const { db } = await import("../../useFirebaseAdmin");
+		await db.collection("users").doc(uid).set({
+			photoURL: publicUrl,
+			updatedAt: new Date().toISOString()
+		}, { merge: true });
+		console.log("[Profile Upload] Firestore document updated successfully");
 	} catch (e: any) {
-		console.error("[Profile Upload] Auth profile update failed:", e.message);
+		console.error("[Profile Upload] Auth or Firestore update failed:", e.message);
 		throw createError({ statusCode: 500, statusMessage: "Internal Server Error", message: "Profil konnte nicht aktualisiert werden. Bitte wenden Sie sich an den Support." });
 	}
 
