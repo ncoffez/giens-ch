@@ -6,7 +6,7 @@
 		<!-- Image Container -->
 		<div class="relative w-full aspect-square md:w-44 overflow-hidden rounded-xl flex-shrink-0 bg-gray-50 dark:bg-gray-800">
 			<img
-				:src="imageUrl"
+				:src="imageUrl || getArticlePlaceholder(id)"
 				:alt="title"
 				loading="lazy"
 				class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-120"
@@ -60,6 +60,8 @@
 </template>
 
 <script lang="ts" setup>
+import { getArticlePlaceholder } from "~/utils/placeholders";
+
 const props = defineProps<{
   link: string;
   id: string;
@@ -78,14 +80,6 @@ const navigateToProfile = () => {
     navigateTo(`/profile/${props.authorUid}`);
   }
 };
-
-const isReader = computed(() => {
-  if (!import.meta.client) return false;
-  const nuxtApp = useNuxtApp() as any;
-  if (!nuxtApp.$currentUser?.value) return false;
-  const claims = (nuxtApp.$currentUser.value as any).claims || {};
-  return !!(claims.admin || claims.publisher || claims.owner || claims.reader);
-});
 </script>
 
 <style scoped></style>

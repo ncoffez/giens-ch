@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getArticlePlaceholder } from "~/utils/placeholders";
+
 interface Article {
 	id: string;
 	title: string;
@@ -13,24 +15,6 @@ interface Props {
 }
 
 defineProps<Props>();
-const placeholders = [
-	"/giens/strand-1.webp",
-	"/giens/meer-1.webp",
-	"/giens/pizza.webp",
-	"/giens/giens-aerial.webp",
-	"/giens/garten.jpeg",
-	"/giens/felsen.webp"
-];
-
-const getPlaceholder = (id: string) => {
-	// Simple deterministic hash based on string
-	let hash = 0;
-	for (let i = 0; i < id.length; i++) {
-		hash = id.charCodeAt(i) + ((hash << 5) - hash);
-	}
-	const index = Math.abs(hash) % placeholders.length;
-	return placeholders[index];
-};
 </script>
 
 <template>
@@ -49,7 +33,7 @@ const getPlaceholder = (id: string) => {
 				class="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all hover:shadow-md group"
 			>
 				<img
-					:src="article.image || getPlaceholder(article.id)"
+					:src="article.image || getArticlePlaceholder(article.id)"
 					:alt="article.title"
 					class="w-20 h-20 object-cover rounded-xl flex-shrink-0 shadow-sm"
 					loading="lazy"
