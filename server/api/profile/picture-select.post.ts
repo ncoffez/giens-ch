@@ -22,6 +22,13 @@ export default defineEventHandler(async (event) => {
 			photoURL
 		});
 
+		// Update Firestore users collection
+		const { db } = await import("../../useFirebaseAdmin");
+		await db.collection("users").doc(uid).set({
+			photoURL,
+			updatedAt: new Date().toISOString()
+		}, { merge: true });
+
 		return { success: true, photoURL };
 	} catch (error: any) {
 		console.error("[Profile Select API Error]:", error);
