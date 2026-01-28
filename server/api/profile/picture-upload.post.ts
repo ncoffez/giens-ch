@@ -7,130 +7,92 @@ export default defineEventHandler(async (event) => {
 	// 1. Auth Guard
 	const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
 	if (!idToken) {
-		console.error("[Profile Upload] No token found in headers");
-		throw createError({ statusCode: 401, statusMessage: "Unauthorized", message: "Kein Authentifizierungs-Token gefunden. Bitte melden Sie sich erneut an." });
+		throw createError({ statusCode: 401, message: "Kein Authentifizierungs-Token gefunden." });
 	}
 
 	let uid: string;
 	try {
 		const decodedToken = await auth.verifyIdToken(idToken);
 		uid = decodedToken.uid;
-		console.log(`[Profile Upload] Authenticated UID: ${uid}`);
 	} catch (e: any) {
-		console.error("[Profile Upload] Auth verification failed:", e.message);
-		throw createError({ statusCode: 401, statusMessage: "Unauthorized", message: "Sitzung abgelaufen oder ungültig." });
+		throw createError({ statusCode: 401, message: "Sitzung abgelaufen." });
 	}
 
 	// 2. Payload Guard
 	const rawBody = await readRawBody(event);
-	if (!rawBody) {
-		console.error("[Profile Upload] Empty body received");
-		throw createError({ statusCode: 400, statusMessage: "Bad Request", message: "Anfrage-Text ist leer." });
-	}
+	if (!rawBody) throw createError({ statusCode: 400, message: "Anfrage leer." });
 
 	let body: any;
 	try {
 		body = JSON.parse(rawBody.toString());
-	} catch (e: any) {
-		console.error("[Profile Upload] JSON parse error:", e.message);
-		throw createError({ statusCode: 400, statusMessage: "Bad Request", message: "Ungültiges JSON-Format oder Datei zu groß für den Server." });
+	} catch (e) {
+		throw createError({ statusCode: 400, message: "Datei zu groß oder ungültiges Format." });
 	}
 
-	if (!body || !body.file) {
-		console.error("[Profile Upload] Missing 'file' field in body");
-		throw createError({ statusCode: 400, statusMessage: "Bad Request", message: "Keine Bilddatei in der Anfrage gefunden." });
-	}
+	if (!body?.file) throw createError({ statusCode: 400, message: "Keine Datei gefunden." });
 
-	// 3. Decoding Guard
-	let base64Data: string = body.file || "";
-	if (base64Data.includes(",")) {
-		base64Data = base64Data.split(",")[1] || "";
-	}
+	// 3. Decoding & Validation
+	let base64Data: string = body.file;
+	if (base64Data.includes(",")) base64Data = base64Data.split(",")[1] || "";
 
-	let buffer: Buffer;
-	try {
-		buffer = Buffer.from(base64Data, "base64");
-		console.log(`[Profile Upload] Buffer created: ${buffer.length} bytes`);
-		if (buffer.length < 100) {
-			throw new Error("Buffer too small to be a valid image");
-		}
-	} catch (e: any) {
-		console.error("[Profile Upload] Base64 decoding failed:", e.message);
-		throw createError({ statusCode: 400, statusMessage: "Bad Request", message: "Die Bilddaten konnten nicht verarbeitet werden." });
-	}
+	const buffer = Buffer.from(base64Data, "base64");
+	if (buffer.length < 100) throw createError({ statusCode: 400, message: "Bilddaten beschädigt." });
 
-	// 4. Image Validation (Sharp Metadata)
-	try {
-		const metadata = await sharp(buffer).metadata();
-		console.log(`[Profile Upload] Image metadata: ${metadata.format}, ${metadata.width}x${metadata.height}`);
-	} catch (e: any) {
-		console.error("[Profile Upload] Sharp metadata check failed:", e.message);
-		throw createError({ statusCode: 422, statusMessage: "Unprocessable Entity", message: "Die Datei ist kein gültiges Bild oder beschädigt." });
-	}
-
-	// 5. Image Processing (Sharp Resize)
+	// 4. Image Validation & Processing
 	let processedImage: Buffer;
 	try {
-		console.log("[Profile Upload] Starting image optimization...");
 		processedImage = await sharp(buffer)
 			.resize(512, 512, { fit: "cover", position: "center" })
 			.jpeg({ quality: 85 })
 			.toBuffer();
-		console.log(`[Profile Upload] Optimization complete: ${processedImage.length} bytes`);
 	} catch (e: any) {
-		console.error("[Profile Upload] Sharp processing failed:", e.message);
-		throw createError({ statusCode: 422, statusMessage: "Unprocessable Entity", message: "Fehler bei der Bildoptimierung. Das Bild ist möglicherweise zu groß oder in einem nicht unterstützten Format." });
+		throw createError({ statusCode: 422, message: "Bildverarbeitung fehlgeschlagen." });
 	}
 
-	// 6. Storage Guard
+	// 5. Storage (Sustainable Strategy)
 	let publicUrl: string;
 	try {
 		const { storage, db } = await import("../../useFirebaseAdmin");
 		const bucket = storage.bucket();
-		const bucketName = bucket.name;
-		console.log(`[Profile Upload] Bucket Name: ${bucketName}`);
 		
-		const fileName = `profile-pictures/${uid}/${Date.now()}.jpg`;
-		const fileUpload = bucket.file(fileName);
-
-		console.log(`[Profile Upload] Saving to storage path: ${fileName}`);
-		await fileUpload.save(processedImage, {
-			contentType: "image/jpeg",
-			metadata: { cacheControl: "public, max-age=31536000" }
-		});
-
-		// Ensure the URL is correctly constructed. Encode the fileName but NOT the bucket name.
-		publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(fileName)}?alt=media`;
-		console.log(`[Profile Upload] Generated Public URL: ${publicUrl}`);
+		// FIXED PATH: profile-pictures/UID (as requested)
+		const activePath = `profile-pictures/${uid}`;
+		// HISTORY: profile-pictures/UID/history/TIMESTAMP.jpg
+		const historyPath = `profile-pictures/${uid}/history/${Date.now()}.jpg`;
 		
-		// Attempt makePublic but don't fail
-		fileUpload.makePublic().catch(e => console.warn("[Profile Upload] makePublic suppressed:", e.message));
-		
-		// 7. Profile Update Guard
-		try {
-			// Update Firebase Auth profile
-			await auth.updateUser(uid, { photoURL: publicUrl });
-			console.log("[Profile Upload] Auth updated successfully");
+		const activeFile = bucket.file(activePath);
+		const historyFile = bucket.file(historyPath);
 
-			// Persist to Firestore
-			await db.collection("users").doc(uid).set({
-				photoURL: publicUrl,
-				updatedAt: new Date().toISOString()
-			}, { merge: true });
-			console.log(`[Profile Upload] Firestore updated for UID ${uid}`);
-		} catch (e: any) {
-			console.error("[Profile Upload] Auth or Firestore update failed:", e.message);
-			throw createError({ statusCode: 500, statusMessage: "Internal Server Error", message: "Profil konnte nicht aktualisiert werden. Bitte wenden Sie sich an den Support." });
-		}
+		console.log(`[Profile Upload] Saving to permanent path: ${activePath}`);
+		
+		await Promise.all([
+			activeFile.save(processedImage, {
+				contentType: "image/jpeg",
+				metadata: { cacheControl: "public, max-age=3600" }
+			}),
+			historyFile.save(processedImage, {
+				contentType: "image/jpeg",
+				metadata: { cacheControl: "public, max-age=31536000" }
+			})
+		]);
+
+		// Construct Public URL with Cache Busting
+		const timestamp = Date.now();
+		publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(activePath)}?alt=media&t=${timestamp}`;
+		
+		// Attempt permissions sync
+		activeFile.makePublic().catch(() => {});
+		historyFile.makePublic().catch(() => {});
+		
+		// 6. Persist to Auth & Firestore
+		await auth.updateUser(uid, { photoURL: publicUrl });
+		await db.collection("users").doc(uid).set({
+			photoURL: publicUrl,
+			updatedAt: new Date().toISOString()
+		}, { merge: true });
+
+		return { success: true, photoURL: publicUrl };
 	} catch (e: any) {
-		if (e.statusCode) throw e;
-		console.error("[Profile Upload] Storage error:", e.message);
-		throw createError({ 
-			statusCode: 503, 
-			statusMessage: "Service Unavailable", 
-			message: `Der Speicherdienst ist vorübergehend nicht erreichbar: ${e.message}` 
-		});
+		throw createError({ statusCode: 503, message: "Speicherdienst Fehler: " + e.message });
 	}
-
-	return { success: true, photoURL: publicUrl };
 });
