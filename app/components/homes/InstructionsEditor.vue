@@ -34,10 +34,10 @@ const save = async () => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 			body: form,
 		});
-		toast.add({ title: "Saved successfully!", color: "green" });
+		toast.add({ title: "Anweisungen gespeichert!", color: "success" });
 		emit("refresh");
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to save", color: "red" });
+		toast.add({ title: e.data?.message || e.message || "Fehler beim Speichern", color: "error" });
 	} finally {
 		loading.value = false;
 	}
@@ -53,45 +53,107 @@ watch(() => props.home, (newHome) => {
 </script>
 
 <template>
-	<UCard>
-		<form @submit.prevent="save" class="space-y-6">
-			<UFormField label="Check-in Information" description="Instructions for checking in">
-				<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." :rows="6" />
-			</UFormField>
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+		<div class="lg:col-span-2 space-y-6">
+			<UCard>
+				<template #header>
+					<h3 class="text-lg font-bold flex items-center gap-2">
+						<UIcon name="i-lucide-key" class="text-primary" />
+						Ankunft & Abreise
+					</h3>
+				</template>
 
-			<UFormField label="Check-out Information" description="Instructions for checking out">
-				<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." :rows="6" />
-			</UFormField>
+				<form @submit.prevent="save" class="space-y-8">
+					<UFormField 
+						label="Ankunft (Onboarding)" 
+						description="Anweisungen für den Check-in (z.B. Strom, Wasser, Schlüssel)"
+					>
+						<UTextarea 
+							v-model="form.checkInInfo" 
+							placeholder="Beschreiben Sie hier, was bei der Ankunft zu tun ist..." 
+							:rows="6" 
+							class="font-mono text-sm"
+						/>
+					</UFormField>
 
-			<UFormField label="Must Knows" description="Important information residents need to know">
-				<div class="space-y-2">
+					<UFormField 
+						label="Abreise (Offboarding)" 
+						description="Was muss vor dem Verlassen des Hauses erledigt werden?"
+					>
+						<UTextarea 
+							v-model="form.checkOutInfo" 
+							placeholder="Beschreiben Sie hier den Abreiseprozess..." 
+							:rows="6" 
+							class="font-mono text-sm"
+						/>
+					</UFormField>
+
+					<div class="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
+						<UButton type="submit" size="lg" :loading="loading" icon="i-lucide-save">
+							Anweisungen speichern
+						</UButton>
+					</div>
+				</form>
+			</UCard>
+
+			<UCard>
+				<template #header>
+					<h3 class="text-lg font-bold flex items-center gap-2">
+						<UIcon name="i-lucide-lightbulb" class="text-primary" />
+						Wichtige Hinweise (Must Knows)
+					</h3>
+				</template>
+
+				<div class="space-y-6">
 					<div class="flex gap-2">
 						<UInput
 							v-model="mustKnowsInput"
-							placeholder="Add a must-know item"
+							placeholder="Einen wichtigen Hinweis hinzufügen..."
+							class="flex-1"
 							@keyup.enter="addMustKnow"
 						/>
-						<UButton type="button" variant="outline" @click="addMustKnow">Add</UButton>
+						<UButton type="button" variant="soft" @click="addMustKnow" icon="i-lucide-plus">
+							Hinzufügen
+						</UButton>
 					</div>
-					<div v-if="form.mustKnows.length" class="space-y-2 mt-4">
+
+					<div v-if="form.mustKnows.length" class="grid grid-cols-1 gap-2">
 						<div
 							v-for="(item, index) in form.mustKnows"
 							:key="index"
-							class="flex items-center justify-between p-3 bg-gray-50 rounded"
+							class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-xl group hover:border-primary/30 transition-colors"
 						>
-							<span>{{ item }}</span>
+							<div class="flex items-start gap-3">
+								<UIcon name="i-lucide-info" class="w-5 h-5 text-primary mt-0.5" />
+								<span class="font-medium">{{ item }}</span>
+							</div>
 							<UButton
-								color="red"
+								color="error"
 								variant="ghost"
-								icon="i-lucide-x"
+								icon="i-lucide-trash-2"
+								size="sm"
 								@click="removeMustKnow(index)"
+								class="opacity-0 group-hover:opacity-100 transition-opacity"
 							/>
 						</div>
 					</div>
+					<div v-else class="text-center py-8 text-gray-400 italic bg-gray-50/50 dark:bg-gray-900/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+						Noch keine wichtigen Hinweise hinterlegt.
+					</div>
 				</div>
-			</UFormField>
+			</UCard>
+		</div>
 
-			<UButton type="submit" :loading="loading">Save Changes</UButton>
-		</form>
-	</UCard>
+		<div class="lg:col-span-1 space-y-6">
+			<UCard class="bg-primary-50/50 dark:bg-primary-900/10 border-primary-100 dark:border-primary-800">
+				<h3 class="font-black text-primary mb-2 flex items-center gap-2">
+					<UIcon name="i-lucide-info" />
+					Tipp
+				</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+					Gute Anweisungen reduzieren Rückfragen von Gästen erheblich. Beschreiben Sie technische Details (wie den Sicherungskasten oder den Haupthahn) so genau wie möglich.
+				</p>
+			</UCard>
+		</div>
+	</div>
 </template>
