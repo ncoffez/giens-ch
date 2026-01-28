@@ -50,6 +50,7 @@ export default defineEventHandler(async (event) => {
 
 		const storage = getStorage();
 		const bucket = storage.bucket();
+		console.log(`[Editor Upload] Using bucket: ${bucket.name}`);
 		
 		// Create a unique filename
 		const hash = crypto.randomBytes(4).toString("hex");
@@ -59,12 +60,17 @@ export default defineEventHandler(async (event) => {
 		const fileRef = bucket.file(storagePath);
 		
 		console.log(`[Editor Upload] Saving to path: ${storagePath}`);
-		await fileRef.save(buffer, {
-			contentType: type,
-			metadata: {
-				cacheControl: "public, max-age=31536000",
-			}
-		});
+		try {
+			await fileRef.save(buffer, {
+				contentType: type,
+				metadata: {
+					cacheControl: "public, max-age=31536000",
+				}
+			});
+		} catch (e: any) {
+			console.error("[Editor Upload] Save failed:", e.message);
+			throw createError({ statusCode: 503, message: `Speichern fehlgeschlagen: ${e.message}` });
+		}
 
 		// Try to make public, but don't fail if it's already handled by bucket policies
 		try {

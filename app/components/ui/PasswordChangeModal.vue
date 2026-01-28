@@ -4,7 +4,7 @@ import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 
 const modelValue = defineModel<boolean>();
 
 const { $currentUser } = useNuxtApp();
-const toast = useToast();
+const toast = useAppToast();
 
 const loading = ref(false);
 const form = reactive({
@@ -17,17 +17,17 @@ async function handleSubmit() {
 	if (!$currentUser?.value) return;
 
 	if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-		toast.add({ color: "error", title: "Fehler", description: "Bitte alle Felder ausfüllen." });
+		toast.error("Fehler", "Bitte alle Felder ausfüllen.");
 		return;
 	}
 
 	if (form.newPassword.length < 6) {
-		toast.add({ color: "error", title: "Fehler", description: "Das Passwort muss mindestens 6 Zeichen lang sein." });
+		toast.error("Fehler", "Das Passwort muss mindestens 6 Zeichen lang sein.");
 		return;
 	}
 
 	if (form.newPassword !== form.confirmPassword) {
-		toast.add({ color: "error", title: "Fehler", description: "Die Passwörter stimmen nicht überein." });
+		toast.error("Fehler", "Die Passwörter stimmen nicht überein.");
 		return;
 	}
 
@@ -40,7 +40,7 @@ async function handleSubmit() {
 		await reauthenticateWithCredential($currentUser.value, credential);
 		await updatePassword($currentUser.value, form.newPassword);
 		
-		toast.add({ color: "success", title: "Erfolg", description: "Passwort wurde aktualisiert." });
+		toast.success("Erfolg", "Passwort wurde aktualisiert.");
 		modelValue.value = false;
 		
 		// Reset form
@@ -48,7 +48,7 @@ async function handleSubmit() {
 		form.newPassword = "";
 		form.confirmPassword = "";
 	} catch (error: any) {
-		toast.add({ color: "error", title: "Fehler", description: error.message || "Konnte Passwort nicht aktualisieren." });
+		toast.error("Fehler", error.message || "Konnte Passwort nicht aktualisieren.");
 	} finally {
 		loading.value = false;
 	}

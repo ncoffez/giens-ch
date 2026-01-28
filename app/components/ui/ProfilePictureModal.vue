@@ -4,7 +4,7 @@ const modelValue = defineModel<boolean>();
 const emit = defineEmits(["updated"]);
 
 const { $token, $currentUser } = useNuxtApp();
-const toast = useToast();
+const toast = useAppToast();
 
 const loading = ref(false);
 const uploading = ref(false);
@@ -43,20 +43,12 @@ async function selectPicture(url: string) {
 			$currentUser.value.photoURL = url;
 		}
 		
-		toast.add({
-			color: "success",
-			title: "Profilbild aktualisiert",
-			icon: "i-lucide-check-circle"
-		});
+		toast.success("Profilbild aktualisiert");
 		
 		emit("updated");
 		modelValue.value = false;
 	} catch (error: any) {
-		toast.add({
-			color: "error",
-			title: "Fehler",
-			description: error.message || "Konnte Profilbild nicht aktualisieren"
-		});
+		toast.error("Fehler", error.message || "Konnte Profilbild nicht aktualisieren");
 	} finally {
 		loading.value = false;
 	}
@@ -72,7 +64,7 @@ async function handleFileChange(event: Event) {
 	if (!file) return;
 
 	if (!file.type.startsWith("image/")) {
-		toast.add({ color: "error", title: "Fehler", description: "Nur Bilder sind erlaubt" });
+		toast.error("Fehler", "Nur Bilder sind erlaubt");
 		return;
 	}
 
@@ -96,21 +88,17 @@ async function handleFileChange(event: Event) {
 			$currentUser.value.photoURL = response.photoURL;
 		}
 
-		toast.add({
-			color: "success",
-			title: "Bild hochgeladen",
-			icon: "i-lucide-upload"
-		});
+		toast.success("Bild hochgeladen");
 
 		await refreshPictures();
-		emit("updated");
-		modelValue.value = false;
+		
+		// Add delay to ensure storage consistency before parent refresh
+		setTimeout(() => {
+			emit("updated");
+			modelValue.value = false;
+		}, 500);
 	} catch (error: any) {
-		toast.add({
-			color: "error",
-			title: "Upload fehlgeschlagen",
-			description: error.message
-		});
+		toast.error("Upload fehlgeschlagen", error.message);
 	} finally {
 		uploading.value = false;
 		if (fileInput.value) fileInput.value.value = "";
