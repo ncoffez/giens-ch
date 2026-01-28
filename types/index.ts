@@ -48,7 +48,7 @@ export interface Home {
 	id: string;
 	name: string;
 	slug: string;
-	ownerId: string;
+	ownerIds: string[];
 	editors: string[];
 	photos: string[];
 	enabled: boolean;

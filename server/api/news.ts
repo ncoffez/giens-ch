@@ -2,6 +2,12 @@ import { db } from "../useFirebaseAdmin";
 import { Article } from "../../types";
 import { getUserPermission } from "../utils/auth";
 
+// Helper function to remove body from article objects (metadata public, body gated by user claims)
+function stripBodyFromArticle(article: any) {
+	const { body, ...articleWithoutBody } = article;
+	return articleWithoutBody;
+}
+
 export default defineEventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
@@ -11,11 +17,11 @@ export default defineEventHandler(async (event) => {
 
 		const limitCount = all ? 1000 : 300;
 		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(limitCount).get();
-		const includeBody = permission === "private";
 		
 		const articleMetadata: any[] = [];
 		querySnapshot.forEach((doc) => {
 			const article = doc.data();
+			// Article metadata is ALWAYS PUBLIC, body is gated by user claims
 			articleMetadata.push({
 				id: doc.id,
 				title: (article && article.title) || "",
@@ -25,7 +31,7 @@ export default defineEventHandler(async (event) => {
 				tags: (article && article.tags) || [],
 				author: (article && article.author) || null,
 				authorUid: (article && article.authorUid) || null,
-				body: includeBody ? ((article && article.body) || "") : undefined,
+				// Note: Body is no longer included - fetched separately on article detail page
 			});
 		});
 

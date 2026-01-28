@@ -1,0 +1,93 @@
+{"users": [
+{
+  "localId": "8459RZzAGGck3WsawloHlYzXcR43",
+  "email": "ncoffez+admin@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "mqUt1jTV0jIOBH1rDKoMkZgiZEhjSXB7fRCQcJARRxN1f67jBUM8JgH1JBXpCYR9syCwD0YyV0QDx65X2DvaaA==",
+  "salt": "KJDxp13P8QN0+g==",
+  "lastSignedInAt": "1754889995012",
+  "createdAt": "1754679838761",
+  "disabled": false,
+  "customAttributes": "{\"admin\":false,\"publisher\":true,\"owner\":false,\"reader\":false}",
+  "providerUserInfo": []
+},
+{
+  "localId": "89kboe0zSXWzHnjksG7jsUCHIA32",
+  "email": "tom.bombadil@coffez.ch",
+  "emailVerified": false,
+  "passwordHash": "gKn5kc4OZ7NlYxDnKZjrje4uqvXDUM121S7RxJAZLFegJ88ctzjUarPned9oW1IUaFKHvkaSHVE0TmIraoZiQQ==",
+  "salt": "PoyDlu2bcezLSg==",
+  "displayName": "Tom Bombadil",
+  "lastSignedInAt": "1769358432903",
+  "createdAt": "1769358416101",
+  "disabled": false,
+  "providerUserInfo": []
+},
+{
+  "localId": "DyI36jZd01N6Stpb9kbyOJQUvjl2",
+  "email": "ncoffez+user@gmail.com",
+  "emailVerified": true,
+  "passwordHash": "1RjBNzWBhUwPh1n41xKO+UEQeI4mVDjxsiQFoSj/Jr1j0nFpzYvks5K0YXg3tSy6vgZl4LnpgU3bk43FTKQxAg==",
+  "salt": "9UwIsiPcjULrlg==",
+  "lastSignedInAt": "1769358316839",
+  "createdAt": "1754679861938",
+  "disabled": false,
+  "customAttributes": "{\"owner\":true}",
+  "providerUserInfo": []
+},
+{
+  "localId": "F8O0pp5F8aV0AQd57wPn2Y7zdtz2",
+  "email": "daniel_jaggi@hispeed.ch",
+  "emailVerified": false,
+  "passwordHash": "GdYVFd2HwlwvnitXiAv1UHfwTNThfa4u5MCUZOMY+meXutCgKMBv/PDFRAnBchzmd9pJ1RN2DJQOOM8cHkPomA==",
+  "salt": "q8lRlA9w6q2sPQ==",
+  "createdAt": "1754916873776",
+  "disabled": false,
+  "customAttributes": "{\"owner\":true}",
+  "providerUserInfo": []
+},
+{
+  "localId": "PL2UsgwGrzNxw4zMWUS9iQYL16C2",
+  "email": "ncoffez@gmail.com",
+  "emailVerified": true,
+  "passwordHash": "+K1zuFJUPA3KQWU4Q85a+ZRjd17Z8ui8sjsV/KIrw+H8ruF/r5SITKlSvTH/TVWvYJ6nEpZ2AMPcuCKCeXT3nw==",
+  "salt": "ZNdVKjL4goP5Mg==",
+  "displayName": "Nicolas Coffez",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocIvam7mMtdwSFIQotbo-z9aQaGPfKAaGxOwqasRxjRXtFQcyG69Mw=s96-c",
+  "lastSignedInAt": "1769593063536",
+  "createdAt": "1727448113957",
+  "disabled": false,
+  "customAttributes": "{\"admin\":true,\"publisher\":false,\"reader\":false,\"owner\":true}",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "116083732274214857953",
+      "email": "ncoffez@gmail.com",
+      "displayName": "Nicolas Coffez",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocIvam7mMtdwSFIQotbo-z9aQaGPfKAaGxOwqasRxjRXtFQcyG69Mw=s96-c"
+    }
+  ]
+},
+{
+  "localId": "gKLsQnQnADNHNL3Of2lwFoQssaC3",
+  "email": "ncoffez+visitor@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "kKop5lhXGaU2t/ZZ6+p7BtQdCJ/i0UZQa/3+rOgl2vL+DmISmUjet9GsBPeGxJCO7FqImUO9LPOztMYMj7rcJQ==",
+  "salt": "pl6sb7Vu8jBDgw==",
+  "lastSignedInAt": "1769592981212",
+  "createdAt": "1769539295261",
+  "customAttributes": "{\"admin\":false,\"publisher\":false,\"reader\":false}",
+  "providerUserInfo": []
+},
+{
+  "localId": "ngqdIq0B99SPeeXSNd3vfeKWp5g1",
+  "email": "hp-riesen@giens.ch",
+  "emailVerified": false,
+  "passwordHash": "7mTJNsewfZT8BS+dSa9D+NTDEoV0BuaWQTX6ceepiPRplDMUYznNn3NEh2VzAeZ4mZGKydz2m7DFSvTQAVlBzw==",
+  "salt": "eMXndufhC+rGuA==",
+  "lastSignedInAt": "1761153520940",
+  "createdAt": "1761153516760",
+  "disabled": false,
+  "customAttributes": "{}",
+  "providerUserInfo": []
+}]}

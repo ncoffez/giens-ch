@@ -1,5 +1,73 @@
 import { db, auth } from "../../../../useFirebaseAdmin";
 
+async function syncOwnerClaims() {
+	try {
+		const allHomes = await db.collection("homes").get();
+		const allOwners = new Set<string>();
+
+		allHomes.docs.forEach(doc => {
+			const ownerIds = doc.data().ownerIds || [];
+			ownerIds.forEach((id: string) => allOwners.add(id));
+		});
+
+		const allUsers = await auth.listUsers(1000);
+		allUsers.users.forEach(user => {
+			const claims = user.customClaims || {};
+			const isClaimed = claims.owner;
+			const shouldBeOwner = allOwners.has(user.uid);
+
+			if (shouldBeOwner && !isClaimed) {
+				auth.setCustomUserClaims(user.uid, { ...claims, owner: true }).catch(e => {
+					console.error(`Failed to grant owner claim to ${user.uid}:`, e);
+				});
+			} else if (!shouldBeOwner && isClaimed) {
+				const { owner, ...remainingClaims } = claims;
+				auth.setCustomUserClaims(user.uid, remainingClaims).catch(e => {
+					console.error(`Failed to revoke owner claim from ${user.uid}:`, e);
+				});
+			}
+		});
+	} catch (error) {
+		console.error("Error syncing owner claims:", error);
+	}
+}
+
+async function grantOwnerClaim(uid: string) {
+	try {
+		const userRecord = await auth.getUser(uid);
+		const existingClaims = userRecord.customClaims || {};
+
+		if (!existingClaims.owner) {
+			await auth.setCustomUserClaims(uid, {
+				...existingClaims,
+				owner: true
+			});
+		}
+	} catch (error) {
+		console.error(`Failed to grant owner claim to ${uid}:`, error);
+	}
+}
+
+async function revokeOwnerClaimIfNoHomes(uid: string) {
+	try {
+		const homesSnapshot = await db.collection("homes")
+			.where("ownerIds", "array-contains", uid)
+			.get();
+
+		if (homesSnapshot.empty) {
+			const userRecord = await auth.getUser(uid);
+			const existingClaims = userRecord.customClaims || {};
+
+			if (existingClaims.owner) {
+				const { owner, ...remainingClaims } = existingClaims;
+				await auth.setCustomUserClaims(uid, remainingClaims);
+			}
+		}
+	} catch (error) {
+		console.error(`Failed to revoke owner claim from ${uid}:`, error);
+	}
+}
+
 export default defineEventHandler(async (event) => {
 	try {
 		const claims = await getUserClaims(event);
@@ -22,8 +90,9 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 404, message: "Home not found" });
 		}
 
-		const { enabled, ownerId, name, ...otherFields } = body;
-		const previousOwnerId = (homeDoc.data() as any)?.ownerId;
+		const { enabled, ownerIds, name, ...otherFields } = body;
+		const previousOwnerIds = (homeDoc.data() as any)?.ownerIds || [];
+		const newOwnerIds = ownerIds || [];
 
 		const updates: any = {
 			updatedAt: new Date().toISOString(),
@@ -33,37 +102,22 @@ export default defineEventHandler(async (event) => {
 			updates.enabled = enabled;
 		}
 
-		if (ownerId !== undefined) {
-			updates.ownerId = ownerId;
+		if (ownerIds !== undefined) {
+			updates.ownerIds = newOwnerIds;
 
-			try {
-				if (ownerId !== "" && ownerId !== null) {
-					const userRecord = await auth.getUser(ownerId);
-					const existingClaims = userRecord.customClaims || {};
+			const addedOwners = newOwnerIds.filter((id: string) => !previousOwnerIds.includes(id));
+			const removedOwners = previousOwnerIds.filter((id: string) => !newOwnerIds.includes(id));
 
-					if (!existingClaims.owner) {
-						await auth.setCustomUserClaims(ownerId, {
-							...existingClaims,
-							owner: true
-						});
-					}
+			for (const uid of addedOwners) {
+				if (uid && uid !== "") {
+					await grantOwnerClaim(uid);
 				}
+			}
 
-				if (previousOwnerId && previousOwnerId !== "" && previousOwnerId !== null && previousOwnerId !== ownerId) {
-					try {
-						const prevUserRecord = await auth.getUser(previousOwnerId);
-						const prevExistingClaims = prevUserRecord.customClaims || {};
-
-						if (prevExistingClaims.owner) {
-							const { owner, ...remainingClaims } = prevExistingClaims;
-							await auth.setCustomUserClaims(previousOwnerId, remainingClaims);
-						}
-					} catch (prevClaimError) {
-						console.error("Failed to revoke previous owner claim:", prevClaimError);
-					}
+			for (const uid of removedOwners) {
+				if (uid && uid !== "") {
+					await revokeOwnerClaimIfNoHomes(uid);
 				}
-			} catch (claimError) {
-				console.error("Failed to update owner claim:", claimError);
 			}
 		}
 
@@ -74,6 +128,7 @@ export default defineEventHandler(async (event) => {
 		Object.assign(updates, otherFields);
 
 		await homeRef.update(updates);
+		await syncOwnerClaims();
 
 		const updated = await homeRef.get();
 		return { id: updated.id, ...updated.data() };

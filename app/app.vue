@@ -15,28 +15,22 @@ useHead({
 	},
 	title: "Gard du Giens - Haus am Mittelmeer",
 	meta: [
-		{
-			name: "description",
-			content: "Entdecken Sie das charmante Haus am Gard du Giens im Süden Frankreichs. Ein perfekter Ferienort für unforgettable Erinnerungen."
-		},
-		{
-			name: "viewport",
-			content: "width=device-width, initial-scale=1"
-		}
-	],
-	link: [
-		{
-			rel: "preload",
-			as: "image",
-			href: "/giens/hauseingang_cropped-1920w.webp",
-			fetchpriority: "high"
-		},
-		{
-			rel: "preconnect",
-			href: "https://giens-ch.web.app"
-		}
-	]
-});
+			{
+				name: "description",
+				content: "Entdecken Sie das charmante Haus am Gard du Giens im Süden Frankreichs. Ein perfekter Ferienort für unforgettable Erinnerungen."
+			},
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1"
+			}
+		],
+		link: [
+			{
+				rel: "preconnect",
+				href: "https://giens-ch.web.app"
+			}
+		]
+	});
 
 onUnmounted(() => unsubscribe());
 </script>

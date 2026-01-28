@@ -5,16 +5,26 @@ import AdminHomesPage from "../../app/pages/admin/homes/index.vue";
 
 describe("Admin Homes Page", () => {
 	const mockHomes = [
-		{ id: "1", name: "Haus 1", ownerId: "user1", enabled: true },
-		{ id: "2", name: "Haus 2", ownerId: "user2", enabled: false },
-		{ id: "10", name: "Haus 10", ownerId: "user3", enabled: true },
-		{ id: "3", name: "Haus 3", ownerId: null, enabled: true },
+		{ id: "1", name: "Haus 1", ownerIds: ["user3"], enabled: true },
+		{ id: "3", name: "Haus 3", ownerIds: [], enabled: true },
+		{ id: "10", name: "Haus 10", ownerIds: ["user1"], enabled: true },
+		{ id: "2", name: "Haus 2", ownerIds: ["user2"], enabled: false },
+	];
+
+	const mockOwners = [
+		{ uid: "user3", email: "user1@example.com", displayName: "User One", photoURL: "https://example.com/u1.jpg" },
+		{ uid: "user2", email: "user2@example.com", displayName: "User Two", photoURL: "https://example.com/u2.jpg" },
+		{ uid: "user1", email: "user3@example.com", displayName: "User Three" },
 	];
 
 	it("renders page title", async () => {
 		registerEndpoint("/api/admin/homes", {
 			method: "GET",
 			handler: () => mockHomes,
+		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
 		});
 
 		const component = await mountSuspended(AdminHomesPage);
@@ -26,6 +36,10 @@ describe("Admin Homes Page", () => {
 			method: "GET",
 			handler: () => mockHomes,
 		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
+		});
 
 		await mountSuspended(AdminHomesPage);
 	});
@@ -34,6 +48,10 @@ describe("Admin Homes Page", () => {
 		registerEndpoint("/api/admin/homes", {
 			method: "GET",
 			handler: () => mockHomes,
+		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
 		});
 
 		const component = await mountSuspended(AdminHomesPage);
@@ -45,6 +63,10 @@ describe("Admin Homes Page", () => {
 			method: "GET",
 			handler: () => new Promise(() => {}),
 		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
+		});
 
 		const component = await mountSuspended(AdminHomesPage);
 		expect(component.text()).toContain("Loading...");
@@ -54,6 +76,10 @@ describe("Admin Homes Page", () => {
 		registerEndpoint("/api/admin/homes", {
 			method: "GET",
 			handler: () => mockHomes,
+		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
 		});
 
 		const component = await mountSuspended(AdminHomesPage);
@@ -71,6 +97,10 @@ describe("Admin Homes Page", () => {
 			handler: () => {
 				throw createError({ statusCode: 500, message: "API Error" });
 			},
+		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
 		});
 
 		const component = await mountSuspended(AdminHomesPage);

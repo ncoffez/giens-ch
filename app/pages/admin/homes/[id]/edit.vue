@@ -14,13 +14,10 @@ const ownersError = ref<string | null>(null);
 
 const fetchOwners = async () => {
 	try {
-		console.log("[fetchOwners] Starting to fetch owners...");
 		owners.value = await $fetch("/api/users/owners", {
 			headers: { Authorization: `Bearer ${$token.value}` },
 		});
-		console.log("[fetchOwners] Successfully fetched owners:", owners.value);
 	} catch (e: any) {
-		console.error("[fetchOwners] Failed to load owners:", e);
 		if (e?.statusCode === 403) {
 			ownersError.value = "Zugriff verweigert - keine Admin-Berechtigung";
 		} else if (e?.statusCode >= 500) {
@@ -100,13 +97,26 @@ watch(homeId, fetchHome);
 					</div>
 
 					<USelect
-						v-model="home.ownerId"
-						:items="[
-							{ label: '-', value: null },
-							...owners.map((o) => ({ label: `${o.displayName} (${o.email})`, value: o.uid })),
-						]"
+						v-model="home.ownerIds"
+						multiple
+						:items="owners.map((o) => ({
+							label: o.displayName,
+							value: o.uid,
+							avatar: { src: o.photoURL, alt: o.displayName },
+						}))"
+						value-key="value"
 						placeholder="Eigentümer auswählen"
-					/>
+						:ui="{ content: 'min-w-72', item: 'items-center' }"
+					>
+						<template #item-label="{ item }">
+							<div class="flex flex-col">
+								<span class="font-medium">{{ item.label }}</span>
+								<span class="text-muted text-[11px] whitespace-nowrap overflow-x-auto">
+									{{ owners.find((o) => o.uid === item.value)?.email }}
+								</span>
+							</div>
+						</template>
+					</USelect>
 				</UFormField>
 
 				<div class="flex gap-4">

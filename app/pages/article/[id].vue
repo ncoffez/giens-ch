@@ -114,7 +114,7 @@ const article = computed(() => articleData.value);
 const isPrivateArticle = computed(() => article.value?.isPrivate || false);
 
 const canReadBody = computed(() => {
-	return !isPrivateArticle.value || isAuthenticated.value;
+	return !!article.value?.body;
 });
 </script>
 <style scoped></style>

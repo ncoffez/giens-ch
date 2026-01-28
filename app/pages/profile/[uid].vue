@@ -2,7 +2,16 @@
 const route = useRoute();
 const uid = route.params.uid as string;
 
-const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid}`);
+const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid}`, {
+	cached: false
+});
+
+// Debug logging
+console.log('[Public Profile] Route UID:', uid);
+console.log('[Public Profile] Data received:', profile.value);
+console.log('[Public Profile] Articles:', profile.value?.articles);
+console.log('[Public Profile] Articles count:', profile.value?.articles?.length);
+console.log('[Public Profile] Full profile object:', JSON.stringify(profile.value, null, 2));
 </script>
 
 <template>

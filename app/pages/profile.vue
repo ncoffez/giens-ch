@@ -1,32 +1,87 @@
 <script lang="ts" setup>
+import { onMounted, watch } from 'vue';
+
 definePageMeta({ middleware: "is-logged-in" });
 const { $currentUser, $isAdmin, $auth } = useNuxtApp();
 const toast = useToast();
 
 const isEditingName = ref(false);
-const newDisplayName = ref($currentUser.value?.displayName || "");
+const newDisplayName = ref("");
 const isPending = ref(false);
 
-const stats = [
-	{ label: "Mitglied seit", value: $currentUser.value?.metadata?.creationTime ? new Date($currentUser.value.metadata.creationTime).toLocaleDateString('de-CH', { month: 'short', year: 'numeric' }) : 'Jan 2024', icon: "i-lucide-calendar" },
-	{ label: "Status", value: $isAdmin.value ? "Administrator" : "Mitglied", icon: "i-lucide-shield" }
-];
-
-const articlePage = ref(1);
-const { data: articlesData, status: articlesStatus } = await useLazyFetch("/api/profile/articles", {
-	query: computed(() => ({ page: articlePage.value })),
+onMounted(() => {
+	newDisplayName.value = $currentUser.value?.displayName ?? "";
 });
 
-const articles = computed(() => articlesData.value?.articles || []);
-
-const accountDetails = computed(() => [
-	{ label: "E-Mail Adresse", value: $currentUser.value?.email, icon: "i-lucide-mail" },
-	{ label: "Benutzer-ID", value: $currentUser.value?.uid, icon: "i-lucide-fingerprint" },
-	{ label: "Letzter Login", value: $currentUser.value?.metadata?.lastSignInTime ? new Date($currentUser.value.metadata.lastSignInTime).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unbekannt', icon: "i-lucide-history" }
+const stats = computed(() => [
+	{
+		label: "Mitglied seit",
+		value: $currentUser.value?.metadata?.creationTime
+			? new Date($currentUser.value.metadata.creationTime).toLocaleDateString('de-CH', { month: 'short', year: 'numeric' })
+			: 'Jan 2024',
+		icon: "i-lucide-calendar"
+	},
+	{
+		label: "Status",
+		value: $isAdmin.value ? "Administrator" : "Mitglied",
+		icon: "i-lucide-shield"
+	}
 ]);
 
+const articlePage = ref(1);
+const route = useRoute();
+const isActiveProfilePage = computed(() => route.path === '/profile');
+
+// Don't fetch in setup - fetch only on mount if actually on private profile page
+let articlesData = ref(null);
+let articlesStatus = ref('idle');
+let articles = computed(() => articlesData.value?.articles || []);
+
+onMounted(async () => {
+	// Only fetch articles if we're actually on the private profile page
+	if (isActiveProfilePage.value) {
+		console.log('[Private Profile] onMounted - fetching articles');
+		const { data, status } = await useFetch("/api/profile/articles", {
+			query: computed(() => ({ page: articlePage.value })),
+			key: 'private-profile-articles',
+			watch: [articlePage],  // Re-fetch when page changes
+		});
+		articlesData = data;
+		articlesStatus = status;
+	} else {
+		console.log('[Private Profile] onMounted - not on profile page, skipping fetch');
+	}
+});
+
+// Watch route changes to handle navigation between public/private profile pages unmounts
+watch(() => route.path, (newPath) => {
+	if (newPath === '/profile' && isActiveProfilePage.value && articlesData.value === null) {
+		// Refetch when navigating to private profile
+		console.log('[Private Profile] Route changed to /profile, fetching articles');
+		// Note: This won't run because onMounted already handles the fetch
+	}
+});
+
+const accountDetails = computed(() => {
+	if (!$currentUser?.value) return [];
+	return [
+		{ label: "E-Mail Adresse", value: $currentUser.value?.email, icon: "i-lucide-mail" },
+		{ label: "Benutzer-ID", value: $currentUser.value?.uid, icon: "i-lucide-fingerprint" },
+		{
+			label: "Letzter Login",
+			value: $currentUser.value?.metadata?.lastSignInTime
+				? new Date($currentUser.value.metadata.lastSignInTime).toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+				: 'Unbekannt',
+			icon: "i-lucide-history"
+		}
+	];
+});
+
 async function updateName() {
-	if (!newDisplayName.value || newDisplayName.value.trim().length < 2) return;
+	const displayNameValue = newDisplayName?.value ?? "";
+	if (!displayNameValue || displayNameValue.trim().length < 2) {
+		return;
+	}
 	
 	isPending.value = true;
 	try {
@@ -118,7 +173,7 @@ async function updateName() {
 					</section>
 
 					<!-- My Articles -->
-					<section v-if="$isAdmin || $isPublisher" class="space-y-6">
+					<section class="space-y-6">
 						<div class="flex items-center gap-4">
 							<h2 class="text-xl font-bold">Meine Artikel</h2>
 							<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
