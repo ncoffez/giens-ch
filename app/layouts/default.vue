@@ -93,6 +93,35 @@ const isOwner = computed(() => process.client ? nuxtApp.$isOwner : false);
 const isPublisher = computed(() => process.client ? nuxtApp.$isPublisher : false);
 const isReader = computed(() => process.client ? nuxtApp.$isReader : false);
 
+const homes = ref<any[]>([]);
+const homesLoading = ref(false);
+
+const fetchHomes = async () => {
+	if (!process.client || !nuxtApp.$token) return;
+
+	try {
+		homesLoading.value = true;
+		homes.value = await $fetch("/api/homes", {
+			headers: { Authorization: `Bearer ${nuxtApp.$token.value}` },
+		});
+	} catch (e) {
+		console.error("Failed to load homes in navigation:", e);
+		homes.value = [];
+	} finally {
+		homesLoading.value = false;
+	}
+};
+
+if (process.client) {
+	fetchHomes();
+}
+
+const homeNavigationTo = computed(() => {
+	if (homesLoading.value || homes.value.length === 0) return "/homes/new";
+	if (homes.value.length === 1) return `/homes/${homes.value[0].id}`;
+	return "/homes";
+});
+
 const isDark = computed({
 	get() {
 		return colorMode.value === "dark";
@@ -183,7 +212,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		items.push({
 			label: "Mein Haus",
 			icon: "i-lucide-building-2",
-			to: "/homes",
+			to: homeNavigationTo.value,
 			active: route.path.startsWith("/homes"),
 		});
 	}

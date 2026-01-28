@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 404, message: "Home not found" });
 		}
 
-		if (home.data()!.ownerId !== decodedToken.uid && !decodedToken.admin) {
+		if (!home.data()!.ownerIds.includes(decodedToken.uid) && !decodedToken.admin) {
 			throw createError({ statusCode: 403, message: "Forbidden: Only owners can add editors" });
 		}
 

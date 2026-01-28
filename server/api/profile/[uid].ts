@@ -70,11 +70,11 @@ export default defineEventHandler(async (event) => {
 
 		let articles: any[] = [];
 		articlesSnapshot.forEach(doc => {
-			const article = doc.data();
+			const article = { id: doc.id, ...doc.data() };
 			if (canAccessPrivate) {
 				articles.push(article);
 			} else {
-				const { body, ...articleWithoutBody } = article;
+				const { body, ...articleWithoutBody } = article as any;
 				articles.push(articleWithoutBody);
 			}
 		});
@@ -88,11 +88,11 @@ export default defineEventHandler(async (event) => {
 			articlesByName.forEach(doc => {
 				const docId = doc.id;
 				if (!articles.find((a: { id: string; }) => a.id === docId)) {
-					const article = doc.data();
+					const article = { id: doc.id, ...doc.data() };
 					if (canAccessPrivate) {
 						articles.push(article);
 					} else {
-						const { body, ...articleWithoutBody } = article;
+						const { body, ...articleWithoutBody } = article as any;
 						articles.push(articleWithoutBody);
 					}
 				}

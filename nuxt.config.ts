@@ -51,5 +51,13 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-
+	// Global body limit for H3
+	hooks: {
+		'nitro:config': (config) => {
+			// @ts-ignore
+			config.runtimeConfig.nitro = config.runtimeConfig.nitro || {};
+			// @ts-ignore
+			config.runtimeConfig.nitro.bodySizeLimit = '25mb';
+		}
+	}
 });

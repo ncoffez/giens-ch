@@ -103,9 +103,10 @@
 			<UButton
 				color="neutral"
 				variant="ghost"
-				icon="i-lucide-image-plus"
-				disabled
-				label="Add" />
+				icon="i-lucide-file-up"
+				@click="triggerFileUpload"
+				:loading="uploading"
+				label="Upload" />
 
 			<UButton
 				color="neutral"
@@ -113,6 +114,10 @@
 				icon="i-lucide-letter-text"
 				@click="loadDemo"
 				title="Demo text" />
+		</div>
+		<div v-if="uploading" class="px-4 py-2 bg-gray-50 dark:bg-zinc-900 border-b border-gray-200">
+			<UProgress :value="uploadProgress" color="primary" size="sm" />
+			<p class="text-xs text-gray-500 mt-1">Datei wird hochgeladen...</p>
 		</div>
 		<input type="file" ref="fileInput" @change="handleFileChange" style="display: none" />
 		<editor-content :editor="editor" />
@@ -124,6 +129,7 @@ import { ref, onBeforeUnmount, onMounted, computed, type Ref } from "vue";
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import { Placeholder } from "@tiptap/extensions";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
@@ -132,10 +138,71 @@ import TaskItem from "@tiptap/extension-task-item";
 import { watchDeep } from "@vueuse/core";
 
 const model = defineModel({ default: "<p>This is the default content.</p>" });
-const fileInput = ref(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 const editor = ref<Editor>();
+const uploading = ref(false);
+const uploadProgress = ref(0);
 
 const { $token } = useNuxtApp();
+
+const triggerFileUpload = () => {
+	fileInput.value?.click();
+};
+
+const handleFileChange = async (event: Event) => {
+	const target = event.target as HTMLInputElement;
+	const file = target.files?.[0];
+	if (!file) return;
+
+	uploading.value = true;
+	uploadProgress.value = 10;
+	
+	try {
+		const reader = new FileReader();
+		const base64Promise = new Promise<string>((resolve) => {
+			reader.onload = (e) => resolve(e.target?.result as string);
+			reader.readAsDataURL(file);
+		});
+		
+		const base64 = await base64Promise;
+		uploadProgress.value = 40;
+
+		const response = await $fetch<any>("/api/editor/upload", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${$token.value}` },
+			body: {
+				filename: file.name,
+				file: base64,
+				type: file.type
+			}
+		});
+
+		uploadProgress.value = 90;
+
+		if (file.type.startsWith("image/")) {
+			editor.value?.chain().focus().setImage({ src: response.url, alt: response.filename }).run();
+		} else {
+			// Insert as a link with CSS-based icon
+			const html = `<a href="${response.url}" target="_blank" rel="noopener noreferrer" class="document-link" data-type="${file.type}">
+				<span>${file.name}</span>
+			</a>`;
+			editor.value?.chain().focus().insertContent(html).run();
+		}
+		
+		uploadProgress.value = 100;
+	} catch (e: any) {
+		console.error("Upload failed", e);
+		const toast = useToast();
+		const message = e.data?.message || e.message || "Unbekannter Fehler";
+		toast.add({ color: "error", title: "Upload fehlgeschlagen", description: message });
+	} finally {
+		setTimeout(() => {
+			uploading.value = false;
+			uploadProgress.value = 0;
+		}, 500);
+		if (fileInput.value) fileInput.value.value = "";
+	}
+};
 
 const loadDemo = async () => {
 	try {
@@ -158,13 +225,26 @@ onMounted(() => {
 			StarterKit.configure({
 				code: false,
 				codeBlock: false,
-				link: {
-					openOnClick: "whenNotEditable",
-					protocols: ["http", "https"],
-					HTMLAttributes: {
-						rel: "noopener noreferrer",
-						target: "_blank",
-					},
+				link: false, // Disable default link to use custom one
+			}),
+			Link.configure({
+				openOnClick: "whenNotEditable",
+				protocols: ["http", "https"],
+				HTMLAttributes: {
+					rel: "noopener noreferrer",
+					target: "_blank",
+				},
+			}).extend({
+				addAttributes() {
+					return {
+						...this.parent?.(),
+						class: {
+							default: null,
+						},
+						"data-type": {
+							default: null,
+						},
+					};
 				},
 			}),
 			TextAlign.configure({

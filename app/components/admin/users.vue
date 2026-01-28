@@ -221,9 +221,9 @@ const getItems = (row: any) => [
 
 				<template #roles-cell="{ row }">
 					<div class="flex flex-wrap gap-1.5">
-						<UBadge v-if="row.original.customClaims?.admin" color="error" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Admin</UBadge>
-						<UBadge v-if="row.original.customClaims?.publisher" color="primary" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Pub</UBadge>
-						<UBadge v-if="row.original.customClaims?.owner" color="success" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Besitzer</UBadge>
+						<UBadge v-if="row.original.customClaims?.admin" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Admin</UBadge>
+						<UBadge v-if="row.original.customClaims?.publisher" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Pub</UBadge>
+						<UBadge v-if="row.original.customClaims?.owner" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Besitzer</UBadge>
 						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Leser</UBadge>
 						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-gray-400 italic">Keine Rollen</span>
 					</div>

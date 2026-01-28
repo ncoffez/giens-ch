@@ -23,7 +23,7 @@ coverage/
 .DS_Store
 .fleet
 .idea
-.firebase/
+.firebase/**
 
 # Local env files
 .env

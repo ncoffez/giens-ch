@@ -256,9 +256,12 @@ watchEffect(() => {
 				</template>
 
 				<template #enabled-cell="{ row }">
-					<UChip :color="row.original.enabled ? 'success' : 'error'" size="md">
+					<UBadge :color="row.original.enabled ? 'success' : 'neutral'" variant="subtle" size="md">
+						<template #leading>
+							<UIcon :name="row.original.enabled ? 'i-lucide-check-circle' : 'i-lucide-circle-off'" class="w-4 h-4" />
+						</template>
 						{{ row.original.enabled ? "Aktiv" : "Deaktiviert" }}
-					</UChip>
+					</UBadge>
 				</template>
 
 				<template #actions-cell="{ row }">

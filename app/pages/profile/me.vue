@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import ArticleList from '~/components/ui/ArticleList.vue';
+import ProfilePictureModal from '~/components/ui/ProfilePictureModal.vue';
+import PasswordChangeModal from '~/components/ui/PasswordChangeModal.vue';
+
 const { $currentUser } = useNuxtApp();
 
 if (!$currentUser || !$currentUser.value) {
@@ -7,9 +11,12 @@ if (!$currentUser || !$currentUser.value) {
 
 const uid = $currentUser?.value?.uid || '';
 
-const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid}`, {
+const { data: profile, status, error, refresh } = await useFetch<any>(`/api/profile/${uid}`, {
 	cache: 'no-cache'
 });
+
+const isPictureModalOpen = ref(false);
+const isPasswordModalOpen = ref(false);
 </script>
 
 <template>
@@ -38,7 +45,7 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 						color="neutral" 
 						variant="soft" 
 						class="absolute bottom-0 right-0"
-						to="/profile/me/picture"
+						@click="isPictureModalOpen = true"
 					>
 						Ändern
 					</UButton>
@@ -50,6 +57,9 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 				</div>
 			</div>
 
+			<ProfilePictureModal v-model="isPictureModalOpen" @updated="refresh" />
+			<PasswordChangeModal v-model="isPasswordModalOpen" />
+
 			<section class="max-w-screen-md mx-auto">
 				<div class="flex items-center gap-4 mb-8">
 					<h2 class="text-2xl font-bold">Meine Beiträge</h2>
@@ -57,19 +67,7 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 				</div>
 
 				<div v-if="profile.articles && profile.articles.length > 0" class="space-y-8">
-					<UiSummary
-						v-for="(article, index) of profile.articles"
-						:key="article.id"
-						:link="`/article/${article.id}`"
-						:id="article.id"
-						:title="article.title"
-						:subtitle="article.intro"
-						:image-url="article.image"
-						:labels="article.tags"
-						:author="profile.displayName"
-						:author-uid="uid"
-						:index="index"
-						:date="new Date(article.published).toLocaleDateString('de-CH')" />
+					<ArticleList :articles="profile.articles" />
 				</div>
 				<p v-else class="text-center py-12 text-gray-500 italic">
 					Noch keine Beiträge veröffentlicht.
@@ -79,7 +77,7 @@ const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid
 			<section class="max-w-screen-md mx-auto border-t pt-12">
 				<h2 class="text-xl font-bold mb-6">Konto-Einstellungen</h2>
 				<div class=" space-y-4">
-					<UButton color="neutral" variant="ghost" icon="i-lucide-lock" to="/profile/me/password">
+					<UButton color="neutral" variant="ghost" icon="i-lucide-lock" @click="isPasswordModalOpen = true">
 						Passwort ändern
 					</UButton>
 				</div>
