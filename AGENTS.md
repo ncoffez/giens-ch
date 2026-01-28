@@ -11,11 +11,20 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Deploy to Firebase:** `npm run deploy`. This script now uses `firebase deploy` with `predeploy` hooks in `firebase.json` that automatically handle `npm run build` and dependency staging in `.output/server/node_modules`.
 
 ### Testing & Linting
-- **Framework:** Vitest with `@nuxt/test-utils`.
-- **Run all tests:** `npm run test:run`
-- **Run a single test:** `npx vitest run tests/integration/home.test.ts`
-- **STRICT MANDATE:** **Always** run the full test suite (`npm run test:run`) after any build step or significant refactor. Do not commit or declare a task complete unless all tests are green.
-- **Current Status:** A minimal regression suite exists in `tests/integration/`.
+- **Framework:**
+  - Integration Tests: Vitest with `@nuxt/test-utils`
+  - E2E Tests: Playwright
+- **Run all tests:**
+  - Integration tests: `npm run test:run`
+  - E2E tests: `npm run test:e2e`
+- **Run a single test:**
+  - Integration: `npx vitest run tests/integration/home.test.ts`
+  - E2E: `npx playwright test tests/e2e/critical-flows.spec.ts`
+- **Console Error Detection:** E2E tests automatically detect browser console errors on all routes. Never commit changes that cause console errors.
+- **STRICT MANDATE:** **Always** run the full test suite after any build step or significant refactor. Do not commit or declare a task complete unless all tests are green.
+- **Current Status:**
+  - Integration: A minimal regression suite exists in `tests/integration/`
+  - E2E: Console error detection on all routes (32 pages)
 - **Guideline:** Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
 
 ### Coverage Requirements
@@ -110,12 +119,16 @@ This document serves as a guide for agentic coding agents operating in this repo
 - Custom UI wrappers are in `app/components/ui/` (e.g., `<UiTitle>`, `<UiSummary>`). Always check here before creating a new basic UI component.
 
 ### Icon System
-- **Icon Format:** Use `i-lucide-icon` with Lucide icons (e.g., `name="i-lucide-home"`, `name="i-lucide-handshake"`).
-- **Troubleshooting:** If icons fail to load and show `[Icon] failed to load icon 'lucide:icon-name'` in console:
-  1. Check icon name is correct (spelling, lucide prefix)
-  2. Clean Nuxt cache: `rm -rf .nuxt`
-  3. Clean node cache: `rm -rf node_modules/.cache`
-  4. Restart dev server: `npm run dev`
+- **Format:** Use `i-lucide-icon` with Lucide icons (e.g., `name="i-lucide-home"`, `name="i-lucide-handshake"`).
+- **Provider:** Uses `provider: 'server'` in production with `clientBundle` optimization for frequently used icons.
+- **Package:** Nuxt UI auto-registers `@nuxt/icon` module.
+- **Icon Collections:** Installs `@iconify-json/lucide` for local icon data (installed globally via devDependencies).
+- **Troubleshooting:** If icons fail to load:
+   1. Check configuration uses `provider: 'server'` (not `none`)
+   2. Clean Nuxt cache: `rm -rf .nuxt`
+   3. Clean node cache: `rm -rf node_modules/.cache`
+   4. Verify startup shows: `✔ Nuxt Icon discovered local-installed 1 collections: lucide`
+   5. Restart dev server: `npm run dev`
 
 ### Error Handling
 - **Server:** Use `throw createError({ statusCode: ..., message: "..." })`. Never return raw error objects.
@@ -144,14 +157,81 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Client Validation:** Don't rely solely on client-side middleware; always verify permissions on the server.
 
 ## 7. Development Workflow for Agents
+
+### Required Testing Workflow After Every Change
+
 1. **Understand:** Read the relevant `.vue` or `.ts` files first.
 2. **Plan:** Identify which part of the Nuxt lifecycle your change affects (Client vs. Server vs. Plugin).
 3. **Implement:** Follow the Tab-indentation and Double-quote rules strictly.
-4. **Verify:** Use `npm run dev` to verify changes if a prevtestiew environment is available.
-5. **Test:** Run `npm run test:run` to ensure all tests pass. DO NOT continue if any test fails.
-6. **Coverage:** Run `npm run test:coverage` and verify all thresholds (Statements 80%, Lines 80%, Functions 80%, Branches 75%) are met. If not, add tests to restore coverage.
-7. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
-8. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
+4. **Verify:** Use `npm run dev` to verify changes if a preview environment is available.
+5. **Integration Tests:** Run `npm run test:run` to ensure all tests pass. DO NOT continue if any test fails.
+6. **Console Error Detection:** Run `npm run test:e2e` to check for browser console errors on all 32 routes.
+   - All routes must be error-free
+   - Check test report for attached console logs if errors occur
+   - Fix any console errors before proceeding
+7. **Coverage:** Run `npm run test:coverage` and verify all thresholds (Statements 80%, Lines 80%, Functions 80%, Branches 75%).
+8. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
+9. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
+
+### Console Error Detection
+
+The E2E test suite automatically monitors browser console for errors on all routes:
+
+**Test Files:**
+- `tests/e2e/console-errors-public.test.ts` - Public routes only
+- `tests/e2e/console-errors-all-routes.test.ts` - All 32 routes including auth routes
+- `tests/e2e/console-errors-critical-flows.test.ts` - Critical user flows with console checking
+
+**Console Monitor Helper (`tests/helpers/console-monitor.ts`):**
+- Captures `console.error` and `console.warn` messages
+- Captures uncaught exceptions
+- Filters无害 warnings (hydration mismatches)
+- Attaches console logs to test report on failure
+- Provides clear error summaries
+
+**Example Console Error Output:**
+```
+Console errors found on /profile/me:
+  - [Icon] failed to load icon 'lucide:arrow-left'
+  - Error: Cannot read properties of undefined (reading 'value')
+```
+
+### Resource Error Detection
+
+The E2E test suite now detects broken resources (images, CSS, fonts, scripts):
+
+**Test Files:**
+- `tests/e2e/resource-errors-all-routes.test.ts` - Checks all 30 routes for broken resources
+
+**Resource Monitor Helper (`tests/helpers/resource-monitor.ts`):**
+- Monitors HTTP response failures (404, 403, 500, etc.)
+- Monitors request failures (aborted, failed)
+- Catches network-level resource loading errors
+- Monitors console errors related to resources
+- Types: Image, CSS, Font, Script, Stylesheet
+- Attaches detailed failure reports to test outputs
+
+**Example Resource Error Output:**
+```
+Resource Failures Summary:
+  Images: 3
+  CSS: 0
+  Fonts: 1
+  Scripts: 0
+  Other: 0
+  Total: 4
+
+Failures:
+  - [IMAGE] http://localhost:3000/broken-image.jpg
+    Status: 404
+    Error: HTTP 404
+```
+
+**After Every Code Change:**
+1. Run `npm run test:e2e` to check for console errors
+2. Run `npm run test:e2e` to check for broken resources
+3. Verify no broken resources in any route
+4. Fix all errors before declaring work complete
 
 ---
 

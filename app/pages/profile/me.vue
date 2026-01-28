@@ -1,17 +1,15 @@
 <script setup lang="ts">
-const route = useRoute();
-const uid = route.params.uid as string;
+const { $currentUser } = useNuxtApp();
+
+if (!$currentUser || !$currentUser.value) {
+	navigateTo('/login');
+}
+
+const uid = $currentUser?.value?.uid || '';
 
 const { data: profile, status, error } = await useFetch<any>(`/api/profile/${uid}`, {
 	cache: 'no-cache'
 });
-
-// Debug logging
-console.log('[Public Profile] Route UID:', uid);
-console.log('[Public Profile] Data received:', profile.value);
-console.log('[Public Profile] Articles:', profile.value?.articles);
-console.log('[Public Profile] Articles count:', profile.value?.articles?.length);
-console.log('[Public Profile] Full profile object:', JSON.stringify(profile.value, null, 2));
 </script>
 
 <template>
@@ -20,37 +18,41 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 		<div v-if="status === 'pending'" class="flex justify-center py-20">
 			<UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary" />
 		</div>
-		
-		<div v-else-if="error" class="text-center py-20">
-			<UIcon name="i-lucide-user-x" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-			<h1 class="text-2xl font-bold mb-2">Benutzer nicht gefunden</h1>
-			<p class="text-gray-500 mb-6 max-w-sm mx-auto">{{ error.message || 'Das angeforderte Profil existiert nicht oder ist nicht öffentlich zugänglich.' }}</p>
-			<UButton to="/news" color="neutral" variant="ghost" icon="i-lucide-arrow-left">Zurück zur Übersicht</UButton>
-		</div>
 
 		<div v-else-if="profile" class="space-y-16">
-			<!-- Header -->
 			<div class="flex flex-col items-center text-center space-y-6">
-				<UAvatar 
-					:src="profile.photoURL" 
-					:alt="profile.displayName" 
-					size="xl" 
-					class="w-32 h-32 ring-4 ring-primary/10 shadow-xl"
-					:ui="{ 
-						rounded: 'rounded-full',
-						text: 'text-3xl font-black'
-					}"
-				/>
+				<div class="relative">
+					<UAvatar 
+						:src="profile.photoURL" 
+						:alt="profile.displayName" 
+						size="xl" 
+						class="w-32 h-32 ring-4 ring-primary/10 shadow-xl"
+						:ui="{ 
+							rounded: 'rounded-full',
+							text: 'text-3xl font-black'
+						}"
+					/>
+					<UButton 
+						icon="i-lucide-camera" 
+						size="sm" 
+						color="neutral" 
+						variant="soft" 
+						class="absolute bottom-0 right-0"
+						to="/profile/me/picture"
+					>
+						Ändern
+					</UButton>
+				</div>
 				<div>
 					<h1 class="text-4xl font-black tracking-tight">{{ profile.displayName }}</h1>
-					<p class="text-gray-500 mt-2">Mitglied des Lotissement Beausoleil</p>
+					<p v-if="profile.email" class="text-gray-500 mt-2">{{ profile.email }}</p>
+					<p class="text-gray-400 text-sm mt-1">Mitglied des Lotissement Beausoleil</p>
 				</div>
 			</div>
 
-			<!-- Articles -->
 			<section class="max-w-screen-md mx-auto">
 				<div class="flex items-center gap-4 mb-8">
-					<h2 class="text-2xl font-bold">Beiträge von {{ profile.displayName }}</h2>
+					<h2 class="text-2xl font-bold">Meine Beiträge</h2>
 					<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 				</div>
 
@@ -72,6 +74,15 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 				<p v-else class="text-center py-12 text-gray-500 italic">
 					Noch keine Beiträge veröffentlicht.
 				</p>
+			</section>
+
+			<section class="max-w-screen-md mx-auto border-t pt-12">
+				<h2 class="text-xl font-bold mb-6">Konto-Einstellungen</h2>
+				<div class=" space-y-4">
+					<UButton color="neutral" variant="ghost" icon="i-lucide-lock" to="/profile/me/password">
+						Passwort ändern
+					</UButton>
+				</div>
 			</section>
 		</div>
 		</ClientOnly>

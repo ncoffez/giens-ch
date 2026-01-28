@@ -1,11 +1,5 @@
 import { auth, db } from "../../useFirebaseAdmin";
-import { Article } from "../../../types";
-
-// Helper function to remove body from article objects (metadata public, body gated by claims)
-function stripBodyFromArticle(article: any) {
-	const { body, ...articleWithoutBody } = article;
-	return articleWithoutBody;
-}
+import { getUserClaims } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	const params = event.context.params as { uid?: string };
@@ -15,34 +9,42 @@ export default defineEventHandler(async (event) => {
 	}
 	const uid = uidRaw;
 
-	let userData: { displayName: string; photoURL?: string } = {
-		displayName: "Unbekannter Bewohner"
+	const claims = await getUserClaims(event);
+	const isOwner = claims?.uid === uid;
+	const isAdmin = claims?.admin === true;
+	const canAccessPrivate = isOwner || isAdmin;
+
+	let userData: any = {
+		displayName: "Unbekannter Bewohner",
+		uid
 	};
 
 	try {
 		const user = await auth.getUser(uid);
 		userData = {
 			displayName: user.displayName || "Unbekannter Bewohner",
-			photoURL: user.photoURL
+			photoURL: user.photoURL,
+			uid,
+			email: canAccessPrivate ? user.email : undefined,
+			emailVerified: canAccessPrivate ? user.emailVerified : undefined,
+			metadata: canAccessPrivate ? user.metadata : undefined
 		};
 	} catch (e: any) {
-		// User not found in Auth, check if they have any articles with this authorUid
 		const articlesByUid = await db.collection("articles")
 			.where("authorUid", "==", uid)
 			.limit(1)
 			.get();
-		
+
 		if (articlesByUid.empty) {
-			// No articles found with this authorUid, search by author name as last resort
 			const articlesByName = await db.collection("articles")
 				.where("author", "==", uid)
 				.limit(1)
 				.get();
-			
+
 			if (articlesByName.empty) {
 				throw createError({ statusCode: 404, message: "User not found" });
 			}
-			
+
 			const doc = articlesByName.docs[0];
 			if (doc) {
 				userData.displayName = doc.data().author || uid;
@@ -60,48 +62,56 @@ export default defineEventHandler(async (event) => {
 	}
 
 	try {
-		// Fetch articles by this author
-		// Note: We avoid .orderBy() here to prevent "Missing Index" errors if the composite index isn't set up yet.
-		// We will sort in-memory since we only limit to a small number.
-		console.log(`[Public Profile API] Fetching articles for UID: ${uid}`);
+		console.log(`[Profile API] Fetching articles for UID: ${uid} (Private: ${canAccessPrivate})`);
 		const articlesSnapshot = await db.collection("articles")
 			.where("authorUid", "==", uid)
 			.limit(100)
 			.get();
-		
-let articles: Article[] = [];
+
+		let articles: any[] = [];
 		articlesSnapshot.forEach(doc => {
-			articles.push(stripBodyFromArticle(doc.data()));
+			const article = doc.data();
+			if (canAccessPrivate) {
+				articles.push(article);
+			} else {
+				const { body, ...articleWithoutBody } = article;
+				articles.push(articleWithoutBody);
+			}
 		});
 
-		// If no articles found by UID, try by author name as fallback
 		if (articles.length === 0) {
 			const articlesByName = await db.collection("articles")
 				.where("author", "==", userData.displayName)
 				.limit(100)
 				.get();
-			
+
 			articlesByName.forEach(doc => {
 				const docId = doc.id;
 				if (!articles.find((a: { id: string; }) => a.id === docId)) {
-					articles.push(stripBodyFromArticle(doc.data()));
+					const article = doc.data();
+					if (canAccessPrivate) {
+						articles.push(article);
+					} else {
+						const { body, ...articleWithoutBody } = article;
+						articles.push(articleWithoutBody);
+					}
 				}
 			});
 		}
 
-		// Sort in memory by published date descending
 		articles.sort((a, b) => {
 			const dateA = new Date(a.published).getTime();
 			const dateB = new Date(b.published).getTime();
 			return dateB - dateA;
 		});
 
-		console.log(`[Public Profile API] Returning ${articles.length} articles for user: ${userData.displayName}`);
-		console.log(`[Public Profile API] Article bodies: ${articles.some((a: Article) => a.body) ? 'Found body (error!)' : 'None (correct)'}`);
+		console.log(`[Profile API] Returning ${articles.length} articles for: ${userData.displayName}`);
 
 		return {
 			...userData,
-			articles: articles.slice(0, 20)
+			articles: articles.slice(0, 20),
+			isOwner,
+			isAdmin
 		};
 	} catch (e: any) {
 		console.error("Profile API Error:", e);

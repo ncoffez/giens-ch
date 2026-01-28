@@ -1,27 +1,72 @@
 <script lang="ts" setup>
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, addDoc } from "firebase/firestore";
 
 const { $db } = useNuxtApp();
 const toast = useToast();
 const { data: labels, status, refresh } = useFetch<any[]>("/api/labels");
 
+const isCreatingLabel = ref(false);
+const newLabelId = ref("");
+const isPending = ref(false);
+
 const updateLabel = async (id: string, currentPrivacy: boolean) => {
 	try {
 		await updateDoc(doc($db, `labels/${id}`), { private: !currentPrivacy });
-		toast.add({
-			title: "Aktualisiert",
-			description: `Sichtbarkeit für '${id}' wurde geändert.`,
-			color: "success"
-		});
-		await refresh();
-	} catch (error: any) {
-		toast.add({
-			title: "Fehler",
-			description: error.message,
-			color: "error"
-		});
-	}
-};
+toast.add({
+				title: "Aktualisiert",
+				description: `Sichtbarkeit für '${id}' wurde geändert.`,
+				color: "success"
+			});
+			await refresh();
+		} catch (error: any) {
+			toast.add({
+				title: "Fehler",
+				description: error.message,
+				color: "error"
+			});
+		}
+	};
+
+	const createLabel = async () => {
+		if (!newLabelId.value || newLabelId.value.trim().length < 2) {
+			toast.add({
+				title: "Fehler",
+				description: "Label-ID muss mindestens 2 Zeichen haben.",
+				color: "error"
+			});
+			return;
+		}
+
+		isPending.value = true;
+		try {
+			const labelId = newLabelId.value.trim().toLowerCase();
+			const labelTitle = labelId.charAt(0).toUpperCase() + labelId.slice(1);
+			
+			await addDoc($db.collection("labels"), {
+				id: labelId,
+				title: labelTitle,
+				name: labelId,
+				private: false
+			});
+			
+			toast.add({
+				title: "Erfolgreich",
+				description: `Label '${labelTitle}' wurde erstellt.`,
+				color: "success"
+			});
+			newLabelId.value = "";
+			isCreatingLabel.value = false;
+			await refresh();
+		} catch (error: any) {
+			toast.add({
+				title: "Fehler",
+				description: error.message,
+				color: "error"
+			});
+		} finally {
+			isPending.value = false;
+		}
+	};
 </script>
 
 <template>
@@ -29,6 +74,36 @@ const updateLabel = async (id: string, currentPrivacy: boolean) => {
 		<div class="flex items-center justify-between">
 			<h2 class="text-3xl font-extrabold tracking-tight">Kategorien & Berechtigungen</h2>
 		</div>
+
+		<!-- Create Label Form -->
+		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
+			<template #header v-if="isCreatingLabel">
+				<div class="flex items-center justify-between">
+					<span class="text-lg font-bold">Neues Label erstellen</span>
+					<UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" @click="isCreatingLabel = false" />
+				</div>
+			</template>
+			
+			<div v-if="!isCreatingLabel">
+				<UButton icon="i-lucide-plus" color="neutral" variant="outline" @click="isCreatingLabel = true">
+					Neues Label erstellen
+				</UButton>
+			</div>
+			
+			<div v-else class="space-y-4">
+				<UFormField label="Label-ID" size="lg">
+					<UInput v-model="newLabelId" placeholder="z.B. sonderangebote" @keyup.enter="createLabel" />
+				</UFormField>
+				<div class="flex gap-2">
+					<UButton color="primary" :loading="isPending" @click="createLabel">
+						Erstellen
+					</UButton>
+					<UButton variant="ghost" color="neutral" @click="isCreatingLabel = false">
+						Abbrechen
+					</UButton>
+				</div>
+			</div>
+		</UCard>
 
 		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
 			<div class="divide-y divide-gray-100 dark:divide-gray-800">

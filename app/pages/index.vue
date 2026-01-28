@@ -81,6 +81,41 @@
 			</div>
 		</section>
 
+		<!-- Statistics Banner -->
+		<div class="max-w-screen-xl mx-auto px-4 mt-12 mb-8">
+			<div class="flex items-center justify-center gap-4 md:gap-8 text-center py-8">
+				<div class="flex flex-col items-center">
+					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">22</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Häuser</span>
+				</div>
+				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
+				<div class="flex flex-col items-center">
+					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">30+</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Jahre</span>
+				</div>
+				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
+				<div class="flex flex-col items-center">
+					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">1</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Spirit</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Timeline Section -->
+		<section class="bg-gray-50 dark:bg-gray-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+			<div class="max-w-screen-lg mx-auto px-4">
+				<div class="text-center mb-10">
+					<UiTitle subtitle="Unsere Geschichte" title="Seit 1992 ein Zuhause" />
+				</div>
+				<UTimeline class="max-w-2xl mx-auto" :items="[
+					{ date: 'März 1992', title: 'Kauf des Grundstücks', icon: 'i-lucide-circle-dollar-sign' },
+					{ date: 'Januar 1995', title: 'Erstes Haus bezogen', icon: 'i-lucide-house' },
+					{ date: 'Oktober 2009', title: 'Erneuerung & Spielplatz', icon: 'i-lucide-toy-brick' },
+					{ date: 'Oktober 2019', title: 'Eigenverwaltung beginnt', icon: 'i-lucide-hammer' }
+				]" />
+			</div>
+		</section>
+
 		<section class="space-y-8 md:space-y-12">
 			<div class="max-w-screen-xl mx-auto px-4">
 				<UiTitle subtitle="Impressionen" title="Die Schönheit von Giens" />
