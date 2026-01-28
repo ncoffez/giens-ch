@@ -119,7 +119,7 @@ async function handleFileChange(event: Event) {
 </script>
 
 <template>
-	<UModal v-model="modelValue" title="Profilbild ändern">
+	<UModal :open="modelValue" @update:open="modelValue = $event" title="Profilbild ändern">
 		<template #content>
 			<div class="p-6 space-y-8">
 				<div class="flex flex-col items-center gap-4">
