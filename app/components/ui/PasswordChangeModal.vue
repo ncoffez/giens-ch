@@ -56,7 +56,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-	<UModal v-model="modelValue" title="Passwort ändern">
+	<UModal :open="modelValue" @update:open="modelValue = $event" title="Passwort ändern">
 		<template #content>
 			<UForm :state="form" @submit="handleSubmit" class="p-6 space-y-6">
 				<UFormField label="Aktuelles Passwort">
