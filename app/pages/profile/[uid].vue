@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ArticleList from '~/components/ui/ArticleList.vue';
+
 const route = useRoute();
 const uid = route.params.uid as string;
 
@@ -54,21 +56,7 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 					<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
 				</div>
 
-				<div v-if="profile.articles && profile.articles.length > 0" class="space-y-8">
-					<UiSummary
-						v-for="(article, index) of profile.articles"
-						:key="article.id"
-						:link="`/article/${article.id}`"
-						:id="article.id"
-						:title="article.title"
-						:subtitle="article.intro"
-						:image-url="article.image"
-						:labels="article.tags"
-						:author="profile.displayName"
-						:author-uid="uid"
-						:index="index"
-						:date="new Date(article.published).toLocaleDateString('de-CH')" />
-				</div>
+				<UiArticleList v-if="profile.articles && profile.articles.length > 0" :articles="profile.articles" />
 				<p v-else class="text-center py-12 text-gray-500 italic">
 					Noch keine Beiträge veröffentlicht.
 				</p>

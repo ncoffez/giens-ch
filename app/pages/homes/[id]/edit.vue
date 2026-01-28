@@ -41,7 +41,7 @@ toast.add({ title: e.data?.message || e.message || "Failed to delete home", colo
 };
 
 const canDelete = computed(() => {
-	return $isAdmin.value || ($currentUser.value && home.value?.ownerId === $currentUser.value.uid);
+	return $isAdmin.value || ($currentUser.value && home.value?.ownerIds?.includes($currentUser.value.uid));
 });
 
 onMounted(fetchHome);

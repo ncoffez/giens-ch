@@ -28,21 +28,21 @@ defineProps<Props>();
 				v-for="article in articles"
 				:key="article.id"
 				:to="`/article/${article.id}`"
-				class="flex items-start gap-3 p-3 rounded-xl bg-white/50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+				class="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all hover:shadow-md group"
 			>
 				<img
 					:src="article.image"
 					:alt="article.title"
-					class="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+					class="w-20 h-20 object-cover rounded-xl flex-shrink-0 shadow-sm"
 					loading="lazy"
 				/>
 				<div class="flex-1 min-w-0">
-					<h3 class="font-semibold text-sm truncate">{{ article.title }}</h3>
-					<p class="text-xs text-gray-500 mt-1">
-						{{ new Date(article.published).toLocaleDateString("de-CH", { day: "2-digit", month: "short", year: "numeric" }) }}
+					<h3 class="font-black text-xl tracking-tight truncate group-hover:text-primary transition-colors">{{ article.title }}</h3>
+					<p class="text-md text-gray-500 mt-1 font-medium">
+						{{ new Date(article.published).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" }) }}
 					</p>
 				</div>
-				<UIcon name="i-lucide-chevron-right" class="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+				<UIcon name="i-lucide-chevron-right" class="w-6 h-6 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
 			</NuxtLink>
 		</div>
 	</div>

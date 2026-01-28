@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { doc, updateDoc, addDoc } from "firebase/firestore";
+import { doc, updateDoc, addDoc, collection } from "firebase/firestore";
 
 const { $db } = useNuxtApp();
 const toast = useToast();
@@ -42,7 +42,7 @@ toast.add({
 			const labelId = newLabelId.value.trim().toLowerCase();
 			const labelTitle = labelId.charAt(0).toUpperCase() + labelId.slice(1);
 			
-			await addDoc($db.collection("labels"), {
+			await addDoc(collection($db, "labels"), {
 				id: labelId,
 				title: labelTitle,
 				name: labelId,

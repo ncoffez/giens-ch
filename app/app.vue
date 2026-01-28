@@ -13,11 +13,11 @@ useHead({
 	htmlAttrs: {
 		lang: "de"
 	},
-	title: "Gard du Giens - Haus am Mittelmeer",
+	title: "Résidence Beausoleil",
 	meta: [
 			{
 				name: "description",
-				content: "Entdecken Sie das charmante Haus am Gard du Giens im Süden Frankreichs. Ein perfekter Ferienort für unforgettable Erinnerungen."
+				content: "Willkommen in der Résidence Beausoleil - Ihr perfektes Feriendomizil für unvergessliche Tage am Mittelmeer."
 			},
 			{
 				name: "viewport",

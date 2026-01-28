@@ -120,7 +120,7 @@ onMounted(fetchEditors);
 			</div>
 		</UCard>
 
-		<UCard v-if="$isAdmin.value || props.home.ownerId === $currentUser?.uid">
+		<UCard v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)">
 			<h3 class="text-lg font-semibold mb-4">Editors</h3>
 			<p class="text-sm text-gray-600 mb-4">
 				Add other users as editors to help manage this home.
