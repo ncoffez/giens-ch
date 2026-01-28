@@ -10,14 +10,24 @@ const home = ref<any>(null);
 const owners = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const ownersError = ref<string | null>(null);
 
 const fetchOwners = async () => {
 	try {
+		console.log("[fetchOwners] Starting to fetch owners...");
 		owners.value = await $fetch("/api/users/owners", {
 			headers: { Authorization: `Bearer ${$token.value}` },
 		});
+		console.log("[fetchOwners] Successfully fetched owners:", owners.value);
 	} catch (e: any) {
-		console.error("Failed to load owners:", e);
+		console.error("[fetchOwners] Failed to load owners:", e);
+		if (e?.statusCode === 403) {
+			ownersError.value = "Zugriff verweigert - keine Admin-Berechtigung";
+		} else if (e?.statusCode >= 500) {
+			ownersError.value = "Serverfehler - bitte später erneut versuchen";
+		} else {
+			ownersError.value = e?.data?.message || e?.message || "Fehler beim Laden der Eigentümer";
+		}
 	}
 };
 
@@ -44,10 +54,10 @@ const save = async () => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 			body: home.value,
 		});
-		toast.add({ title: "Home saved successfully", color: "green" });
+		toast.add({ title: "Home saved successfully", color: "success" });
 		await fetchHome();
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to save home", color: "red" });
+		toast.add({ title: e.data?.message || e.message || "Failed to save home", color: "error" });
 	} finally {
 		loading.value = false;
 	}
@@ -74,22 +84,30 @@ watch(homeId, fetchHome);
 					<h1 class="text-3xl font-bold mb-6">{{ home.name }} bearbeiten</h1>
 				</div>
 
-				<UFormGroup label="Status">
+				<UFormField label="Status">
 					<div class="flex items-center gap-4">
 						<USwitch v-model="home.enabled" />
 						<span>{{ home.enabled ? "Aktiv" : "Deaktiviert" }}</span>
 					</div>
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="Eigentümer zuweisen">
+				<UFormField label="Eigentümer zuweisen">
+					<div v-if="ownersError" class="text-red-500 text-sm mb-2">{{ ownersError }}</div>
+
+					<div v-else-if="owners.length === 0" class="text-sm text-gray-500 mb-2">
+						Keine Benutzer vorhanden.
+						<NuxtLink to="/admin/users" class="text-primary hover:underline">Benutzer erstellen</NuxtLink>
+					</div>
+
 					<USelect
 						v-model="home.ownerId"
-						:options="[
-							{ label: '-', value: '' },
+						:items="[
+							{ label: '-', value: null },
 							...owners.map((o) => ({ label: `${o.displayName} (${o.email})`, value: o.uid })),
 						]"
+						placeholder="Eigentümer auswählen"
 					/>
-				</UFormGroup>
+				</UFormField>
 
 				<div class="flex gap-4">
 					<NuxtLink to="/admin/homes">

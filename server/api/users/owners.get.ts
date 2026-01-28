@@ -1,4 +1,4 @@
-import { db } from "../../useFirebaseAdmin";
+import { auth } from "../../useFirebaseAdmin";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -8,25 +8,18 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
 		}
 
-		const usersRef = db.collection("users");
-		const snapshot = await usersRef.get();
+		const allUsersResult = await auth.listUsers(1000);
+		const owners: Array<{ uid: string; email: string; displayName: string }> = [];
 
-		const users = snapshot.docs.map((doc) => {
-			const data = doc.data();
-			return {
-				uid: data.uid || doc.id,
-				email: data.email || "",
-				displayName: data.displayName || data.email?.split("@")[0] || "",
-				admin: !!data.admin,
-				owner: !!data.owner,
-				isOwner: !!data.owner,
-				isAdmin: !!data.admin,
-			};
-		});
+		for (const userRecord of allUsersResult.users) {
+			owners.push({
+				uid: userRecord.uid,
+				email: userRecord.email || "",
+				displayName: userRecord.displayName || userRecord.email?.split("@")[0] || "",
+			});
+		}
 
-		const filteredUsers = users.filter((user) => user.isOwner || user.isAdmin);
-
-		return filteredUsers;
+		return owners;
 	} catch (e: any) {
 		throw createError({
 			statusCode: e.statusCode || 500,

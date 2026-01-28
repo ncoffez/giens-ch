@@ -1,7 +1,7 @@
 import { db } from "../useFirebaseAdmin";
 import type { Home } from "../../types";
 
-export async function initializeHomes(maxHomeNumber: number = 30): Promise<{ created: number; existing: number }> {
+export async function initializeHomes(maxHomeNumber: number = 20): Promise<{ created: number; existing: number }> {
 	let created = 0;
 	let existing = 0;
 
@@ -60,10 +60,10 @@ async function getMaxHomeNumber(): Promise<number> {
 	const config = useRuntimeConfig();
 	const settingsRef = await db.collection("settings").doc("global").get();
 
-	if (settingsRef.exists) {
-		const settings = settingsRef.data();
-		return settings?.maxHomeNumber || 30;
-	}
+if (settingsRef.exists) {
+			const settings = settingsRef.data();
+			return settings?.maxHomeNumber || 20;
+		}
 
-	return 30;
+		return 20;
 }

@@ -1,0 +1,82 @@
+import { describe, it, expect } from "vitest";
+import { mountSuspended, registerEndpoint } from "@nuxt/test-utils/runtime";
+import { createError } from "h3";
+import AdminHomesPage from "../../app/pages/admin/homes/index.vue";
+
+describe("Admin Homes Page", () => {
+	const mockHomes = [
+		{ id: "1", name: "Haus 1", ownerId: "user1", enabled: true },
+		{ id: "2", name: "Haus 2", ownerId: "user2", enabled: false },
+		{ id: "10", name: "Haus 10", ownerId: "user3", enabled: true },
+		{ id: "3", name: "Haus 3", ownerId: null, enabled: true },
+	];
+
+	it("renders page title", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => mockHomes,
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		expect(component.text()).toContain("Häuser Verwaltung");
+	});
+
+	it("fetches and displays homes from API", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => mockHomes,
+		});
+
+		await mountSuspended(AdminHomesPage);
+	});
+
+	it("show/hide disabled toggle exists", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => mockHomes,
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		expect(component.text()).toContain("Deaktivierte Häuser anzeigen");
+	});
+
+	it("displays loading state initially", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => new Promise(() => {}),
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		expect(component.text()).toContain("Loading...");
+	});
+
+	it("displays home count badges when homes are loaded", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => mockHomes,
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		
+		await new Promise((resolve) => setTimeout(resolve, 200));
+		
+		const text = component.text();
+		expect(text).toContain("aktiv");
+		expect(text).toContain("deaktiviert");
+	});
+
+	it("displays error message when API fails", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => {
+				throw createError({ statusCode: 500, message: "API Error" });
+			},
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		
+		await new Promise((resolve) => setTimeout(resolve, 200));
+		
+		expect(component.text()).toContain("500");
+	});
+});
