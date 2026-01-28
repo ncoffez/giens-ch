@@ -80,7 +80,7 @@ const navigateToProfile = () => {
 };
 
 const isReader = computed(() => {
-  if (!process.client) return false;
+  if (!import.meta.client) return false;
   const nuxtApp = useNuxtApp() as any;
   if (!nuxtApp.$currentUser?.value) return false;
   const claims = (nuxtApp.$currentUser.value as any).claims || {};

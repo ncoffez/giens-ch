@@ -55,15 +55,15 @@ watch(() => props.home, (newHome) => {
 <template>
 	<UCard>
 		<form @submit.prevent="save" class="space-y-6">
-			<UFormGroup label="Check-in Information" description="Instructions for checking in">
-				<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." rows="6" />
-			</UFormGroup>
+			<UFormField label="Check-in Information" description="Instructions for checking in">
+				<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." :rows="6" />
+			</UFormField>
 
-			<UFormGroup label="Check-out Information" description="Instructions for checking out">
-				<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." rows="6" />
-			</UFormGroup>
+			<UFormField label="Check-out Information" description="Instructions for checking out">
+				<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." :rows="6" />
+			</UFormField>
 
-			<UFormGroup label="Must Knows" description="Important information residents need to know">
+			<UFormField label="Must Knows" description="Important information residents need to know">
 				<div class="space-y-2">
 					<div class="flex gap-2">
 						<UInput
@@ -83,15 +83,13 @@ watch(() => props.home, (newHome) => {
 							<UButton
 								color="red"
 								variant="ghost"
-								size="icon"
+								icon="i-lucide-x"
 								@click="removeMustKnow(index)"
-							>
-								<UIcon name="i-lucide-x" />
-							</UButton>
+							/>
 						</div>
 					</div>
 				</div>
-			</UFormGroup>
+			</UFormField>
 
 			<UButton type="submit" :loading="loading">Save Changes</UButton>
 		</form>

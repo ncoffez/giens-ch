@@ -94,9 +94,9 @@ onMounted(fetchEditors);
 
 			<div class="flex gap-4 items-end">
 				<div class="flex-1">
-					<UFormGroup label="Link expiration (days)">
+					<UFormField label="Link expiration (days)">
 						<UInput v-model.number="daysToExpire" type="number" min="1" max="30" />
-					</UFormGroup>
+					</UFormField>
 				</div>
 				<UButton :loading="loading" @click="generateShareLink">
 					Generate Share Link

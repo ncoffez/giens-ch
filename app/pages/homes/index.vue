@@ -13,6 +13,13 @@ const fetchHomes = async () => {
 		homes.value = await $fetch("/api/homes", {
 			headers: { Authorization: `Bearer ${$token.value}` },
 		});
+
+		// Redirect logic
+		if (homes.value.length === 0) {
+			return navigateTo("/homes/new");
+		} else if (homes.value.length === 1) {
+			return navigateTo(`/homes/${homes.value[0].id}`);
+		}
 	} catch (e: any) {
 		error.value = e.message || "Failed to load homes";
 	} finally {

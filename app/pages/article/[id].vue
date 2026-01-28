@@ -95,7 +95,7 @@ import type { Article } from "~/types";
 const route = useRoute();
 const id = route.params.id;
 const nuxtApp = useNuxtApp() as any;
-const token = computed(() => process.client ? nuxtApp.$token?.value : null);
+const token = computed(() => import.meta.client ? nuxtApp.$token?.value : null);
 const isAuthenticated = computed(() => token.value !== null);
 
 const {

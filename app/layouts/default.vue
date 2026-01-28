@@ -87,40 +87,11 @@ const route = useRoute();
 const nuxtApp = useNuxtApp() as any;
 const colorMode = useColorMode();
 
-const currentUser = computed(() => process.client ? nuxtApp.$currentUser : null);
-const isAdmin = computed(() => process.client ? nuxtApp.$isAdmin : false);
-const isOwner = computed(() => process.client ? nuxtApp.$isOwner : false);
-const isPublisher = computed(() => process.client ? nuxtApp.$isPublisher : false);
-const isReader = computed(() => process.client ? nuxtApp.$isReader : false);
-
-const homes = ref<any[]>([]);
-const homesLoading = ref(false);
-
-const fetchHomes = async () => {
-	if (!process.client || !nuxtApp.$token) return;
-
-	try {
-		homesLoading.value = true;
-		homes.value = await $fetch("/api/homes", {
-			headers: { Authorization: `Bearer ${nuxtApp.$token.value}` },
-		});
-	} catch (e) {
-		console.error("Failed to load homes in navigation:", e);
-		homes.value = [];
-	} finally {
-		homesLoading.value = false;
-	}
-};
-
-if (process.client) {
-	fetchHomes();
-}
-
-const homeNavigationTo = computed(() => {
-	if (homesLoading.value || homes.value.length === 0) return "/homes/new";
-	if (homes.value.length === 1) return `/homes/${homes.value[0].id}`;
-	return "/homes";
-});
+const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
+const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
+const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
+const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher : false);
+const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
 
 const isDark = computed({
 	get() {
@@ -208,11 +179,11 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		},
 	];
 
-	if (process.client && isOwner.value) {
+	if (import.meta.client && isOwner.value) {
 		items.push({
 			label: "Mein Haus",
 			icon: "i-lucide-building-2",
-			to: homeNavigationTo.value,
+			to: "/homes",
 			active: route.path.startsWith("/homes"),
 		});
 	}
@@ -251,7 +222,7 @@ const userItems = computed(() => {
 		}
 	];
 
-	if (process.client && isAdmin.value) {
+	if (import.meta.client && isAdmin.value) {
 		items.push({
 			label: "Verwaltung",
 			to: "/admin",

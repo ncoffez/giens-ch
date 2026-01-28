@@ -54,7 +54,7 @@ onMounted(fetchSettings);
 
 		<UCard>
 			<form @submit.prevent="save" class="space-y-6">
-				<UFormGroup
+				<UFormField
 					label="Maximum Home Number"
 					description="The highest home number allowed (e.g., 30 for homes 1-30)"
 				>
@@ -63,18 +63,18 @@ onMounted(fetchSettings);
 						type="number"
 						min="1"
 					/>
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup
+				<UFormField
 					label="Default Washing Machine Instructions"
 					description="These instructions apply to all homes unless overridden"
 				>
 					<UTextarea
 						v-model="settings.washingMachineUse"
 						placeholder="Enter washing machine instructions..."
-						rows="6"
+						:rows="6"
 					/>
-				</UFormGroup>
+				</UFormField>
 
 				<UButton type="submit" :loading="loading">Save Settings</UButton>
 			</form>

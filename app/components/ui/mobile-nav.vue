@@ -23,15 +23,15 @@
 			{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
 		];
 
-		if (process.client && nuxtApp.$isReader?.value) {
+		if (import.meta.client && nuxtApp.$isReader?.value) {
 			items.push({ label: "EV", icon: "i-lucide-handshake", to: "/news/eigentuemerversammlung" });
 		}
 
-		if (process.client && nuxtApp.$isOwner?.value) {
+		if (import.meta.client && nuxtApp.$isOwner?.value) {
 			items.push({ label: "Haus", icon: "i-lucide-building-2", to: "/homes" });
 		}
 
-		if (process.client && nuxtApp.$currentUser?.value) {
+		if (import.meta.client && nuxtApp.$currentUser?.value) {
 			items.push({ label: "Profil", icon: "i-lucide-circle-user", to: "/profile" });
 		} else {
 			items.push({ label: "Anmelden", icon: "i-lucide-log-in", to: "/login" });

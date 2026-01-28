@@ -92,36 +92,36 @@ const submit = async () => {
 		<UCard>
 			<form @submit.prevent="submit" class="space-y-6">
 				<div>
-					<UFormGroup label="Home Number" required>
+					<UFormField label="Home Number" required>
 						<UInput v-model="form.name" type="number" placeholder="1-30 (or configured max)" required />
-					</UFormGroup>
+					</UFormField>
 				</div>
 
-				<UFormGroup label="Contact Information">
+				<UFormField label="Contact Information">
 					<div class="space-y-4">
 						<UInput v-model="form.contact.name" placeholder="Owner name" />
 						<UInput v-model="form.contact.phone" placeholder="Phone number" type="tel" />
 						<UInput v-model="form.contact.email" placeholder="Email address" type="email" />
 					</div>
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="WiFi Password">
+				<UFormField label="WiFi Password">
 					<UInput v-model="form.wifiPassword" placeholder="WiFi password" />
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="Parking Number">
+				<UFormField label="Parking Number">
 					<UInput v-model="form.parkingNumber" placeholder="Parking spot number" />
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="Check-in Information">
-					<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." rows="4" />
-				</UFormGroup>
+				<UFormField label="Check-in Information">
+					<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." :rows="4" />
+				</UFormField>
 
-				<UFormGroup label="Check-out Information">
-					<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." rows="4" />
-				</UFormGroup>
+				<UFormField label="Check-out Information">
+					<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." :rows="4" />
+				</UFormField>
 
-				<UFormGroup label="Must Knows">
+				<UFormField label="Must Knows">
 					<div class="space-y-2">
 						<div class="flex gap-2">
 							<UInput v-model="mustKnowsInput" placeholder="Add a must-know item" @keyup.enter="addMustKnow" />
@@ -138,9 +138,9 @@ const submit = async () => {
 							</UChip>
 						</div>
 					</div>
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="Cleaning Information">
+				<UFormField label="Cleaning Information">
 					<div class="space-y-2">
 						<div class="flex gap-2">
 							<UInput v-model="cleaningInfoInput" placeholder="Add cleaning info" @keyup.enter="addCleaningInfo" />
@@ -157,15 +157,15 @@ const submit = async () => {
 							</UChip>
 						</div>
 					</div>
-				</UFormGroup>
+				</UFormField>
 
-				<UFormGroup label="House Rules">
-					<UTextarea v-model="form.houseRules" placeholder="Enter house rules..." rows="4" />
-				</UFormGroup>
+				<UFormField label="House Rules">
+					<UTextarea v-model="form.houseRules" placeholder="Enter house rules..." :rows="4" />
+				</UFormField>
 
-				<UFormGroup label="Blankets Information">
-					<UTextarea v-model="form.blanketsInfo" placeholder="Enter information about blankets..." rows="4" />
-				</UFormGroup>
+				<UFormField label="Blankets Information">
+					<UTextarea v-model="form.blanketsInfo" placeholder="Enter information about blankets..." :rows="4" />
+				</UFormField>
 
 				<div class="flex justify-end gap-4">
 					<NuxtLink to="/homes">
