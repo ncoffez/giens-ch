@@ -35,7 +35,7 @@ const state = reactive({
 });
 const router = useRouter();
 const { $currentUser } = useNuxtApp();
-const toast = useToast();
+const toast = useAppToast();
 
 definePageMeta({
 	middleware: "is-not-logged-in",
@@ -50,12 +50,12 @@ async function loginToFirebase(method: "google" | "password", email?: string, pa
 		if (method === "google") {
 			await loginWithGoogle();
 		} else if (method === "password" && (!password || !email)) {
-			toast.add({ color: "error", title: "Fehler", description: "E-Mail und Passwort sind erforderlich." });
+			toast.error("Fehler", "E-Mail und Passwort sind erforderlich.");
 		} else if (method === "password" && password && email) {
 			await loginWithPassword(email, password);
 		}
 	} catch (e: any) {
-		toast.add({ color: "error", title: "Fehler", description: e?.message || "Ein Fehler ist aufgetreten." });
+		toast.error("Fehler", e?.message || "Ein Fehler ist aufgetreten.");
 	}
 }
 
@@ -66,7 +66,7 @@ async function loginWithGoogle() {
 	provider.addScope("profile");
 	try {
 		await signInWithPopup($auth, provider);
-		toast.add({ color: "success", title: "Erfolg", description: "Sie haben sich erfolgreich angemeldet." });
+		toast.success("Sie haben sich erfolgreich angemeldet.");
 	} catch (e: any) {
 		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
 	}
@@ -79,7 +79,7 @@ async function loginWithApple() {
 	provider.addScope("name");
 	try {
 		await signInWithPopup($auth, provider);
-		toast.add({ color: "success", title: "Erfolg", description: "Sie haben sich erfolgreich angemeldet." });
+		toast.success("Sie haben sich erfolgreich angemeldet.");
 	} catch (e: any) {
 		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
 	}

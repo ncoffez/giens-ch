@@ -33,3 +33,8 @@ body {
 	opacity: 0;
 	filter: blur(1rem);
 }
+
+/* Make toast/notification text selectable */
+[role="status"] {
+	user-select: text !important;
+}

@@ -144,6 +144,7 @@ const uploading = ref(false);
 const uploadProgress = ref(0);
 
 const { $token } = useNuxtApp();
+const toast = useAppToast();
 
 const triggerFileUpload = () => {
 	fileInput.value?.click();
@@ -192,9 +193,8 @@ const handleFileChange = async (event: Event) => {
 		uploadProgress.value = 100;
 	} catch (e: any) {
 		console.error("Upload failed", e);
-		const toast = useToast();
 		const message = e.data?.message || e.message || "Unbekannter Fehler";
-		toast.add({ color: "error", title: "Upload fehlgeschlagen", description: message });
+		toast.error("Upload fehlgeschlagen", message);
 	} finally {
 		setTimeout(() => {
 			uploading.value = false;

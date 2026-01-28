@@ -21,9 +21,29 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		const user = await auth.getUser(uid);
+		
+		// Priority: Check storage for custom upload first
+		const { storage } = await import("../../useFirebaseAdmin");
+		const bucket = storage.bucket();
+		const prefix = `profile-pictures/${uid}/`;
+		const [files] = await bucket.getFiles({ prefix });
+		
+		let finalPhotoURL = user.photoURL;
+		if (files.length > 0) {
+			const sorted = files.sort((a, b) => 
+				new Date(b.metadata.timeCreated || 0).getTime() - 
+				new Date(a.metadata.timeCreated || 0).getTime()
+			);
+			const latestFile = sorted[0];
+			if (latestFile) {
+				finalPhotoURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(latestFile.name)}?alt=media`;
+				console.log(`[Profile API] Using storage photo for ${uid}: ${latestFile.name}`);
+			}
+		}
+
 		userData = {
 			displayName: user.displayName || "Unbekannter Bewohner",
-			photoURL: user.photoURL,
+			photoURL: finalPhotoURL,
 			uid,
 			email: canAccessPrivate ? user.email : undefined,
 			emailVerified: canAccessPrivate ? user.emailVerified : undefined,
