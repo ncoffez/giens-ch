@@ -114,7 +114,12 @@ This document serves as a guide for agentic coding agents operating in this repo
 - Tiptap extensions used: `StarterKit`, `Highlight`, `TextAlign`, `Image`, `TaskList`.
 
 ### UI Components (@nuxt/ui)
-- Use `@nuxt/ui` components wherever possible for consistency.
+- Use `@nuxt/ui` (v3) components wherever possible for consistency.
+- **Component Names:**
+    - Use `<UFormField>` instead of the deprecated `<UFormGroup>`.
+    - Use `<UButton>` icon prop (e.g., `icon="i-lucide-home"`) instead of nesting `<UIcon>` inside.
+- **Prop Types:**
+    - Ensure props like `rows` on `<UTextarea>` are numeric: `:rows="4"` (correct) vs `rows="4"` (warning).
 - Common components: `<UButton>`, `<UInput>`, `<UCard>`, `<UIcon>`, `<UModal>`.
 - Custom UI wrappers are in `app/components/ui/` (e.g., `<UiTitle>`, `<UiSummary>`). Always check here before creating a new basic UI component.
 
@@ -141,6 +146,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 ### Client-Only Logic
 - Use `<ClientOnly>` tags for components that depend on browser-only APIs (like Firebase Auth state or Tiptap).
 - For files ending in `.client.vue`, Nuxt will automatically handle client-side only rendering.
+- **Environment Checks:** Use `import.meta.client` instead of the deprecated `process.client`.
 
 ### Middleware
 - Route protection is handled in `app/middleware/`.
