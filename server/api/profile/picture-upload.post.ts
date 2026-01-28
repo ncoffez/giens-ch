@@ -85,50 +85,51 @@ export default defineEventHandler(async (event) => {
 	// 6. Storage Guard
 	let publicUrl: string;
 	try {
-		const { storage } = await import("../../useFirebaseAdmin");
+		const { storage, db } = await import("../../useFirebaseAdmin");
 		const bucket = storage.bucket();
-		console.log(`[Profile Upload] Using bucket: ${bucket.name}`);
+		const bucketName = bucket.name;
+		console.log(`[Profile Upload] Bucket Name: ${bucketName}`);
 		
 		const fileName = `profile-pictures/${uid}/${Date.now()}.jpg`;
 		const fileUpload = bucket.file(fileName);
 
-		console.log(`[Profile Upload] Uploading to storage: ${fileName}`);
+		console.log(`[Profile Upload] Saving to storage path: ${fileName}`);
 		await fileUpload.save(processedImage, {
 			contentType: "image/jpeg",
 			metadata: { cacheControl: "public, max-age=31536000" }
 		});
 
-		publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
+		// Ensure the URL is correctly constructed. Encode the fileName but NOT the bucket name.
+		publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(fileName)}?alt=media`;
+		console.log(`[Profile Upload] Generated Public URL: ${publicUrl}`);
 		
-		// Attempt makePublic but don't fail if it's restricted
-		fileUpload.makePublic().catch(e => console.warn("[Profile Upload] makePublic suppressed (normal for newer buckets):", e.message));
+		// Attempt makePublic but don't fail
+		fileUpload.makePublic().catch(e => console.warn("[Profile Upload] makePublic suppressed:", e.message));
 		
-		console.log(`[Profile Upload] Upload successful: ${publicUrl}`);
+		// 7. Profile Update Guard
+		try {
+			// Update Firebase Auth profile
+			await auth.updateUser(uid, { photoURL: publicUrl });
+			console.log("[Profile Upload] Auth updated successfully");
+
+			// Persist to Firestore
+			await db.collection("users").doc(uid).set({
+				photoURL: publicUrl,
+				updatedAt: new Date().toISOString()
+			}, { merge: true });
+			console.log(`[Profile Upload] Firestore updated for UID ${uid}`);
+		} catch (e: any) {
+			console.error("[Profile Upload] Auth or Firestore update failed:", e.message);
+			throw createError({ statusCode: 500, statusMessage: "Internal Server Error", message: "Profil konnte nicht aktualisiert werden. Bitte wenden Sie sich an den Support." });
+		}
 	} catch (e: any) {
-		console.error("[Profile Upload] Storage upload failed:", e.message);
+		if (e.statusCode) throw e;
+		console.error("[Profile Upload] Storage error:", e.message);
 		throw createError({ 
 			statusCode: 503, 
 			statusMessage: "Service Unavailable", 
 			message: `Der Speicherdienst ist vorübergehend nicht erreichbar: ${e.message}` 
 		});
-	}
-
-	// 7. Profile Update Guard
-	try {
-		// Update Firebase Auth profile
-		await auth.updateUser(uid, { photoURL: publicUrl });
-		console.log("[Profile Upload] Firebase Auth profile updated successfully");
-
-		// Persist to Firestore users collection
-		const { db } = await import("../../useFirebaseAdmin");
-		await db.collection("users").doc(uid).set({
-			photoURL: publicUrl,
-			updatedAt: new Date().toISOString()
-		}, { merge: true });
-		console.log("[Profile Upload] Firestore document updated successfully");
-	} catch (e: any) {
-		console.error("[Profile Upload] Auth or Firestore update failed:", e.message);
-		throw createError({ statusCode: 500, statusMessage: "Internal Server Error", message: "Profil konnte nicht aktualisiert werden. Bitte wenden Sie sich an den Support." });
 	}
 
 	return { success: true, photoURL: publicUrl };
