@@ -2,10 +2,10 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
-	modules: ["@nuxt/ui", "@nuxt/icon"],
+	modules: ["@nuxt/ui"],
 	icon: process.env.NODE_ENV !== 'test'
 		? {
-			provider: 'none',
+			provider: 'server',
 			clientBundle: {
 				scan: {
 					globInclude: [

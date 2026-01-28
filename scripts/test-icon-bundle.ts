@@ -42,7 +42,7 @@ async function main() {
         
         await sleep(2000);
         
-        const iconApiUrl = `${NUXT_PUBLIC_API_BASE_URL}/api/_nuxt_icon/lucide:home`;
+        const iconApiUrl = `${NUXT_PUBLIC_API_BASE_URL}/api/_nuxt_icon/i-lucide-home`;
         
         try {
             const response = await fetchWithTimeout(iconApiUrl);
@@ -79,7 +79,7 @@ async function main() {
         
         for (const iconName of testIcons) {
             try {
-                const iconUrl = `${NUXT_PUBLIC_API_BASE_URL}/api/_nuxt_icon/lucide:${iconName}`;
+                const iconUrl = `${NUXT_PUBLIC_API_BASE_URL}/api/_nuxt_icon/i-lucide-${iconName}`;
                 const response = await fetchWithTimeout(iconUrl);
 
                 if (response.status === 200) {
