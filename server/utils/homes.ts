@@ -3,7 +3,7 @@ import type { Home, HomeShare, GlobalSettings } from "../../types";
 import crypto from "crypto";
 
 export async function getHomes(userId: string): Promise<Home[]> {
-	const snapshot = await db.collection("homes").where("ownerId", "==", userId).orderBy("name").get();
+	const snapshot = await db.collection("homes").where("ownerIds", "array-contains", userId).orderBy("name").get();
 	return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Home));
 }
 
@@ -17,6 +17,7 @@ export async function getHomeBySlug(slug: string): Promise<Home | null> {
 	const snapshot = await db.collection("homes").where("slug", "==", slug).limit(1).get();
 	if (snapshot.empty) return null;
 	const doc = snapshot.docs[0];
+	if (!doc) return null;
 	return { id: doc.id, ...doc.data() } as Home;
 }
 
@@ -29,7 +30,7 @@ export async function createHome(userId: string, homeData: Partial<Home>): Promi
 		id: homeId,
 		name: homeData.name || "",
 		slug,
-		ownerId: userId,
+		ownerIds: [userId],
 		editors: [],
 		photos: [],
 		enabled: homeData.enabled ?? false,
@@ -72,7 +73,7 @@ export async function canEditHome(homeId: string, userId: string, isAdmin: boole
 	const home = await getHomeById(homeId);
 	if (!home) return false;
 
-	return home.ownerId === userId || home.editors.includes(userId);
+	return home.ownerIds.includes(userId) || home.editors.includes(userId);
 }
 
 export function generateShareToken(): string {

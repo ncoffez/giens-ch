@@ -8,15 +8,7 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
 		}
 
-		let query = db.collection("homes");
-		const { showDisabled } = getQuery(event);
-
-		if (showDisabled === "true" || showDisabled === "1") {
-			query = query.orderBy("name");
-		} else {
-			query = query.where("enabled", "==", true).orderBy("name");
-		}
-
+		const query = db.collection("homes").orderBy("name");
 		const snapshot = await query.get();
 		const homes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 

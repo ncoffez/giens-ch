@@ -9,13 +9,14 @@ export default defineEventHandler(async (event) => {
 		}
 
 		const allUsersResult = await auth.listUsers(1000);
-		const owners: Array<{ uid: string; email: string; displayName: string }> = [];
+		const owners: Array<{ uid: string; email: string; displayName: string; photoURL?: string }> = [];
 
 		for (const userRecord of allUsersResult.users) {
 			owners.push({
 				uid: userRecord.uid,
 				email: userRecord.email || "",
 				displayName: userRecord.displayName || userRecord.email?.split("@")[0] || "",
+				photoURL: userRecord.photoURL || undefined
 			});
 		}
 

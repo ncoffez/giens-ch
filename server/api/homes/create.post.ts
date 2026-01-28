@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 403, message: "Forbidden: Only admins can create homes" });
 		}
 
-		const { name, ownerId, contact, wifiPassword, checkInInfo, checkOutInfo, mustKnows, houseRules, blanketsInfo, cleaningInfo, parkingNumber, washingMachineOverride, enabled } = body;
+		const { name, ownerIds, contact, wifiPassword, checkInInfo, checkOutInfo, mustKnows, houseRules, blanketsInfo, cleaningInfo, parkingNumber, washingMachineOverride, enabled } = body;
 
 		if (!name || typeof name !== "string") {
 			throw createError({ statusCode: 400, message: "Name is required" });
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
 		const homeData = {
 			name,
-			ownerId: ownerId || "",
+			ownerIds: ownerIds || [],
 			enabled: enabled ?? true,
 			contact: contact || {},
 			wifiPassword,

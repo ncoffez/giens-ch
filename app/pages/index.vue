@@ -145,8 +145,19 @@ const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	onResponse({ response }) {
 		if (response._data) {
 			(nuxtApp.payload as any)._fetchedAt = (nuxtApp.payload as any)._fetchedAt || {};
-			(nuxtApp.payload as any)._fetchedAt["news-home"] = Date.now();
+(nuxtApp.payload as any)._fetchedAt["news-home"] = Date.now();
 		}
-	},
+		},
+});
+
+useHead({
+	link: [
+		{
+			rel: "preload",
+			as: "image",
+			href: "/giens/hauseingang_cropped-1920w.webp",
+			fetchpriority: "high"
+		}
+	]
 });
 </script>

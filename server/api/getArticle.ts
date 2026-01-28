@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 			return labelDoc?.private;
 		});
 
-		const includeBody = permission === "private" && !isPrivate;
+		const includeBody = !isPrivate || (isPrivate && permission === "private");
 
 		return {
 			id: article.id,
