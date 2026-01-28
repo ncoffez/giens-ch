@@ -26,8 +26,15 @@ export default defineEventHandler(async (event) => {
 		const userDoc = await db.collection("users").doc(uid).get();
 		const firestoreData = userDoc.exists ? userDoc.data() : null;
 		
+		if (firestoreData) {
+			console.log(`[Profile API] Firestore data found for ${uid}:`, JSON.stringify(firestoreData));
+		} else {
+			console.log(`[Profile API] No Firestore document for ${uid}`);
+		}
+
 		// photoURL logic: Firestore > Auth
 		const finalPhotoURL = firestoreData?.photoURL || user.photoURL;
+		console.log(`[Profile API] Final photoURL for ${uid}: ${finalPhotoURL}`);
 
 		userData = {
 			displayName: firestoreData?.displayName || user.displayName || "Unbekannter Bewohner",
