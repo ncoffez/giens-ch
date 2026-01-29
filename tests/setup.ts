@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { ref } from "vue";
 
 // Polyfill localStorage for happy-dom
 if (typeof window !== "undefined") {
@@ -89,7 +90,12 @@ vi.mock("firebase-admin/firestore", () => ({
 
 vi.mock("firebase-admin/auth", () => ({
 	getAuth: vi.fn(() => ({
-		verifyIdToken: vi.fn(() => Promise.resolve({ admin: true })),
+		verifyIdToken: vi.fn().mockImplementation((token) => {
+			if (token === 'invalid') throw new Error('Invalid token');
+			return Promise.resolve({ admin: true, owner: true, publisher: true });
+		}),
 		listUsers: vi.fn(() => Promise.resolve({ users: [] })),
 	})),
 }));
+
+

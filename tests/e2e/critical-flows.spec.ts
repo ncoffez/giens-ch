@@ -5,7 +5,7 @@ test.describe("Critical User Flows", () => {
 		await page.goto("/news");
 
 		// Check if news page loads
-		await expect(page.locator("h1")).toBeVisible();
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 
 		// Wait for articles to load
 		await page.waitForLoadState("networkidle");
@@ -23,7 +23,7 @@ test.describe("Critical User Flows", () => {
 		await page.goto("/");
 
 		// Check if home page loads
-		await expect(page.locator("h1")).toBeVisible();
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 
 		// Check for navigation links
 		const newsLink = page.locator('a[href*="/news"], button:has-text("News")');

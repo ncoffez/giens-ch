@@ -1,16 +1,16 @@
 <template>
-	<div class="relative bg-white dark:bg-zinc-800 rounded-lg m-2 max-w-screen-lg mx-auto shadow-glow-lg">
+	<div
+		class="relative bg-white dark:bg-zinc-800 rounded-lg m-2 max-w-screen-lg mx-auto shadow-glow-lg">
 		<div
 			class="sticky top-0 z-10 flex text-gray-800 dark:bg-white flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 place-content-center"
 			v-if="editor">
-			
 			<UButton
 				color="neutral"
 				variant="ghost"
 				icon="i-lucide-undo"
 				@click="editor.chain().focus().undo().run()"
 				:disabled="!editor.can().chain().focus().undo().run()" />
-			
+
 			<UButton
 				color="neutral"
 				variant="ghost"
@@ -42,14 +42,14 @@
 				icon="i-lucide-bold"
 				@click="editor.chain().focus().toggleBold().run()"
 				:class="{ 'bg-gray-200': editor.isActive('bold') }" />
-			
+
 			<UButton
 				color="neutral"
 				variant="ghost"
 				icon="i-lucide-italic"
 				@click="editor.chain().focus().toggleItalic().run()"
 				:class="{ 'bg-gray-200': editor.isActive('italic') }" />
-			
+
 			<UButton
 				color="neutral"
 				variant="ghost"
@@ -115,7 +115,9 @@
 				@click="loadDemo"
 				title="Demo text" />
 		</div>
-		<div v-if="uploading" class="px-4 py-2 bg-gray-50 dark:bg-zinc-900 border-b border-gray-200">
+		<div
+			v-if="uploading"
+			class="px-4 py-2 bg-gray-50 dark:bg-zinc-900 border-b border-gray-200">
 			<UProgress :value="uploadProgress" color="primary" size="sm" />
 			<p class="text-xs text-gray-500 mt-1">Datei wird hochgeladen...</p>
 		</div>
@@ -157,14 +159,14 @@ const handleFileChange = async (event: Event) => {
 
 	uploading.value = true;
 	uploadProgress.value = 10;
-	
+
 	try {
 		const reader = new FileReader();
 		const base64Promise = new Promise<string>((resolve) => {
 			reader.onload = (e) => resolve(e.target?.result as string);
 			reader.readAsDataURL(file);
 		});
-		
+
 		const base64 = await base64Promise;
 		uploadProgress.value = 40;
 
@@ -174,14 +176,18 @@ const handleFileChange = async (event: Event) => {
 			body: {
 				filename: file.name,
 				file: base64,
-				type: file.type
-			}
+				type: file.type,
+			},
 		});
 
 		uploadProgress.value = 90;
 
 		if (file.type.startsWith("image/")) {
-			editor.value?.chain().focus().setImage({ src: response.url, alt: response.filename }).run();
+			editor.value
+				?.chain()
+				.focus()
+				.setImage({ src: response.url, alt: response.filename })
+				.run();
 		} else {
 			// Insert as a link with CSS-based icon
 			const html = `<a href="${response.url}" target="_blank" rel="noopener noreferrer" class="document-link" data-type="${file.type}">
@@ -189,7 +195,7 @@ const handleFileChange = async (event: Event) => {
 			</a>`;
 			editor.value?.chain().focus().insertContent(html).run();
 		}
-		
+
 		uploadProgress.value = 100;
 	} catch (e: any) {
 		console.error("Upload failed", e);
@@ -274,12 +280,32 @@ onMounted(() => {
 
 const headingItems = computed(() => [
 	[
-		{ label: "Paragraph", icon: "i-lucide-pilcrow", onSelect: () => editor.value?.chain().focus().setParagraph().run() },
-		{ label: "Heading 1", icon: "i-lucide-heading-1", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 1 }).run() },
-		{ label: "Heading 2", icon: "i-lucide-heading-2", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 2 }).run() },
-		{ label: "Heading 3", icon: "i-lucide-heading-3", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 3 }).run() },
-		{ label: "Heading 4", icon: "i-lucide-heading-4", onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 4 }).run() },
-	]
+		{
+			label: "Paragraph",
+			icon: "i-lucide-pilcrow",
+			onSelect: () => editor.value?.chain().focus().setParagraph().run(),
+		},
+		{
+			label: "Heading 1",
+			icon: "i-lucide-heading-1",
+			onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 1 }).run(),
+		},
+		{
+			label: "Heading 2",
+			icon: "i-lucide-heading-2",
+			onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 2 }).run(),
+		},
+		{
+			label: "Heading 3",
+			icon: "i-lucide-heading-3",
+			onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 3 }).run(),
+		},
+		{
+			label: "Heading 4",
+			icon: "i-lucide-heading-4",
+			onSelect: () => editor.value?.chain().focus().toggleHeading({ level: 4 }).run(),
+		},
+	],
 ]);
 
 const activeHeadingIcon = computed(() => {
@@ -292,10 +318,22 @@ const activeHeadingIcon = computed(() => {
 
 const listItems = computed(() => [
 	[
-		{ label: "Bullet List", icon: "i-lucide-list", onSelect: () => editor.value?.chain().focus().toggleBulletList().run() },
-		{ label: "Ordered List", icon: "i-lucide-list-ordered", onSelect: () => editor.value?.chain().focus().toggleOrderedList().run() },
-		{ label: "Task List", icon: "i-lucide-list-todo", onSelect: () => editor.value?.chain().focus().toggleTaskList().run() },
-	]
+		{
+			label: "Bullet List",
+			icon: "i-lucide-list",
+			onSelect: () => editor.value?.chain().focus().toggleBulletList().run(),
+		},
+		{
+			label: "Ordered List",
+			icon: "i-lucide-list-ordered",
+			onSelect: () => editor.value?.chain().focus().toggleOrderedList().run(),
+		},
+		{
+			label: "Task List",
+			icon: "i-lucide-list-todo",
+			onSelect: () => editor.value?.chain().focus().toggleTaskList().run(),
+		},
+	],
 ]);
 
 const activeListIcon = computed(() => {
@@ -307,11 +345,27 @@ const activeListIcon = computed(() => {
 
 const alignmentItems = computed(() => [
 	[
-		{ label: "Align Left", icon: "i-lucide-align-left", onSelect: () => editor.value?.chain().focus().setTextAlign("left").run() },
-		{ label: "Align Center", icon: "i-lucide-align-center", onSelect: () => editor.value?.chain().focus().setTextAlign("center").run() },
-		{ label: "Align Right", icon: "i-lucide-align-right", onSelect: () => editor.value?.chain().focus().setTextAlign("right").run() },
-		{ label: "Align Justify", icon: "i-lucide-align-justify", onSelect: () => editor.value?.chain().focus().setTextAlign("justify").run() },
-	]
+		{
+			label: "Align Left",
+			icon: "i-lucide-align-left",
+			onSelect: () => editor.value?.chain().focus().setTextAlign("left").run(),
+		},
+		{
+			label: "Align Center",
+			icon: "i-lucide-align-center",
+			onSelect: () => editor.value?.chain().focus().setTextAlign("center").run(),
+		},
+		{
+			label: "Align Right",
+			icon: "i-lucide-align-right",
+			onSelect: () => editor.value?.chain().focus().setTextAlign("right").run(),
+		},
+		{
+			label: "Align Justify",
+			icon: "i-lucide-align-justify",
+			onSelect: () => editor.value?.chain().focus().setTextAlign("justify").run(),
+		},
+	],
 ]);
 
 const activeAlignmentIcon = computed(() => {
@@ -327,12 +381,13 @@ const setLink = () => {
 	const url = window.prompt("URL", previousUrl);
 
 	if (url === null) return;
-	if (url === "") return editor.value.chain().focus().extendMarkRange("link").unsetLink().run();
+	if (url === "")
+		return editor.value.chain().focus().extendMarkRange("link").unsetLink().run();
 	editor.value.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
 };
 
-watchDeep(model, (newValue) => {
-	if (editor.value && editor.value.getHTML() === newValue) return;
+watchDeep(model, (newValue: string) => {
+	if (editor.value && (editor.value.getHTML() as String) == newValue) return;
 	if (editor.value) {
 		editor.value.commands.setContent(newValue, { errorOnInvalidContent: true });
 	}

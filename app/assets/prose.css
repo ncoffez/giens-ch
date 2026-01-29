@@ -172,40 +172,47 @@
 .prose .document-link {
 	display: inline-flex !important;
 	align-items: center;
-	padding: 0.3rem 1.2rem !important;
-	background-color: var(--color-neutral-50) !important;
+  line-height: 0%;
+	justify-content: center;
+	vertical-align: middle;
+	padding: .4rem .7rem !important;
+	background-color: var(--color-neutral-100) !important;
 	border: 1px solid var(--color-neutral-200) !important;
-	border-radius: 9999px !important;
+	border-radius: 2rem !important;
 	text-decoration: none !important;
-	color: var(--color-neutral-900) !important;
-	margin: 0.25rem 0.25rem !important;
+	color: var(--color-neutral-700) !important;
+	margin: 0 0.5rem !important;
 	font-weight: 600 !important;
 	transition: all 0.2s;
-	gap: 0.5rem;
-	font-size: 0.9rem;
+	gap: 0.35rem;
+	font-size: 0.85rem;
+	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .dark .prose .document-link {
 	background-color: var(--color-neutral-800) !important;
 	border-color: var(--color-neutral-700) !important;
-	color: var(--color-white) !important;
+	color: var(--color-neutral-300) !important;
+	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
 }
 
 .prose .document-link:hover {
-	background-color: var(--color-neutral-100) !important;
-	border-color: var(--color-primary-300) !important;
+	background-color: var(--color-neutral-200) !important;
+	border-color: var(--color-neutral-300) !important;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .dark .prose .document-link:hover {
 	background-color: var(--color-neutral-700) !important;
-	border-color: var(--color-primary-700) !important;
+	border-color: var(--color-neutral-600) !important;
 }
 
 .prose .document-link::before {
 	content: "";
 	display: inline-block;
-	width: 20px;
-	height: 20px;
+	width: 16px;
+	height: 16px;
 	background-color: currentColor;
 	mask-size: contain;
 	mask-repeat: no-repeat;
@@ -213,6 +220,7 @@
 	-webkit-mask-size: contain;
 	-webkit-mask-repeat: no-repeat;
 	-webkit-mask-position: center;
+	flex-shrink: 0;
 }
 
 /* Icons for document types */

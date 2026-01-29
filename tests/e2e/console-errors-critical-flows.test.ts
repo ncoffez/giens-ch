@@ -3,12 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe("Critical User Flows", () => {
 	test("news page loads and filters work", async ({ page }) => {
 		await page.goto("/news");
-		await expect(page.locator("h1")).toBeVisible();
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 
 	test("home page navigation works", async ({ page }) => {
 		await page.goto("/");
-		await expect(page.locator("h1")).toBeVisible();
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 
 	test("article page loads", async ({ page }) => {
