@@ -1,13 +1,19 @@
+export const isAdminLogic = async (nuxtApp: any) => {
+	const { $isAdmin } = nuxtApp;
+	if ($isAdmin.value) return true;
+	return "/";
+};
+
 export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	// skip middleware on server
 	if (import.meta.server) return;
 
-	const { $isAdmin, $authInitialized } = useNuxtApp();
+	const nuxtApp = useNuxtApp();
 
 	// Wait for auth to initialize
-	if (!$authInitialized.value) {
+	if (!nuxtApp.$authInitialized.value) {
 		await new Promise((resolve) => {
-			const unwatch = watch($authInitialized, (val) => {
+			const unwatch = watch(nuxtApp.$authInitialized, (val) => {
 				if (val) {
 					unwatch();
 					resolve(true);
@@ -16,6 +22,5 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 		});
 	}
 
-	if ($isAdmin.value) return true;
-	return navigateTo("/");
+	return isAdminLogic(nuxtApp);
 });

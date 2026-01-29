@@ -1,8 +1,13 @@
-export default defineNuxtRouteMiddleware((to, _from) => {
+export const isLoggedInLogic = (nuxtApp: any) => {
+	const { $currentUser } = nuxtApp;
+	if ($currentUser.value) return true;
+	return "/login";
+};
+
+export default defineNuxtRouteMiddleware((_to, _from) => {
 	// skip middleware on server
 	if (import.meta.server) return;
 
-	const { $currentUser } = useNuxtApp();
-	if ($currentUser.value) return true;
-	return navigateTo("/login");
+	const nuxtApp = useNuxtApp();
+	return isLoggedInLogic(nuxtApp);
 });

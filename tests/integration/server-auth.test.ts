@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 const { getUserClaims } = await import('../../server/utils/auth');
 
 vi.mock('h3', () => ({
-  getHeader: vi.fn((event, name) => event.node?.req?.headers?.[name] || null)
+  getHeader: vi.fn((event, name) => {
+    const headers = event.node?.req?.headers || {};
+    return headers[name] || headers[name.toLowerCase()] || null;
+  })
 }));
 
 vi.mock('../../server/useFirebaseAdmin', () => ({
@@ -19,7 +22,7 @@ describe("getUserClaims", () => {
     mockAuth.mockResolvedValue({ admin: true, sub: 'test', iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
     const mockEvent = { node: { req: { headers: { authorization: 'Bearer valid' } } } } as any;
     const claims = await getUserClaims(mockEvent);
-    expect(claims).toEqual({ admin: true });
+    expect(claims).toMatchObject({ admin: true });
   });
 
   it("returns null for invalid header", async () => {

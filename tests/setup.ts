@@ -97,5 +97,3 @@ vi.mock("firebase-admin/auth", () => ({
 		listUsers: vi.fn(() => Promise.resolve({ users: [] })),
 	})),
 }));
-
-
