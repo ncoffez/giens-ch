@@ -1,5 +1,5 @@
 import { auth } from "../useFirebaseAdmin";
-import { H3Event } from "h3";
+import { H3Event, getHeader } from "h3";
 
 export async function getUserClaims(event: H3Event) {
 	const authHeader = getHeader(event, "Authorization");
@@ -11,7 +11,8 @@ export async function getUserClaims(event: H3Event) {
 	if (!token) return null;
 	try {
 		const decodedToken = await auth.verifyIdToken(token);
-		return decodedToken;
+		const { admin, publisher, owner, reader, sub, email } = decodedToken;
+		return { admin, publisher, owner, reader, sub, email };
 	} catch (error) {
 		console.error("Error verifying ID token:", error);
 		return null;

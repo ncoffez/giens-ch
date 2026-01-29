@@ -1,11 +1,17 @@
+export const isPublisherLogic = async (nuxtApp: any) => {
+	const { $isPublisher } = nuxtApp;
+	if ($isPublisher.value) return true;
+	return "/";
+};
+
 export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	if (import.meta.server) return;
 
-	const { $isPublisher, $authInitialized } = useNuxtApp();
+	const nuxtApp = useNuxtApp();
 
-	if (!$authInitialized.value) {
+	if (!nuxtApp.$authInitialized.value) {
 		await new Promise((resolve) => {
-			const unwatch = watch($authInitialized, (val) => {
+			const unwatch = watch(nuxtApp.$authInitialized, (val) => {
 				if (val) {
 					unwatch();
 					resolve(true);
@@ -14,6 +20,5 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 		});
 	}
 
-	if ($isPublisher.value) return true;
-	return navigateTo("/");
+	return isPublisherLogic(nuxtApp);
 });

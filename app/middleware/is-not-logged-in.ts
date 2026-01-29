@@ -1,11 +1,17 @@
+export const isNotLoggedInLogic = async (nuxtApp: any) => {
+	const { $currentUser } = nuxtApp;
+	if ($currentUser.value) return "/profile";
+	return true;
+};
+
 export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	if (import.meta.server) return;
 
-	const { $currentUser, $authInitialized } = useNuxtApp();
+	const nuxtApp = useNuxtApp();
 
-	if (!$authInitialized.value) {
+	if (!nuxtApp.$authInitialized.value) {
 		await new Promise((resolve) => {
-			const unwatch = watch($authInitialized, (val) => {
+			const unwatch = watch(nuxtApp.$authInitialized, (val) => {
 				if (val) {
 					unwatch();
 					resolve(true);
@@ -14,6 +20,5 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 		});
 	}
 
-	if ($currentUser.value) return navigateTo("/profile");
-	return true;
+	return isNotLoggedInLogic(nuxtApp);
 });
