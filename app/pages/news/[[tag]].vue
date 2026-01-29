@@ -32,6 +32,7 @@
 								:labels="article.tags"
 								:author="article.author"
 								:author-uid="article.authorUid"
+								:has-attachments="article.hasAttachments"
 								:index="index"
 								:date="new Date(article.published).toLocaleDateString('de-CH')" 
 							/>
@@ -40,7 +41,7 @@
 					<div class="prose py-20 text-center mx-auto" v-else-if="status !== 'pending'">
 						<UIcon name="i-lucide-search-x" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
 						<p class="text-xl font-bold text-gray-500">Keine Neuigkeiten zum gewählten Thema gefunden.</p>
-						<UButton variant="link" @click="filterState = { search: '', tag: 'all', author: 'all', dateRange: 'all' }">Alle Filter zurücksetzen</UButton>
+						<UButton variant="link" @click="filterState = { search: '', tag: 'all', author: 'all', dateRange: 'all', hasAttachments: false }">Alle Filter zurücksetzen</UButton>
 					</div>
 				</div>
 			</div>
@@ -57,7 +58,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Article } from "~/types";
+import type { Article, Label } from "~/types";
 
 const route = useRoute();
 const router = useRouter();
@@ -70,7 +71,8 @@ const filterState = ref({
 	search: (route.query.s as string) || '',
 	tag: tag || 'all',
 	author: (route.query.a as string) || 'all',
-	dateRange: (route.query.d as string) || 'all'
+	dateRange: (route.query.d as string) || 'all',
+	hasAttachments: route.query.docs === 'true'
 });
 
 // Update URL when filters change
@@ -81,6 +83,7 @@ watch(filterState, (newState) => {
 	if (newState.search) query.s = newState.search;
 	if (newState.author !== 'all') query.a = newState.author;
 	if (newState.dateRange !== 'all') query.d = newState.dateRange;
+	if (newState.hasAttachments) query.docs = 'true';
 
 	const currentPath = route.path;
 	const newPath = newState.tag === 'all' ? '/news' : `/news/${newState.tag}`;
@@ -100,11 +103,13 @@ watch(() => route.fullPath, () => {
 	const newSearch = (route.query.s as string) || '';
 	const newAuthor = (route.query.a as string) || 'all';
 	const newDate = (route.query.d as string) || 'all';
+	const newDocs = route.query.docs === 'true';
 
 	if (filterState.value.tag !== newTag) filterState.value.tag = newTag;
 	if (filterState.value.search !== newSearch) filterState.value.search = newSearch;
 	if (filterState.value.author !== newAuthor) filterState.value.author = newAuthor;
 	if (filterState.value.dateRange !== newDate) filterState.value.dateRange = newDate;
+	if (filterState.value.hasAttachments !== newDocs) filterState.value.hasAttachments = newDocs;
 });
 
 // Create a unique key for the fetch
@@ -114,7 +119,7 @@ const cacheKey = computed(() => {
 });
 
 // Fetch labels to determine if tag is private
-const { data: labels } = await useFetch<any[]>("/api/labels", {
+const { data: labels } = await useFetch<Label[]>("/api/labels", {
 	key: "labels-list",
 	getCachedData(key) {
 		if (import.meta.test) return;
@@ -220,6 +225,11 @@ const filteredNews = computed(() => {
 			if (!article.published) return false;
 			return new Date(article.published).getTime() >= startTime;
 		});
+	}
+
+	// Attachment Filter
+	if (filterState.value.hasAttachments) {
+		result = result.filter(article => article.hasAttachments);
 	}
 
 	return result;

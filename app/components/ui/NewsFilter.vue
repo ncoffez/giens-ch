@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import type { Label } from "~/types";
+
 const filters = defineModel<{
 	search: string;
 	tag: string;
 	author: string;
 	dateRange: string;
+	hasAttachments: boolean;
 }>({ required: true });
 
 const nuxtApp = useNuxtApp();
@@ -12,7 +15,7 @@ const $isPublisher = import.meta.client ? nuxtApp.$isPublisher : null;
 
 const isOpen = ref(false);
 
-const { data: labels } = await useFetch<any[]>("/api/labels", {
+const { data: labels } = await useFetch<Label[]>("/api/labels", {
 	key: "labels-list",
 	getCachedData(key) {
 		if (import.meta.test) return;
@@ -37,7 +40,7 @@ const categoryOptions = computed(() => {
 		.filter(l => !l.private || (import.meta.client && $isReader?.value))
 		.map(l => ({
 			id: l.id,
-			label: l.title || l.id.charAt(0).toUpperCase() + l.id.slice(1),
+			label: l.name || l.id.charAt(0).toUpperCase() + l.id.slice(1),
 			icon: iconMap[l.id.toLowerCase()] || 'i-lucide-tag'
 		}));
 
@@ -65,7 +68,7 @@ const authorOptions = computed(() => [
 ]);
 
 const hasActiveFilters = computed(() => {
-	return filters.value.tag !== 'all' || filters.value.author !== 'all' || filters.value.dateRange !== 'all';
+	return filters.value.tag !== 'all' || filters.value.author !== 'all' || filters.value.dateRange !== 'all' || filters.value.hasAttachments;
 });
 
 const activeCategoryLabel = computed(() => {
@@ -183,7 +186,7 @@ const activeCategoryLabel = computed(() => {
 					color="neutral"
 					class="rounded-full pl-1.5 pr-1 py-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
 				>
-					<UIcon name="i-lucide-calendar" class="w-3 h-3" />
+					<UIcon name="i-lucide-calendar" class="w-3.5 h-3.5" />
 					<span>{{ dateOptions.find(d => d.id === filters.dateRange)?.label }}</span>
 					<UButton
 						icon="i-lucide-x"
@@ -192,6 +195,24 @@ const activeCategoryLabel = computed(() => {
 						size="xs"
 						class="rounded-full p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800"
 						@click="filters.dateRange = 'all'"
+					/>
+				</UBadge>
+
+				<UBadge
+					v-if="filters.hasAttachments"
+					variant="subtle"
+					color="primary"
+					class="rounded-full pl-1.5 pr-1 py-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+				>
+					<UIcon name="i-lucide-paperclip" class="w-3 h-3" />
+					<span>Mit Dokumenten</span>
+					<UButton
+						icon="i-lucide-x"
+						variant="ghost"
+						color="primary"
+						size="xs"
+						class="rounded-full p-0.5 hover:bg-primary-100 dark:hover:bg-primary-900/40"
+						@click="filters.hasAttachments = false"
 					/>
 				</UBadge>
 			</div>
@@ -259,6 +280,16 @@ const activeCategoryLabel = computed(() => {
 						</div>
 					</div>
 
+					<!-- Additional Toggles -->
+					<div class="flex items-center gap-6 pt-2">
+						<div 
+							class="flex items-center gap-3 bg-white dark:bg-gray-950 px-4 py-2.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:border-primary/20 cursor-pointer select-none"
+							@click="filters.hasAttachments = !filters.hasAttachments"
+						>
+							<UCheckbox v-model="filters.hasAttachments" color="primary" label="Nur Artikel mit Dokumenten" :ui="{ label: 'text-xs font-bold text-gray-900 dark:text-white cursor-pointer' }" @click.stop />
+						</div>
+					</div>
+
 					<div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800/50">
 						<div class="flex items-center gap-2 text-xs text-gray-500 font-medium italic">
 							<UIcon name="i-lucide-info" class="w-3.5 h-3.5" />
@@ -271,7 +302,7 @@ const activeCategoryLabel = computed(() => {
 							size="sm"
 							icon="i-lucide-x"
 							class="font-black uppercase tracking-tighter"
-							@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all' }"
+							@click="filters = { search: '', tag: 'all', author: 'all', dateRange: 'all', hasAttachments: false }"
 						>
 							Alles Zurücksetzen
 						</UButton>
