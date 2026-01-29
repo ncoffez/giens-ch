@@ -8,6 +8,7 @@ export interface Article {
 	body: string;
 	author?: string;
 	authorUid?: string;
+	hasAttachments?: boolean;
 }
 
 export interface User {
