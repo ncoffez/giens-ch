@@ -24,7 +24,8 @@ export default defineEventHandler(async (event) => {
 			tags: body.tags || [],
 			published: new Date().toISOString(),
 			author: decodedToken.name || decodedToken.email || "Unknown",
-			authorUid: decodedToken.uid
+			authorUid: decodedToken.uid,
+			hasAttachments: body.body?.includes('class="document-link"') || false
 		};
 
 		const docRef = await db.collection("articles").add(newArticle);

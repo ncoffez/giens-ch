@@ -31,6 +31,7 @@ export default defineEventHandler(async (event) => {
 				tags: (article && article.tags) || [],
 				author: (article && article.author) || null,
 				authorUid: (article && article.authorUid) || null,
+				hasAttachments: (article && article.hasAttachments) || false,
 				// Note: Body is no longer included - fetched separately on article detail page
 			});
 		});
@@ -69,7 +70,7 @@ export default defineEventHandler(async (event) => {
 
 function filterByTag(tag: string, articles: any[]) {
 	if (tag === 'all') return articles;
-	return articles.filter((article) => (article.tags || []).map((t) => t.toLowerCase()).includes(tag.toLowerCase()));
+	return articles.filter((article) => (article.tags || []).map((t: string) => t.toLowerCase()).includes(tag.toLowerCase()));
 }
 
 function filterBySearch(search: string, articles: any[]) {

@@ -5,8 +5,10 @@ process.env.FIREBASE_FRONTEND_KEY = JSON.stringify({ apiKey: "test" });
 export default defineVitestConfig({
 	test: {
 		environment: "nuxt",
+
 		globals: true,
 		setupFiles: ["./tests/setup.ts"],
+    outputFile: "./coverage-result.json",
 		include: [
 			"**/*.test.ts",
 			"**/*.test.js",
@@ -18,13 +20,14 @@ export default defineVitestConfig({
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],
-			exclude: [
+exclude: [
+		"**/coverage/**",
 				"node_modules/**",
 				"**/*.d.ts",
 				"**/*.config.js",
 				"**/*.config.ts",
 				"**/tests/**",
-				"**/coverage/**",
+				
 				"**/.nuxt/**",
 				"**/.output/**",
 				"**/.data/**",

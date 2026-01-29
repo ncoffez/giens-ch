@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
 			author: article.author,
 			authorUid: article.authorUid,
 			body: includeBody ? article.body : undefined,
+			hasAttachments: article.hasAttachments || false,
 			isPrivate,
 		};
 	} catch (error: any) {

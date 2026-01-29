@@ -9,14 +9,10 @@
 		<!-- Subtle Banner -->
 		<section class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem] shadow-xl bg-gray-100 dark:bg-gray-800">
 			<img
-				v-if="article.image"
-				:src="article.image"
+				:src="article.image || getArticlePlaceholder(id as string)"
 				class="object-cover h-full w-full brightness-105 contrast-[95%] scale-105"
 				:alt="article.title"
 				loading="eager" />
-			<div v-else class="w-full h-full flex items-center justify-center">
-				<UIcon name="i-lucide-image" class="w-20 h-20 text-neutral-300" />
-			</div>
 		</section>
 
 		<div class="max-w-screen-lg mx-auto px-4 w-full">
@@ -90,6 +86,7 @@
 	</div>
 </template>
 <script lang="ts" setup>
+import { getArticlePlaceholder } from "~/utils/placeholders";
 import type { Article } from "~/types";
 
 const route = useRoute();

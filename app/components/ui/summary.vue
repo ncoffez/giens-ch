@@ -30,6 +30,12 @@
 						<span>{{ author }}</span>
 					</div>
 				</template>
+				<template v-if="hasAttachments">
+					<div class="flex items-center gap-2 text-xs font-semibold text-primary dark:text-primary-400 rounded-full px-2 py-0.5 bg-primary/5 cursor-default">
+						<UIcon name="i-lucide-paperclip" class="w-3.5 h-3.5" />
+						<span class="hidden sm:inline">Dokumente</span>
+					</div>
+				</template>
 			</div>
 
 			<!-- Title and Subtitle -->
@@ -73,6 +79,7 @@ const props = defineProps<{
   authorUid?: string;
   index?: number;
   locked?: boolean;
+  hasAttachments?: boolean;
 }>();
 
 const navigateToProfile = () => {
