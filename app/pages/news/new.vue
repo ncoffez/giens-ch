@@ -21,7 +21,6 @@ const isPublishing = ref(false);
 
 const effectiveImage = computed(() => {
 	if (image.value) return image.value;
-	// Use title as seed for placeholder preview if no image provided
 	return getArticlePlaceholder(title.value || "new-article");
 });
 
@@ -42,7 +41,7 @@ const publish = async () => {
 				title: title.value,
 				intro: intro.value,
 				body: content.value,
-				image: image.value,
+				image: image.value || null,
 				tags: selectedTags.value
 			}
 		});
@@ -92,11 +91,13 @@ const publish = async () => {
 							class="w-full"
 						/>
 					</UFormField>
-
-					<UFormField label="Bild URL" description="Link zu einem Titelbild (optional)">
-						<UInput v-model="image" placeholder="https://..." size="lg" class="w-full" />
-					</UFormField>
 				</div>
+
+				<UFormField label="Titelbild">
+					<div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+						<ImagePicker v-model="image" />
+					</div>
+				</UFormField>
 			</div>
 
 			<div class="lg:col-span-1 space-y-6">
@@ -115,10 +116,10 @@ const publish = async () => {
 							</div>
 						</div>
 					</div>
-					<div class="mt-6 p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-800 flex gap-3">
+					<div v-if="!image" class="mt-6 p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-800 flex gap-3">
 						<UIcon name="i-lucide-info" class="text-primary shrink-0" />
 						<p class="text-xs text-primary-900 dark:text-primary-100 leading-relaxed">
-							Wenn Sie kein Bild angeben, wird automatisch ein passendes Bild aus unserer Giens-Galerie ausgewählt.
+							Wenn Sie kein Bild auswählen, wird automatisch ein Bild aus der Giens-Galerie verwendet.
 						</p>
 					</div>
 				</div>

@@ -1,3 +1,31 @@
+<script lang="ts" setup>
+import { getArticlePlaceholder } from "~/utils/placeholders";
+
+const route = useRoute();
+const id = route.params.id;
+const nuxtApp = useNuxtApp() as any;
+const token = computed(() => import.meta.client ? nuxtApp.$token?.value : null);
+const isPublisher = computed(() => nuxtApp.$isPublisher?.value || false);
+
+const {
+	data: articleData,
+	error,
+	status,
+} = await useLazyFetch(`/api/getArticle`, {
+	method: "post",
+	body: { id },
+	headers: computed(() => {
+		return token.value ? { Authorization: `Bearer ${token.value}` } : {};
+	}),
+});
+
+const article = computed(() => articleData.value);
+
+const canReadBody = computed(() => {
+	return !!article.value?.body;
+});
+</script>
+
 <template>
 	<div v-if="error" class="max-w-screen-xl mx-auto px-4 py-20">
 		<p class="text-error">Error loading article: {{ error?.data?.message ?? error?.message ?? "Unknown error" }}</p>
@@ -6,23 +34,31 @@
 		<UiArticleSkeleton />
 	</div>
 	<div v-else-if="article" class="w-full space-y-12 mb-24">
-		<!-- Subtle Banner -->
 		<section class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem] shadow-xl bg-gray-100 dark:bg-gray-800">
 			<img
 				:src="article.image || getArticlePlaceholder(id as string)"
 				class="object-cover h-full w-full brightness-105 contrast-[95%] scale-105"
 				:alt="article.title"
 				loading="eager" />
+			<div v-if="isPublisher" class="absolute top-4 right-4">
+				<UButton
+					:to="`/news/${id}/edit`"
+					color="white"
+					variant="solid"
+					icon="i-lucide-edit-3"
+					class="shadow-lg"
+				>
+					Bearbeiten
+				</UButton>
+			</div>
 		</section>
 
 		<div class="max-w-screen-lg mx-auto px-4 w-full">
-			<!-- Header -->
 			<div class="mb-12">
 				<UiTitle
 					:subtitle="new Date(article.published).toLocaleDateString('de-CH')"
 					:title="article.title" />
 				
-				<!-- Author Info -->
 				<div v-if="article.author" class="flex items-center gap-3 mb-8 -mt-4">
 					<NuxtLink 
 						v-if="article.authorUid" 
@@ -58,14 +94,11 @@
 				</div>
 			</div>
 
-			<!-- Content -->
 			<article class="prose max-w-none mx-auto lg:text-lg leading-relaxed">
-				<!-- Show body if accessible -->
 				<div v-if="canReadBody && article && article.body">
 					<div v-html="article.body"></div>
 				</div>
 				
-				<!-- Login prompt for private articles -->
 				<div v-else class="text-center py-12 space-y-6">
 					<UIcon name="i-lucide-lock" class="w-16 h-16 text-gray-300 mx-auto" />
 					<div class="space-y-4">
@@ -85,33 +118,3 @@
 		</div>
 	</div>
 </template>
-<script lang="ts" setup>
-import { getArticlePlaceholder } from "~/utils/placeholders";
-import type { Article } from "~/types";
-
-const route = useRoute();
-const id = route.params.id;
-const nuxtApp = useNuxtApp() as any;
-const token = computed(() => import.meta.client ? nuxtApp.$token?.value : null);
-const isAuthenticated = computed(() => token.value !== null);
-
-const {
-	data: articleData,
-	error,
-	status,
-} = await useLazyFetch(`/api/getArticle`, {
-	method: "post",
-	body: { id },
-	headers: computed(() => {
-		return token.value ? { Authorization: `Bearer ${token.value}` } : {};
-	}),
-});
-
-const article = computed(() => articleData.value);
-const isPrivateArticle = computed(() => article.value?.isPrivate || false);
-
-const canReadBody = computed(() => {
-	return !!article.value?.body;
-});
-</script>
-<style scoped></style>

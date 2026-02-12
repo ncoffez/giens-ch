@@ -16,7 +16,7 @@ body {
 
 .dark html,
 .dark body {
-	background-color: var(--color-black);
+	background-color: var(--color-neutral-900);
 }
 
 .skip-ink {

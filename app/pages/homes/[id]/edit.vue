@@ -4,6 +4,7 @@ import PhotoGallery from "~/components/homes/PhotoGallery.vue";
 import InstructionsEditor from "~/components/homes/InstructionsEditor.vue";
 import RulesEditor from "~/components/homes/RulesEditor.vue";
 import SharingPanel from "~/components/homes/SharingPanel.vue";
+import FilesManager from "~/components/homes/FilesManager.vue";
 
 const { $token, $currentUser, $isAdmin } = useNuxtApp();
 const route = useRoute();
@@ -22,10 +23,11 @@ const allSections = {
 	photos: { id: "photos", label: "Fotos", component: PhotoGallery, icon: "i-lucide-image" },
 	instructions: { id: "instructions", label: "An-/Abreise", component: InstructionsEditor, icon: "i-lucide-key" },
 	rules: { id: "rules", label: "Regeln & Info", component: RulesEditor, icon: "i-lucide-book-open" },
+	files: { id: "files", label: "Daten & Dateien", component: FilesManager, icon: "i-lucide-folder" },
 	sharing: { id: "sharing", label: "Freigabe", component: SharingPanel, icon: "i-lucide-share-2" },
 };
 
-const sectionOrder = ref<string[]>(["basic", "photos", "instructions", "rules", "sharing"]);
+const sectionOrder = ref<string[]>(["basic", "photos", "instructions", "rules", "files", "sharing"]);
 
 const orderedSections = computed(() => {
 	return sectionOrder.value.map(id => allSections[id as keyof typeof allSections]).filter(Boolean);

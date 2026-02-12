@@ -5,59 +5,17 @@ const { $token } = useNuxtApp();
 const router = useRouter();
 const toast = useToast();
 
-const form = ref({
-	name: "",
-	contact: {
-		phone: "",
-		email: "",
-		name: "",
-	},
-	wifiPassword: "",
-	checkInInfo: "",
-	checkOutInfo: "",
-	mustKnows: [],
-	houseRules: "",
-	blanketsInfo: "",
-	cleaningInfo: [],
-	parkingNumber: "",
-});
-
+const houseNumber = ref<number | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-const mustKnowsInput = ref("");
-const cleaningInfoInput = ref("");
-
-const mustKnowsArray = computed(() => form.value.mustKnows || []);
-const cleaningInfoArray = computed(() => form.value.cleaningInfo || []);
-
-const addMustKnow = () => {
-	const item = mustKnowsInput.value.trim();
-	if (item && !mustKnowsArray.value.includes(item)) {
-		form.value.mustKnows.push(item);
-		mustKnowsInput.value = "";
-	}
-};
-
-const removeMustKnow = (index: number) => {
-	form.value.mustKnows.splice(index, 1);
-};
-
-const addCleaningInfo = () => {
-	const item = cleaningInfoInput.value.trim();
-	if (item && !cleaningInfoArray.value.includes(item)) {
-		form.value.cleaningInfo.push(item);
-		cleaningInfoInput.value = "";
-	}
-};
-
-const removeCleaningInfo = (index: number) => {
-	form.value.cleaningInfo.splice(index, 1);
-};
+const previewName = computed(() => {
+	return houseNumber.value ? `Haus ${houseNumber.value}` : "Haus ?";
+});
 
 const submit = async () => {
-	if (!form.value.name) {
-		error.value = "Home number is required";
+	if (!houseNumber.value) {
+		error.value = "Hausnummer ist erforderlich";
 		return;
 	}
 
@@ -68,13 +26,13 @@ const submit = async () => {
 		const newHome = await $fetch("/api/homes/create", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${$token.value}` },
-			body: form.value,
+			body: { houseNumber: houseNumber.value },
 		});
 
-		toast.add({ title: "Home created successfully!", color: "green" });
+		toast.add({ title: "Haus erstellt!", description: `${previewName.value} wurde erfolgreich erstellt.`, color: "success" });
 		router.push(`/homes/${newHome.id}/edit`);
 	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Failed to create home";
+		error.value = e.data?.message || e.message || "Fehler beim Erstellen des Hauses";
 	} finally {
 		loading.value = false;
 	}
@@ -82,98 +40,67 @@ const submit = async () => {
 </script>
 
 <template>
-	<div class="max-w-screen-lg mx-auto px-4 py-8">
-		<h1 class="text-3xl font-bold mb-8">Create New Home</h1>
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+		<div class="w-full max-w-md">
+			<div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+				<div class="p-8 text-center border-b border-gray-100 dark:border-gray-700">
+					<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+						<UIcon name="i-lucide-home" class="w-8 h-8 text-primary" />
+					</div>
+					<h1 class="text-2xl font-black">Neues Haus erstellen</h1>
+					<p class="text-gray-500 dark:text-gray-400 mt-2">Geben Sie die Hausnummer ein, um ein neues Haus anzulegen.</p>
+				</div>
 
-		<div v-if="error" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded">
-			{{ error }}
+				<form @submit.prevent="submit" class="p-8 space-y-6">
+					<div v-if="error" class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 text-sm">
+						{{ error }}
+					</div>
+
+					<div class="space-y-2">
+						<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Hausnummer</label>
+						<div class="relative">
+							<span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Haus</span>
+							<input
+								v-model.number="houseNumber"
+								type="number"
+								min="1"
+								max="30"
+								placeholder="11"
+								class="w-full pl-16 pr-4 py-4 text-2xl font-black text-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+							/>
+						</div>
+						<p class="text-xs text-gray-400 text-center mt-2">
+							Angezeigter Name: <span class="font-bold text-gray-600 dark:text-gray-300">{{ previewName }}</span>
+						</p>
+					</div>
+
+					<div class="flex gap-3 pt-4">
+						<UButton
+							type="button"
+							variant="ghost"
+							color="neutral"
+							size="xl"
+							class="flex-1 rounded-full"
+							@click="router.push('/homes')"
+						>
+							Abbrechen
+						</UButton>
+						<UButton
+							type="submit"
+							color="primary"
+							size="xl"
+							:loading="loading"
+							class="flex-1 rounded-full"
+						>
+							Erstellen
+						</UButton>
+					</div>
+				</form>
+			</div>
+
+			<p class="text-center text-xs text-gray-400 mt-6">
+				Nach dem Erstellen können Sie Fotos, Anweisungen und weitere Details hinzufügen.
+			</p>
 		</div>
-
-		<UCard>
-			<form @submit.prevent="submit" class="space-y-6">
-				<div>
-					<UFormField label="Home Number" required>
-						<UInput v-model="form.name" type="number" placeholder="1-30 (or configured max)" required />
-					</UFormField>
-				</div>
-
-				<UFormField label="Contact Information">
-					<div class="space-y-4">
-						<UInput v-model="form.contact.name" placeholder="Owner name" />
-						<UInput v-model="form.contact.phone" placeholder="Phone number" type="tel" />
-						<UInput v-model="form.contact.email" placeholder="Email address" type="email" />
-					</div>
-				</UFormField>
-
-				<UFormField label="WiFi Password">
-					<UInput v-model="form.wifiPassword" placeholder="WiFi password" />
-				</UFormField>
-
-				<UFormField label="Parking Number">
-					<UInput v-model="form.parkingNumber" placeholder="Parking spot number" />
-				</UFormField>
-
-				<UFormField label="Check-in Information">
-					<UTextarea v-model="form.checkInInfo" placeholder="Enter check-in instructions..." :rows="4" />
-				</UFormField>
-
-				<UFormField label="Check-out Information">
-					<UTextarea v-model="form.checkOutInfo" placeholder="Enter check-out instructions..." :rows="4" />
-				</UFormField>
-
-				<UFormField label="Must Knows">
-					<div class="space-y-2">
-						<div class="flex gap-2">
-							<UInput v-model="mustKnowsInput" placeholder="Add a must-know item" @keyup.enter="addMustKnow" />
-							<UButton type="button" @click="addMustKnow">Add</UButton>
-						</div>
-						<div v-if="mustKnowsArray.length" class="flex flex-wrap gap-2 mt-2">
-							<UChip
-								v-for="(item, index) in mustKnowsArray"
-								:key="index"
-								closable
-								@close="removeMustKnow(index)"
-							>
-								{{ item }}
-							</UChip>
-						</div>
-					</div>
-				</UFormField>
-
-				<UFormField label="Cleaning Information">
-					<div class="space-y-2">
-						<div class="flex gap-2">
-							<UInput v-model="cleaningInfoInput" placeholder="Add cleaning info" @keyup.enter="addCleaningInfo" />
-							<UButton type="button" @click="addCleaningInfo">Add</UButton>
-						</div>
-						<div v-if="cleaningInfoArray.length" class="flex flex-wrap gap-2 mt-2">
-							<UChip
-								v-for="(item, index) in cleaningInfoArray"
-								:key="index"
-								closable
-								@close="removeCleaningInfo(index)"
-							>
-								{{ item }}
-							</UChip>
-						</div>
-					</div>
-				</UFormField>
-
-				<UFormField label="House Rules">
-					<UTextarea v-model="form.houseRules" placeholder="Enter house rules..." :rows="4" />
-				</UFormField>
-
-				<UFormField label="Blankets Information">
-					<UTextarea v-model="form.blanketsInfo" placeholder="Enter information about blankets..." :rows="4" />
-				</UFormField>
-
-				<div class="flex justify-end gap-4">
-					<NuxtLink to="/homes">
-						<UButton variant="ghost">Cancel</UButton>
-					</NuxtLink>
-					<UButton type="submit" :loading="loading">Create Home</UButton>
-				</div>
-			</form>
-		</UCard>
 	</div>
 </template>
