@@ -144,7 +144,7 @@
 					</div>
 					<div class="flex gap-4">
 						<UButton
-							to="https://www.reseaumistral.com/se-deplacer/horaires/ligne-67"
+							to="https://www.reseaumistral.com/se-deplacer/lignes/ligne-bus-67"
 							target="_blank"
 							color="neutral"
 							variant="solid"
