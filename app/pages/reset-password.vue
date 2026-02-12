@@ -1,26 +1,58 @@
 <template>
-	<section
-		class="relative overflow-hidden flex flex-col items-center p-8 border-neutral-200 bg-white dark:bg-neutral-800 shadow-lg rounded-3xl my-16 mx-auto w-fit">
-		<h3 class="font-bold text-2xl mb-4 text-neutral-800 dark:text-neutral-200">Passwort zurücksetzen</h3>
-		<p class="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-xs">
-			Geben Sie Ihre E-Mail-Adresse ein, um einen Link zum Zurücksetzen Ihres Passworts zu erhalten.
-		</p>
-		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
-			<UiInput type="email" label="E-Mail" v-model="state.email"></UiInput>
-			<UButton
-				type="submit"
-				@click="resetPassword"
-				class="justify-center text-white font-semibold w-full"
-				:loading="loading">
-				Link senden
-			</UButton>
-		</UForm>
-		<NuxtLink
-			to="/login"
-			class="text-sm mt-4 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
-			Zurück zum Login
-		</NuxtLink>
-	</section>
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 py-16">
+		<div class="w-full max-w-md">
+			<div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+				<div class="p-8 text-center border-b border-gray-100 dark:border-gray-700">
+					<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+						<UIcon name="i-lucide-key-round" class="w-8 h-8 text-primary" />
+					</div>
+					<h1 class="text-2xl font-black">Passwort zurücksetzen</h1>
+					<p class="text-gray-500 dark:text-gray-400 mt-2 text-sm">
+						Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.
+					</p>
+				</div>
+
+				<form @submit.prevent="resetPassword" class="p-8 space-y-6">
+					<div>
+						<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+							E-Mail
+						</label>
+						<input
+							v-model="state.email"
+							type="email"
+							placeholder="deine@email.ch"
+							class="w-full px-5 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+						/>
+					</div>
+
+					<UButton
+						type="submit"
+						color="primary"
+						size="xl"
+						:loading="loading"
+						class="w-full rounded-full"
+					>
+						Link senden
+					</UButton>
+				</form>
+
+				<div class="px-8 pb-8 text-center">
+					<NuxtLink
+						to="/login"
+						class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-400 inline-flex items-center gap-2"
+					>
+						<UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
+						Zurück zum Login
+					</NuxtLink>
+				</div>
+			</div>
+
+			<p class="text-center text-xs text-gray-400 mt-6">
+				Du hast noch kein Konto?
+				<NuxtLink to="/register" class="text-primary hover:underline">Registrieren</NuxtLink>
+			</p>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -39,7 +71,7 @@ async function resetPassword() {
 		toast.add({
 			color: "error",
 			title: "Fehler",
-			description: "Bitte geben Sie Ihre E-Mail-Adresse ein.",
+			description: "Bitte gib deine E-Mail-Adresse ein.",
 		});
 		return;
 	}
@@ -50,7 +82,7 @@ async function resetPassword() {
 		toast.add({
 			color: "success",
 			title: "E-Mail gesendet",
-			description: "Prüfen Sie Ihren Posteingang für den Link zum Zurücksetzen Ihres Passworts.",
+			description: "Prüfe deinen Posteingang für den Link zum Zurücksetzen deines Passworts.",
 		});
 		router.push("/login");
 	} catch (error: any) {
@@ -64,5 +96,3 @@ async function resetPassword() {
 	}
 }
 </script>
-
-<style scoped></style>

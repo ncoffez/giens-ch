@@ -81,6 +81,11 @@ watch(homeId, fetchHome);
 					<h1 class="text-3xl font-bold mb-6">{{ home.name }} bearbeiten</h1>
 				</div>
 
+				<UFormField label="Name" required>
+					<UInput v-model="home.name" placeholder="z.B. Haus 11" size="lg" />
+					<p class="text-xs text-gray-500 mt-1">Der angezeigte Name des Hauses</p>
+				</UFormField>
+
 				<UFormField label="Status">
 					<div class="flex items-center gap-4">
 						<USwitch v-model="home.enabled" />
