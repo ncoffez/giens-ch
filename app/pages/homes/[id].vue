@@ -24,7 +24,7 @@ const fetchHome = async () => {
 };
 
 const canEdit = computed(() => {
-	if ($isAdmin.value || !$currentUser.value || !home.value) return false;
+	if (!$currentUser.value || !home.value) return false;
 	return home.value?.ownerIds?.includes($currentUser.value.uid) || home.value?.editors?.includes($currentUser.value.uid) || $isAdmin.value;
 });
 
