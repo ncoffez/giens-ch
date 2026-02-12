@@ -39,6 +39,7 @@ export default defineNuxtConfig({
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
 		TEST_SECRET: process.env.TEST_SECRET,
+		UNSPLASH_API_KEY: process.env.UNSPLASH_API_KEY,
 	},
 	nitro: {
 		preset: "firebase",

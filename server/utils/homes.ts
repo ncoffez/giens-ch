@@ -26,13 +26,19 @@ export async function createHome(userId: string, homeData: Partial<Home>): Promi
 	const slug = crypto.randomUUID();
 	const now = new Date().toISOString();
 
+	const houseNumber = homeData.houseNumber || parseInt(homeData.name as any) || 1;
+	const name = `Haus ${houseNumber}`;
+
 	const home: Home = {
 		id: homeId,
-		name: homeData.name || "",
+		name,
+		houseNumber,
 		slug,
 		ownerIds: [userId],
 		editors: [],
 		photos: [],
+		files: [],
+		folders: [],
 		enabled: homeData.enabled ?? false,
 		contact: homeData.contact || {},
 		wifiPassword: homeData.wifiPassword || "",

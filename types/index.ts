@@ -45,13 +45,34 @@ export interface HomeContact {
 	name?: string;
 }
 
+export interface HomeFile {
+	id: string;
+	name: string;
+	type: string;
+	size: number;
+	url: string;
+	folderId: string | null;
+	uploadedAt: string;
+	uploadedBy: string;
+}
+
+export interface HomeFolder {
+	id: string;
+	name: string;
+	parentId: string | null;
+	createdAt: string;
+}
+
 export interface Home {
 	id: string;
 	name: string;
+	houseNumber?: number;
 	slug: string;
 	ownerIds: string[];
 	editors: string[];
 	photos: string[];
+	files?: HomeFile[];
+	folders?: HomeFolder[];
 	enabled: boolean;
 	contact: HomeContact;
 	wifiPassword?: string;
@@ -63,6 +84,7 @@ export interface Home {
 	cleaningInfo: string[];
 	parkingNumber?: string;
 	washingMachineOverride?: string;
+	sectionOrder?: string[];
 	createdAt: string;
 	updatedAt: string;
 }
