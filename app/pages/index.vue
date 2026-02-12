@@ -54,7 +54,7 @@
 				<div class="space-y-6 md:space-y-8 text-center md:text-left">
 					<h2 class="text-3xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">Miteinander Gestalten</h2>
 					<p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
-						Zweimal im Jahr treffen wir uns als Gemeinschaft, um die Siedlung zu pflegen und neue Projekte umzusetzen. Dieser Hands-on-Spirit macht das Beausoleil zu etwas Besonderem.
+						Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement. Im Frühling und Herbst arbeiten wir gemeinsam an der Pflege und Verschönerung der Siedlung.
 					</p>
 					<div class="flex justify-center md:justify-start gap-4">
 						<UButton to="/about" size="xl" color="neutral" variant="outline" class="rounded-full px-8">
@@ -85,12 +85,12 @@
 		<div class="max-w-screen-xl mx-auto px-4 mt-12 mb-8">
 			<div class="flex items-center justify-center gap-4 md:gap-8 text-center py-8">
 				<div class="flex flex-col items-center">
-					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">22</span>
+					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">20</span>
 					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Häuser</span>
 				</div>
 				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
 				<div class="flex flex-col items-center">
-					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">30+</span>
+					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">40+</span>
 					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Jahre</span>
 				</div>
 				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
@@ -105,13 +105,13 @@
 		<section class="bg-gray-50 dark:bg-gray-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
 			<div class="max-w-screen-lg mx-auto px-4">
 				<div class="text-center mb-10">
-					<UiTitle subtitle="Unsere Geschichte" title="Seit 1992 ein Zuhause" />
+					<UiTitle subtitle="Unsere Geschichte" title="Seit 1979 ein Zuhause" />
 				</div>
 				<UTimeline class="max-w-2xl mx-auto" :items="[
-					{ date: 'März 1992', title: 'Kauf des Grundstücks', icon: 'i-lucide-circle-dollar-sign' },
-					{ date: 'Januar 1995', title: 'Erstes Haus bezogen', icon: 'i-lucide-house' },
-					{ date: 'Oktober 2009', title: 'Erneuerung & Spielplatz', icon: 'i-lucide-toy-brick' },
-					{ date: 'Oktober 2019', title: 'Eigenverwaltung beginnt', icon: 'i-lucide-hammer' }
+					{ date: '1979/1980', title: 'Gründung der Résidence', icon: 'i-lucide-home' },
+					{ date: '1989', title: 'Erste Verkäufe', icon: 'i-lucide-circle-dollar-sign' },
+					{ date: '2006', title: 'Vollständig privatisiert', icon: 'i-lucide-users' },
+					{ date: 'Heute', title: 'Lebendige Gemeinschaft', icon: 'i-lucide-heart-handshake' }
 				]" />
 			</div>
 		</section>

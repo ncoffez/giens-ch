@@ -12,7 +12,7 @@ export async function getUserClaims(event: H3Event) {
 	try {
 		const decodedToken = await auth.verifyIdToken(token);
 		const { admin, publisher, owner, reader, sub, email } = decodedToken;
-		return { admin, publisher, owner, reader, sub, email };
+		return { admin, publisher, owner, reader, uid: sub, email };
 	} catch (error) {
 		console.error("Error verifying ID token:", error);
 		return null;
