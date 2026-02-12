@@ -22,7 +22,7 @@ describe("getUserClaims", () => {
     mockAuth.mockResolvedValue({ admin: true, sub: 'test', iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
     const mockEvent = { node: { req: { headers: { authorization: 'Bearer valid' } } } } as any;
     const claims = await getUserClaims(mockEvent);
-    expect(claims).toMatchObject({ admin: true });
+    expect(claims).toMatchObject({ admin: true, uid: 'test' });
   });
 
   it("returns null for invalid header", async () => {
