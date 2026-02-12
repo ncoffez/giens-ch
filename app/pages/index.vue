@@ -104,15 +104,11 @@
 		<!-- Timeline Section -->
 		<section class="bg-gray-50 dark:bg-gray-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
 			<div class="max-w-screen-lg mx-auto px-4">
-				<div class="text-center mb-10">
-					<UiTitle subtitle="Unsere Geschichte" title="Seit 1979 ein Zuhause" />
+				<div class="text-center mb-10 md:mb-16">
+					<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Unsere Geschichte</h2>
+					<div class="w-16 md:w-20 h-1 bg-primary mx-auto mt-3 md:mt-4 rounded-full"></div>
 				</div>
-				<UTimeline class="max-w-2xl mx-auto" :items="[
-					{ date: '1979/1980', title: 'Gründung der Résidence', icon: 'i-lucide-home' },
-					{ date: '1989', title: 'Erste Verkäufe', icon: 'i-lucide-circle-dollar-sign' },
-					{ date: '2006', title: 'Vollständig privatisiert', icon: 'i-lucide-users' },
-					{ date: 'Heute', title: 'Lebendige Gemeinschaft', icon: 'i-lucide-heart-handshake' }
-				]" />
+				<UTimeline :default-value="3" :items="timelineItems" class="max-w-2xl mx-auto" />
 			</div>
 		</section>
 
@@ -160,8 +156,37 @@
 </template>
 
 <script lang="ts" setup>
+import type { TimelineItem } from "@nuxt/ui";
+
 const nuxtApp = useNuxtApp();
 const token = computed(() => import.meta.client ? (nuxtApp as any).$token?.value : null);
+
+const timelineItems = ref<TimelineItem[]>([
+	{
+		date: "1979/1980",
+		title: "Gründung der Résidence",
+		description: "Die Familien Hertoux und Tellier erstellen die Résidence Beausoleil mit insgesamt 20 Häusern.",
+		icon: "i-lucide-home",
+	},
+	{
+		date: "1989",
+		title: "Erste Verkäufe",
+		description: "Beginn des schrittweisen Verkaufs der Häuser an private Eigentümer.",
+		icon: "i-lucide-circle-dollar-sign",
+	},
+	{
+		date: "2006",
+		title: "Vollständig privatisiert",
+		description: "Alle 20 Häuser befinden sich im Privatbesitz von Eigentümern aus Frankreich und der Schweiz.",
+		icon: "i-lucide-users",
+	},
+	{
+		date: "Heute",
+		title: "Lebendige Gemeinschaft",
+		description: "Die 20 Eigentümer arbeiten gemeinsam an der Pflege und Verschönerung der Siedlung.",
+		icon: "i-lucide-heart-handshake",
+	},
+]);
 
 const { data: news, status } = await useLazyFetch<any[]>("/api/news", {
 	key: "news-home",
