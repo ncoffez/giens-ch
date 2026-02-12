@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { getArticlePlaceholder } from "~/utils/placeholders";
-
 definePageMeta({
 	middleware: ["is-publisher"],
 });
@@ -24,7 +22,7 @@ const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.i
 
 const effectiveImage = computed(() => {
 	if (image.value) return image.value;
-	return getArticlePlaceholder(title.value || articleId.value);
+	return "/giens/giens-aerial.webp";
 });
 
 const fetchArticle = async () => {
@@ -85,7 +83,7 @@ useHead({
 </script>
 
 <template>
-	<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 		<!-- Header -->
 		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
 			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -99,7 +97,7 @@ useHead({
 					/>
 					<div>
 						<h1 class="text-lg font-bold">Artikel bearbeiten</h1>
-						<p class="text-xs text-gray-500">Bearbeiten Sie den bestehenden Artikel</p>
+						<p class="text-xs text-gray-500">Bearbeite den bestehenden Artikel</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-3">
@@ -234,7 +232,7 @@ useHead({
 							</div>
 							<span class="font-bold">Artikelinhalt</span>
 						</div>
-						<div class="min-h-[400px]">
+						<div class="p-4">
 							<TiptapEditor v-model="content" />
 						</div>
 					</section>
@@ -261,11 +259,11 @@ useHead({
 							
 							<div class="p-6 space-y-4">
 								<h3 class="text-xl font-black leading-tight">
-									{{ title || 'Titel...' }}
+									{{ title || 'Dein Titel...' }}
 								</h3>
 								
 								<p class="text-sm text-gray-500 leading-relaxed line-clamp-3">
-									{{ intro || 'Einleitung...' }}
+									{{ intro || 'Deine Einleitung...' }}
 								</p>
 								
 								<div v-if="selectedTags.length > 0" class="flex flex-wrap gap-2">

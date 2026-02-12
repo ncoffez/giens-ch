@@ -2,7 +2,7 @@
 	<div
 		class="relative bg-white dark:bg-zinc-800 rounded-lg m-2 max-w-screen-lg mx-auto shadow-glow-lg">
 		<div
-			class="sticky top-0 z-10 flex text-gray-800 dark:bg-white flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 place-content-center"
+		class="sticky top-0 z-10 flex text-gray-800 dark:text-gray-200 dark:bg-zinc-800 flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 dark:border-zinc-700 place-content-center"
 			v-if="editor">
 			<UButton
 				color="neutral"

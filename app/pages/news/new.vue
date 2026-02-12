@@ -35,7 +35,7 @@ const canProceed = computed(() => {
 
 const effectiveImage = computed(() => {
 	if (image.value) return image.value;
-	return getArticlePlaceholder(title.value || "new-article");
+	return "/giens/giens-aerial.webp";
 });
 
 const nextStep = () => {
@@ -86,7 +86,7 @@ useHead({
 </script>
 
 <template>
-	<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 		<!-- Header -->
 		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
 			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -100,7 +100,7 @@ useHead({
 					/>
 					<div>
 						<h1 class="text-lg font-bold">Neuer Artikel</h1>
-						<p class="text-xs text-gray-500">Erstellen Sie einen neuen Artikel für die Gemeinschaft</p>
+						<p class="text-xs text-gray-500">Erstelle einen neuen Artikel für die Gemeinschaft</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-3">
@@ -164,7 +164,7 @@ useHead({
 							<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
 								<UIcon name="i-lucide-type" class="w-8 h-8 text-primary" />
 							</div>
-							<h2 class="text-2xl font-black">Wie heisst Ihr Artikel?</h2>
+							<h2 class="text-2xl font-black">Wie heisst dein Artikel?</h2>
 							<p class="text-gray-500 mt-1">Ein guter Titel zieht die Aufmerksamkeit auf sich</p>
 						</div>
 
@@ -217,7 +217,7 @@ useHead({
 							<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
 								<UIcon name="i-lucide-image" class="w-8 h-8 text-primary" />
 							</div>
-							<h2 class="text-2xl font-black">Wählen Sie ein Titelbild</h2>
+							<h2 class="text-2xl font-black">Wähle ein Titelbild</h2>
 							<p class="text-gray-500 mt-1">Ein Bild sagt mehr als tausend Worte</p>
 						</div>
 
@@ -252,7 +252,7 @@ useHead({
 								<div v-if="!image" class="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800 flex gap-3">
 									<UIcon name="i-lucide-lightbulb" class="text-amber-500 shrink-0" />
 									<p class="text-xs text-amber-800 dark:text-amber-200">
-										Tipp: Wenn Sie kein Bild auswählen, wird automatisch ein passendes Bild aus der Giens-Galerie verwendet.
+										Tipp: Wenn du kein Bild auswählst, wird automatisch ein passendes Bild aus der Giens-Galerie verwendet.
 									</p>
 								</div>
 							</div>
@@ -268,7 +268,7 @@ useHead({
 									:items="tagOptions"
 									value-key="id"
 									label-key="label"
-									placeholder="Wählen Sie relevante Kategorien..."
+									placeholder="Wähle relevante Kategorien..."
 									size="xl"
 									class="w-full"
 								/>
@@ -306,8 +306,8 @@ useHead({
 							<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
 								<UIcon name="i-lucide-file-text" class="w-8 h-8 text-primary" />
 							</div>
-							<h2 class="text-2xl font-black">Schreiben Sie Ihren Artikel</h2>
-							<p class="text-gray-500 mt-1">Teilen Sie Ihre Geschichte mit der Gemeinschaft</p>
+							<h2 class="text-2xl font-black">Verfasse deinen Artikel</h2>
+							<p class="text-gray-500 mt-1">Teile deine Geschichte mit der Gemeinschaft</p>
 						</div>
 
 						<div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
@@ -318,10 +318,10 @@ useHead({
 								</div>
 								<div class="flex items-center gap-2 text-xs text-gray-400">
 									<UIcon name="i-lucide-info" class="w-4 h-4" />
-									<span>Fügen Sie Bilder und Links direkt im Editor ein</span>
+									<span>Füge Bilder und Links direkt im Editor ein</span>
 								</div>
 							</div>
-							<div class="min-h-[400px]">
+							<div class="p-4">
 								<TiptapEditor v-model="content" />
 							</div>
 						</div>
@@ -381,11 +381,11 @@ useHead({
 							
 							<div class="p-6 space-y-4">
 								<h3 class="text-xl font-black leading-tight">
-									{{ title || 'Ihr Titel erscheint hier...' }}
+									{{ title || 'Dein Titel erscheint hier...' }}
 								</h3>
 								
 								<p class="text-sm text-gray-500 leading-relaxed line-clamp-3">
-									{{ intro || 'Ihre Einleitung erscheint hier als Vorschautext...' }}
+									{{ intro || 'Deine Einleitung erscheint hier als Vorschautext...' }}
 								</p>
 								
 								<div v-if="selectedTags.length > 0" class="flex flex-wrap gap-2">
