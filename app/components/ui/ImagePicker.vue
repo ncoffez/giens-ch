@@ -19,6 +19,7 @@ const unsplashPage = ref(1);
 const unsplashResults = ref<any[]>([]);
 const unsplashTotalPages = ref(0);
 const unsplashLoading = ref(false);
+const hasSearched = ref(false);
 
 const giensImages = [
 	{ url: "/giens/giens-aerial.webp", name: "Luftaufnahme Giens" },
@@ -63,7 +64,7 @@ const handleFileSelect = (e: Event) => {
 
 const uploadFile = async (file: File) => {
 	if (!file.type.startsWith("image/")) {
-		toast.add({ title: "Bitte wählen Sie eine Bilddatei", color: "error" });
+		toast.add({ title: "Bitte wähle eine Bilddatei", color: "error" });
 		return;
 	}
 
@@ -98,13 +99,18 @@ const uploadFile = async (file: File) => {
 };
 
 const searchUnsplash = async (loadMore = false) => {
-	if (!unsplashQuery.value.trim()) return;
-
+	const query = unsplashQuery.value.trim() || "mediterranean beach";
+	
 	try {
 		unsplashLoading.value = true;
 		const page = loadMore ? unsplashPage.value + 1 : 1;
+		
+		if (!loadMore) {
+			unsplashResults.value = [];
+		}
+		
 		const result = await $fetch("/api/unsplash", {
-			params: { q: unsplashQuery.value, page },
+			params: { q: query, page },
 		});
 
 		if (loadMore) {
@@ -114,6 +120,7 @@ const searchUnsplash = async (loadMore = false) => {
 		}
 		unsplashTotalPages.value = (result as any).totalPages;
 		unsplashPage.value = page;
+		hasSearched.value = true;
 	} catch (e: any) {
 		toast.add({ title: "Unsplash Suche fehlgeschlagen", color: "error" });
 	} finally {
@@ -130,6 +137,21 @@ const loadMoreUnsplash = () => {
 		searchUnsplash(true);
 	}
 };
+
+const handleTabChange = (tab: "upload" | "giens" | "unsplash") => {
+	activeTab.value = tab;
+	if (tab === "unsplash" && unsplashResults.value.length === 0) {
+		searchUnsplash();
+	}
+};
+
+const clearSearch = () => {
+	unsplashQuery.value = "";
+	unsplashResults.value = [];
+	unsplashPage.value = 1;
+	unsplashTotalPages.value = 0;
+	hasSearched.value = false;
+};
 </script>
 
 <template>
@@ -138,7 +160,7 @@ const loadMoreUnsplash = () => {
 			<button
 				v-for="tab in [{ id: 'upload', label: 'Hochladen', icon: 'i-lucide-upload' }, { id: 'giens', label: 'Giens', icon: 'i-lucide-image' }, { id: 'unsplash', label: 'Unsplash', icon: 'i-lucide-search' }]"
 				:key="tab.id"
-				@click="activeTab = tab.id as any"
+				@click="handleTabChange(tab.id as any)"
 				class="flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
 				:class="activeTab === tab.id ? 'text-primary border-primary' : 'text-gray-500 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
 			>
@@ -171,7 +193,7 @@ const loadMoreUnsplash = () => {
 		</div>
 
 		<div v-else-if="activeTab === 'giens'" class="space-y-4">
-			<p class="text-xs text-gray-500">Wählen Sie ein Bild aus der Giens-Galerie:</p>
+			<p class="text-xs text-gray-500">Wähle ein Bild aus der Giens-Galerie:</p>
 			<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto p-1">
 				<button
 					v-for="img in giensImages"
@@ -190,16 +212,37 @@ const loadMoreUnsplash = () => {
 
 		<div v-else-if="activeTab === 'unsplash'" class="space-y-4">
 			<div class="flex gap-2">
-				<UInput
-					v-model="unsplashQuery"
-					placeholder="Suchen Sie auf Unsplash..."
-					class="flex-1"
-					@keyup.enter="searchUnsplash"
-				/>
-				<UButton color="primary" :loading="unsplashLoading" @click="searchUnsplash">Suchen</UButton>
+				<div class="relative flex-1">
+					<UInput
+						v-model="unsplashQuery"
+						placeholder="Suchen auf Unsplash..."
+						@keyup.enter="searchUnsplash()"
+						class="w-full"
+					/>
+					<button
+						v-if="unsplashQuery"
+						@click="clearSearch"
+						class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+					>
+						<UIcon name="i-lucide-x" class="w-4 h-4 text-gray-400" />
+					</button>
+				</div>
+				<UButton color="primary" :loading="unsplashLoading" @click="searchUnsplash()">Suchen</UButton>
 			</div>
 
-			<div v-if="unsplashResults.length > 0" class="space-y-4">
+			<div v-if="unsplashLoading && unsplashResults.length === 0" class="flex items-center justify-center py-12">
+				<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+			</div>
+
+			<div v-else-if="unsplashResults.length > 0" class="space-y-4">
+				<div class="flex items-center justify-between">
+					<p class="text-xs text-gray-500">
+						{{ hasSearched ? `Ergebnisse für "${unsplashQuery || 'mediterranean beach'}"` : 'Vorschläge' }}
+					</p>
+					<UButton v-if="hasSearched" variant="ghost" color="neutral" size="xs" @click="clearSearch">
+						Zurücksetzen
+					</UButton>
+				</div>
 				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
 					<button
 						v-for="img in unsplashResults"
@@ -227,7 +270,7 @@ const loadMoreUnsplash = () => {
 
 			<div v-else class="text-center py-12 text-gray-400">
 				<UIcon name="i-lucide-search" class="w-12 h-12 mx-auto mb-4" />
-				<p>Suchen Sie nach kostenlosen Bildern auf Unsplash</p>
+				<p>Suche nach kostenlosen Bildern auf Unsplash</p>
 			</div>
 		</div>
 
