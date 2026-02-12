@@ -78,89 +78,217 @@ const save = async () => {
 };
 
 onMounted(fetchArticle);
+
+useHead({
+	title: "Artikel bearbeiten"
+});
 </script>
 
 <template>
-	<div class="max-w-screen-lg mx-auto px-4 py-8 space-y-8">
-		<nav class="flex items-center justify-between">
-			<div class="flex items-center gap-4">
-				<UButton color="neutral" variant="ghost" icon="i-lucide-arrow-left" @click="navigateTo('/news')" />
-				<h1 class="text-3xl font-black tracking-tight">Artikel bearbeiten</h1>
+	<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+		<!-- Header -->
+		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-lucide-arrow-left"
+						@click="navigateTo('/news')"
+						class="rounded-full"
+					/>
+					<div>
+						<h1 class="text-lg font-bold">Artikel bearbeiten</h1>
+						<p class="text-xs text-gray-500">Bearbeiten Sie den bestehenden Artikel</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-3">
+					<UButton
+						color="neutral"
+						variant="soft"
+						@click="navigateTo(`/article/${articleId}`)"
+						icon="i-lucide-external-link"
+					>
+						Vorschau
+					</UButton>
+					<UButton
+						color="primary"
+						:loading="saving"
+						@click="save"
+						icon="i-lucide-save"
+						class="rounded-full px-6"
+					>
+						Speichern
+					</UButton>
+				</div>
 			</div>
-			<div class="flex gap-3">
-				<UButton color="neutral" variant="soft" @click="navigateTo(`/article/${articleId}`)">Vorschau</UButton>
-				<UButton color="primary" :loading="saving" @click="save" icon="i-lucide-save" class="rounded-full px-6">Speichern</UButton>
-			</div>
-		</nav>
+		</header>
 
-		<div v-if="loading" class="flex items-center justify-center py-20">
-			<div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+		<!-- Loading State -->
+		<div v-if="loading" class="flex items-center justify-center py-32">
+			<div class="text-center space-y-4">
+				<div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+				<p class="text-gray-500 font-medium">Artikel wird geladen...</p>
+			</div>
 		</div>
 
-		<template v-else>
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-				<div class="lg:col-span-2 space-y-8">
-					<UFormField label="Titel" required description="Ein aussagekräftiger Titel für Ihren Artikel">
-						<UInput v-model="title" placeholder="Titel eingeben..." size="xl" class="font-bold" />
-					</UFormField>
-
-					<UFormField label="Einleitung" description="Wird in der Übersicht als Vorschau angezeigt">
-						<UTextarea v-model="intro" placeholder="Kurze Zusammenfassung..." :rows="3" size="lg" />
-					</UFormField>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<UFormField label="Kategorien">
-							<USelectMenu
-								v-model="selectedTags"
-								multiple
-								:items="tagOptions"
-								value-key="id"
-								label-key="label"
-								placeholder="Kategorien wählen..."
-								size="lg"
-								class="w-full"
-							/>
-						</UFormField>
-					</div>
-
-					<UFormField label="Titelbild">
-						<div class="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
-							<ImagePicker v-model="image" />
+		<!-- Main Content -->
+		<div v-else class="max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
+			<div class="grid lg:grid-cols-5 gap-8">
+				<!-- Form Area -->
+				<div class="lg:col-span-3 space-y-8">
+					<!-- Title Section -->
+					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+								<UIcon name="i-lucide-type" class="w-5 h-5 text-primary" />
+							</div>
+							<span class="font-bold">Titel & Einleitung</span>
 						</div>
-					</UFormField>
-				</div>
+						<div class="p-6 space-y-6">
+							<div>
+								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+									Titel <span class="text-red-500">*</span>
+								</label>
+								<input
+									v-model="title"
+									type="text"
+									placeholder="z.B. Sommerfest im Lotissement"
+									class="w-full px-5 py-3 text-lg font-bold bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+								/>
+							</div>
+							<div>
+								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+									Einleitung
+								</label>
+								<textarea
+									v-model="intro"
+									placeholder="Eine kurze Zusammenfassung..."
+									rows="3"
+									class="w-full px-5 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none"
+								/>
+								<p class="mt-2 text-xs text-gray-400">Wird in der Artikelübersicht angezeigt</p>
+							</div>
+						</div>
+					</section>
 
-				<div class="lg:col-span-1 space-y-6">
-					<div class="sticky top-24">
-						<div class="p-1 bg-gray-100 dark:bg-gray-800 rounded-[2rem]">
-							<div class="bg-white dark:bg-gray-950 rounded-[1.8rem] overflow-hidden border border-gray-100 dark:border-gray-800 shadow-xl">
-								<div class="aspect-video relative overflow-hidden">
-									<img :src="effectiveImage" class="w-full h-full object-cover" />
-									<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-										<p class="text-white text-xs font-black uppercase tracking-widest">Vorschau</p>
+					<!-- Image & Categories Section -->
+					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+								<UIcon name="i-lucide-image" class="w-5 h-5 text-primary" />
+							</div>
+							<span class="font-bold">Bild & Kategorien</span>
+						</div>
+						<div class="p-6 space-y-6">
+							<div class="space-y-4">
+								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+									Titelbild
+								</label>
+								
+								<div v-if="!image" class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+									<UiImagePicker v-model="image" />
+								</div>
+								
+								<div v-else class="relative group">
+									<div class="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+										<img :src="image" alt="Selected image" class="w-full h-full object-cover" />
+									</div>
+									<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors rounded-xl flex items-center justify-center">
+										<UButton
+											color="white"
+											variant="solid"
+											icon="i-lucide-refresh-cw"
+											@click="image = ''"
+											class="opacity-0 group-hover:opacity-100 transition-opacity"
+										>
+											Bild ändern
+										</UButton>
 									</div>
 								</div>
-								<div class="p-6 space-y-3">
-									<h3 class="font-black text-lg leading-tight line-clamp-2">{{ title || 'Titel Vorschau' }}</h3>
-									<p class="text-sm text-gray-500 line-clamp-3 italic">{{ intro || 'Ihre Einleitung erscheint hier...' }}</p>
+							</div>
+
+							<div>
+								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+									Kategorien
+								</label>
+								<USelectMenu
+									v-model="selectedTags"
+									multiple
+									:items="tagOptions"
+									value-key="id"
+									label-key="label"
+									placeholder="Kategorien wählen..."
+									size="lg"
+									class="w-full"
+								/>
+							</div>
+						</div>
+					</section>
+
+					<!-- Content Section -->
+					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+								<UIcon name="i-lucide-file-text" class="w-5 h-5 text-primary" />
+							</div>
+							<span class="font-bold">Artikelinhalt</span>
+						</div>
+						<div class="min-h-[400px]">
+							<TiptapEditor v-model="content" />
+						</div>
+					</section>
+				</div>
+
+				<!-- Preview Panel -->
+				<div class="lg:col-span-2">
+					<div class="sticky top-28">
+						<div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+							<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+								<span class="text-sm font-bold text-gray-500">Vorschau</span>
+								<div class="flex items-center gap-2">
+									<span class="relative flex h-2 w-2">
+										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+										<span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+									</span>
+									<span class="text-xs text-green-600 font-medium">Live</span>
+								</div>
+							</div>
+							
+							<div class="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-700">
+								<img :src="effectiveImage" class="w-full h-full object-cover" />
+							</div>
+							
+							<div class="p-6 space-y-4">
+								<h3 class="text-xl font-black leading-tight">
+									{{ title || 'Titel...' }}
+								</h3>
+								
+								<p class="text-sm text-gray-500 leading-relaxed line-clamp-3">
+									{{ intro || 'Einleitung...' }}
+								</p>
+								
+								<div v-if="selectedTags.length > 0" class="flex flex-wrap gap-2">
+									<span
+										v-for="tag in selectedTags"
+										:key="tag"
+										class="text-xs font-bold px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary"
+									>
+										{{ tag }}
+									</span>
+								</div>
+
+								<div v-if="content" class="pt-4 border-t border-gray-100 dark:border-gray-700">
+									<div class="flex items-center gap-2 text-xs text-gray-400">
+										<UIcon name="i-lucide-file-text" class="w-4 h-4" />
+										<span>{{ content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length }} Wörter</span>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-
-			<div class="space-y-4">
-				<div class="flex items-center justify-between">
-					<h2 class="text-xl font-bold flex items-center gap-2">
-						<UIcon name="i-lucide-file-text" class="text-primary" />
-						Inhalt
-					</h2>
-				</div>
-				<div class="border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-inner bg-gray-50 dark:bg-gray-900">
-					<TiptapEditor v-model="content" />
-				</div>
-			</div>
-		</template>
+		</div>
 	</div>
 </template>
