@@ -40,7 +40,7 @@ onMounted(fetchHomes);
 
 		<div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
 
-		<div v-else-if="homes.length === 0" class="text-center py-8 text-gray-500">
+		<div v-else-if="homes.length === 0" class="text-center py-8 text-stone-500">
 			<p>You haven't created any homes yet.</p>
 			<p class="mt-2">Click "Create New Home" to get started.</p>
 		</div>
@@ -55,11 +55,11 @@ onMounted(fetchHomes);
 				<UCard>
 					<template #header>
 						<h2 class="text-xl font-bold">Home {{ home.name }}</h2>
-						<p class="text-sm text-gray-500">
+						<p class="text-sm text-stone-500">
 							Created: {{ new Date(home.createdAt).toLocaleDateString() }}
 						</p>
 					</template>
-					<p class="text-sm text-gray-600 mb-4">
+					<p class="text-sm text-stone-600 mb-4">
 						{{ home.photos?.length || 0 }} photos · {{ home.editors?.length || 0 }} editors
 					</p>
 					<UButton variant="ghost" color="neutral" block>

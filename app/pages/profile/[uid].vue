@@ -24,9 +24,9 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 		</div>
 		
 		<div v-else-if="error" class="text-center py-20">
-			<UIcon name="i-lucide-user-x" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+			<UIcon name="i-lucide-user-x" class="w-16 h-16 text-stone-300 mx-auto mb-4" />
 			<h1 class="text-2xl font-bold mb-2">Benutzer nicht gefunden</h1>
-			<p class="text-gray-500 mb-6 max-w-sm mx-auto">{{ error.message || 'Das angeforderte Profil existiert nicht oder ist nicht öffentlich zugänglich.' }}</p>
+			<p class="text-stone-500 mb-6 max-w-sm mx-auto">{{ error.message || 'Das angeforderte Profil existiert nicht oder ist nicht öffentlich zugänglich.' }}</p>
 			<UButton to="/news" color="neutral" variant="ghost" icon="i-lucide-arrow-left">Zurück zur Übersicht</UButton>
 		</div>
 
@@ -45,7 +45,7 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 				/>
 				<div>
 					<h1 class="text-4xl font-black tracking-tight">{{ profile.displayName }}</h1>
-					<p class="text-gray-500 mt-2">Mitglied des Lotissement Beausoleil</p>
+					<p class="text-stone-500 mt-2">Mitglied des Lotissement Beausoleil</p>
 				</div>
 			</div>
 
@@ -53,11 +53,11 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 			<section class="max-w-screen-md mx-auto">
 				<div class="flex items-center gap-4 mb-8">
 					<h2 class="text-2xl font-bold">Beiträge von {{ profile.displayName }}</h2>
-					<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+					<div class="flex-1 h-px bg-stone-100 dark:bg-stone-800"></div>
 				</div>
 
 				<UiArticleList v-if="profile.articles && profile.articles.length > 0" :articles="profile.articles" />
-				<p v-else class="text-center py-12 text-gray-500 italic">
+				<p v-else class="text-center py-12 text-stone-500 italic">
 					Noch keine Beiträge veröffentlicht.
 				</p>
 			</section>

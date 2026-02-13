@@ -21,6 +21,11 @@ const items = [
 	],
 	[
 		{
+			label: 'Papierkorb',
+			icon: 'i-lucide-trash-2',
+			to: '/admin/trash'
+		},
+		{
 			label: 'Einstellungen',
 			icon: 'i-lucide-settings',
 			to: '/admin/settings'
@@ -42,7 +47,7 @@ const items = [
 				<div class="sticky top-24 space-y-6">
 					<div class="px-3">
 						<h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Admin</h1>
-						<p class="text-sm text-gray-500 mt-1">Verwaltung & Einstellungen</p>
+						<p class="text-sm text-stone-500 mt-1">Verwaltung & Einstellungen</p>
 					</div>
 					
 					<UNavigationMenu 

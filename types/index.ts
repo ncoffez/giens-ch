@@ -104,3 +104,25 @@ export interface GlobalSettings {
 	washingMachineUse: string;
 	updatedAt: string;
 }
+
+export interface GlobalFile {
+	id: string;
+	name: string;
+	type: string;
+	size: number;
+	url: string;
+	folderId: string | null;
+	uploadedAt: string;
+	uploadedBy: string;
+	storagePath?: string;
+	deletedAt?: string;
+	deletedBy?: string;
+}
+
+export interface GlobalFolder {
+	id: string;
+	name: string;
+	parentId: string | null;
+	createdAt: string;
+	createdBy: string;
+}

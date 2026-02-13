@@ -83,7 +83,7 @@ watch(homeId, fetchHome);
 
 				<UFormField label="Name" required>
 					<UInput v-model="home.name" placeholder="z.B. Haus 11" size="lg" />
-					<p class="text-xs text-gray-500 mt-1">Der angezeigte Name des Hauses</p>
+					<p class="text-xs text-stone-500 mt-1">Der angezeigte Name des Hauses</p>
 				</UFormField>
 
 				<UFormField label="Status">
@@ -96,7 +96,7 @@ watch(homeId, fetchHome);
 				<UFormField label="Eigentümer zuweisen">
 					<div v-if="ownersError" class="text-red-500 text-sm mb-2">{{ ownersError }}</div>
 
-					<div v-else-if="owners.length === 0" class="text-sm text-gray-500 mb-2">
+					<div v-else-if="owners.length === 0" class="text-sm text-stone-500 mb-2">
 						Keine Benutzer vorhanden.
 						<NuxtLink to="/admin/users" class="text-primary hover:underline">Benutzer erstellen</NuxtLink>
 					</div>

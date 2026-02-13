@@ -35,6 +35,12 @@ body {
 }
 
 /* Make toast/notification text selectable */
-[role="status"] {
+[role="status"],
+[role="alert"] {
 	user-select: text !important;
+}
+
+/* Flip toast progress bar direction (left to right instead of right to left) */
+[data-slot="progress"] {
+	transform: scaleX(-1);
 }

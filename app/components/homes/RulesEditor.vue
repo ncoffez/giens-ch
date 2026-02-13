@@ -102,10 +102,10 @@ watch(() => props.home, (newHome) => {
 			</div>
 		</form>
 
-		<div class="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
+		<div class="pt-12 border-t border-stone-100 dark:border-stone-800 space-y-8">
 			<div>
 				<h3 class="text-xl font-bold">Reinigungshinweise</h3>
-				<p class="text-sm text-gray-500">Dinge, die vor der Abreise gereinigt werden müssen.</p>
+				<p class="text-sm text-stone-500">Dinge, die vor der Abreise gereinigt werden müssen.</p>
 			</div>
 
 			<div class="space-y-6">
@@ -126,9 +126,9 @@ watch(() => props.home, (newHome) => {
 					<div
 						v-for="(item, index) in form.cleaningInfo"
 						:key="index"
-						class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-2xl group hover:border-primary/30 transition-all"
+						class="flex items-center justify-between p-5 bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-2xl group hover:border-primary/30 transition-all"
 					>
-						<div class="flex items-start gap-4 text-gray-700 dark:text-gray-300">
+						<div class="flex items-start gap-4 text-stone-700 dark:text-stone-300">
 							<UIcon name="i-lucide-check-circle-2" class="w-5 h-5 text-green-500 mt-0.5" />
 							<span class="font-bold">{{ item }}</span>
 						</div>
@@ -142,7 +142,7 @@ watch(() => props.home, (newHome) => {
 						/>
 					</div>
 				</div>
-				<div v-else class="text-center py-12 text-gray-400 italic bg-gray-50/30 dark:bg-gray-900/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+				<div v-else class="text-center py-12 text-stone-400 italic bg-gray-50/30 dark:bg-stone-900/10 rounded-3xl border-2 border-dashed border-stone-100 dark:border-stone-800">
 					Keine spezifischen Reinigungshinweise vorhanden.
 				</div>
 			</div>

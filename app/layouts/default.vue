@@ -72,8 +72,8 @@
 		</ClientOnly>
 
 		<!-- Footer -->
-		<footer class="py-12 border-t border-gray-100 dark:border-gray-800">
-			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+		<footer class="py-12 border-t border-stone-100 dark:border-stone-800">
+			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-stone-500">
 				<p>© {{ new Date().getFullYear() }} Lotissement Beausoleil, Giens</p>
 			</div>
 		</footer>
@@ -185,6 +185,15 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			icon: "i-lucide-building-2",
 			to: "/homes",
 			active: route.path.startsWith("/homes"),
+		});
+	}
+
+	if (import.meta.client && (isOwner.value || isReader.value)) {
+		items.push({
+			label: "Dokumente",
+			icon: "i-lucide-folder",
+			to: "/documents",
+			active: route.path.startsWith("/documents"),
 		});
 	}
 

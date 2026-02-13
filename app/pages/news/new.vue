@@ -10,12 +10,18 @@ const title = ref("");
 const intro = ref("");
 const image = ref("");
 const selectedTags = ref<string[]>([]);
+const selectedAuthor = ref<{ id: string; name: string } | null>(null);
 
 const toast = useToast();
-const { $token } = useNuxtApp();
+const { $token, $isAdmin, $currentUser } = useNuxtApp();
 
 const { data: labels } = await useFetch<any[]>("/api/labels");
 const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.id })) || []);
+
+const { data: authors } = await useFetch<{ id: string; name: string }[]>("/api/authors", {
+	headers: { Authorization: `Bearer ${$token.value}` },
+});
+const authorOptions = computed(() => authors.value || []);
 
 const isPublishing = ref(false);
 const activeStep = ref(0);
@@ -58,18 +64,25 @@ const publish = async () => {
 
 	isPublishing.value = true;
 	try {
+		const body: Record<string, any> = {
+			title: title.value,
+			intro: intro.value,
+			body: content.value,
+			image: image.value || null,
+			tags: selectedTags.value,
+		};
+
+		if ($isAdmin.value && selectedAuthor.value) {
+			body.authorName = selectedAuthor.value.name;
+			body.authorUid = selectedAuthor.value.id;
+		}
+
 		await $fetch("/api/news/create", {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${$token.value}`
 			},
-			body: {
-				title: title.value,
-				intro: intro.value,
-				body: content.value,
-				image: image.value || null,
-				tags: selectedTags.value
-			}
+			body
 		});
 		toast.add({ title: "Erfolgreich", description: "Artikel veröffentlicht.", color: "success" });
 		navigateTo("/news");
@@ -86,9 +99,9 @@ useHead({
 </script>
 
 <template>
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900">
 		<!-- Header -->
-		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+		<header class="sticky top-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border-b border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 				<div class="flex items-center gap-3">
 					<UButton
@@ -100,7 +113,7 @@ useHead({
 					/>
 					<div>
 						<h1 class="text-lg font-bold">Neuer Artikel</h1>
-						<p class="text-xs text-gray-500">Erstelle einen neuen Artikel für die Gemeinschaft</p>
+						<p class="text-xs text-stone-500">Erstelle einen neuen Artikel für die Gemeinschaft</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-3">
@@ -125,7 +138,7 @@ useHead({
 		</header>
 
 		<!-- Progress Steps -->
-		<div class="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+		<div class="bg-white dark:bg-stone-900 border-b border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
 				<div class="flex items-center justify-center gap-2 sm:gap-4">
 					<template v-for="(step, index) in steps" :key="step.id">
@@ -136,7 +149,7 @@ useHead({
 								? 'bg-primary text-white shadow-lg shadow-primary/25' 
 								: activeStep > step.id 
 									? 'bg-primary-100 dark:bg-primary-900/30 text-primary' 
-									: 'bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700'"
+									: 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-700'"
 						>
 							<div 
 								class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
@@ -165,34 +178,51 @@ useHead({
 								<UIcon name="i-lucide-type" class="w-8 h-8 text-primary" />
 							</div>
 							<h2 class="text-2xl font-black">Wie heisst dein Artikel?</h2>
-							<p class="text-gray-500 mt-1">Ein guter Titel zieht die Aufmerksamkeit auf sich</p>
+							<p class="text-stone-500 mt-1">Ein guter Titel zieht die Aufmerksamkeit auf sich</p>
 						</div>
 
 						<div class="max-w-xl mx-auto space-y-6">
 							<div class="group">
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
 									Titel <span class="text-red-500">*</span>
 								</label>
 								<input
 									v-model="title"
 									type="text"
 									placeholder="z.B. Sommerfest im Lotissement"
-									class="w-full px-6 py-4 text-xl font-bold bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+									class="w-full px-6 py-4 text-xl font-bold bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
 								/>
-								<p class="mt-2 text-xs text-gray-400">Maximal 80 Zeichen empfohlen</p>
+								<p class="mt-2 text-xs text-stone-400">Maximal 80 Zeichen empfohlen</p>
 							</div>
 
 							<div class="group">
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
 									Einleitung
 								</label>
 								<textarea
 									v-model="intro"
 									placeholder="Eine kurze Zusammenfassung, die in der Übersicht angezeigt wird..."
 									rows="4"
-									class="w-full px-6 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none"
+									class="w-full px-6 py-4 bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none"
 								/>
-								<p class="mt-2 text-xs text-gray-400">Wird in der Artikelübersicht angezeigt</p>
+								<p class="mt-2 text-xs text-stone-400">Wird in der Artikelübersicht angezeigt</p>
+							</div>
+
+							<div v-if="$isAdmin && authorOptions.length > 0" class="group">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
+									Autor
+								</label>
+								<USelectMenu
+									v-model="selectedAuthor"
+									:items="authorOptions"
+									value-key="id"
+									label-key="name"
+									placeholder="Du selbst"
+									size="xl"
+									class="w-full"
+									clearable
+								/>
+								<p class="mt-2 text-xs text-stone-400">Als Admin kannst du einen anderen Autor angeben</p>
 							</div>
 						</div>
 
@@ -218,13 +248,13 @@ useHead({
 								<UIcon name="i-lucide-image" class="w-8 h-8 text-primary" />
 							</div>
 							<h2 class="text-2xl font-black">Wähle ein Titelbild</h2>
-							<p class="text-gray-500 mt-1">Ein Bild sagt mehr als tausend Worte</p>
+							<p class="text-stone-500 mt-1">Ein Bild sagt mehr als tausend Worte</p>
 						</div>
 
 						<div class="max-w-2xl mx-auto space-y-8">
 							<!-- Image Section - Full Width, Prominent -->
 							<div class="space-y-4">
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300">
 									Titelbild
 								</label>
 								
@@ -233,7 +263,7 @@ useHead({
 								</div>
 								
 								<div v-else class="relative group">
-									<div class="aspect-video rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-lg">
+									<div class="aspect-video rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-800 shadow-lg">
 										<img :src="image" alt="Selected image" class="w-full h-full object-cover" />
 									</div>
 									<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors rounded-2xl flex items-center justify-center">
@@ -259,7 +289,7 @@ useHead({
 
 							<!-- Categories -->
 							<div class="space-y-4">
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300">
 									Kategorien
 								</label>
 								<USelectMenu
@@ -272,7 +302,7 @@ useHead({
 									size="xl"
 									class="w-full"
 								/>
-								<p class="text-xs text-gray-400">Kategorien helfen beim Auffinden des Artikels</p>
+								<p class="text-xs text-stone-400">Kategorien helfen beim Auffinden des Artikels</p>
 							</div>
 						</div>
 
@@ -307,16 +337,16 @@ useHead({
 								<UIcon name="i-lucide-file-text" class="w-8 h-8 text-primary" />
 							</div>
 							<h2 class="text-2xl font-black">Verfasse deinen Artikel</h2>
-							<p class="text-gray-500 mt-1">Teile deine Geschichte mit der Gemeinschaft</p>
+							<p class="text-stone-500 mt-1">Teile deine Geschichte mit der Gemeinschaft</p>
 						</div>
 
-						<div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-							<div class="border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+						<div class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+							<div class="border-b border-stone-100 dark:border-stone-700 px-6 py-4 flex items-center justify-between">
 								<div class="flex items-center gap-3">
 									<UIcon name="i-lucide-edit-3" class="text-primary" />
 									<span class="font-bold">Artikelinhalt</span>
 								</div>
-								<div class="flex items-center gap-2 text-xs text-gray-400">
+								<div class="flex items-center gap-2 text-xs text-stone-400">
 									<UIcon name="i-lucide-info" class="w-4 h-4" />
 									<span>Füge Bilder und Links direkt im Editor ein</span>
 								</div>
@@ -355,9 +385,9 @@ useHead({
 				<!-- Preview Panel -->
 				<div class="lg:col-span-2">
 					<div class="sticky top-28">
-						<div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-							<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-								<span class="text-sm font-bold text-gray-500">Live-Vorschau</span>
+						<div class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+							<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between">
+								<span class="text-sm font-bold text-stone-500">Live-Vorschau</span>
 								<div class="flex items-center gap-2">
 									<span class="relative flex h-2 w-2">
 										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -367,7 +397,7 @@ useHead({
 								</div>
 							</div>
 							
-							<div class="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-700">
+							<div class="aspect-video relative overflow-hidden bg-stone-100 dark:bg-gray-700">
 								<img :src="effectiveImage" class="w-full h-full object-cover" />
 								<div v-if="image" class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
 									<UIcon name="i-lucide-check" class="w-3 h-3" />
@@ -384,7 +414,7 @@ useHead({
 									{{ title || 'Dein Titel erscheint hier...' }}
 								</h3>
 								
-								<p class="text-sm text-gray-500 leading-relaxed line-clamp-3">
+								<p class="text-sm text-stone-500 leading-relaxed line-clamp-3">
 									{{ intro || 'Deine Einleitung erscheint hier als Vorschautext...' }}
 								</p>
 								
@@ -398,8 +428,13 @@ useHead({
 									</span>
 								</div>
 
-								<div v-if="content" class="pt-4 border-t border-gray-100 dark:border-gray-700">
-									<div class="flex items-center gap-2 text-xs text-gray-400">
+								<div v-if="selectedAuthor" class="flex items-center gap-2 text-xs text-stone-500">
+									<UIcon name="i-lucide-user" class="w-3.5 h-3.5" />
+									<span>Autor: {{ selectedAuthor.name }}</span>
+								</div>
+
+								<div v-if="content" class="pt-4 border-t border-stone-100 dark:border-stone-700">
+									<div class="flex items-center gap-2 text-xs text-stone-400">
 										<UIcon name="i-lucide-file-text" class="w-4 h-4" />
 										<span>{{ content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length }} Wörter</span>
 									</div>
@@ -408,31 +443,31 @@ useHead({
 						</div>
 
 						<!-- Status Card -->
-						<div class="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700">
+						<div class="mt-4 p-4 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-200 dark:border-stone-700">
 							<div class="flex items-center justify-between mb-3">
-								<span class="text-sm font-bold text-gray-700 dark:text-gray-300">Artikelstatus</span>
+								<span class="text-sm font-bold text-stone-700 dark:text-stone-300">Artikelstatus</span>
 							</div>
 							<div class="space-y-2">
 								<div class="flex items-center gap-2 text-sm">
 									<UIcon 
 										:name="title ? 'i-lucide-check-circle' : 'i-lucide-circle'" 
-										:class="title ? 'text-green-500' : 'text-gray-300'" 
+										:class="title ? 'text-green-500' : 'text-stone-300'" 
 									/>
-									<span :class="title ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'">Titel</span>
+									<span :class="title ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400'">Titel</span>
 								</div>
 								<div class="flex items-center gap-2 text-sm">
 									<UIcon 
 										:name="image ? 'i-lucide-check-circle' : 'i-lucide-circle'" 
-										:class="image ? 'text-green-500' : 'text-gray-300'" 
+										:class="image ? 'text-green-500' : 'text-stone-300'" 
 									/>
-									<span :class="image ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'">Bild (optional)</span>
+									<span :class="image ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400'">Bild (optional)</span>
 								</div>
 								<div class="flex items-center gap-2 text-sm">
 									<UIcon 
 										:name="content ? 'i-lucide-check-circle' : 'i-lucide-circle'" 
-										:class="content ? 'text-green-500' : 'text-gray-300'" 
+										:class="content ? 'text-green-500' : 'text-stone-300'" 
 									/>
-									<span :class="content ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'">Inhalt</span>
+									<span :class="content ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400'">Inhalt</span>
 								</div>
 							</div>
 						</div>

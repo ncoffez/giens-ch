@@ -164,7 +164,7 @@ watchEffect(() => {
 						label="Deaktivierte Häuser anzeigen" 
 					/>
 				</ClientOnly>
-				<span class="ml-auto text-sm text-gray-500 w-fit">
+				<span class="ml-auto text-sm text-stone-500 w-fit">
 					{{ totalActive }} aktiv · {{ totalDisabled }} deaktiviert
 				</span>
 			</div>

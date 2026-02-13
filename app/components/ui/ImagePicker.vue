@@ -156,13 +156,13 @@ const clearSearch = () => {
 
 <template>
 	<div class="space-y-4">
-		<div class="flex border-b border-gray-200 dark:border-gray-700">
+		<div class="flex border-b border-stone-200 dark:border-stone-700">
 			<button
 				v-for="tab in [{ id: 'upload', label: 'Hochladen', icon: 'i-lucide-upload' }, { id: 'giens', label: 'Giens', icon: 'i-lucide-image' }, { id: 'unsplash', label: 'Unsplash', icon: 'i-lucide-search' }]"
 				:key="tab.id"
 				@click="handleTabChange(tab.id as any)"
 				class="flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
-				:class="activeTab === tab.id ? 'text-primary border-primary' : 'text-gray-500 border-transparent hover:text-gray-700 dark:hover:text-gray-300'"
+				:class="activeTab === tab.id ? 'text-primary border-primary' : 'text-stone-500 border-transparent hover:text-stone-700 dark:hover:text-stone-300'"
 			>
 				<UIcon :name="tab.icon" class="w-4 h-4" />
 				{{ tab.label }}
@@ -172,18 +172,18 @@ const clearSearch = () => {
 		<div v-if="activeTab === 'upload'" class="space-y-4">
 			<div
 				class="min-h-[200px] rounded-2xl border-2 border-dashed transition-colors flex flex-col items-center justify-center p-8"
-				:class="dragover ? 'border-primary bg-primary-50 dark:bg-primary-900/10' : 'border-gray-200 dark:border-gray-700'"
+				:class="dragover ? 'border-primary bg-primary-50 dark:bg-primary-900/10' : 'border-stone-200 dark:border-stone-700'"
 				@dragover.prevent="dragover = true"
 				@dragleave.prevent="dragover = false"
 				@drop.prevent="handleFileDrop"
 			>
 				<template v-if="isUploading">
 					<div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-					<p class="mt-4 text-gray-500">Wird hochgeladen...</p>
+					<p class="mt-4 text-stone-500">Wird hochgeladen...</p>
 				</template>
 				<template v-else>
-					<UIcon name="i-lucide-image-plus" class="w-12 h-12 text-gray-300 mb-4" />
-					<p class="text-gray-500 mb-2">Bild hierher ziehen</p>
+					<UIcon name="i-lucide-image-plus" class="w-12 h-12 text-stone-300 mb-4" />
+					<p class="text-stone-500 mb-2">Bild hierher ziehen</p>
 					<label class="cursor-pointer">
 						<UButton as="span" color="primary" size="sm">oder Datei wählen</UButton>
 						<input type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
@@ -193,7 +193,7 @@ const clearSearch = () => {
 		</div>
 
 		<div v-else-if="activeTab === 'giens'" class="space-y-4">
-			<p class="text-xs text-gray-500">Wähle ein Bild aus der Giens-Galerie:</p>
+			<p class="text-xs text-stone-500">Wähle ein Bild aus der Giens-Galerie:</p>
 			<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto p-1">
 				<button
 					v-for="img in giensImages"
@@ -222,9 +222,9 @@ const clearSearch = () => {
 					<button
 						v-if="unsplashQuery"
 						@click="clearSearch"
-						class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+						class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-700"
 					>
-						<UIcon name="i-lucide-x" class="w-4 h-4 text-gray-400" />
+						<UIcon name="i-lucide-x" class="w-4 h-4 text-stone-400" />
 					</button>
 				</div>
 				<UButton color="primary" :loading="unsplashLoading" @click="searchUnsplash()">Suchen</UButton>
@@ -236,7 +236,7 @@ const clearSearch = () => {
 
 			<div v-else-if="unsplashResults.length > 0" class="space-y-4">
 				<div class="flex items-center justify-between">
-					<p class="text-xs text-gray-500">
+					<p class="text-xs text-stone-500">
 						{{ hasSearched ? `Ergebnisse für "${unsplashQuery || 'mediterranean beach'}"` : 'Vorschläge' }}
 					</p>
 					<UButton v-if="hasSearched" variant="ghost" color="neutral" size="xs" @click="clearSearch">
@@ -268,16 +268,16 @@ const clearSearch = () => {
 				</div>
 			</div>
 
-			<div v-else class="text-center py-12 text-gray-400">
+			<div v-else class="text-center py-12 text-stone-400">
 				<UIcon name="i-lucide-search" class="w-12 h-12 mx-auto mb-4" />
 				<p>Suche nach kostenlosen Bildern auf Unsplash</p>
 			</div>
 		</div>
 
-		<div v-if="modelValue" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-			<p class="text-xs text-gray-500 mb-2">Ausgewähltes Bild:</p>
+		<div v-if="modelValue" class="pt-4 border-t border-stone-200 dark:border-stone-700">
+			<p class="text-xs text-stone-500 mb-2">Ausgewähltes Bild:</p>
 			<div class="flex items-center gap-4">
-				<div class="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0">
+				<div class="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 shrink-0">
 					<img :src="modelValue" alt="Selected" class="w-full h-full object-cover" />
 				</div>
 				<div class="flex-1 min-w-0">

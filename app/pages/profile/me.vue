@@ -56,8 +56,8 @@ const isPasswordModalOpen = ref(false);
 				</div>
 				<div>
 					<h1 class="text-4xl font-black tracking-tight">{{ profile.displayName }}</h1>
-					<p v-if="profile.email" class="text-gray-500 mt-2">{{ profile.email }}</p>
-					<p class="text-gray-400 text-sm mt-1">Mitglied des Lotissement Beausoleil</p>
+					<p v-if="profile.email" class="text-stone-500 mt-2">{{ profile.email }}</p>
+					<p class="text-stone-400 text-sm mt-1">Mitglied des Lotissement Beausoleil</p>
 				</div>
 			</div>
 
@@ -69,13 +69,13 @@ const isPasswordModalOpen = ref(false);
 			<section class="max-w-screen-md mx-auto">
 				<div class="flex items-center gap-4 mb-8">
 					<h2 class="text-2xl font-bold">Meine Beiträge</h2>
-					<div class="flex-1 h-px bg-gray-100 dark:bg-gray-800"></div>
+					<div class="flex-1 h-px bg-stone-100 dark:bg-stone-800"></div>
 				</div>
 
 				<div v-if="profile.articles && profile.articles.length > 0" class="space-y-8">
 					<ArticleList :articles="profile.articles" />
 				</div>
-				<p v-else class="text-center py-12 text-gray-500 italic">
+				<p v-else class="text-center py-12 text-stone-500 italic">
 					Noch keine Beiträge veröffentlicht.
 				</p>
 			</section>

@@ -80,7 +80,7 @@ watch(() => props.home, (newHome) => {
 		</UFormField>
 
 		<div class="pt-8 space-y-6">
-			<div class="flex items-center gap-2 text-gray-400">
+			<div class="flex items-center gap-2 text-stone-400">
 				<UIcon name="i-lucide-contact" class="w-4 h-4" />
 				<h4 class="text-xs font-black uppercase tracking-widest">Kontaktinformationen</h4>
 			</div>

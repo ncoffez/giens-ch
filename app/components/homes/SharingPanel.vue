@@ -87,10 +87,10 @@ onMounted(fetchEditors);
 		<div class="space-y-8">
 			<div>
 				<h3 class="text-xl font-bold">Mit Bewohnern teilen</h3>
-				<p class="text-sm text-gray-500">Erstellen Sie einen Link, damit Gäste die Hausinfos sehen können.</p>
+				<p class="text-sm text-stone-500">Erstellen Sie einen Link, damit Gäste die Hausinfos sehen können.</p>
 			</div>
 
-			<div class="p-8 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-100 dark:border-gray-800 space-y-6">
+			<div class="p-8 bg-stone-50 dark:bg-stone-900/50 rounded-3xl border border-stone-100 dark:border-stone-800 space-y-6">
 				<div class="flex flex-col md:flex-row gap-6 items-end">
 					<div class="flex-1 w-full">
 						<UFormField label="Gültigkeit des Links (Tage)">
@@ -112,10 +112,10 @@ onMounted(fetchEditors);
 							Kopieren
 						</UButton>
 					</div>
-					<code class="block text-sm p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 break-all font-mono">
+					<code class="block text-sm p-4 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-100 dark:border-stone-800 break-all font-mono">
 						{{ shareUrl }}
 					</code>
-					<p v-if="shareCreated" class="mt-3 text-xs text-gray-400">
+					<p v-if="shareCreated" class="mt-3 text-xs text-stone-400">
 						Läuft ab am: {{ new Date(shareCreated.expiresAt).toLocaleString("de-CH") }}
 					</p>
 				</div>
@@ -123,10 +123,10 @@ onMounted(fetchEditors);
 		</div>
 
 		<!-- Editors -->
-		<div v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)" class="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
+		<div v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)" class="pt-12 border-t border-stone-100 dark:border-stone-800 space-y-8">
 			<div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white">Editoren verwalten</h3>
-				<p class="text-sm text-gray-500">Andere Nutzer können die Details dieses Hauses mitbearbeiten.</p>
+				<p class="text-sm text-stone-500">Andere Nutzer können die Details dieses Hauses mitbearbeiten.</p>
 			</div>
 
 			<div class="space-y-6">
@@ -139,15 +139,15 @@ onMounted(fetchEditors);
 					<div
 						v-for="editor in editors"
 						:key="editor.uid"
-						class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-2xl group"
+						class="flex items-center justify-between p-5 bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-2xl group"
 					>
 						<div class="flex items-center gap-4">
-							<div class="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm">
-								<UIcon name="i-lucide-user" class="w-5 h-5 text-gray-400" />
+							<div class="p-2 bg-white dark:bg-stone-800 rounded-full shadow-sm">
+								<UIcon name="i-lucide-user" class="w-5 h-5 text-stone-400" />
 							</div>
 							<div>
 								<p class="font-bold text-sm">{{ editor.uid }}</p>
-								<p class="text-[10px] uppercase font-black tracking-widest text-gray-400">Editor</p>
+								<p class="text-[10px] uppercase font-black tracking-widest text-stone-400">Editor</p>
 							</div>
 						</div>
 						<UButton
@@ -160,8 +160,8 @@ onMounted(fetchEditors);
 						/>
 					</div>
 				</div>
-				<div v-else class="text-center py-12 bg-gray-50/30 dark:bg-gray-900/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
-					<p class="text-sm text-gray-400 italic">Noch keine Editoren hinzugefügt.</p>
+				<div v-else class="text-center py-12 bg-gray-50/30 dark:bg-stone-900/10 rounded-3xl border-2 border-dashed border-stone-100 dark:border-stone-800">
+					<p class="text-sm text-stone-400 italic">Noch keine Editoren hinzugefügt.</p>
 				</div>
 			</div>
 		</div>

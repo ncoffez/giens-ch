@@ -2,7 +2,7 @@
 	<section
 		class="relative overflow-hidden flex flex-col items-center p-8 border-neutral-200 bg-white dark:bg-neutral-800 shadow-lg rounded-3xl my-16 mx-auto w-fit">
 		<h3 class="font-bold text-2xl mb-4 text-neutral-800 dark:text-neutral-200">Registrieren</h3>
-		<p class="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-xs">
+		<p class="text-sm text-stone-500 dark:text-stone-400 mb-6 text-center max-w-xs">
 			Erstellen Sie ein Konto, um auf alle Funktionen zuzugreifen.
 		</p>
 		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
@@ -20,7 +20,7 @@
 		</UForm>
 		<NuxtLink
 			to="/login"
-			class="text-sm mt-4 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">
+			class="text-sm mt-4 text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400">
 			Bereits ein Konto? Anmelden
 		</NuxtLink>
 	</section>

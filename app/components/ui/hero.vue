@@ -1,5 +1,5 @@
 <template>
-	<section class="relative w-full overflow-hidden rounded-[2.5rem] shadow-2xl bg-gray-100 dark:bg-gray-800" :class="[height || 'h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]']">
+	<section class="relative w-full overflow-hidden rounded-[2.5rem] shadow-2xl bg-stone-100 dark:bg-stone-800" :class="[height || 'h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]']">
 		<picture v-if="src" class="absolute inset-0">
 			<source :srcset="getResponsiveImage(src, 800)" media="(max-width: 768px)" />
 			<source :srcset="getResponsiveImage(src, 1200)" media="(max-width: 1200px)" />

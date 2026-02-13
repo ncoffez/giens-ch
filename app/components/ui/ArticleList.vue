@@ -21,7 +21,7 @@ defineProps<Props>();
 	<div class="space-y-4">
 		<div v-if="loading">Lädt...</div>
 
-		<div v-else-if="articles.length === 0" class="text-center py-4 text-gray-500 text-sm">
+		<div v-else-if="articles.length === 0" class="text-center py-4 text-stone-500 text-sm">
 			Noch keine Artikel veröffentlicht.
 		</div>
 
@@ -30,7 +30,7 @@ defineProps<Props>();
 				v-for="article in articles"
 				:key="article.id"
 				:to="`/article/${article.id}`"
-				class="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all hover:shadow-md group"
+				class="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-stone-900/40 border border-stone-100 dark:border-stone-800 hover:bg-gray-50/50 dark:hover:bg-stone-800/50 transition-all hover:shadow-md group"
 			>
 				<img
 					:src="article.image || getArticlePlaceholder(article.id)"
@@ -40,11 +40,11 @@ defineProps<Props>();
 				/>
 				<div class="flex-1 min-w-0">
 					<h3 class="font-black text-xl tracking-tight truncate group-hover:text-primary transition-colors">{{ article.title }}</h3>
-					<p class="text-md text-gray-500 mt-1 font-medium">
+					<p class="text-md text-stone-500 mt-1 font-medium">
 						{{ new Date(article.published).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" }) }}
 					</p>
 				</div>
-				<UIcon name="i-lucide-chevron-right" class="w-6 h-6 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+				<UIcon name="i-lucide-chevron-right" class="w-6 h-6 text-stone-300 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
 			</NuxtLink>
 		</div>
 	</div>

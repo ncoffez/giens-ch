@@ -40,15 +40,15 @@ const submit = async () => {
 </script>
 
 <template>
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900 flex items-center justify-center px-4">
 		<div class="w-full max-w-md">
-			<div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-				<div class="p-8 text-center border-b border-gray-100 dark:border-gray-700">
+			<div class="bg-white dark:bg-stone-800 rounded-3xl shadow-xl border border-stone-100 dark:border-stone-700 overflow-hidden">
+				<div class="p-8 text-center border-b border-stone-100 dark:border-stone-700">
 					<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
 						<UIcon name="i-lucide-home" class="w-8 h-8 text-primary" />
 					</div>
 					<h1 class="text-2xl font-black">Neues Haus erstellen</h1>
-					<p class="text-gray-500 dark:text-gray-400 mt-2">Geben Sie die Hausnummer ein, um ein neues Haus anzulegen.</p>
+					<p class="text-stone-500 dark:text-stone-400 mt-2">Geben Sie die Hausnummer ein, um ein neues Haus anzulegen.</p>
 				</div>
 
 				<form @submit.prevent="submit" class="p-8 space-y-6">
@@ -57,20 +57,20 @@ const submit = async () => {
 					</div>
 
 					<div class="space-y-2">
-						<label class="text-sm font-bold text-gray-700 dark:text-gray-300">Hausnummer</label>
+						<label class="text-sm font-bold text-stone-700 dark:text-stone-300">Hausnummer</label>
 						<div class="relative">
-							<span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Haus</span>
+							<span class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">Haus</span>
 							<input
 								v-model.number="houseNumber"
 								type="number"
 								min="1"
 								max="30"
 								placeholder="11"
-								class="w-full pl-16 pr-4 py-4 text-2xl font-black text-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+								class="w-full pl-16 pr-4 py-4 text-2xl font-black text-center bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
 							/>
 						</div>
-						<p class="text-xs text-gray-400 text-center mt-2">
-							Angezeigter Name: <span class="font-bold text-gray-600 dark:text-gray-300">{{ previewName }}</span>
+						<p class="text-xs text-stone-400 text-center mt-2">
+							Angezeigter Name: <span class="font-bold text-stone-600 dark:text-stone-300">{{ previewName }}</span>
 						</p>
 					</div>
 
@@ -98,7 +98,7 @@ const submit = async () => {
 				</form>
 			</div>
 
-			<p class="text-center text-xs text-gray-400 mt-6">
+			<p class="text-center text-xs text-stone-400 mt-6">
 				Nach dem Erstellen können Sie Fotos, Anweisungen und weitere Details hinzufügen.
 			</p>
 		</div>

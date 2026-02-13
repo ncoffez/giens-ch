@@ -1,7 +1,7 @@
 <template>
 	<div class="max-w-screen-xl mx-auto w-full space-y-8">
 		<!-- Header Skeleton -->
-		<div class="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800">
+		<div class="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-stone-900 p-8 rounded-[2.5rem] border border-stone-100 dark:border-stone-800">
 			<USkeleton class="h-24 w-24 rounded-full" />
 			<div class="flex-1 space-y-4 text-center md:text-left">
 				<div class="space-y-2">
@@ -16,7 +16,7 @@
 
 		<!-- Settings Grid Skeleton -->
 		<div class="grid md:grid-cols-2 gap-8">
-			<UCard v-for="i in 2" :key="i" class="rounded-2xl border-gray-100 dark:border-gray-800">
+			<UCard v-for="i in 2" :key="i" class="rounded-2xl border-stone-100 dark:border-stone-800">
 				<template #header>
 					<div class="flex items-center gap-3">
 						<USkeleton class="h-6 w-6 rounded-full" />
@@ -24,7 +24,7 @@
 					</div>
 				</template>
 				<div class="space-y-6">
-					<div v-for="j in 3" :key="j" class="flex justify-between items-center py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
+					<div v-for="j in 3" :key="j" class="flex justify-between items-center py-3 border-b border-gray-50 dark:border-stone-800 last:border-0">
 						<USkeleton class="h-5 w-[120px]" />
 						<USkeleton class="h-6 w-[140px]" />
 					</div>

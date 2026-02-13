@@ -42,13 +42,13 @@ export default defineEventHandler(async (event) => {
 
 	const file = files[fileIndex];
 
-	try {
-		const url = new URL(file.url);
-		const pathParts = url.pathname.split("/").slice(2).join("/");
-		const bucket = storage.bucket();
-		await bucket.file(pathParts).delete();
-	} catch {
-		// Ignore storage deletion errors
+	if (file.storagePath) {
+		try {
+			const bucket = storage.bucket();
+			await bucket.file(file.storagePath).delete();
+		} catch {
+			// Ignore storage deletion errors
+		}
 	}
 
 	files.splice(fileIndex, 1);

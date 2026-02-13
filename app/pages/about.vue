@@ -45,14 +45,14 @@ const items = ref<TimelineItem[]>([
 		<!-- Introduction -->
 		<section class="max-w-screen-md mx-auto px-4 text-center">
 			<UiTitle subtitle="Unsere Philosophie" title="Miteinander Gestalten" />
-			<p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mt-6 md:mt-8 leading-relaxed">
+			<p class="text-lg md:text-xl text-stone-600 dark:text-stone-400 mt-6 md:mt-8 leading-relaxed">
 				Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement für eine gepflegte und nachhaltige Siedlung. Jede und jeder bringt sich im Rahmen seiner Möglichkeiten ein und trägt so zum Wohl unserer Siedlung bei.
 			</p>
 		</section>
 
 		<!-- Timeline -->
 		<section
-			class="max-w-screen-lg mx-auto px-4 py-12 md:py-16 bg-gray-50 dark:bg-gray-900/50 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+			class="max-w-screen-lg mx-auto px-4 py-12 md:py-16 bg-stone-50 dark:bg-stone-900/50 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 shadow-sm">
 			<div class="text-center mb-10 md:mb-16">
 				<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Unsere Geschichte</h2>
 				<div class="w-16 md:w-20 h-1 bg-primary mx-auto mt-3 md:mt-4 rounded-full"></div>
@@ -82,17 +82,17 @@ const items = ref<TimelineItem[]>([
 				<div class="flex gap-6 md:gap-8 pt-4 md:pt-6 justify-center md:justify-start">
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">20</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Häuser</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Häuser</span>
 					</div>
-					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-gray-800"></div>
+					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-stone-800"></div>
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">40+</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Jahre</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Jahre</span>
 					</div>
-					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-gray-800"></div>
+					<div class="w-px h-10 md:h-12 bg-gray-200 dark:bg-stone-800"></div>
 					<div class="flex flex-col items-center">
 						<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">1</span>
-						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Spirit</span>
+						<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Spirit</span>
 					</div>
 				</div>
 			</div>

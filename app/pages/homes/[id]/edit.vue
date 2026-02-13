@@ -142,10 +142,10 @@ watch(homeId, fetchHome);
 <template>
 	<div class="min-h-screen bg-white dark:bg-gray-950">
 		<!-- Simple Header -->
-		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
+		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
 				<div class="flex items-center gap-4">
-					<NuxtLink to="/homes" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+					<NuxtLink to="/homes" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors">
 						<UIcon name="i-lucide-arrow-left" class="w-5 h-5" />
 					</NuxtLink>
 					<div v-if="home" class="hidden sm:block">
@@ -190,13 +190,13 @@ watch(homeId, fetchHome);
 			<aside class="hidden lg:block w-64 shrink-0">
 				<div class="sticky top-28 space-y-8">
 					<div>
-						<h2 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-3">Navigation</h2>
+						<h2 class="text-xs font-black uppercase tracking-widest text-stone-400 mb-4 px-3">Navigation</h2>
 						<nav class="space-y-1">
 							<button 
 								v-for="section in orderedSections" 
 								:key="section.id"
 								@click="scrollToSection(section.id)"
-								class="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 rounded-xl transition-all group"
+								class="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-stone-600 dark:text-stone-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 rounded-xl transition-all group"
 							>
 								<UIcon :name="section.icon" class="w-4 h-4 group-hover:scale-110 transition-transform" />
 								{{ section.label }}
@@ -204,8 +204,8 @@ watch(homeId, fetchHome);
 						</nav>
 					</div>
 
-					<div v-if="home" class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800">
-						<h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Eigentümer</h3>
+					<div v-if="home" class="p-4 bg-stone-50 dark:bg-stone-900/50 rounded-2xl border border-stone-100 dark:border-stone-800">
+						<h3 class="text-xs font-black uppercase tracking-widest text-stone-400 mb-3">Eigentümer</h3>
 						<div class="flex -space-x-2 mb-3">
 							<UPopover
 								v-for="owner in getOwners(home.ownerIds)"
@@ -230,7 +230,7 @@ watch(homeId, fetchHome);
 								</template>
 							</UPopover>
 						</div>
-						<p class="text-[10px] text-gray-400 leading-tight">Diese Personen können alle Details dieses Hauses bearbeiten.</p>
+						<p class="text-[10px] text-stone-400 leading-tight">Diese Personen können alle Details dieses Hauses bearbeiten.</p>
 					</div>
 
 					<UButton 
@@ -251,8 +251,8 @@ watch(homeId, fetchHome);
 			<main class="flex-1 max-w-3xl">
 				<div v-if="loading" class="space-y-12">
 					<div v-for="i in 3" :key="i" class="space-y-4">
-						<div class="h-8 w-48 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-						<div class="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-3xl animate-pulse" />
+						<div class="h-8 w-48 bg-stone-100 dark:bg-stone-800 rounded-lg animate-pulse" />
+						<div class="h-64 bg-stone-50 dark:bg-stone-900/50 rounded-3xl animate-pulse" />
 					</div>
 				</div>
 
@@ -296,7 +296,7 @@ watch(homeId, fetchHome);
 								</div>
 								<div>
 									<h2 class="text-3xl font-black tracking-tight">{{ section.label }}</h2>
-									<p class="text-sm text-gray-500 font-medium">Bearbeiten Sie die {{ section.label.toLowerCase() }} für Ihre Gäste.</p>
+									<p class="text-sm text-stone-500 font-medium">Bearbeiten Sie die {{ section.label.toLowerCase() }} für Ihre Gäste.</p>
 								</div>
 							</div>
 
@@ -306,7 +306,7 @@ watch(homeId, fetchHome);
 						</div>
 
 						<!-- Visual Divider -->
-						<div v-if="index !== orderedSections.length - 1" class="mt-24 h-px bg-gray-100 dark:bg-gray-800" />
+						<div v-if="index !== orderedSections.length - 1" class="mt-24 h-px bg-stone-100 dark:bg-stone-800" />
 					</section>
 				</div>
 			</main>

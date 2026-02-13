@@ -90,10 +90,10 @@ watch(() => props.home, (newHome) => {
 			</div>
 		</form>
 
-		<div class="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
+		<div class="pt-12 border-t border-stone-100 dark:border-stone-800 space-y-8">
 			<div>
 				<h3 class="text-xl font-bold">Wichtige Hinweise (Must Knows)</h3>
-				<p class="text-sm text-gray-500">Schnelle Fakten, die jeder Gast sofort sehen sollte.</p>
+				<p class="text-sm text-stone-500">Schnelle Fakten, die jeder Gast sofort sehen sollte.</p>
 			</div>
 
 			<div class="space-y-6">
@@ -114,11 +114,11 @@ watch(() => props.home, (newHome) => {
 					<div
 						v-for="(item, index) in form.mustKnows"
 						:key="index"
-						class="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 rounded-2xl group hover:border-primary/30 transition-all"
+						class="flex items-center justify-between p-5 bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-2xl group hover:border-primary/30 transition-all"
 					>
 						<div class="flex items-start gap-4">
 							<div class="mt-1 w-2 h-2 rounded-full bg-primary shrink-0" />
-							<span class="font-bold text-gray-700 dark:text-gray-300">{{ item }}</span>
+							<span class="font-bold text-stone-700 dark:text-stone-300">{{ item }}</span>
 						</div>
 						<UButton
 							color="error"
@@ -130,7 +130,7 @@ watch(() => props.home, (newHome) => {
 						/>
 					</div>
 				</div>
-				<div v-else class="text-center py-12 text-gray-400 italic bg-gray-50/30 dark:bg-gray-900/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+				<div v-else class="text-center py-12 text-stone-400 italic bg-gray-50/30 dark:bg-stone-900/10 rounded-3xl border-2 border-dashed border-stone-100 dark:border-stone-800">
 					Noch keine wichtigen Hinweise hinterlegt.
 				</div>
 			</div>

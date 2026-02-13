@@ -89,7 +89,7 @@ const activeCategoryLabel = computed(() => {
 					class="w-full"
 					:ui="{ 
 						rounded: 'rounded-2xl',
-						base: 'bg-white dark:bg-gray-950/50 shadow-sm border-gray-100 dark:border-gray-800 focus:ring-primary-500/50'
+						base: 'bg-white dark:bg-gray-950/50 shadow-sm border-stone-100 dark:border-stone-800 focus:ring-primary-500/50'
 					}"
 				>
 					<template #trailing>
@@ -175,7 +175,7 @@ const activeCategoryLabel = computed(() => {
 						variant="ghost"
 						color="neutral"
 						size="xs"
-						class="rounded-full p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+						class="rounded-full p-0.5 hover:bg-stone-100 dark:hover:bg-stone-800"
 						@click="filters.author = 'all'"
 					/>
 				</UBadge>
@@ -193,7 +193,7 @@ const activeCategoryLabel = computed(() => {
 						variant="ghost"
 						color="neutral"
 						size="xs"
-						class="rounded-full p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+						class="rounded-full p-0.5 hover:bg-stone-100 dark:hover:bg-stone-800"
 						@click="filters.dateRange = 'all'"
 					/>
 				</UBadge>
@@ -228,11 +228,11 @@ const activeCategoryLabel = computed(() => {
 			leave-to-class="opacity-0 -translate-y-4 max-h-0"
 		>
 			<div v-if="isOpen" class="overflow-hidden">
-				<div class="p-5 bg-gray-50 dark:bg-gray-900/40 rounded-3xl border border-gray-100 dark:border-gray-800/60 shadow-inner space-y-6">
+				<div class="p-5 bg-stone-50 dark:bg-stone-900/40 rounded-3xl border border-stone-100 dark:border-stone-800/60 shadow-inner space-y-6">
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<!-- Category Select -->
 						<div class="space-y-2">
-							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Kategorie</label>
+							<label class="text-[10px] font-black uppercase tracking-widest text-stone-500 dark:text-stone-400 ml-1">Kategorie</label>
 							<USelectMenu
 								v-model="filters.tag"
 								:items="categoryOptions"
@@ -252,7 +252,7 @@ const activeCategoryLabel = computed(() => {
 
 						<!-- Date Select -->
 						<div class="space-y-2">
-							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Zeitraum</label>
+							<label class="text-[10px] font-black uppercase tracking-widest text-stone-500 dark:text-stone-400 ml-1">Zeitraum</label>
 							<USelectMenu
 								v-model="filters.dateRange"
 								:items="dateOptions"
@@ -266,7 +266,7 @@ const activeCategoryLabel = computed(() => {
 
 						<!-- Author Select -->
 						<div class="space-y-2">
-							<label class="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1">Autor</label>
+							<label class="text-[10px] font-black uppercase tracking-widest text-stone-500 dark:text-stone-400 ml-1">Autor</label>
 							<USelectMenu
 								v-model="filters.author"
 								:items="authorOptions"
@@ -283,15 +283,15 @@ const activeCategoryLabel = computed(() => {
 					<!-- Additional Toggles -->
 					<div class="flex items-center gap-6 pt-2">
 						<div 
-							class="flex items-center gap-3 bg-white dark:bg-gray-950 px-4 py-2.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:border-primary/20 cursor-pointer select-none"
+							class="flex items-center gap-3 bg-white dark:bg-gray-950 px-4 py-2.5 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm transition-all hover:border-primary/20 cursor-pointer select-none"
 							@click="filters.hasAttachments = !filters.hasAttachments"
 						>
 							<UCheckbox v-model="filters.hasAttachments" color="primary" label="Nur Artikel mit Dokumenten" :ui="{ label: 'text-xs font-bold text-gray-900 dark:text-white cursor-pointer' }" @click.stop />
 						</div>
 					</div>
 
-					<div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-800/50">
-						<div class="flex items-center gap-2 text-xs text-gray-500 font-medium italic">
+					<div class="flex justify-between items-center pt-2 border-t border-stone-100 dark:border-stone-800/50">
+						<div class="flex items-center gap-2 text-xs text-stone-500 font-medium italic">
 							<UIcon name="i-lucide-info" class="w-3.5 h-3.5" />
 							Filtern Sie nach Kategorien, Autoren oder Zeiträumen.
 						</div>

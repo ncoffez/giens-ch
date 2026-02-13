@@ -34,7 +34,7 @@ const canReadBody = computed(() => {
 		<UiArticleSkeleton />
 	</div>
 	<div v-else-if="article" class="w-full space-y-12 mb-24">
-		<section class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem] shadow-xl bg-gray-100 dark:bg-gray-800">
+		<section class="relative w-full h-64 md:h-96 overflow-hidden rounded-[2.5rem] shadow-xl bg-stone-100 dark:bg-stone-800">
 			<img
 				:src="article.image || getArticlePlaceholder(id as string)"
 				class="object-cover h-full w-full brightness-105 contrast-[95%] scale-105"
@@ -68,15 +68,15 @@ const canReadBody = computed(() => {
 						<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
 							{{ article.author.charAt(0) }}
 						</div>
-						<span class="text-sm font-bold text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">
+						<span class="text-sm font-bold text-stone-600 dark:text-stone-400 group-hover:text-primary transition-colors">
 							{{ article.author }}
 						</span>
 					</NuxtLink>
 					<div v-else class="flex items-center gap-2">
-						<div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs uppercase">
+						<div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-stone-400 font-bold text-xs uppercase">
 							{{ article.author.charAt(0) }}
 						</div>
-						<span class="text-sm font-bold text-gray-600 dark:text-gray-400">
+						<span class="text-sm font-bold text-stone-600 dark:text-stone-400">
 							{{ article.author }}
 						</span>
 					</div>
@@ -100,10 +100,10 @@ const canReadBody = computed(() => {
 				</div>
 				
 				<div v-else class="text-center py-12 space-y-6">
-					<UIcon name="i-lucide-lock" class="w-16 h-16 text-gray-300 mx-auto" />
+					<UIcon name="i-lucide-lock" class="w-16 h-16 text-stone-300 mx-auto" />
 					<div class="space-y-4">
 						<h2 class="text-2xl font-bold">Bitte anmelden</h2>
-						<p class="text-gray-600">Dieser Artikel ist nur für authentifizierte Mitglieder sichtbar.</p>
+						<p class="text-stone-600">Dieser Artikel ist nur für authentifizierte Mitglieder sichtbar.</p>
 						<div class="flex gap-4 justify-center">
 							<NuxtLink to="/login">
 								<UButton size="xl" color="primary">Anmelden</UButton>

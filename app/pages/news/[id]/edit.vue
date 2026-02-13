@@ -6,7 +6,7 @@ definePageMeta({
 const route = useRoute();
 const articleId = computed(() => route.params.id as string);
 
-const { $token } = useNuxtApp();
+const { $token, $isAdmin } = useNuxtApp();
 const toast = useToast();
 
 const title = ref("");
@@ -14,11 +14,17 @@ const intro = ref("");
 const content = ref("");
 const image = ref("");
 const selectedTags = ref<string[]>([]);
+const selectedAuthor = ref<{ id: string; name: string } | null>(null);
 const loading = ref(true);
 const saving = ref(false);
 
 const { data: labels } = await useFetch<any[]>("/api/labels");
 const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.id })) || []);
+
+const { data: authors } = await useFetch<{ id: string; name: string }[]>("/api/authors", {
+	headers: { Authorization: `Bearer ${$token.value}` },
+});
+const authorOptions = computed(() => authors.value || []);
 
 const effectiveImage = computed(() => {
 	if (image.value) return image.value;
@@ -39,6 +45,9 @@ const fetchArticle = async () => {
 		content.value = article.body || "";
 		image.value = article.image || "";
 		selectedTags.value = article.tags || [];
+		if (article.authorUid && article.author) {
+			selectedAuthor.value = { id: article.authorUid, name: article.author };
+		}
 	} catch (e: any) {
 		toast.add({ title: "Fehler beim Laden", description: e.message, color: "error" });
 		navigateTo("/news");
@@ -55,16 +64,23 @@ const save = async () => {
 
 	saving.value = true;
 	try {
+		const body: Record<string, any> = {
+			title: title.value,
+			intro: intro.value,
+			body: content.value,
+			image: image.value || null,
+			tags: selectedTags.value,
+		};
+
+		if ($isAdmin.value && selectedAuthor.value) {
+			body.authorName = selectedAuthor.value.name;
+			body.authorUid = selectedAuthor.value.id;
+		}
+
 		await $fetch(`/api/news/${articleId.value}/update`, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${$token.value}` },
-			body: {
-				title: title.value,
-				intro: intro.value,
-				body: content.value,
-				image: image.value || null,
-				tags: selectedTags.value
-			}
+			body
 		});
 		toast.add({ title: "Artikel aktualisiert", color: "success" });
 		navigateTo(`/article/${articleId.value}`);
@@ -83,9 +99,9 @@ useHead({
 </script>
 
 <template>
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900">
 		<!-- Header -->
-		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+		<header class="sticky top-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border-b border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
 				<div class="flex items-center gap-3">
 					<UButton
@@ -97,7 +113,7 @@ useHead({
 					/>
 					<div>
 						<h1 class="text-lg font-bold">Artikel bearbeiten</h1>
-						<p class="text-xs text-gray-500">Bearbeite den bestehenden Artikel</p>
+						<p class="text-xs text-stone-500">Bearbeite den bestehenden Artikel</p>
 					</div>
 				</div>
 				<div class="flex items-center gap-3">
@@ -126,7 +142,7 @@ useHead({
 		<div v-if="loading" class="flex items-center justify-center py-32">
 			<div class="text-center space-y-4">
 				<div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-				<p class="text-gray-500 font-medium">Artikel wird geladen...</p>
+				<p class="text-stone-500 font-medium">Artikel wird geladen...</p>
 			</div>
 		</div>
 
@@ -136,8 +152,8 @@ useHead({
 				<!-- Form Area -->
 				<div class="lg:col-span-3 space-y-8">
 					<!-- Title Section -->
-					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+					<section class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-700 flex items-center gap-3">
 							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
 								<UIcon name="i-lucide-type" class="w-5 h-5 text-primary" />
 							</div>
@@ -145,34 +161,51 @@ useHead({
 						</div>
 						<div class="p-6 space-y-6">
 							<div>
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
 									Titel <span class="text-red-500">*</span>
 								</label>
 								<input
 									v-model="title"
 									type="text"
 									placeholder="z.B. Sommerfest im Lotissement"
-									class="w-full px-5 py-3 text-lg font-bold bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+									class="w-full px-5 py-3 text-lg font-bold bg-stone-50 dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
 								/>
 							</div>
 							<div>
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
 									Einleitung
 								</label>
 								<textarea
 									v-model="intro"
 									placeholder="Eine kurze Zusammenfassung..."
 									rows="3"
-									class="w-full px-5 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none"
+									class="w-full px-5 py-3 bg-stone-50 dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-700 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none"
 								/>
-								<p class="mt-2 text-xs text-gray-400">Wird in der Artikelübersicht angezeigt</p>
+								<p class="mt-2 text-xs text-stone-400">Wird in der Artikelübersicht angezeigt</p>
+							</div>
+
+							<div v-if="$isAdmin && authorOptions.length > 0">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
+									Autor ändern
+								</label>
+								<USelectMenu
+									v-model="selectedAuthor"
+									:items="authorOptions"
+									value-key="id"
+									label-key="name"
+									placeholder="Autor wählen..."
+									size="lg"
+									class="w-full"
+									clearable
+								/>
+								<p class="mt-2 text-xs text-stone-400">Als Admin kannst du den Autor ändern</p>
 							</div>
 						</div>
 					</section>
 
 					<!-- Image & Categories Section -->
-					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+					<section class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-700 flex items-center gap-3">
 							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
 								<UIcon name="i-lucide-image" class="w-5 h-5 text-primary" />
 							</div>
@@ -180,16 +213,16 @@ useHead({
 						</div>
 						<div class="p-6 space-y-6">
 							<div class="space-y-4">
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300">
 									Titelbild
 								</label>
 								
-								<div v-if="!image" class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+								<div v-if="!image" class="bg-stone-50 dark:bg-stone-900 rounded-2xl p-4 border border-stone-200 dark:border-stone-700">
 									<UiImagePicker v-model="image" />
 								</div>
 								
 								<div v-else class="relative group">
-									<div class="aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+									<div class="aspect-video rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800">
 										<img :src="image" alt="Selected image" class="w-full h-full object-cover" />
 									</div>
 									<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors rounded-xl flex items-center justify-center">
@@ -207,7 +240,7 @@ useHead({
 							</div>
 
 							<div>
-								<label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
 									Kategorien
 								</label>
 								<USelectMenu
@@ -225,8 +258,8 @@ useHead({
 					</section>
 
 					<!-- Content Section -->
-					<section class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-						<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+					<section class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+						<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-700 flex items-center gap-3">
 							<div class="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/30">
 								<UIcon name="i-lucide-file-text" class="w-5 h-5 text-primary" />
 							</div>
@@ -241,9 +274,9 @@ useHead({
 				<!-- Preview Panel -->
 				<div class="lg:col-span-2">
 					<div class="sticky top-28">
-						<div class="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-							<div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-								<span class="text-sm font-bold text-gray-500">Vorschau</span>
+						<div class="bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-xl overflow-hidden">
+							<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between">
+								<span class="text-sm font-bold text-stone-500">Vorschau</span>
 								<div class="flex items-center gap-2">
 									<span class="relative flex h-2 w-2">
 										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -253,7 +286,7 @@ useHead({
 								</div>
 							</div>
 							
-							<div class="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-700">
+							<div class="aspect-video relative overflow-hidden bg-stone-100 dark:bg-gray-700">
 								<img :src="effectiveImage" class="w-full h-full object-cover" />
 							</div>
 							
@@ -262,7 +295,7 @@ useHead({
 									{{ title || 'Dein Titel...' }}
 								</h3>
 								
-								<p class="text-sm text-gray-500 leading-relaxed line-clamp-3">
+								<p class="text-sm text-stone-500 leading-relaxed line-clamp-3">
 									{{ intro || 'Deine Einleitung...' }}
 								</p>
 								
@@ -276,8 +309,13 @@ useHead({
 									</span>
 								</div>
 
-								<div v-if="content" class="pt-4 border-t border-gray-100 dark:border-gray-700">
-									<div class="flex items-center gap-2 text-xs text-gray-400">
+								<div v-if="selectedAuthor" class="flex items-center gap-2 text-xs text-stone-500">
+									<UIcon name="i-lucide-user" class="w-3.5 h-3.5" />
+									<span>Autor: {{ selectedAuthor.name }}</span>
+								</div>
+
+								<div v-if="content" class="pt-4 border-t border-stone-100 dark:border-stone-700">
+									<div class="flex items-center gap-2 text-xs text-stone-400">
 										<UIcon name="i-lucide-file-text" class="w-4 h-4" />
 										<span>{{ content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length }} Wörter</span>
 									</div>

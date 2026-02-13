@@ -83,18 +83,18 @@ const handleFileSelect = (e: Event) => {
 	<div class="space-y-12">
 		<div
 			class="border-4 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all group"
-			:class="dragOver ? 'border-primary bg-primary/5 scale-[0.99]' : 'border-gray-100 dark:border-gray-800 hover:border-primary/20 hover:bg-gray-50/50 dark:hover:bg-gray-900/30'"
+			:class="dragOver ? 'border-primary bg-primary/5 scale-[0.99]' : 'border-stone-100 dark:border-stone-800 hover:border-primary/20 hover:bg-gray-50/50 dark:hover:bg-gray-900/30'"
 			@dragover.prevent="dragOver = true"
 			@dragleave.prevent="dragOver = false"
 			@drop.prevent="dropPhoto"
 			@click="openFileDialog"
 		>
 			<input type="file" class="hidden" accept="image/*" @change="handleFileSelect" />
-			<div class="inline-flex p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+			<div class="inline-flex p-4 bg-white dark:bg-stone-900 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
 				<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 text-primary" />
 			</div>
 			<p class="text-xl font-black mb-2">Fotos hierher ziehen oder klicken</p>
-			<p class="text-sm text-gray-500 font-medium">
+			<p class="text-sm text-stone-500 font-medium">
 				{{ home.photos?.length || 0 }} von {{ MAX_PHOTOS }} Fotos · Max. 10MB pro Datei
 			</p>
 		</div>
@@ -108,7 +108,7 @@ const handleFileSelect = (e: Event) => {
 			<div
 				v-for="(photo, index) in home.photos"
 				:key="index"
-				class="relative group aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 dark:border-gray-800"
+				class="relative group aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-stone-100 dark:border-stone-800"
 			>
 				<img :src="photo" :alt="`Haus Foto ${index + 1}`" class="w-full h-full object-cover" loading="lazy" />
 				<div
@@ -128,9 +128,9 @@ const handleFileSelect = (e: Event) => {
 			</div>
 		</div>
 
-		<div v-else-if="!uploading" class="text-center py-20 bg-gray-50/30 dark:bg-gray-900/10 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
-			<UIcon name="i-lucide-image-off" class="w-12 h-12 mx-auto text-gray-300 mb-4" />
-			<p class="text-gray-500 font-medium">Noch keine Fotos vorhanden.</p>
+		<div v-else-if="!uploading" class="text-center py-20 bg-gray-50/30 dark:bg-stone-900/10 rounded-3xl border-2 border-dashed border-stone-100 dark:border-stone-800">
+			<UIcon name="i-lucide-image-off" class="w-12 h-12 mx-auto text-stone-300 mb-4" />
+			<p class="text-stone-500 font-medium">Noch keine Fotos vorhanden.</p>
 		</div>
 	</div>
 </template>
