@@ -13,13 +13,14 @@ const selectedTags = ref<string[]>([]);
 const selectedAuthor = ref<{ id: string; name: string } | null>(null);
 
 const toast = useToast();
-const { $token, $isAdmin, $currentUser } = useNuxtApp();
+const { $isAdmin, $currentUser } = useNuxtApp();
+const { token } = useAuthReady();
 
 const { data: labels } = await useFetch<any[]>("/api/labels");
 const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.id })) || []);
 
 const { data: authors } = await useFetch<{ id: string; name: string }[]>("/api/authors", {
-	headers: { Authorization: `Bearer ${$token.value}` },
+	headers: { Authorization: `Bearer ${token.value}` },
 });
 const authorOptions = computed(() => authors.value || []);
 
@@ -80,7 +81,7 @@ const publish = async () => {
 		await $fetch("/api/news/create", {
 			method: "POST",
 			headers: {
-				Authorization: `Bearer ${$token.value}`
+				Authorization: `Bearer ${token.value}`
 			},
 			body
 		});

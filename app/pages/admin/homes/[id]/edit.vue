@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ["is-admin"] });
 
-const { $token } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 const route = useRoute();
 
@@ -14,8 +14,9 @@ const ownersError = ref<string | null>(null);
 
 const fetchOwners = async () => {
 	try {
+		await waitForAuth();
 		owners.value = await $fetch("/api/users/owners", {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 	} catch (e: any) {
 		if (e?.statusCode === 403) {
@@ -30,10 +31,11 @@ const fetchOwners = async () => {
 
 const fetchHome = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		home.value = await $fetch(`/api/admin/homes/${homeId.value}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 	} catch (e: any) {
 		error.value = e.data?.message || e.message || "Failed to load home";
@@ -48,7 +50,7 @@ const save = async () => {
 		error.value = null;
 		await $fetch(`/api/admin/homes/${homeId.value}/update`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: home.value,
 		});
 		toast.add({ title: "Haus erfolgreich gespeichert", color: "success" });

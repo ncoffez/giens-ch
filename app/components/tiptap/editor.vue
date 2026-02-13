@@ -145,7 +145,7 @@ const editor = ref<Editor>();
 const uploading = ref(false);
 const uploadProgress = ref(0);
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useAppToast();
 
 const triggerFileUpload = () => {
@@ -172,7 +172,7 @@ const handleFileChange = async (event: Event) => {
 
 		const response = await $fetch<any>("/api/editor/upload", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: {
 				filename: file.name,
 				file: base64,
@@ -214,7 +214,7 @@ const loadDemo = async () => {
 	try {
 		const response = await $fetch<any>(`/api/randomArticle`, {
 			method: "post",
-			headers: $token.value ? { Authorization: `Bearer ${$token.value}` } : {},
+			headers: $token.value ? { Authorization: `Bearer ${token.value}` } : {},
 		});
 		if (response) {
 			editor.value?.commands.setContent(`<h1>${response.title}</h1> ${response.body}`);

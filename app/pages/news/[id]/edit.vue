@@ -6,7 +6,8 @@ definePageMeta({
 const route = useRoute();
 const articleId = computed(() => route.params.id as string);
 
-const { $token, $isAdmin } = useNuxtApp();
+const { $isAdmin } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
 const title = ref("");
@@ -22,7 +23,7 @@ const { data: labels } = await useFetch<any[]>("/api/labels");
 const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.id })) || []);
 
 const { data: authors } = await useFetch<{ id: string; name: string }[]>("/api/authors", {
-	headers: { Authorization: `Bearer ${$token.value}` },
+	headers: { Authorization: `Bearer ${token.value}` },
 });
 const authorOptions = computed(() => authors.value || []);
 
@@ -33,11 +34,12 @@ const effectiveImage = computed(() => {
 
 const fetchArticle = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		const article = await $fetch(`/api/getArticle`, {
 			method: "POST",
 			body: { id: articleId.value },
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 
 		title.value = article.title || "";
@@ -79,7 +81,7 @@ const save = async () => {
 
 		await $fetch(`/api/news/${articleId.value}/update`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body
 		});
 		toast.add({ title: "Artikel aktualisiert", color: "success" });

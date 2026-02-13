@@ -7,7 +7,7 @@ const emit = defineEmits<{
 	"update:modelValue": [value: string];
 }>();
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const activeTab = ref<"upload" | "giens" | "unsplash">("giens");
@@ -80,7 +80,7 @@ const uploadFile = async (file: File) => {
 			const base64 = reader.result as string;
 			const result = await $fetch("/api/editor/upload", {
 				method: "POST",
-				headers: { Authorization: `Bearer ${$token.value}` },
+				headers: { Authorization: `Bearer ${token.value}` },
 				body: {
 					file: base64,
 					filename: file.name,

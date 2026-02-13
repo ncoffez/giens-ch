@@ -3,7 +3,8 @@ const modelValue = defineModel<boolean>();
 
 const emit = defineEmits(["updated"]);
 
-const { $token, $currentUser } = useNuxtApp();
+const { $currentUser } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useAppToast();
 
 const loading = ref(false);
@@ -12,13 +13,13 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 const { data: picturesData, refresh: refreshPictures, pending } = useFetch("/api/profile/pictures", {
 	headers: computed(() => ({ 
-		Authorization: `Bearer ${$token.value}` 
+		Authorization: `Bearer ${token.value}` 
 	})),
 	immediate: false
 });
 
 watch(modelValue, (isOpen) => {
-	if (isOpen && $token.value) {
+	if (isOpen && token.value) {
 		refreshPictures();
 	}
 });
@@ -34,7 +35,7 @@ async function selectPicture(url: string) {
 	try {
 		await $fetch("/api/profile/picture-select", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { photoURL: url }
 		});
 		
@@ -80,7 +81,7 @@ async function handleFileChange(event: Event) {
 		
 		const response = await $fetch<any>("/api/profile/picture-upload", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { file: base64 }
 		});
 

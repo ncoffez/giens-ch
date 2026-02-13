@@ -3,7 +3,7 @@ import type { GlobalFile } from "~/types";
 
 definePageMeta({ middleware: ["is-admin"] });
 
-const { $token } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
 const files = ref<GlobalFile[]>([]);
@@ -13,10 +13,11 @@ const downloadingFileId = ref<string | null>(null);
 
 const fetchData = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		const data = await $fetch("/api/files/trash", {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		files.value = data.files || [];
 	} catch (e: any) {
@@ -45,7 +46,7 @@ const downloadFile = async (file: GlobalFile) => {
 	try {
 		downloadingFileId.value = file.id;
 		const response = await $fetch<{ url: string }>(`/api/files/download?fileId=${file.id}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
 	} catch (e: any) {
@@ -61,7 +62,7 @@ const restoreFile = async (file: GlobalFile) => {
 	try {
 		await $fetch("/api/files/restore", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id },
 		});
 		toast.add({ title: "Datei wiederhergestellt", color: "success" });
@@ -77,7 +78,7 @@ const permanentDelete = async (file: GlobalFile) => {
 	try {
 		await $fetch("/api/files/permanent-delete", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id },
 		});
 		toast.add({ title: "Datei endgültig gelöscht", color: "success" });
