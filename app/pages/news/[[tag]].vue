@@ -39,8 +39,8 @@
 						</TransitionGroup>
 					</template>
 					<div class="prose py-20 text-center mx-auto" v-else-if="status !== 'pending'">
-						<UIcon name="i-lucide-search-x" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
-						<p class="text-xl font-bold text-gray-500">Keine Neuigkeiten zum gewählten Thema gefunden.</p>
+						<UIcon name="i-lucide-search-x" class="w-12 h-12 text-stone-300 mx-auto mb-4" />
+						<p class="text-xl font-bold text-stone-500">Keine Neuigkeiten zum gewählten Thema gefunden.</p>
 						<UButton variant="link" @click="filterState = { search: '', tag: 'all', author: 'all', dateRange: 'all', hasAttachments: false }">Alle Filter zurücksetzen</UButton>
 					</div>
 				</div>

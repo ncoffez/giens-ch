@@ -5,7 +5,7 @@
 		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
 			<UiInput type="email" label="E-Mail" v-model="state.email"></UiInput>
 			<UiInput type="password" label="Passwort" v-model="state.password"></UiInput>
-			<NuxtLink to="/reset-password" class="text-right text-xs leading-relaxed mb-1 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">Passwort vergessen?</NuxtLink>
+			<NuxtLink to="/reset-password" class="text-right text-xs leading-relaxed mb-1 text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400">Passwort vergessen?</NuxtLink>
 			<UButton
 				type="submit"
 				@click="loginToFirebase('password', state.email, state.password)"
@@ -14,7 +14,7 @@
 				>Anmelden</UButton
 			>
 		</UForm>
-		<div id="login-social" class="text-sm mt-4 text-gray-500 dark:text-gray-400">Oder mit Social-Media anmelden</div>
+		<div id="login-social" class="text-sm mt-4 text-stone-500 dark:text-stone-400">Oder mit Social-Media anmelden</div>
 		<div class="flex gap-4 my-6">
 			<button @click.prevent="loginToFirebase('google')" aria-label="Anmelden mit Google" class="hover:scale-110 transition-transform">
 				<UIcon name="fa-brands:google" class="size-6" />
@@ -23,7 +23,7 @@
 				<UIcon name="fa-brands:apple" class="size-6" />
 			</button>
 		</div>
-		<div class="text-xs text-gray-500 dark:text-gray-400">Noch kein Konto? <NuxtLink to="/register" class="underline hover:text-primary-600 dark:hover:text-primary-400">Registrieren</NuxtLink></div>
+		<div class="text-xs text-stone-500 dark:text-stone-400">Noch kein Konto? <NuxtLink to="/register" class="underline hover:text-primary-600 dark:hover:text-primary-400">Registrieren</NuxtLink></div>
 	</section>
 </template>
 <script lang="ts" setup>

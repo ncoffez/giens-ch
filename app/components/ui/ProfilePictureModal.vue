@@ -118,12 +118,12 @@ async function handleFileChange(event: Event) {
 					/>
 					<div class="text-center">
 						<h3 class="font-bold text-lg">Dein aktuelles Profilbild</h3>
-						<p class="text-sm text-gray-500">Klicke auf ein Bild unten oder lade ein neues hoch.</p>
+						<p class="text-sm text-stone-500">Klicke auf ein Bild unten oder lade ein neues hoch.</p>
 					</div>
 				</div>
 
 				<div v-if="previousPictures.length > 0" class="space-y-4">
-					<h4 class="text-sm font-bold uppercase tracking-wider text-gray-400">Vorherige Bilder</h4>
+					<h4 class="text-sm font-bold uppercase tracking-wider text-stone-400">Vorherige Bilder</h4>
 					<div class="grid grid-cols-5 gap-2">
 						<div
 							v-for="pic in previousPictures"
@@ -139,12 +139,12 @@ async function handleFileChange(event: Event) {
 						</div>
 					</div>
 				</div>
-				<div v-else-if="!pending" class="py-8 text-center bg-gray-50 dark:bg-zinc-900 rounded-xl border-2 border-dashed border-gray-100 dark:border-zinc-800">
-					<UIcon name="i-lucide-image-plus" class="w-12 h-12 text-gray-300 mx-auto mb-2" />
-					<p class="text-sm text-gray-400">Noch keine Profilbilder in deiner Galerie.</p>
+				<div v-else-if="!pending" class="py-8 text-center bg-stone-50 dark:bg-zinc-900 rounded-xl border-2 border-dashed border-stone-100 dark:border-zinc-800">
+					<UIcon name="i-lucide-image-plus" class="w-12 h-12 text-stone-300 mx-auto mb-2" />
+					<p class="text-sm text-stone-400">Noch keine Profilbilder in deiner Galerie.</p>
 				</div>
 
-				<div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+				<div class="pt-4 border-t border-stone-100 dark:border-stone-800">
 					<UButton
 						block
 						size="lg"
@@ -165,7 +165,7 @@ async function handleFileChange(event: Event) {
 					/>
 					<div v-if="uploading" class="mt-4">
 						<UProgress animation="carousel" color="primary" size="sm" />
-						<p class="text-xs text-center text-gray-500 mt-2">Bild wird optimiert und hochgeladen...</p>
+						<p class="text-xs text-center text-stone-500 mt-2">Bild wird optimiert und hochgeladen...</p>
 					</div>
 				</div>
 			</div>

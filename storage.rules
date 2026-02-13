@@ -28,10 +28,14 @@ service firebase.storage {
       allow write: if false; // Server-side only via Admin SDK
     }
     
-    // Home Files - Authenticated users can read (owners, editors, guests with share link)
+    // Home Files - Private, only accessible via signed URLs from server
     match /homes/{homeId}/files/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if false; // Server-side only via Admin SDK
+      allow read, write: if false; // Server-side only via Admin SDK with signed URLs
+    }
+    
+    // Global Files - Private, only accessible via signed URLs from server
+    match /global-files/{allPaths=**} {
+      allow read, write: if false; // Server-side only via Admin SDK with signed URLs
     }
   }
 }

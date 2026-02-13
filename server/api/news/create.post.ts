@@ -16,6 +16,15 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 403, message: "Forbidden: Not a publisher" });
 		}
 
+		// Admins can override author, others use their own identity
+		let authorName = decodedToken.name || decodedToken.email || "Unknown";
+		let authorUid = decodedToken.uid;
+
+		if (decodedToken.admin && body.authorName && body.authorUid) {
+			authorName = body.authorName;
+			authorUid = body.authorUid;
+		}
+
 		const newArticle = {
 			title: body.title,
 			intro: body.intro || "",
@@ -23,8 +32,8 @@ export default defineEventHandler(async (event) => {
 			image: body.image || "",
 			tags: body.tags || [],
 			published: new Date().toISOString(),
-			author: decodedToken.name || decodedToken.email || "Unknown",
-			authorUid: decodedToken.uid,
+			author: authorName,
+			authorUid: authorUid,
 			hasAttachments: body.body?.includes('class="document-link"') || false
 		};
 

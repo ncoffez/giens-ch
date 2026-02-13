@@ -87,7 +87,7 @@ async function handleSubmit() {
 					/>
 				</UFormField>
 				
-				<div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+				<div class="flex justify-end gap-3 pt-4 border-t border-stone-100 dark:border-stone-800">
 					<UButton variant="ghost" color="neutral" @click="modelValue = false">
 						Abbrechen
 					</UButton>

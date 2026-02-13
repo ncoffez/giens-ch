@@ -199,14 +199,14 @@ const getItems = (row: any) => [
 
 		<UiUserTableSkeleton v-if="status === 'pending'" />
 		
-		<div v-else-if="users && users.length === 0" class="p-12 text-center bg-gray-50 dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
-			<UIcon name="i-lucide-users" class="w-12 h-12 text-gray-300 mx-auto mb-4" />
-			<p class="text-gray-500 font-medium">Keine Benutzer gefunden oder Zugriff verweigert.</p>
+		<div v-else-if="users && users.length === 0" class="p-12 text-center bg-stone-50 dark:bg-stone-900 rounded-2xl border border-dashed border-stone-200 dark:border-stone-800">
+			<UIcon name="i-lucide-users" class="w-12 h-12 text-stone-300 mx-auto mb-4" />
+			<p class="text-stone-500 font-medium">Keine Benutzer gefunden oder Zugriff verweigert.</p>
 			<UButton label="Erneut versuchen" variant="ghost" class="mt-4" @click="refresh" />
 		</div>
 		
-		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
-			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-gray-500' }">
+		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-stone-100 dark:border-stone-800">
+			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-stone-500' }">
 				<<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />
@@ -214,7 +214,7 @@ const getItems = (row: any) => [
 							<NuxtLink :to="`/profile/${row.original.uid}`" class="text-md font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors">
 								{{ row.original.displayName || 'Kein Name' }}
 							</NuxtLink>
-							<span class="text-sm text-gray-500 font-medium">{{ row.original.email }}</span>
+							<span class="text-sm text-stone-500 font-medium">{{ row.original.email }}</span>
 						</div>
 					</div>
 				</template>
@@ -225,7 +225,7 @@ const getItems = (row: any) => [
 						<UBadge v-if="row.original.customClaims?.publisher" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Pub</UBadge>
 						<UBadge v-if="row.original.customClaims?.owner" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Besitzer</UBadge>
 						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Leser</UBadge>
-						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-gray-400 italic">Keine Rollen</span>
+						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-stone-400 italic">Keine Rollen</span>
 					</div>
 				</template>
 
@@ -253,14 +253,14 @@ const getItems = (row: any) => [
 				<div class="p-8 space-y-6">
 					<div class="space-y-2">
 						<h3 class="text-xl font-bold">Rollen verwalten</h3>
-						<p class="text-sm text-gray-500">Passen Sie die Berechtigungen für <b>{{ selectedUserForRoles?.email }}</b> an.</p>
+						<p class="text-sm text-stone-500">Passen Sie die Berechtigungen für <b>{{ selectedUserForRoles?.email }}</b> an.</p>
 					</div>
 
 					<div class="space-y-4">
-						<div v-for="(val, role) in userRoles" :key="role" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
+						<div v-for="(val, role) in userRoles" :key="role" class="flex items-center justify-between p-4 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-100 dark:border-stone-800">
 							<div class="flex flex-col">
 								<span class="font-bold capitalize">{{ role }}</span>
-								<span class="text-xs text-gray-500">
+								<span class="text-xs text-stone-500">
 									{{ role === 'admin' ? 'Voller Zugriff auf alle Einstellungen' : 
 									   role === 'publisher' ? 'Kann Artikel bearbeiten und veröffentlichen' :
 									   role === 'owner' ? 'Zugriff auf Eigentümer-Dokumente' :
@@ -285,7 +285,7 @@ const getItems = (row: any) => [
 				<div class="p-8 space-y-6">
 					<div class="space-y-2">
 						<h3 class="text-xl font-bold">Benutzername bearbeiten</h3>
-						<p class="text-sm text-gray-500">Ändern Sie den Anzeigenamen für <b>{{ selectedUserForEdit?.email }}</b>.</p>
+						<p class="text-sm text-stone-500">Ändern Sie den Anzeigenamen für <b>{{ selectedUserForEdit?.email }}</b>.</p>
 					</div>
 
 					<UFormField label="Neuer Anzeigename" size="lg">
@@ -312,7 +312,7 @@ const getItems = (row: any) => [
 				<div class="p-8 space-y-6">
 					<div class="space-y-2">
 						<h3 class="text-xl font-bold">Neuen Benutzer hinzufügen</h3>
-						<p class="text-sm text-gray-500">Geben Sie die Daten für den neuen Bewohner ein.</p>
+						<p class="text-sm text-stone-500">Geben Sie die Daten für den neuen Bewohner ein.</p>
 					</div>
 					<UFormField label="Anzeigename" size="lg">
 						<UInput v-model="newUser.displayName" placeholder="Max Mustermann" class="w-full" size="lg" />

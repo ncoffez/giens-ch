@@ -10,50 +10,50 @@
 		<section class="max-w-screen-xl mx-auto w-full px-4">
 			<UiTitle subtitle="Was uns auszeichnet" title="Wohlfühlen und Erleben" />
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-8 md:mt-12">
-				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-blue-600 dark:text-blue-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-home" class="w-8 h-8" />
 					</div>
 					<h3 class="text-xl font-bold text-gray-900 dark:text-white">Wohnkomfort</h3>
-					<p class="text-gray-500 text-sm leading-relaxed">
+					<p class="text-stone-500 text-sm leading-relaxed">
 						Jedes Haus verfügt über eine gedeckte Terrasse (Patio) und einen privaten Parkplatz direkt vor der Tür.
 					</p>
 				</div>
-				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-stone-600 dark:text-stone-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-bike" class="w-8 h-8" />
 					</div>
 					<h3 class="text-xl font-bold text-gray-900 dark:text-white">Gemeinschaftsgut</h3>
-					<p class="text-gray-500 text-sm leading-relaxed">
+					<p class="text-stone-500 text-sm leading-relaxed">
 						Fahrräder, Spielzeug und eine Bibliothek (DE/FR) stehen allen Bewohnern zur freien Nutzung zur Verfügung.
 					</p>
 				</div>
-				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-washing-machine" class="w-8 h-8" />
 					</div>
 					<h3 class="text-xl font-bold text-gray-900 dark:text-white">Praktisch</h3>
-					<p class="text-gray-500 text-sm leading-relaxed">
+					<p class="text-stone-500 text-sm leading-relaxed">
 						Zentrale Waschmaschinen und ein grosszügiger Bereich zum Wäschetrocknen im grünen Garten.
 					</p>
 				</div>
-				<div class="p-6 md:p-8 rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+				<div class="p-6 md:p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm space-y-4">
 					<div class="p-3 bg-neutral-100 dark:bg-neutral-800 text-green-600 dark:text-green-400 w-fit rounded-2xl">
 						<UIcon name="i-lucide-leaf" class="w-8 h-8" />
 					</div>
 					<h3 class="text-xl font-bold text-gray-900 dark:text-white">Natur pur</h3>
-					<p class="text-gray-500 text-sm leading-relaxed">
+					<p class="text-stone-500 text-sm leading-relaxed">
 						Die Siedlung ist reich bepflanzt und bietet schattige Plätze sowie eine ruhige, entspannte Atmosphäre.
 					</p>
 				</div>
 			</div>
 		</section>
 
-		<section class="bg-gray-50 dark:bg-gray-900/50 py-12 md:py-24 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 overflow-hidden relative shadow-sm">
+		<section class="bg-stone-50 dark:bg-stone-900/50 py-12 md:py-24 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 overflow-hidden relative shadow-sm">
 			<div class="max-w-screen-xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
 				<div class="space-y-6 md:space-y-8 text-center md:text-left">
 					<h2 class="text-3xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">Miteinander Gestalten</h2>
-					<p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
+					<p class="text-lg md:text-xl text-stone-600 dark:text-stone-400 leading-relaxed">
 						Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement. Im Frühling und Herbst arbeiten wir gemeinsam an der Pflege und Verschönerung der Siedlung.
 					</p>
 					<div class="flex justify-center md:justify-start gap-4">
@@ -86,23 +86,23 @@
 			<div class="flex items-center justify-center gap-4 md:gap-8 text-center py-8">
 				<div class="flex flex-col items-center">
 					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">20</span>
-					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Häuser</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Häuser</span>
 				</div>
-				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
+				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-stone-800"></div>
 				<div class="flex flex-col items-center">
 					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">40+</span>
-					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Jahre</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Jahre</span>
 				</div>
-				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-gray-800"></div>
+				<div class="w-8 md:w-12 h-px bg-gray-200 dark:bg-stone-800"></div>
 				<div class="flex flex-col items-center">
 					<span class="text-4xl md:text-5xl font-black text-primary tracking-tighter">1</span>
-					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-gray-600 dark:text-gray-400">Spirit</span>
+					<span class="text-[10px] md:text-xs uppercase tracking-widest font-black text-stone-600 dark:text-stone-400">Spirit</span>
 				</div>
 			</div>
 		</div>
 
 		<!-- Timeline Section -->
-		<section class="bg-gray-50 dark:bg-gray-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+		<section class="bg-stone-50 dark:bg-stone-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 shadow-sm">
 			<div class="max-w-screen-lg mx-auto px-4">
 				<div class="text-center mb-10 md:mb-16">
 					<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Unsere Geschichte</h2>

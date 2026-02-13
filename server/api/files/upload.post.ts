@@ -1,28 +1,16 @@
-import { db, storage } from "../../../useFirebaseAdmin";
-import { getUserClaims } from "../../../utils/auth";
-import { canEditHome } from "../../../utils/homes";
+import { db, storage } from "../../useFirebaseAdmin";
+import { getUserClaims } from "../../utils/auth";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export default defineEventHandler(async (event) => {
-	const authHeader = getHeader(event, "Authorization");
-	if (!authHeader) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const homeId = getRouterParam(event, "id");
-	if (!homeId) {
-		throw createError({ statusCode: 400, message: "Home ID required" });
-	}
-
-	const canEdit = await canEditHome(homeId, claims.uid, !!claims.admin);
-	if (!canEdit) {
-		throw createError({ statusCode: 403, message: "Not authorized to edit this home" });
+	if (!claims.admin) {
+		throw createError({ statusCode: 403, message: "Only admins can upload files" });
 	}
 
 	const body = await readBody(event);
@@ -48,7 +36,7 @@ export default defineEventHandler(async (event) => {
 	const fileId = crypto.randomUUID();
 	const timestamp = Date.now();
 	const sanitized = name.replace(/[^a-zA-Z0-9.-]/g, "_");
-	const storagePath = `homes/${homeId}/files/${timestamp}-${sanitized}`;
+	const storagePath = `global-files/${timestamp}-${sanitized}`;
 
 	const bucket = storage.bucket();
 	const file = bucket.file(storagePath);
@@ -58,7 +46,6 @@ export default defineEventHandler(async (event) => {
 			contentType: mimeType,
 			metadata: {
 				uploadedBy: claims.uid,
-				homeId,
 			},
 		},
 	});
@@ -74,15 +61,7 @@ export default defineEventHandler(async (event) => {
 		uploadedBy: claims.uid,
 	};
 
-	const homeRef = db.collection("homes").doc(homeId);
-	const homeDoc = await homeRef.get();
-	const homeData = homeDoc.data();
-	const files = homeData?.files || [];
-
-	await homeRef.update({
-		files: [...files, fileRecord],
-		updatedAt: new Date().toISOString(),
-	});
+	await db.collection("globalFiles").doc(fileId).set(fileRecord);
 
 	return fileRecord;
 });

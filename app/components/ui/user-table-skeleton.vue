@@ -4,11 +4,11 @@
 			<USkeleton class="h-10 w-[250px]" />
 			<USkeleton class="h-12 w-[160px] rounded-lg" />
 		</div>
-		<div class="border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-lg">
-			<div class="bg-gray-50/50 dark:bg-gray-900/50 p-6 flex gap-6">
+		<div class="border border-stone-100 dark:border-stone-800 rounded-2xl overflow-hidden shadow-lg">
+			<div class="bg-gray-50/50 dark:bg-stone-900/50 p-6 flex gap-6">
 				<USkeleton v-for="i in 4" :key="i" class="h-5 flex-1" />
 			</div>
-			<div v-for="i in 5" :key="i" class="p-6 flex items-center gap-6 border-t border-gray-50 dark:border-gray-800">
+			<div v-for="i in 5" :key="i" class="p-6 flex items-center gap-6 border-t border-gray-50 dark:border-stone-800">
 				<div class="flex items-center gap-4 flex-1">
 					<USkeleton class="h-12 w-12 rounded-full" />
 					<div class="space-y-3">

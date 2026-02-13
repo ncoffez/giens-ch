@@ -20,7 +20,7 @@
 		<section id="mit-dem-auto" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Ab Bern via Autobahn" title="Mit dem Auto" />
 			<div class="grid md:grid-cols-2 gap-12 items-start mt-12">
-				<div class="space-y-8 text-lg text-gray-700 dark:text-gray-300">
+				<div class="space-y-8 text-lg text-stone-700 dark:text-stone-300">
 					<p>
 						Die Anreise mit dem Auto ab Bern ist für viele Bewohner des Lotissement Beausoleil eine bevorzugte Option. Die
 						Strecke führt hauptsächlich über Autobahnen und beträgt etwa 700 km. Die Fahrtzeit beträgt je nach Verkehr und
@@ -46,7 +46,7 @@
 						</p>
 					</div>
 				</div>
-				<div class="bg-gray-50 dark:bg-gray-900/50 p-8 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+				<div class="bg-stone-50 dark:bg-stone-900/50 p-8 rounded-3xl border border-stone-100 dark:border-stone-800 shadow-sm">
 					<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
 						<UIcon name="i-lucide-map-pin" class="text-primary" />
 						Route auf einen Blick
@@ -59,7 +59,7 @@
 							>
 							<div>
 								<span class="font-bold">Bern – Lausanne – Genève</span>
-								<p class="text-sm text-gray-500">Zoll Richtung France (Bardonnex)</p>
+								<p class="text-sm text-stone-500">Zoll Richtung France (Bardonnex)</p>
 							</div>
 						</li>
 						<li class="flex gap-4 items-start">
@@ -69,7 +69,7 @@
 							>
 							<div>
 								<span class="font-bold">Annecy – Chambéry – Grenoble</span>
-								<p class="text-sm text-gray-500">A41/A43/A48</p>
+								<p class="text-sm text-stone-500">A41/A43/A48</p>
 							</div>
 						</li>
 						<li class="flex gap-4 items-start">
@@ -79,7 +79,7 @@
 							>
 							<div>
 								<span class="font-bold">Valence – Orange – Aix</span>
-								<p class="text-sm text-gray-500">A49/A7/A8</p>
+								<p class="text-sm text-stone-500">A49/A7/A8</p>
 							</div>
 						</li>
 						<li class="flex gap-4 items-start">
@@ -89,12 +89,12 @@
 							>
 							<div>
 								<span class="font-bold">Toulon – Hyères – Giens</span>
-								<p class="text-sm text-gray-500">A52/A50/A570</p>
+								<p class="text-sm text-stone-500">A52/A50/A570</p>
 							</div>
 						</li>
 					</ul>
-					<div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-						<div class="flex justify-between items-center text-sm text-gray-500">
+					<div class="mt-8 pt-6 border-t border-stone-200 dark:border-stone-700">
+						<div class="flex justify-between items-center text-sm text-stone-500">
 							<span>Autobahngebühren (Péage)</span>
 							<span class="font-bold text-gray-900 dark:text-white">ca. 60 €</span>
 						</div>
@@ -107,9 +107,9 @@
 		<section id="mit-dem-zug" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Umweltfreundlich & entspannt" title="Mit dem Zug" />
 			<div
-				class="mt-12 bg-white dark:bg-gray-950 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-xl">
+				class="mt-12 bg-white dark:bg-gray-950 rounded-3xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-xl">
 				<div class="p-8 md:p-12">
-					<p class="text-xl mb-12 text-gray-700 dark:text-gray-300">
+					<p class="text-xl mb-12 text-stone-700 dark:text-stone-300">
 						Die Anreise mit dem Zug ist eine bequeme Alternative. SNCF bietet hervorragende Verbindungen mit dem TGV
 						an, oft mit nur zwei Umstiegen ab der Schweiz.
 					</p>
@@ -117,17 +117,17 @@
 						<div class="space-y-2 relative">
 							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 1</div>
 							<div class="font-bold text-xl">Bern – Genève</div>
-							<p class="text-sm text-gray-500">InterCity, ca. 1h 45min</p>
+							<p class="text-sm text-stone-500">InterCity, ca. 1h 45min</p>
 						</div>
-						<div class="space-y-2 border-l border-gray-100 dark:border-gray-800 md:pl-8">
+						<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
 							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 2</div>
 							<div class="font-bold text-xl">Genève – Marseille</div>
-							<p class="text-sm text-gray-500">TGV Lyria, ca. 4h 30min</p>
+							<p class="text-sm text-stone-500">TGV Lyria, ca. 4h 30min</p>
 						</div>
-						<div class="space-y-2 border-l border-gray-100 dark:border-gray-800 md:pl-8">
+						<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
 							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 3</div>
 							<div class="font-bold text-xl">Marseille – Hyères</div>
-							<p class="text-sm text-gray-500">Regionalzug TER, ca. 1h</p>
+							<p class="text-sm text-stone-500">Regionalzug TER, ca. 1h</p>
 						</div>
 					</div>
 				</div>
@@ -175,23 +175,23 @@
 				</div>
 				<div class="grid grid-cols-1 gap-4">
 					<div
-						class="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-6">
+						class="p-6 rounded-2xl bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm flex items-center gap-6">
 						<div class="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-primary">
 							<UIcon name="i-lucide-plane-takeoff" class="w-10 h-10" />
 						</div>
 						<div>
 							<div class="text-lg font-bold">Direktflüge</div>
-							<div class="text-gray-500">Ab Genf / Zürich nach Marseille oder Toulon.</div>
+							<div class="text-stone-500">Ab Genf / Zürich nach Marseille oder Toulon.</div>
 						</div>
 					</div>
 					<div
-						class="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-6">
+						class="p-6 rounded-2xl bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm flex items-center gap-6">
 						<div class="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-secondary">
 							<UIcon name="i-lucide-car-front" class="w-10 h-10" />
 						</div>
 						<div>
 							<div class="text-lg font-bold">Mietwagen</div>
-							<div class="text-gray-500">Direkt an allen Flughäfen verfügbar.</div>
+							<div class="text-stone-500">Direkt an allen Flughäfen verfügbar.</div>
 						</div>
 					</div>
 				</div>

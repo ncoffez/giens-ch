@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-8 gap-y-6 my-6 md:my-8 first:mt-5 items-stretch w-full bg-white dark:bg-gray-900/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm animate-pulse md:min-h-[220px]">
+	<div class="flex flex-col md:flex-row max-w-screen-md mx-auto gap-x-8 gap-y-6 my-6 md:my-8 first:mt-5 items-stretch w-full bg-white dark:bg-stone-900/40 rounded-2xl p-4 border border-stone-100 dark:border-stone-800 shadow-sm animate-pulse md:min-h-[220px]">
 		<!-- Image Skeleton -->
 		<USkeleton
 			class="md:w-56 w-full h-48 md:h-auto rounded-xl flex-shrink-0" />
@@ -19,7 +19,7 @@
 				</div>
 			</div>
 			
-			<div class="mt-auto pt-4 flex justify-between items-center w-full border-t border-gray-50 dark:border-gray-800/50">
+			<div class="mt-auto pt-4 flex justify-between items-center w-full border-t border-gray-50 dark:border-stone-800/50">
 				<div class="flex items-center gap-2">
 					<USkeleton class="h-6 w-6 rounded-full" />
 					<USkeleton class="h-4 w-20" />

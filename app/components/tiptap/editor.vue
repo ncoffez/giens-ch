@@ -1,8 +1,8 @@
 <template>
 	<div
-		class="relative bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+		class="relative bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-stone-100 dark:border-stone-700">
 		<div
-		class="sticky top-0 z-10 flex text-gray-800 dark:text-gray-200 dark:bg-gray-800 flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-gray-200 dark:border-gray-700 place-content-center"
+		class="sticky top-0 z-10 flex text-gray-800 dark:text-gray-200 dark:bg-stone-800 flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-stone-200 dark:border-stone-700 place-content-center"
 			v-if="editor">
 			<UButton
 				color="neutral"
@@ -117,9 +117,9 @@
 		</div>
 		<div
 			v-if="uploading"
-			class="px-4 py-2 bg-gray-50 dark:bg-zinc-900 border-b border-gray-200">
+			class="px-4 py-2 bg-stone-50 dark:bg-zinc-900 border-b border-gray-200">
 			<UProgress :value="uploadProgress" color="primary" size="sm" />
-			<p class="text-xs text-gray-500 mt-1">Datei wird hochgeladen...</p>
+			<p class="text-xs text-stone-500 mt-1">Datei wird hochgeladen...</p>
 		</div>
 		<input type="file" ref="fileInput" @change="handleFileChange" style="display: none" />
 		<editor-content :editor="editor" />

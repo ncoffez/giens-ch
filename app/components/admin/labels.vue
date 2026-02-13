@@ -76,7 +76,7 @@ toast.add({
 		</div>
 
 		<!-- Create Label Form -->
-		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-2xl shadow-sm border-gray-100 dark:border-gray-800">
+		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-2xl shadow-sm border-stone-100 dark:border-stone-800">
 			<template #header v-if="isCreatingLabel">
 				<div class="flex items-center justify-between">
 					<span class="text-lg font-bold">Neues Label erstellen</span>
@@ -105,12 +105,12 @@ toast.add({
 			</div>
 		</UCard>
 
-		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-gray-100 dark:border-gray-800">
+		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-stone-100 dark:border-stone-800">
 			<div class="divide-y divide-gray-100 dark:divide-gray-800">
-				<div v-for="label of labels" :key="label.id" class="flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+				<div v-for="label of labels" :key="label.id" class="flex items-center justify-between p-6 hover:bg-stone-50 dark:hover:bg-gray-900/50 transition-colors">
 					<div class="flex flex-col gap-1">
 						<span class="text-xl font-bold text-gray-900 dark:text-white capitalize">{{ label.name || label.id }}</span>
-						<span class="text-sm text-gray-400 font-medium tracking-wide">ID: {{ label.id }}</span>
+						<span class="text-sm text-stone-400 font-medium tracking-wide">ID: {{ label.id }}</span>
 					</div>
 					<div class="flex items-center gap-6">
 						<UBadge :color="label.private ? 'warning' : 'info'" variant="subtle" size="md" class="px-4 py-1 rounded-full font-bold">
@@ -123,7 +123,7 @@ toast.add({
 					</div>
 				</div>
 				<div v-if="status === 'pending'" class="p-12 flex justify-center">
-					<UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-gray-400" />
+					<UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-stone-400" />
 				</div>
 			</div>
 		</UCard>

@@ -37,6 +37,12 @@ export default defineEventHandler(async (event) => {
 			hasAttachments: body.body?.includes('class="document-link"') || false
 		};
 
+		// Admins can change author
+		if (decodedToken.admin && body.authorName && body.authorUid) {
+			updateData.author = body.authorName;
+			updateData.authorUid = body.authorUid;
+		}
+
 		await articleRef.update(updateData);
 
 		return { id: articleId, ...updateData };

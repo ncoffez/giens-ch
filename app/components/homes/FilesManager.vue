@@ -21,6 +21,7 @@ const isUploading = ref(false);
 const isCreatingFolder = ref(false);
 const newFolderName = ref("");
 const dragover = ref(false);
+const downloadingFileId = ref<string | null>(null);
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -132,6 +133,20 @@ const createFolder = async () => {
 	}
 };
 
+const downloadFile = async (file: HomeFile) => {
+	try {
+		downloadingFileId.value = file.id;
+		const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files.download?fileId=${file.id}`, {
+			headers: { Authorization: `Bearer ${$token.value}` },
+		});
+		window.open(response.url, "_blank");
+	} catch (e: any) {
+		toast.add({ title: "Fehler beim Download", description: e.message, color: "error" });
+	} finally {
+		downloadingFileId.value = null;
+	}
+};
+
 const deleteFile = async (file: HomeFile) => {
 	if (!confirm(`"${file.name}" wirklich löschen?`)) return;
 
@@ -179,17 +194,17 @@ const deleteFolder = async (folder: HomeFolder) => {
 			<div class="flex items-center gap-2 text-sm">
 				<button
 					@click="navigateToFolder(null)"
-					class="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+					class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 					:class="{ 'text-primary font-bold': !currentFolderId }"
 				>
 					<UIcon name="i-lucide-home" class="w-4 h-4" />
 					<span>Home</span>
 				</button>
 				<template v-for="(folder, index) in breadcrumbs" :key="folder.id">
-					<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-gray-400" />
+					<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400" />
 					<button
 						@click="navigateToFolder(folder.id)"
-						class="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+						class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 						:class="{ 'text-primary font-bold': index === breadcrumbs.length - 1 }"
 					>
 						<span>{{ folder.name }}</span>
@@ -224,14 +239,14 @@ const deleteFolder = async (folder: HomeFolder) => {
 
 		<div
 			v-if="isCreatingFolder"
-			class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700"
+			class="flex items-center gap-3 p-4 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-stone-200 dark:border-stone-700"
 		>
 			<UIcon name="i-lucide-folder" class="w-6 h-6 text-primary" />
 			<input
 				v-model="newFolderName"
 				type="text"
 				placeholder="Ordnername..."
-				class="flex-1 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+				class="flex-1 px-4 py-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
 				@keyup.enter="createFolder"
 				@keyup.escape="isCreatingFolder = false"
 			/>
@@ -241,12 +256,12 @@ const deleteFolder = async (folder: HomeFolder) => {
 
 		<div
 			class="min-h-[200px] rounded-2xl border-2 border-dashed transition-colors"
-			:class="dragover ? 'border-primary bg-primary-50 dark:bg-primary-900/10' : 'border-gray-200 dark:border-gray-700'"
+			:class="dragover ? 'border-primary bg-primary-50 dark:bg-primary-900/10' : 'border-stone-200 dark:border-stone-700'"
 			@dragover.prevent="dragover = true"
 			@dragleave.prevent="dragover = false"
 			@drop.prevent="handleFileDrop"
 		>
-			<div v-if="currentSubfolders.length === 0 && currentFiles.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+			<div v-if="currentSubfolders.length === 0 && currentFiles.length === 0" class="flex flex-col items-center justify-center py-16 text-stone-400">
 				<UIcon name="i-lucide-folder-open" class="w-12 h-12 mb-4" />
 				<p class="font-medium">Keine Dateien</p>
 				<p class="text-sm">Ziehen Sie Dateien hierher oder klicken Sie auf "Datei hochladen"</p>
@@ -256,53 +271,57 @@ const deleteFolder = async (folder: HomeFolder) => {
 				<button
 					v-for="folder in currentSubfolders"
 					:key="folder.id"
-					class="group p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 border border-gray-100 dark:border-gray-700 hover:border-primary transition-all text-center"
+					class="group p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 border border-stone-100 dark:border-stone-700 hover:border-primary transition-all text-center"
 					@dblclick="navigateToFolder(folder.id)"
 				>
 					<div class="relative">
 						<UIcon name="i-lucide-folder" class="w-12 h-12 mx-auto text-primary mb-2 group-hover:scale-110 transition-transform" />
 						<button
-							class="absolute top-0 right-0 p-1 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+							class="absolute -top-1 -right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110"
 							@click.stop="deleteFolder(folder)"
 						>
-							<UIcon name="i-lucide-trash-2" class="w-3 h-3" />
+							<UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" />
 						</button>
 					</div>
-					<p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{ folder.name }}</p>
+					<p class="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
 				</button>
 
 				<div
 					v-for="file in currentFiles"
 					:key="file.id"
-					class="group p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-primary transition-all"
+					class="group p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 hover:border-primary hover:shadow-lg transition-all"
 				>
 					<div class="relative">
-						<a :href="file.url" target="_blank" class="block">
-							<div v-if="file.type.startsWith('image/')" class="aspect-square rounded-xl overflow-hidden mb-2">
-								<img :src="file.url" :alt="file.name" class="w-full h-full object-cover" />
-							</div>
-							<div v-else class="aspect-square rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-2">
-								<UIcon :name="getFileIcon(file.type)" class="w-12 h-12 text-gray-400" />
-							</div>
-						</a>
-						<div class="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-							<a
-								:href="file.url"
-								target="_blank"
-								class="p-1.5 rounded-full bg-primary-100 text-primary hover:bg-primary-200 transition-colors"
-							>
-								<UIcon name="i-lucide-download" class="w-3 h-3" />
-							</a>
-							<button
-								class="p-1.5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-								@click="deleteFile(file)"
-							>
-								<UIcon name="i-lucide-trash-2" class="w-3 h-3" />
-							</button>
+						<div v-if="file.type.startsWith('image/')" class="aspect-square rounded-xl overflow-hidden mb-3 bg-stone-100 dark:bg-stone-700">
+							<img :src="file.url" :alt="file.name" class="w-full h-full object-cover" />
+						</div>
+						<div v-else class="aspect-square rounded-xl bg-stone-100 dark:bg-stone-700 flex items-center justify-center mb-3">
+							<UIcon :name="getFileIcon(file.type)" class="w-12 h-12 text-stone-400" />
+						</div>
+						
+						<div class="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+							<UTooltip text="Herunterladen" :content="{ side: 'left' }">
+								<button
+									class="p-2 rounded-full bg-white/90 dark:bg-stone-900/90 text-primary shadow-md hover:bg-primary hover:text-white hover:scale-110 transition-all backdrop-blur-sm"
+									:disabled="downloadingFileId === file.id"
+									@click="downloadFile(file)"
+								>
+									<UIcon v-if="downloadingFileId === file.id" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
+									<UIcon v-else name="i-lucide-download" class="w-4 h-4" />
+								</button>
+							</UTooltip>
+							<UTooltip text="Löschen" :content="{ side: 'left' }">
+								<button
+									class="p-2 rounded-full bg-white/90 dark:bg-stone-900/90 text-red-500 shadow-md hover:bg-red-500 hover:text-white hover:scale-110 transition-all backdrop-blur-sm"
+									@click="deleteFile(file)"
+								>
+									<UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+								</button>
+							</UTooltip>
 						</div>
 					</div>
-					<p class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ file.name }}</p>
-					<p class="text-xs text-gray-400">{{ formatFileSize(file.size) }}</p>
+					<p class="text-xs font-medium text-stone-700 dark:text-stone-300 truncate mb-1">{{ file.name }}</p>
+					<p class="text-xs text-stone-400">{{ formatFileSize(file.size) }}</p>
 				</div>
 			</div>
 		</div>

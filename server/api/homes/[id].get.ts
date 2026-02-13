@@ -1,6 +1,8 @@
-import { db } from "../../useFirebaseAdmin";
+import { db, storage } from "../../useFirebaseAdmin";
 import { getHomeById } from "../../utils/homes";
 import { getUserClaims } from "../../utils/auth";
+
+const SIGNED_URL_EXPIRY_MINUTES = 5;
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -27,6 +29,28 @@ export default defineEventHandler(async (event) => {
 
 		if (!isOwner && !isEditor && !isAdmin) {
 			throw createError({ statusCode: 403, message: "Forbidden: You don't have access to this home" });
+		}
+
+		if (home.files && home.files.length > 0) {
+			const bucket = storage.bucket();
+			home.files = await Promise.all(
+				home.files.map(async (file: any) => {
+					if (file.storagePath) {
+						try {
+							const storageFile = bucket.file(file.storagePath);
+							const [url] = await storageFile.getSignedUrl({
+								action: "read",
+								expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
+							});
+							return { ...file, url };
+						} catch (e) {
+							console.error("Error generating signed URL for file:", e);
+							return file;
+						}
+					}
+					return file;
+				})
+			);
 		}
 
 		return home;

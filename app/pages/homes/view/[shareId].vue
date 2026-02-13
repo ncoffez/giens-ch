@@ -33,11 +33,11 @@ onMounted(fetchHome);
 </script>
 
 <template>
-	<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900">
 		<div v-if="loading" class="flex items-center justify-center min-h-screen">
 			<div class="text-center space-y-4">
 				<div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-				<p class="text-gray-500 font-medium">Laden...</p>
+				<p class="text-stone-500 font-medium">Laden...</p>
 			</div>
 		</div>
 
@@ -48,7 +48,7 @@ onMounted(fetchHome);
 				</div>
 				<div>
 					<h1 class="text-2xl font-bold">Link nicht verfügbar</h1>
-					<p class="text-gray-500 mt-2">{{ error || "Dieser Link ist abgelaufen oder wurde deaktiviert." }}</p>
+					<p class="text-stone-500 mt-2">{{ error || "Dieser Link ist abgelaufen oder wurde deaktiviert." }}</p>
 				</div>
 				<NuxtLink to="/">
 					<UButton color="neutral" variant="soft">Zur Startseite</UButton>
@@ -58,8 +58,8 @@ onMounted(fetchHome);
 
 		<div v-else-if="!home" class="min-h-screen flex items-center justify-center px-4">
 			<div class="text-center space-y-6">
-				<div class="w-20 h-20 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-					<UIcon name="i-lucide-home" class="w-10 h-10 text-gray-400" />
+				<div class="w-20 h-20 mx-auto rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+					<UIcon name="i-lucide-home" class="w-10 h-10 text-stone-400" />
 				</div>
 				<h1 class="text-2xl font-bold">Haus nicht gefunden</h1>
 			</div>
@@ -69,12 +69,12 @@ onMounted(fetchHome);
 			<div class="max-w-screen-xl mx-auto px-4 py-8 space-y-8">
 				<div class="text-center">
 					<h1 class="text-4xl md:text-5xl font-black">Willkommen im {{ home.name }}</h1>
-					<p class="text-gray-500 mt-2">Résidence Beausoleil · Halbinsel Giens</p>
+					<p class="text-stone-500 mt-2">Résidence Beausoleil · Halbinsel Giens</p>
 				</div>
 
 				<div class="grid lg:grid-cols-3 gap-8">
 					<div class="lg:col-span-2 space-y-8">
-						<section v-if="home.photos?.length" class="relative rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-xl">
+						<section v-if="home.photos?.length" class="relative rounded-3xl overflow-hidden bg-stone-100 dark:bg-stone-800 shadow-xl">
 							<div class="aspect-video relative">
 								<img
 									:src="home.photos[activePhoto]"
@@ -111,34 +111,34 @@ onMounted(fetchHome);
 							</div>
 						</section>
 
-						<section v-if="home.checkInInfo" class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section v-if="home.checkInInfo" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-green-100 dark:bg-green-900/30">
 									<UIcon name="i-lucide-log-in" class="w-5 h-5 text-green-600" />
 								</div>
 								<h2 class="text-lg font-bold">Anreise</h2>
 							</div>
-							<div class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300" v-html="home.checkInInfo" />
+							<div class="prose dark:prose-invert max-w-none text-stone-600 dark:text-stone-300" v-html="home.checkInInfo" />
 						</section>
 
-						<section v-if="home.checkOutInfo" class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section v-if="home.checkOutInfo" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-orange-100 dark:bg-orange-900/30">
 									<UIcon name="i-lucide-log-out" class="w-5 h-5 text-orange-600" />
 								</div>
 								<h2 class="text-lg font-bold">Abreise</h2>
 							</div>
-							<div class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300" v-html="home.checkOutInfo" />
+							<div class="prose dark:prose-invert max-w-none text-stone-600 dark:text-stone-300" v-html="home.checkOutInfo" />
 						</section>
 
-						<section v-if="home.houseRules" class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section v-if="home.houseRules" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/30">
 									<UIcon name="i-lucide-book-open" class="w-5 h-5 text-blue-600" />
 								</div>
 								<h2 class="text-lg font-bold">Hausregeln</h2>
 							</div>
-							<div class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300" v-html="home.houseRules" />
+							<div class="prose dark:prose-invert max-w-none text-stone-600 dark:text-stone-300" v-html="home.houseRules" />
 						</section>
 
 						<section v-if="home.mustKnows?.length" class="bg-amber-50 dark:bg-amber-900/10 rounded-2xl p-6 border border-amber-200 dark:border-amber-800">
@@ -156,7 +156,7 @@ onMounted(fetchHome);
 							</ul>
 						</section>
 
-						<section v-if="home.cleaningInfo?.length" class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section v-if="home.cleaningInfo?.length" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/30">
 									<UIcon name="i-lucide-sparkles" class="w-5 h-5 text-purple-600" />
@@ -166,42 +166,42 @@ onMounted(fetchHome);
 							<ul class="space-y-2">
 								<li v-for="(item, index) in home.cleaningInfo" :key="index" class="flex items-start gap-3">
 									<UIcon name="i-lucide-check-circle" class="w-5 h-5 text-primary shrink-0 mt-0.5" />
-									<span class="text-gray-600 dark:text-gray-300">{{ item }}</span>
+									<span class="text-stone-600 dark:text-stone-300">{{ item }}</span>
 								</li>
 							</ul>
 						</section>
 
-						<section v-if="home.blanketsInfo" class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section v-if="home.blanketsInfo" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
 									<UIcon name="i-lucide-bed" class="w-5 h-5 text-indigo-600" />
 								</div>
 								<h2 class="text-lg font-bold">Bettwäsche & Decken</h2>
 							</div>
-							<div class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300" v-html="home.blanketsInfo" />
+							<div class="prose dark:prose-invert max-w-none text-stone-600 dark:text-stone-300" v-html="home.blanketsInfo" />
 						</section>
 
-						<section class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+						<section class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700 shadow-sm">
 							<div class="flex items-center gap-3 mb-4">
 								<div class="p-2 rounded-xl bg-cyan-100 dark:bg-cyan-900/30">
 									<UIcon name="i-lucide-washing-machine" class="w-5 h-5 text-cyan-600" />
 								</div>
 								<h2 class="text-lg font-bold">Waschmaschine</h2>
 							</div>
-							<div v-if="home.washingMachineOverride" class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300" v-html="home.washingMachineOverride" />
-							<p v-else class="text-gray-500 italic">Bitte kontaktieren Sie den Eigentümer für Informationen zur Waschmaschine.</p>
+							<div v-if="home.washingMachineOverride" class="prose dark:prose-invert max-w-none text-stone-600 dark:text-stone-300" v-html="home.washingMachineOverride" />
+							<p v-else class="text-stone-500 italic">Bitte kontaktieren Sie den Eigentümer für Informationen zur Waschmaschine.</p>
 						</section>
 					</div>
 
 					<aside class="space-y-6">
-						<div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden sticky top-24">
+						<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 shadow-sm overflow-hidden sticky top-24">
 							<div class="p-6 space-y-6">
 								<div v-if="home.wifiPassword" class="flex items-center gap-4">
 									<div class="p-3 rounded-xl bg-primary-100 dark:bg-primary-900/30">
 										<UIcon name="i-lucide-wifi" class="w-6 h-6 text-primary" />
 									</div>
 									<div>
-										<p class="text-xs text-gray-500 uppercase tracking-wide font-bold">WLAN</p>
+										<p class="text-xs text-stone-500 uppercase tracking-wide font-bold">WLAN</p>
 										<p class="font-mono font-bold text-lg">{{ home.wifiPassword }}</p>
 									</div>
 								</div>
@@ -211,32 +211,32 @@ onMounted(fetchHome);
 										<UIcon name="i-lucide-car" class="w-6 h-6 text-primary" />
 									</div>
 									<div>
-										<p class="text-xs text-gray-500 uppercase tracking-wide font-bold">Parkplatz</p>
+										<p class="text-xs text-stone-500 uppercase tracking-wide font-bold">Parkplatz</p>
 										<p class="font-bold text-lg">Nr. {{ home.parkingNumber }}</p>
 									</div>
 								</div>
 							</div>
 
-							<div v-if="home.contact?.name || home.contact?.phone || home.contact?.email" class="border-t border-gray-100 dark:border-gray-700 p-6 space-y-4">
-								<h3 class="text-xs text-gray-500 uppercase tracking-wide font-bold">Kontakt</h3>
+							<div v-if="home.contact?.name || home.contact?.phone || home.contact?.email" class="border-t border-stone-100 dark:border-stone-700 p-6 space-y-4">
+								<h3 class="text-xs text-stone-500 uppercase tracking-wide font-bold">Kontakt</h3>
 								<div class="space-y-3">
 									<div v-if="home.contact.name" class="flex items-center gap-3">
-										<UIcon name="i-lucide-user" class="w-4 h-4 text-gray-400" />
+										<UIcon name="i-lucide-user" class="w-4 h-4 text-stone-400" />
 										<span>{{ home.contact.name }}</span>
 									</div>
 									<a v-if="home.contact.phone" :href="`tel:${home.contact.phone}`" class="flex items-center gap-3 hover:text-primary transition-colors">
-										<UIcon name="i-lucide-phone" class="w-4 h-4 text-gray-400" />
+										<UIcon name="i-lucide-phone" class="w-4 h-4 text-stone-400" />
 										<span>{{ home.contact.phone }}</span>
 									</a>
 									<a v-if="home.contact.email" :href="`mailto:${home.contact.email}`" class="flex items-center gap-3 hover:text-primary transition-colors">
-										<UIcon name="i-lucide-mail" class="w-4 h-4 text-gray-400" />
+										<UIcon name="i-lucide-mail" class="w-4 h-4 text-stone-400" />
 										<span>{{ home.contact.email }}</span>
 									</a>
 								</div>
 							</div>
 						</div>
 
-						<div v-if="share" class="text-center text-xs text-gray-400 px-4">
+						<div v-if="share" class="text-center text-xs text-stone-400 px-4">
 							<p>Link gültig bis: {{ new Date(share.expiresAt).toLocaleDateString('de-CH') }}</p>
 						</div>
 					</aside>
