@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { $token, $currentUser, $isAdmin } = useNuxtApp();
+const { $currentUser, $isAdmin } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 
@@ -11,10 +12,11 @@ const activePhoto = ref(0);
 
 const fetchHome = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		home.value = await $fetch(`/api/homes/${homeId.value}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 	} catch (e: any) {
 		error.value = e.data?.message || e.message || "Fehler beim Laden";

@@ -8,7 +8,8 @@ import RulesEditor from "~/components/homes/RulesEditor.vue";
 import SharingPanel from "~/components/homes/SharingPanel.vue";
 import FilesManager from "~/components/homes/FilesManager.vue";
 
-const { $token, $currentUser, $isAdmin } = useNuxtApp();
+const { $currentUser, $isAdmin } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 
@@ -56,14 +57,15 @@ const getOwnerInitials = (displayName: string) => {
 
 const fetchHome = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		const [homeData, ownersData] = await Promise.all([
 			$fetch(`/api/homes/${homeId.value}`, {
-				headers: { Authorization: `Bearer ${$token.value}` },
+				headers: { Authorization: `Bearer ${token.value}` },
 			}),
 			$fetch("/api/users/owners", {
-				headers: { Authorization: `Bearer ${$token.value}` },
+				headers: { Authorization: `Bearer ${token.value}` },
 			})
 		]);
 		home.value = homeData;
@@ -86,7 +88,7 @@ const saveOrder = async () => {
 	try {
 		await $fetch(`/api/homes/${homeId.value}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { sectionOrder: sectionOrder.value },
 		});
 		toast.add({ title: "Layout gespeichert", color: "success" });
@@ -111,7 +113,7 @@ const deleteHome = async () => {
 	try {
 		await $fetch(`/api/homes/${homeId.value}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 
 		toast.add({ title: "Haus erfolgreich gelöscht", color: "success" });

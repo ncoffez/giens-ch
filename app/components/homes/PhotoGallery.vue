@@ -2,7 +2,7 @@
 const props = defineProps<{ home: any }>();
 const emit = defineEmits(["refresh"]);
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const MAX_PHOTOS = 20;
@@ -32,7 +32,7 @@ const uploadPhoto = async (file: File) => {
 			const base64 = e.target?.result as string;
 			await $fetch(`/api/homes/${props.home.id}/photos.upload`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${$token.value}` },
+				headers: { Authorization: `Bearer ${token.value}` },
 				body: { file: base64 },
 			});
 			toast.add({ title: "Foto erfolgreich hochgeladen", color: "green" });
@@ -59,7 +59,7 @@ const deletePhoto = async (photoUrl: string) => {
 	try {
 		await $fetch(`/api/homes/${props.home.id}/photos.delete`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { photoUrl },
 		});
 		toast.add({ title: "Foto gelöscht", color: "green" });

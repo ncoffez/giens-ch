@@ -9,7 +9,7 @@ const emit = defineEmits<{
 	refresh: [];
 }>();
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const files = computed<HomeFile[]>(() => props.home?.files || []);
@@ -91,7 +91,7 @@ const uploadFiles = async (fileList: File[]) => {
 				const base64 = reader.result as string;
 				await $fetch(`/api/homes/${props.home.id}/files.upload`, {
 					method: "POST",
-					headers: { Authorization: `Bearer ${$token.value}` },
+					headers: { Authorization: `Bearer ${token.value}` },
 					body: {
 						file: base64,
 						name: file.name,
@@ -118,7 +118,7 @@ const createFolder = async () => {
 	try {
 		await $fetch(`/api/homes/${props.home.id}/folders.create`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: {
 				name: newFolderName.value.trim(),
 				parentId: currentFolderId.value,
@@ -137,7 +137,7 @@ const downloadFile = async (file: HomeFile) => {
 	try {
 		downloadingFileId.value = file.id;
 		const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files.download?fileId=${file.id}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
 	} catch (e: any) {
@@ -153,7 +153,7 @@ const deleteFile = async (file: HomeFile) => {
 	try {
 		await $fetch(`/api/homes/${props.home.id}/files.delete`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id },
 		});
 		toast.add({ title: "Datei gelöscht", color: "success" });
@@ -177,7 +177,7 @@ const deleteFolder = async (folder: HomeFolder) => {
 	try {
 		await $fetch(`/api/homes/${props.home.id}/folders.update`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { folderId: folder.id },
 		});
 		toast.add({ title: "Ordner gelöscht", color: "success" });

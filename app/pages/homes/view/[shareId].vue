@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { $token } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 
 const shareId = computed(() => route.params.shareId as string);
@@ -11,9 +11,10 @@ const activePhoto = ref(0);
 
 const fetchHome = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		const result = await $fetch(`/api/homes/view/${shareId.value}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		home.value = result.home;
 		share.value = result.share;

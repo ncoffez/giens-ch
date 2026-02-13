@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ["is-owner"] });
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const router = useRouter();
 const toast = useToast();
 
@@ -25,7 +25,7 @@ const submit = async () => {
 
 		const newHome = await $fetch("/api/homes/create", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { houseNumber: houseNumber.value },
 		});
 

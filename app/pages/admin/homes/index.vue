@@ -4,7 +4,7 @@ definePageMeta({
     render: 'client'
 });
 
-const { $token } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
 const allHomes = ref<any[]>([]);
@@ -56,10 +56,11 @@ const sortedHomes = computed(() => {
 
 const fetchHomes = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		allHomes.value = await $fetch("/api/admin/homes", {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		homes.value = showDisabled.value
 			? allHomes.value
@@ -78,7 +79,7 @@ const deleteHome = async (homeId: string) => {
 	try {
 		await $fetch(`/api/admin/homes/${homeId}/delete`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		toast.add({ title: "Home deleted successfully", color: "success" });
 		await fetchHomes();
@@ -103,7 +104,7 @@ const getHomeItems = (home: any) => [
 			onSelect: () => {
 				$fetch(`/api/admin/homes/${home.id}/update`, {
 					method: "POST",
-					headers: { Authorization: `Bearer ${$token.value}` },
+					headers: { Authorization: `Bearer ${token.value}` },
 					body: { enabled: !home.enabled },
 				}).then(() => {
 					toast.add({
@@ -138,7 +139,7 @@ watch(showDisabled, () => {
 onMounted(() => {
 	fetchHomes();
 	$fetch("/api/users/owners", {
-		headers: { Authorization: `Bearer ${$token.value}` },
+		headers: { Authorization: `Bearer ${token.value}` },
 	}).then((data) => (owners.value = data));
 });
 

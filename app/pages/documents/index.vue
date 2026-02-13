@@ -3,7 +3,8 @@ import type { GlobalFile, GlobalFolder } from "~/types";
 
 definePageMeta({ middleware: ["is-logged-in"] });
 
-const { $token, $isAdmin } = useNuxtApp();
+const { $isAdmin } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
 const files = ref<GlobalFile[]>([]);
@@ -64,10 +65,11 @@ const getFileIcon = (type: string) => {
 
 const fetchData = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		const data = await $fetch("/api/files", {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
@@ -103,7 +105,7 @@ const uploadFiles = async (fileList: File[]) => {
 				const base64 = reader.result as string;
 				await $fetch("/api/files/upload", {
 					method: "POST",
-					headers: { Authorization: `Bearer ${$token.value}` },
+					headers: { Authorization: `Bearer ${token.value}` },
 					body: {
 						file: base64,
 						name: file.name,
@@ -130,7 +132,7 @@ const createFolder = async () => {
 	try {
 		await $fetch("/api/folders/create", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: {
 				name: newFolderName.value.trim(),
 				parentId: currentFolderId.value,
@@ -149,7 +151,7 @@ const downloadFile = async (file: GlobalFile) => {
 	try {
 		downloadingFileId.value = file.id;
 		const response = await $fetch<{ url: string }>(`/api/files/download?fileId=${file.id}`, {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
 	} catch (e: any) {
@@ -165,7 +167,7 @@ const deleteFile = async (file: GlobalFile) => {
 	try {
 		await $fetch("/api/files/delete", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id },
 		});
 		toast.add({ title: "Datei gelöscht", color: "success" });
@@ -189,7 +191,7 @@ const deleteFolder = async (folder: GlobalFolder) => {
 	try {
 		await $fetch("/api/folders/delete", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { folderId: folder.id },
 		});
 		toast.add({ title: "Ordner gelöscht", color: "success" });

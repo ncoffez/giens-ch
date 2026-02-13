@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ["is-admin"] });
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const settings = ref({
@@ -30,7 +30,7 @@ const save = async () => {
 		loading.value = true;
 		await $fetch("/api/settings.update", {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: settings.value,
 		});
 		toast.add({ title: "Settings saved successfully!", color: "green" });

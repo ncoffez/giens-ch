@@ -2,7 +2,7 @@
 const props = defineProps<{ home: any }>();
 const emit = defineEmits(["refresh"]);
 
-const { $token } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const form = reactive({
@@ -32,7 +32,7 @@ const save = async () => {
 		loading.value = true;
 		await $fetch(`/api/homes/${props.home.id}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: form,
 		});
 		toast.add({ title: "Regeln & Info gespeichert!", color: "success" });

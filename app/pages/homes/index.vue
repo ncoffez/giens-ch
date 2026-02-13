@@ -1,17 +1,19 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ["is-owner"] });
 
-const { $token, $currentUser } = useNuxtApp();
+const { $currentUser } = useNuxtApp();
+const { waitForAuth, token } = useAuthReady();
 const homes = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
 const fetchHomes = async () => {
 	try {
+		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		homes.value = await $fetch("/api/homes", {
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 		});
 
 		// Redirect logic

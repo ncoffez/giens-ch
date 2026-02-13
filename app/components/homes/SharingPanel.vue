@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{ home: any }>();
 
-const { $token, $currentUser, $isAdmin } = useNuxtApp();
+const { $currentUser, $isAdmin } = useNuxtApp();
+const { token } = useAuthReady();
 const toast = useToast();
 
 const editors = ref<any[]>([]);
@@ -22,7 +23,7 @@ const addEditor = async () => {
 		loading.value = true;
 		await $fetch(`/api/homes/${props.home.id}/editors.add`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { email: editorEmail.value },
 		});
 		toast.add({ title: "Editor erfolgreich hinzugefügt", color: "green" });
@@ -42,7 +43,7 @@ const removeEditor = async (editorUid: string) => {
 		loading.value = true;
 		await $fetch(`/api/homes/${props.home.id}/editors.remove`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { editorUid },
 		});
 		toast.add({ title: "Editor entfernt", color: "green" });
@@ -59,7 +60,7 @@ const generateShareLink = async () => {
 		loading.value = true;
 		const result = await $fetch(`/api/homes/${props.home.id}/share.create`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${$token.value}` },
+			headers: { Authorization: `Bearer ${token.value}` },
 			body: { daysToExpire: daysToExpire.value },
 		});
 		shareUrl.value = result.shareUrl;
