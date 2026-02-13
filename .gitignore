@@ -24,6 +24,7 @@ coverage/
 .fleet
 .idea
 .firebase/**
+.cache
 
 # Local env files
 .env
