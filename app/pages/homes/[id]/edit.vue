@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ["is-logged-in"] });
+
 import BasicInfoEditor from "~/components/homes/BasicInfoEditor.vue";
 import PhotoGallery from "~/components/homes/PhotoGallery.vue";
 import InstructionsEditor from "~/components/homes/InstructionsEditor.vue";

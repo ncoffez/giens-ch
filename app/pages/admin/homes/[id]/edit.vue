@@ -51,10 +51,10 @@ const save = async () => {
 			headers: { Authorization: `Bearer ${$token.value}` },
 			body: home.value,
 		});
-		toast.add({ title: "Home saved successfully", color: "success" });
-		await fetchHome();
+		toast.add({ title: "Haus erfolgreich gespeichert", color: "success" });
+		navigateTo("/admin/homes");
 	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to save home", color: "error" });
+		toast.add({ title: e.data?.message || e.message || "Fehler beim Speichern", color: "error" });
 	} finally {
 		loading.value = false;
 	}
