@@ -23,8 +23,8 @@
 			{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
 		];
 
-		if (import.meta.client && nuxtApp.$isReader?.value) {
-			items.push({ label: "EV", icon: "i-lucide-handshake", to: "/news/eigentuemerversammlung" });
+		if (import.meta.client && (nuxtApp.$isReader?.value || nuxtApp.$isOwner?.value)) {
+			items.push({ label: "Docs", icon: "i-lucide-folder", to: "/documents" });
 		}
 
 		if (import.meta.client && nuxtApp.$isOwner?.value) {
@@ -34,7 +34,7 @@
 		if (import.meta.client && nuxtApp.$currentUser?.value) {
 			items.push({ label: "Profil", icon: "i-lucide-circle-user", to: "/profile" });
 		} else {
-			items.push({ label: "Anmelden", icon: "i-lucide-log-in", to: "/login" });
+			items.push({ label: "Login", icon: "i-lucide-log-in", to: "/login" });
 		}
 
 		return items;

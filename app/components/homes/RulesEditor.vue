@@ -62,11 +62,8 @@ watch(() => props.home, (newHome) => {
 					label="Hausregeln" 
 					description="Allgemeine Verhaltensregeln für den Aufenthalt"
 				>
-					<UTextarea 
+					<TiptapEditor 
 						v-model="form.houseRules" 
-						placeholder="z.B. Nachtruhe ab 22 Uhr, keine Haustiere..." 
-						:rows="6" 
-						size="xl"
 					/>
 				</UFormField>
 
@@ -74,11 +71,8 @@ watch(() => props.home, (newHome) => {
 					label="Bettdecken & Bettwäsche" 
 					description="Informationen zur Aufbewahrung oder Mitnahme von Bettzeug"
 				>
-					<UTextarea 
+					<TiptapEditor 
 						v-model="form.blanketsInfo" 
-						placeholder="z.B. Bettwäsche bitte selbst mitbringen..." 
-						:rows="4" 
-						size="xl"
 					/>
 				</UFormField>
 
@@ -86,11 +80,8 @@ watch(() => props.home, (newHome) => {
 					label="Waschmaschinen-Hinweise" 
 					description="Optionale spezifische Anweisungen für die Waschmaschine"
 				>
-					<UTextarea 
+					<TiptapEditor 
 						v-model="form.washingMachineOverride" 
-						placeholder="Lassen Sie dies leer, um die Standard-Anweisungen zu verwenden..." 
-						:rows="4" 
-						size="xl"
 					/>
 				</UFormField>
 			</div>

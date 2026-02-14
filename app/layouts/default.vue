@@ -30,13 +30,16 @@
 						</UButton>
 					</UDropdownMenu>
 
-					<UButton
-						:icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
-						color="neutral"
-						variant="ghost"
-						class="rounded-full"
-						:aria-label="isDark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'"
-						@click="isDark = !isDark" />
+					<UDropdownMenu
+						:items="themeItems"
+						:ui="{ content: 'w-40' }">
+						<UButton
+							:icon="currentThemeIcon"
+							color="neutral"
+							variant="ghost"
+							class="rounded-full"
+							:aria-label="'Farbschema ändern'" />
+					</UDropdownMenu>
 					<div class="hidden lg:block">
 						<template v-if="!currentUser.value">
 							<UButton
@@ -101,6 +104,37 @@ const isDark = computed({
 		colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
 	},
 });
+
+const currentThemeIcon = computed(() => {
+	if (colorMode.value === "dark") return "i-lucide-moon";
+	return "i-lucide-sun";
+});
+
+const themeItems = [
+	[
+		{
+			label: "System",
+			icon: "i-lucide-monitor",
+			onSelect: () => {
+				colorMode.preference = "system";
+			},
+		},
+		{
+			label: "Hell",
+			icon: "i-lucide-sun",
+			onSelect: () => {
+				colorMode.preference = "light";
+			},
+		},
+		{
+			label: "Dunkel",
+			icon: "i-lucide-moon",
+			onSelect: () => {
+				colorMode.preference = "dark";
+			},
+		},
+	],
+];
 
 const languageItems = [
 	[

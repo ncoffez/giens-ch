@@ -27,6 +27,13 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 404, message: "Article not found" });
 		}
 
+		const articleData = articleDoc.data();
+		const isOwner = articleData?.authorUid === decodedToken.uid;
+		
+		if (!decodedToken.admin && !isOwner) {
+			throw createError({ statusCode: 403, message: "Forbidden: You can only edit your own articles" });
+		}
+
 		const updateData: Record<string, any> = {
 			title: body.title,
 			intro: body.intro || "",
