@@ -60,12 +60,8 @@ watch(() => props.home, (newHome) => {
 					label="Ankunft (Onboarding)" 
 					description="Anweisungen für den Check-in (z.B. Strom, Wasser, Schlüssel)"
 				>
-					<UTextarea 
+					<TiptapEditor 
 						v-model="form.checkInInfo" 
-						placeholder="Beschreiben Sie hier, was bei der Ankunft zu tun ist..." 
-						:rows="6" 
-						size="xl"
-						class="font-sans"
 					/>
 				</UFormField>
 
@@ -73,12 +69,8 @@ watch(() => props.home, (newHome) => {
 					label="Abreise (Offboarding)" 
 					description="Was muss vor dem Verlassen des Hauses erledigt werden?"
 				>
-					<UTextarea 
+					<TiptapEditor 
 						v-model="form.checkOutInfo" 
-						placeholder="Beschreiben Sie hier den Abreiseprozess..." 
-						:rows="6" 
-						size="xl"
-						class="font-sans"
 					/>
 				</UFormField>
 			</div>

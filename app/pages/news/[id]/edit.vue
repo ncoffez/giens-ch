@@ -6,7 +6,7 @@ definePageMeta({
 const route = useRoute();
 const articleId = computed(() => route.params.id as string);
 
-const { $isAdmin } = useNuxtApp();
+const { $isAdmin, $currentUser } = useNuxtApp() as any;
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
@@ -16,16 +16,25 @@ const content = ref("");
 const image = ref("");
 const selectedTags = ref<string[]>([]);
 const selectedAuthor = ref<{ id: string; name: string } | null>(null);
+const articleAuthorUid = ref<string | null>(null);
 const loading = ref(true);
 const saving = ref(false);
+const deleting = ref(false);
+const notAuthorized = ref(false);
 
 const { data: labels } = await useFetch<any[]>("/api/labels");
 const tagOptions = computed(() => labels.value?.map(l => ({ id: l.id, label: l.id })) || []);
 
-const { data: authors } = await useFetch<{ id: string; name: string }[]>("/api/authors", {
+const { data: users } = await useFetch<any[]>("/api/users", {
 	headers: { Authorization: `Bearer ${token.value}` },
 });
-const authorOptions = computed(() => authors.value || []);
+const authorOptions = computed(() => {
+	if (!users.value) return [];
+	return users.value.map(u => ({
+		id: u.uid,
+		name: u.displayName || u.email || u.uid
+	}));
+});
 
 const effectiveImage = computed(() => {
 	if (image.value) return image.value;
@@ -41,6 +50,15 @@ const fetchArticle = async () => {
 			body: { id: articleId.value },
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
+
+		articleAuthorUid.value = article.authorUid || null;
+		
+		const currentUserUid = $currentUser?.value?.uid;
+		if (!$isAdmin.value && article.authorUid && article.authorUid !== currentUserUid) {
+			notAuthorized.value = true;
+			toast.add({ title: "Keine Berechtigung", description: "Du kannst nur deine eigenen Artikel bearbeiten.", color: "error" });
+			return;
+		}
 
 		title.value = article.title || "";
 		intro.value = article.intro || "";
@@ -93,6 +111,26 @@ const save = async () => {
 	}
 };
 
+const deleteArticle = async () => {
+	if (!confirm("Artikel wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.")) {
+		return;
+	}
+
+	deleting.value = true;
+	try {
+		await $fetch(`/api/news/${articleId.value}/delete`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+		});
+		toast.add({ title: "Artikel gelöscht", color: "success" });
+		navigateTo("/news");
+	} catch (e: any) {
+		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} finally {
+		deleting.value = false;
+	}
+};
+
 onMounted(fetchArticle);
 
 useHead({
@@ -120,6 +158,17 @@ useHead({
 				</div>
 				<div class="flex items-center gap-3">
 					<UButton
+						v-if="$isAdmin"
+						color="error"
+						variant="ghost"
+						icon="i-lucide-trash-2"
+						:loading="deleting"
+						@click="deleteArticle"
+						class="rounded-full"
+					>
+						Löschen
+					</UButton>
+					<UButton
 						color="neutral"
 						variant="soft"
 						@click="navigateTo(`/article/${articleId}`)"
@@ -145,6 +194,20 @@ useHead({
 			<div class="text-center space-y-4">
 				<div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
 				<p class="text-stone-500 font-medium">Artikel wird geladen...</p>
+			</div>
+		</div>
+
+		<!-- Not Authorized State -->
+		<div v-else-if="notAuthorized" class="flex items-center justify-center py-32">
+			<div class="text-center space-y-6 max-w-md mx-auto px-4">
+				<div class="w-20 h-20 mx-auto rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+					<UIcon name="i-lucide-lock" class="w-10 h-10 text-red-500" />
+				</div>
+				<h2 class="text-2xl font-bold">Keine Berechtigung</h2>
+				<p class="text-stone-500">Du kannst nur deine eigenen Artikel bearbeiten.</p>
+				<UButton color="primary" @click="navigateTo('/news')" icon="i-lucide-arrow-left">
+					Zurück zu News
+				</UButton>
 			</div>
 		</div>
 

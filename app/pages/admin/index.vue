@@ -4,7 +4,7 @@ definePageMeta({
 	middleware: [
 		function (to) {
 			if (to.path === '/admin') {
-				return navigateTo('/admin/homes')
+				return navigateTo('/admin/users')
 			}
 		},
 	],
