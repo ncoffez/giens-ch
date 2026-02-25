@@ -1,32 +1,47 @@
-export type ApiError = {
+export interface ApiError {
 	statusCode: number;
 	message: string;
-	data?: any;
-};
+	data?: unknown;
+}
 
-export function createApiError(statusCode: number, message: string, data?: any): ApiError {
+export function createApiError(statusCode: number, message: string, data?: unknown): ApiError {
 	return { statusCode, message, data };
 }
 
-export function isApiError(error: any): error is ApiError {
-	return error && typeof error.statusCode === "number" && typeof error.message === "string";
+export function isApiError(error: unknown): error is ApiError {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"statusCode" in error &&
+		typeof (error as Record<string, unknown>).statusCode === "number" &&
+		"message" in error &&
+		typeof (error as Record<string, unknown>).message === "string"
+	);
 }
 
-export function handleApiError(error: any): ApiError {
+export function handleApiError(error: unknown): ApiError {
 	if (isApiError(error)) {
 		return error;
 	}
 
-	if (error?.statusCode && error?.message) {
+	if (
+		typeof error === "object" &&
+		error !== null &&
+		"statusCode" in error &&
+		"message" in error
+	) {
+		const err = error as Record<string, unknown>;
 		return {
-			statusCode: error.statusCode,
-			message: error.message,
-			data: error.data,
+			statusCode: typeof err.statusCode === "number" ? err.statusCode : 500,
+			message: typeof err.message === "string" ? err.message : "Ein Fehler ist aufgetreten",
+			data: err.data,
 		};
 	}
 
 	// Firebase auth errors
-	if (error?.code) {
+	if (typeof error === "object" && error !== null && "code" in error) {
+		const err = error as Record<string, unknown>;
+		const code = String(err.code);
 		const codeToMessage: Record<string, string> = {
 			"auth/user-not-found": "Benutzer nicht gefunden",
 			"auth/invalid-credential": "Ungültige Anmeldedaten",
@@ -38,8 +53,8 @@ export function handleApiError(error: any): ApiError {
 			"not-found": "Ressource nicht gefunden",
 		};
 		return {
-			statusCode: error.code === "permission-denied" ? 403 : 400,
-			message: codeToMessage[error.code] || error.message || "Ein Fehler ist aufgetreten",
+			statusCode: code === "permission-denied" ? 403 : 400,
+			message: codeToMessage[code] || (typeof err.message === "string" ? err.message : "Ein Fehler ist aufgetreten"),
 		};
 	}
 
@@ -52,11 +67,23 @@ export function handleApiError(error: any): ApiError {
 	}
 
 	// Default error
+	const message = error instanceof Error ? error.message : "Ein unerwarteter Fehler ist aufgetreten";
 	return {
 		statusCode: 500,
-		message: error?.message || "Ein unerwarteter Fehler ist aufgetreten",
+		message,
 		data: error,
 	};
+}
+
+export function getErrorMessage(error: unknown): string {
+	if (error instanceof Error) return error.message;
+	if (typeof error === "string") return error;
+	if (isApiError(error)) return error.message;
+	if (typeof error === "object" && error !== null && "message" in error) {
+		const msg = (error as Record<string, unknown>).message;
+		return typeof msg === "string" ? msg : "Ein Fehler ist aufgetreten";
+	}
+	return "Ein Fehler ist aufgetreten";
 }
 
 export function safeJsonParse<T>(value: string, fallback: T): T {

@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 		const docRef = await db.collection("articles").add(newArticle);
 
 		return { id: docRef.id, ...newArticle };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({ 
 			statusCode: e.statusCode || 500, 
 			message: e.message || "Internal Server Error" 

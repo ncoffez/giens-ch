@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 		const homes = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
 		return homes;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

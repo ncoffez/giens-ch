@@ -48,7 +48,7 @@ export function useAdminAuth() {
 			const token = await user.getIdToken(true);
 			console.log("AdminAuth: Admin access verified");
 			return true;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("AdminAuth: Auth check error", error);
 			authError.value = error.message || "Authentifizierungsfehler";
 			return false;
@@ -70,7 +70,7 @@ export function useAdminAuth() {
 
 			const token = await user.getIdToken(true);
 			return { Authorization: `Bearer ${token}` };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			authError.value = "Fehler beim Abrufen des Tokens";
 			return {};
 		}

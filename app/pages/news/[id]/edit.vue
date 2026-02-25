@@ -68,8 +68,8 @@ const fetchArticle = async () => {
 		if (article.authorUid && article.author) {
 			selectedAuthor.value = { id: article.authorUid, name: article.author };
 		}
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Laden", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Laden", description: getErrorMessage(e), color: "error" });
 		navigateTo("/news");
 	} finally {
 		loading.value = false;
@@ -104,8 +104,8 @@ const save = async () => {
 		});
 		toast.add({ title: "Artikel aktualisiert", color: "success" });
 		navigateTo(`/article/${articleId.value}`);
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Speichern", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Speichern", description: getErrorMessage(e), color: "error" });
 	} finally {
 		saving.value = false;
 	}
@@ -124,8 +124,8 @@ const deleteArticle = async () => {
 		});
 		toast.add({ title: "Artikel gelöscht", color: "success" });
 		navigateTo("/news");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	} finally {
 		deleting.value = false;
 	}

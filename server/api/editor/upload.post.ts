@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
 					cacheControl: "public, max-age=31536000",
 				}
 			});
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error("[Editor Upload] Save failed:", e.message);
 			throw createError({ statusCode: 503, message: `Speichern fehlgeschlagen: ${e.message}` });
 		}
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
 		// Try to make public, but don't fail if it's already handled by bucket policies
 		try {
 			await fileRef.makePublic();
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.warn("[Editor Upload] Could not make public (this is often okay if bucket-level access is enabled):", e.message);
 		}
 
@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
 			icon,
 			type
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("[Editor Upload API Error]:", error);
 		throw createError({
 			statusCode: error.statusCode || 500,

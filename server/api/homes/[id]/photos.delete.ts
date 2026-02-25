@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
 		const updatedHome = await db.collection("homes").doc(homeId).get();
 		return { id: updatedHome.id, ...updatedHome.data() };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

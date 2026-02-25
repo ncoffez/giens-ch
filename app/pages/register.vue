@@ -93,7 +93,7 @@ async function register() {
 			description: "Konto erfolgreich erstellt.",
 		});
 		router.push("/profile");
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast.add({
 			color: "error",
 			title: "Fehler",

@@ -1,3 +1,28 @@
+import type { UnsplashImage } from "../../types";
+
+interface UnsplashApiResult {
+	id: string;
+	urls: {
+		regular: string;
+		thumb: string;
+		full: string;
+	};
+	description: string | null;
+	alt_description: string | null;
+	user: {
+		name: string;
+		links: {
+			html: string;
+		};
+	};
+}
+
+interface UnsplashApiResponse {
+	results: UnsplashApiResult[];
+	total: number;
+	total_pages: number;
+}
+
 export default defineEventHandler(async (event) => {
 	const query = getQuery(event);
 	const searchQuery = query.q as string || "nature";
@@ -25,9 +50,9 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: response.status, message: "Unsplash API error" });
 		}
 
-		const data = await response.json();
+		const data: UnsplashApiResponse = await response.json();
 
-		const images = data.results.map((img: any) => ({
+		const images: UnsplashImage[] = data.results.map((img) => ({
 			id: img.id,
 			url: img.urls.regular,
 			thumb: img.urls.thumb,
@@ -43,7 +68,8 @@ export default defineEventHandler(async (event) => {
 			totalPages: data.total_pages,
 			currentPage: page,
 		};
-	} catch (error: any) {
-		throw createError({ statusCode: 500, message: error.message || "Failed to fetch images" });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Failed to fetch images";
+		throw createError({ statusCode: 500, message });
 	}
 });

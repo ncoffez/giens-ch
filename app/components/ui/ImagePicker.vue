@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { UnsplashImage, UnsplashSearchResult } from "../../types";
+
 const props = defineProps<{
 	modelValue?: string;
 }>();
@@ -16,7 +18,7 @@ const dragover = ref(false);
 
 const unsplashQuery = ref("");
 const unsplashPage = ref(1);
-const unsplashResults = ref<any[]>([]);
+const unsplashResults = ref<UnsplashImage[]>([]);
 const unsplashTotalPages = ref(0);
 const unsplashLoading = ref(false);
 const hasSearched = ref(false);
@@ -91,8 +93,8 @@ const uploadFile = async (file: File) => {
 			toast.add({ title: "Bild hochgeladen", color: "success" });
 		};
 		reader.readAsDataURL(file);
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Hochladen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Hochladen", description: getErrorMessage(e), color: "error" });
 	} finally {
 		isUploading.value = false;
 	}
@@ -109,26 +111,26 @@ const searchUnsplash = async (loadMore = false) => {
 			unsplashResults.value = [];
 		}
 		
-		const result = await $fetch("/api/unsplash", {
+		const result = await $fetch<UnsplashSearchResult>("/api/unsplash", {
 			params: { q: query, page },
 		});
 
 		if (loadMore) {
-			unsplashResults.value = [...unsplashResults.value, ...(result as any).images];
+			unsplashResults.value = [...unsplashResults.value, ...result.images];
 		} else {
-			unsplashResults.value = (result as any).images;
+			unsplashResults.value = result.images;
 		}
-		unsplashTotalPages.value = (result as any).totalPages;
+		unsplashTotalPages.value = result.totalPages;
 		unsplashPage.value = page;
 		hasSearched.value = true;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		toast.add({ title: "Unsplash Suche fehlgeschlagen", color: "error" });
 	} finally {
 		unsplashLoading.value = false;
 	}
 };
 
-const selectUnsplashImage = (img: any) => {
+const selectUnsplashImage = (img: UnsplashImage) => {
 	selectImage(img.url);
 };
 

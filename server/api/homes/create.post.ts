@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
 
 		const home = await createHome(decodedToken.uid, homeData);
 		return home;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

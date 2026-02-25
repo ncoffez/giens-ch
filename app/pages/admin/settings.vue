@@ -7,6 +7,7 @@ const toast = useToast();
 const settings = ref({
 	maxHomeNumber: 30,
 	washingMachineUse: "",
+	homesFeatureEnabled: false,
 });
 
 const loading = ref(false);
@@ -18,8 +19,8 @@ const fetchSettings = async () => {
 		error.value = null;
 		const data = await $fetch("/api/settings");
 		settings.value = data;
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Failed to load settings";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Failed to load settings";
 	} finally {
 		loading.value = false;
 	}
@@ -34,8 +35,8 @@ const save = async () => {
 			body: settings.value,
 		});
 		toast.add({ title: "Settings saved successfully!", color: "green" });
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Failed to save settings", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Failed to save settings", color: "red" });
 	} finally {
 		loading.value = false;
 	}
@@ -75,6 +76,18 @@ onMounted(fetchSettings);
 						:rows="6"
 					/>
 				</UFormField>
+
+				<USeparator />
+
+				<div class="space-y-4">
+					<h2 class="text-lg font-semibold">Feature Flags</h2>
+					<UFormField
+						label="Homes Feature"
+						description="Enable the 'Mein Haus' section for all users. When disabled, only admins can access this feature."
+					>
+						<USwitch v-model="settings.homesFeatureEnabled" />
+					</UFormField>
+				</div>
 
 				<UButton type="submit" :loading="loading">Save Settings</UButton>
 			</form>

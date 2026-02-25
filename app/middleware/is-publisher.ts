@@ -1,4 +1,6 @@
-export const isPublisherLogic = async (nuxtApp: any) => {
+import type { MiddlewareNuxtApp } from "../../types/nuxt";
+
+export const isPublisherLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $isPublisher } = nuxtApp;
 	if ($isPublisher.value) return true;
 	return "/";

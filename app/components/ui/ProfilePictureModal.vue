@@ -48,7 +48,7 @@ async function selectPicture(url: string) {
 		
 		emit("updated");
 		modelValue.value = false;
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast.error("Fehler", error.message || "Konnte Profilbild nicht aktualisieren");
 	} finally {
 		loading.value = false;
@@ -98,7 +98,7 @@ async function handleFileChange(event: Event) {
 			emit("updated");
 			modelValue.value = false;
 		}, 500);
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast.error("Upload fehlgeschlagen", error.message);
 	} finally {
 		uploading.value = false;

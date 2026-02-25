@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 			.slice(0, 10);
 
 		return { pictures };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("[Pictures Get API Error]:", e);
 		throw createError({ statusCode: 500, message: "Fehler beim Laden der Galerie." });
 	}

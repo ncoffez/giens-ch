@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
 			emailVerified: canAccessPrivate ? user.emailVerified : undefined,
 			metadata: canAccessPrivate ? user.metadata : undefined
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		const articlesByUid = await db.collection("articles")
 			.where("authorUid", "==", uid)
 			.limit(1)
@@ -128,7 +128,7 @@ export default defineEventHandler(async (event) => {
 			isOwner,
 			isAdmin
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("Profile API Error:", e);
 		throw createError({ statusCode: 500, message: "Error fetching user articles: " + e.message });
 	}

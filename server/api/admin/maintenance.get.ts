@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
 			message: `Updated ${snapshot.size} articles.`,
 			assignedAuthors: users.map(u => u.displayName || u.email)
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		return { success: false, error: e.message };
 	}
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-owner"] });
+definePageMeta({ middleware: ["is-owner", "homes-feature"] });
 
 const { $currentUser } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
@@ -22,8 +22,8 @@ const fetchHomes = async () => {
 		} else if (homes.value.length === 1) {
 			return navigateTo(`/homes/${homes.value[0].id}`);
 		}
-	} catch (e: any) {
-		error.value = e.message || "Failed to load homes";
+	} catch (e: unknown) {
+		error.value = getErrorMessage(e) || "Failed to load homes";
 	} finally {
 		loading.value = false;
 	}

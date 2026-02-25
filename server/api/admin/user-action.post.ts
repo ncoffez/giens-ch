@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
 			default:
 				throw createError({ statusCode: 400, message: "Invalid action" });
 		}
-	} catch (error: any) {
+	} catch (error: unknown) {
 		throw createError({
 			statusCode: error.statusCode || 500,
 			message: error.message || "An error occurred",

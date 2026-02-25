@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 			health.projectId = adminApp.options.projectId || "";
 			console.log('[Health Check] Firebase Admin initialized:', health.firebaseAdminInitialized);
 			console.log('[Health Check] Project ID:', health.projectId);
-		} catch (e: any) {
+		} catch (e: unknown) {
 			health.errors.push(`Failed to get project ID: ${e?.message || 'Unknown error'}`);
 		}
 
@@ -47,12 +47,12 @@ export default defineEventHandler(async (event) => {
 			const sampleQuery = await db.collection("articles").limit(1).get();
 			health.testQuerySuccessful = true;
 			console.log('[Health Check] Database query successful, found:', sampleQuery.size, 'articles');
-		} catch (e: any) {
+		} catch (e: unknown) {
 			health.errors.push(`Database query failed: ${e?.message || 'Unknown error'}`);
 		}
 
 		return health;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		health.errors.push(e?.message || "Unknown error");
 		console.error('[Health Check] Fatal error:', health.errors);
 		throw createError({

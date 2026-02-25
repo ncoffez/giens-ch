@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
 			totalExisting: existingLabelIds.size,
 			totalTagsFound: allTags.size
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("Sync labels error:", e);
 		throw createError({
 			statusCode: e.statusCode || 500,

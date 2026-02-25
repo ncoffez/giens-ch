@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 			existing: result.existing,
 			total: result.created + result.existing,
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

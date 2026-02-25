@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
 		}
 
 		return { success: true, displayName };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		throw createError({
 			statusCode: 500,
 			message: error.message || "Failed to update profile",

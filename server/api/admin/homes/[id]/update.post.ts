@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
 
 		const updated = await homeRef.get();
 		return { id: updated.id, ...updated.data() };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

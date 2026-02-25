@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 		}
 
 		return { id: homeDoc.id, ...homeDoc.data() };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

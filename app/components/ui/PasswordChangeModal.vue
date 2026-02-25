@@ -47,7 +47,7 @@ async function handleSubmit() {
 		form.currentPassword = "";
 		form.newPassword = "";
 		form.confirmPassword = "";
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast.error("Fehler", error.message || "Konnte Passwort nicht aktualisieren.");
 	} finally {
 		loading.value = false;

@@ -87,8 +87,8 @@ const publish = async () => {
 		});
 		toast.add({ title: "Erfolgreich", description: "Artikel veröffentlicht.", color: "success" });
 		navigateTo("/news");
-	} catch (e: any) {
-		toast.add({ title: "Fehler", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler", description: getErrorMessage(e), color: "error" });
 	} finally {
 		isPublishing.value = false;
 	}

@@ -197,9 +197,9 @@ const handleFileChange = async (event: Event) => {
 		}
 
 		uploadProgress.value = 100;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("Upload failed", e);
-		const message = e.data?.message || e.message || "Unbekannter Fehler";
+		const message = getFetchError(e) || "Unbekannter Fehler";
 		toast.error("Upload fehlgeschlagen", message);
 	} finally {
 		setTimeout(() => {
