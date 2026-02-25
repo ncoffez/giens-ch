@@ -137,6 +137,7 @@ const defaultSettings: GlobalSettings = {
 			id: "global",
 			maxHomeNumber: 20,
 			washingMachineUse: "",
+			homesFeatureEnabled: false,
 			updatedAt: new Date().toISOString(),
 		};
 

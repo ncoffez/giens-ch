@@ -18,8 +18,8 @@ const fetchHome = async () => {
 		});
 		home.value = result.home;
 		share.value = result.share;
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Laden";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}

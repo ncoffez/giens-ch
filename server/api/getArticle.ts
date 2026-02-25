@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 			hasAttachments: article.hasAttachments || false,
 			isPrivate,
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		return {
 			data: null,
 			error: true,

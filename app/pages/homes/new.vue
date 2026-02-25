@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-owner"] });
+definePageMeta({ middleware: ["is-owner", "homes-feature"] });
 
 const { token } = useAuthReady();
 const router = useRouter();
@@ -31,8 +31,8 @@ const submit = async () => {
 
 		toast.add({ title: "Haus erstellt!", description: `${previewName.value} wurde erfolgreich erstellt.`, color: "success" });
 		router.push(`/homes/${newHome.id}/edit`);
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Erstellen des Hauses";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Erstellen des Hauses";
 	} finally {
 		loading.value = false;
 	}

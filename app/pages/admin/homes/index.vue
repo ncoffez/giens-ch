@@ -65,8 +65,8 @@ const fetchHomes = async () => {
 		homes.value = showDisabled.value
 			? allHomes.value
 			: allHomes.value.filter((h) => h.enabled);
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Failed to load homes";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Failed to load homes";
 	} finally {
 		loading.value = false;
 	}
@@ -83,9 +83,9 @@ const deleteHome = async (homeId: string) => {
 		});
 		toast.add({ title: "Home deleted successfully", color: "success" });
 		await fetchHomes();
-	} catch (e: any) {
+	} catch (e: unknown) {
 		toast.add({
-			title: e.data?.message || e.message || "Failed to delete home",
+			title: getFetchError(e) || "Failed to delete home",
 			color: "error",
 		});
 	}

@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
 		});
 
 		return { success: true, id: fileId, folderId: targetFolderId };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error"

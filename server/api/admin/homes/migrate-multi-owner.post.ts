@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
 						ownerId: ""
 					});
 					migratedHomes++;
-				} catch (e: any) {
+				} catch (e: unknown) {
 					errors.push(`Failed to migrate home ${doc.id}: ${e.message}`);
 				}
 			} else if (ownerId !== undefined && ownerId !== undefined) {
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
 					await db.collection("homes").doc(doc.id).update({
 						ownerId: ""
 					});
-				} catch (e: any) {
+				} catch (e: unknown) {
 					errors.push(`Failed to remove ownerId from home ${doc.id}: ${e.message}`);
 				}
 			}
@@ -93,7 +93,7 @@ export default defineEventHandler(async (event) => {
 			revokedClaims,
 			errors: errors.length > 0 ? errors : undefined
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 		
 		const article = filteredNews[Math.floor(Math.random() * filteredNews.length)];
 		return article;
-	} catch (error: any) {
+	} catch (error: unknown) {
 	return {
 	  data: null,
 	  error: true,

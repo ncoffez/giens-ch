@@ -191,8 +191,8 @@ const fetchData = async () => {
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Laden";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}
@@ -237,8 +237,8 @@ const uploadFiles = async (fileList: File[]) => {
 				fetchData();
 			};
 			reader.readAsDataURL(file);
-		} catch (e: any) {
-			toast.add({ title: "Fehler beim Hochladen", description: e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: "Fehler beim Hochladen", description: getErrorMessage(e), color: "error" });
 		} finally {
 			isUploading.value = false;
 		}
@@ -261,8 +261,8 @@ const createFolder = async () => {
 		newFolderName.value = "";
 		isCreatingFolder.value = false;
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Erstellen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Erstellen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -299,8 +299,8 @@ const downloadFile = async (file: GlobalFile) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Download", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -324,8 +324,8 @@ const deleteFile = async (file: GlobalFile) => {
 		toast.add({ title: "Datei gelöscht", color: "success" });
 		selectedFiles.value = selectedFiles.value.filter(f => f.id !== file.id);
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -339,8 +339,8 @@ const deleteSelectedFiles = async () => {
 				headers: { Authorization: `Bearer ${token.value}` },
 				body: { fileId: file.id },
 			});
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: getErrorMessage(e), color: "error" });
 		}
 	}
 	toast.add({ title: `${selectedFiles.value.length} Dateien gelöscht`, color: "success" });
@@ -368,8 +368,8 @@ const deleteFolder = async (folder: GlobalFolder) => {
 		toast.add({ title: "Ordner gelöscht", color: "success" });
 		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -391,8 +391,8 @@ const deleteSelectedFolders = async () => {
 				headers: { Authorization: `Bearer ${token.value}` },
 				body: { folderId: folder.id },
 			});
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: e.data?.message || e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: getFetchError(e), color: "error" });
 		}
 	}
 	toast.add({ title: "Ordner gelöscht", color: "success" });
@@ -422,8 +422,8 @@ const deleteSelectedItems = async () => {
 				body: { folderId: folder.id },
 			});
 			deletedCount++;
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: e.data?.message || e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: getFetchError(e), color: "error" });
 		}
 	}
 
@@ -435,8 +435,8 @@ const deleteSelectedItems = async () => {
 				body: { fileId: file.id },
 			});
 			deletedCount++;
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: e.data?.message || e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: getFetchError(e), color: "error" });
 		}
 	}
 
@@ -517,8 +517,8 @@ const renameFile = async () => {
 		isRenameModalOpen.value = false;
 		selectedFiles.value = [];
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Umbenennen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Umbenennen", description: getErrorMessage(e), color: "error" });
 	} finally {
 		isSaving.value = false;
 	}
@@ -541,8 +541,8 @@ const moveItems = async (targetFolderId: string | null) => {
 				},
 			});
 			successCount++;
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Verschieben von ${file.name}`, description: e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Verschieben von ${file.name}`, description: getErrorMessage(e), color: "error" });
 		}
 	}
 
@@ -557,8 +557,8 @@ const moveItems = async (targetFolderId: string | null) => {
 				},
 			});
 			successCount++;
-		} catch (e: any) {
-			toast.add({ title: `Fehler beim Verschieben von ${folder.name}`, description: e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: `Fehler beim Verschieben von ${folder.name}`, description: getErrorMessage(e), color: "error" });
 		}
 	}
 	

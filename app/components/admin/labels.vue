@@ -18,7 +18,7 @@ toast.add({
 				color: "success"
 			});
 			await refresh();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast.add({
 				title: "Fehler",
 				description: error.message,
@@ -57,7 +57,7 @@ toast.add({
 			newLabelId.value = "";
 			isCreatingLabel.value = false;
 			await refresh();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast.add({
 				title: "Fehler",
 				description: error.message,

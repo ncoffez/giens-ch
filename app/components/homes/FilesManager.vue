@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { HomeFile, HomeFolder } from "~/types";
+import type { HomeFile, HomeFolder, Home } from "../../types";
 
 const props = defineProps<{
-	home: any;
+	home: Home;
 }>();
 
 const emit = defineEmits<{
@@ -130,8 +130,8 @@ const uploadFiles = async (fileList: File[]) => {
 				emit("refresh");
 			};
 			reader.readAsDataURL(file);
-		} catch (e: any) {
-			toast.add({ title: "Fehler beim Hochladen", description: e.message, color: "error" });
+		} catch (e: unknown) {
+			toast.add({ title: "Fehler beim Hochladen", description: getErrorMessage(e), color: "error" });
 		} finally {
 			isUploading.value = false;
 		}
@@ -154,8 +154,8 @@ const createFolder = async () => {
 		newFolderName.value = "";
 		isCreatingFolder.value = false;
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Erstellen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Erstellen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -174,8 +174,8 @@ const downloadFile = async (file: HomeFile) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Download", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -193,8 +193,8 @@ const deleteFile = async (file: HomeFile) => {
 		toast.add({ title: "Datei gelöscht", color: "success" });
 		selectedFile.value = null;
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -217,8 +217,8 @@ const deleteFolder = async (folder: HomeFolder) => {
 		});
 		toast.add({ title: "Ordner gelöscht", color: "success" });
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -245,8 +245,8 @@ const renameFile = async () => {
 		isRenameModalOpen.value = false;
 		selectedFile.value = null;
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Umbenennen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Umbenennen", description: getErrorMessage(e), color: "error" });
 	} finally {
 		isSaving.value = false;
 	}
@@ -269,8 +269,8 @@ const moveFile = async (targetFolderId: string | null) => {
 		isMoveModalOpen.value = false;
 		selectedFile.value = null;
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Verschieben", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Verschieben", description: getErrorMessage(e), color: "error" });
 	} finally {
 		isSaving.value = false;
 	}

@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
 		const updatedHome = await updateHome(homeId, body);
 		return updatedHome;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

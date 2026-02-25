@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 		await db.collection("homes").doc(homeId).delete();
 
 		return { success: true };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
 		await articleRef.update(updateData);
 
 		return { id: articleId, ...updateData };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({ 
 			statusCode: e.statusCode || 500, 
 			message: e.message || "Internal Server Error" 

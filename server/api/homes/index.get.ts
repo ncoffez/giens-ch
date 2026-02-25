@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
 		console.log('[Homes API] Returning', enabled.length, 'enabled homes');
 
 		return enabled;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error('[Homes API] Error:', {
 			message: e.message,
 			statusCode: e.statusCode,

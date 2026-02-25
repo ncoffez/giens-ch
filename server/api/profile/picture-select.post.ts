@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
 		]);
 
 		return { success: true, photoURL: finalUrl };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("[Profile Select API Error]:", error);
 		throw createError({ statusCode: 500, message: "Fehler beim Auswählen des Bildes." });
 	}

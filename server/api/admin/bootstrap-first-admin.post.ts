@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 			message: "User set as admin. You can now use the Admin UI.",
 			uid
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

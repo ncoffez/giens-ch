@@ -1,6 +1,6 @@
 import type { Unsubscribe } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
-import { onMounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 
 export async function useCurrentUser() {
 	const { $auth } = useNuxtApp();

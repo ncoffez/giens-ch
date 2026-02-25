@@ -1,11 +1,23 @@
 import { db } from "../useFirebaseAdmin";
 import { Article } from "../../types";
 import { getUserPermission } from "../utils/auth";
+import { getErrorMessage } from "../utils/apiError";
 
-// Helper function to remove body from article objects (metadata public, body gated by user claims)
-function stripBodyFromArticle(article: any) {
+interface ArticleMetadata {
+	id: string;
+	title: string;
+	intro: string;
+	image: string;
+	published: string;
+	tags: string[];
+	author: string | null;
+	authorUid: string | null;
+	hasAttachments: boolean;
+}
+
+function stripBodyFromArticle(article: Record<string, unknown>): Omit<Article, "body"> {
 	const { body, ...articleWithoutBody } = article;
-	return articleWithoutBody;
+	return articleWithoutBody as Omit<Article, "body">;
 }
 
 export default defineEventHandler(async (event) => {
@@ -18,7 +30,7 @@ export default defineEventHandler(async (event) => {
 		const limitCount = all ? 1000 : 300;
 		const querySnapshot = await db.collection("articles").orderBy("published", "desc").limit(limitCount).get();
 		
-		const articleMetadata: any[] = [];
+		const articleMetadata: ArticleMetadata[] = [];
 		querySnapshot.forEach((doc) => {
 			const article = doc.data();
 			// Article metadata is ALWAYS PUBLIC, body is gated by user claims
@@ -62,18 +74,18 @@ export default defineEventHandler(async (event) => {
 		latestNews = latestNews.slice(0, quantity);
 		console.log(`Returning ${latestNews.length} articles`);
 		return latestNews;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("Error in news API:", e);
-		return { data: null, error: true, message: e?.message || "Unknown error", statusCode: 500 };
+		return { data: null, error: true, message: getErrorMessage(e), statusCode: 500 };
 	}
 });
 
-function filterByTag(tag: string, articles: any[]) {
+function filterByTag(tag: string, articles: ArticleMetadata[]): ArticleMetadata[] {
 	if (tag === 'all') return articles;
 	return articles.filter((article) => (article.tags || []).map((t: string) => t.toLowerCase()).includes(tag.toLowerCase()));
 }
 
-function filterBySearch(search: string, articles: any[]) {
+function filterBySearch(search: string, articles: ArticleMetadata[]): ArticleMetadata[] {
 	const query = search.toLowerCase().trim();
 	if (!query) return articles;
 	
@@ -88,14 +100,14 @@ function filterBySearch(search: string, articles: any[]) {
 	});
 }
 
-function filterByAuthor(author: string, articles: any[]) {
+function filterByAuthor(author: string, articles: ArticleMetadata[]): ArticleMetadata[] {
 	if (author === 'all') return articles;
 	return articles.filter((article) => {
 		return article.authorUid === author || article.author === author;
 	});
 }
 
-function filterByDateRange(range: string, articles: any[]) {
+function filterByDateRange(range: string, articles: ArticleMetadata[]): ArticleMetadata[] {
 	if (range === 'all') return articles;
 	
 	const now = new Date();

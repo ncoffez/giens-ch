@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
 
 		const updatedHome = await db.collection("homes").doc(homeId).get();
 		return { id: updatedHome.id, ...updatedHome.data() };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		if (e.code === "auth/user-not-found") {
 			throw createError({ statusCode: 404, message: "User not found or does not have an account" });
 		}

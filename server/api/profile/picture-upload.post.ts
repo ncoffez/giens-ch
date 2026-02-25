@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 	try {
 		const decodedToken = await auth.verifyIdToken(idToken);
 		uid = decodedToken.uid;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({ statusCode: 401, message: "Sitzung abgelaufen." });
 	}
 
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
 			.resize(512, 512, { fit: "cover", position: "center" })
 			.jpeg({ quality: 85 })
 			.toBuffer();
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({ statusCode: 422, message: "Bildverarbeitung fehlgeschlagen." });
 	}
 
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
 		}, { merge: true });
 
 		return { success: true, photoURL: publicUrl };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({ statusCode: 503, message: "Speicherdienst Fehler: " + e.message });
 	}
 });

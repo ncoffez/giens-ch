@@ -20,8 +20,8 @@ const fetchData = async () => {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		files.value = data.files || [];
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Laden";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}
@@ -49,8 +49,8 @@ const downloadFile = async (file: GlobalFile) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		window.open(response.url, "_blank");
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Download", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -67,8 +67,8 @@ const restoreFile = async (file: GlobalFile) => {
 		});
 		toast.add({ title: "Datei wiederhergestellt", color: "success" });
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Wiederherstellen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Wiederherstellen", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -83,8 +83,8 @@ const permanentDelete = async (file: GlobalFile) => {
 		});
 		toast.add({ title: "Datei endgültig gelöscht", color: "success" });
 		fetchData();
-	} catch (e: any) {
-		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
 };
 

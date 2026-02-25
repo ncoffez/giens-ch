@@ -1,4 +1,6 @@
-export const isNotLoggedInLogic = async (nuxtApp: any) => {
+import type { MiddlewareNuxtApp } from "../../types/nuxt";
+
+export const isNotLoggedInLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $currentUser } = nuxtApp;
 	if ($currentUser.value) return "/profile";
 	return true;

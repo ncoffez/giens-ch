@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { watch } from 'vue';
+import type { AdminUser } from '../../types';
 
 const toast = useToast();
 const { checkAdminAccess, getAuthHeaders, isCheckingAuth, authError } = useAdminAuth();
@@ -14,13 +15,13 @@ const { data: users, status, refresh } = useAsyncData("admin-users-list", async 
 		const headers = await getAuthHeaders();
 		console.log("AdminUsers: Fetching with token...");
 		
-		const response = await $fetch<any[]>("/api/users", {
+		const response = await $fetch<AdminUser[]>("/api/users", {
 			headers
 		});
 		
 		console.log("AdminUsers: API Response received", response?.length, "users");
 		return response;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		console.error("AdminUsers: Fetch error", e);
 		return [];
 	}
@@ -40,8 +41,8 @@ const isModalOpen = ref(false);
 const isRoleModalOpen = ref(false);
 const isEditNameModalOpen = ref(false);
 const isPending = ref(false);
-const selectedUserForRoles = ref<any>(null);
-const selectedUserForEdit = ref<any>(null);
+const selectedUserForRoles = ref<AdminUser | null>(null);
+const selectedUserForEdit = ref<AdminUser | null>(null);
 const editDisplayName = ref("");
 
 const userRoles = ref({
@@ -64,11 +65,11 @@ const columns = [
 		{ id: "actions", header: "" }
 	];
 
-	async function handleAction(action: string, user: any) {
+	async function handleAction(action: string, user: AdminUser) {
 	isPending.value = true;
 	try {
 		const headers = await getAuthHeaders();
-		const response = await $fetch("/api/admin/user-action", {
+		const response = await $fetch<{ success: boolean; link?: string }>("/api/admin/user-action", {
 			method: "POST",
 			headers,
 			body: { 
@@ -94,10 +95,11 @@ const columns = [
 			isEditNameModalOpen.value = false;
 			await refresh();
 		}
-	} catch (error: any) {
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Ein Fehler ist aufgetreten";
 		toast.add({
 			title: "Fehler",
-			description: error.message,
+			description: message,
 			color: "error"
 		});
 	} finally {
@@ -118,14 +120,15 @@ async function addUser() {
 		isModalOpen.value = false;
 		newUser.value = { email: "", password: "", displayName: "" };
 		await refresh();
-	} catch (error: any) {
-		toast.add({ title: "Fehler", description: error.message, color: "error" });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Ein Fehler ist aufgetreten";
+		toast.add({ title: "Fehler", description: message, color: "error" });
 	} finally {
 		isPending.value = false;
 	}
 }
 
-function openRoleModal(user: any) {
+function openRoleModal(user: AdminUser) {
 	selectedUserForRoles.value = user;
 	const claims = user.customClaims || {};
 	userRoles.value = {
@@ -137,13 +140,13 @@ function openRoleModal(user: any) {
 	isRoleModalOpen.value = true;
 }
 
-function openEditNameModal(user: any) {
+function openEditNameModal(user: AdminUser) {
 	selectedUserForEdit.value = user;
 	editDisplayName.value = user.displayName || "";
 	isEditNameModalOpen.value = true;
 }
 
-const getItems = (row: any) => [
+const getItems = (row: AdminUser) => [
 	[
 		{
 			label: "Name bearbeiten",

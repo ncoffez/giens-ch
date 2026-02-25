@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{ home: any }>();
+import type { Home } from "../../types";
+
+const props = defineProps<{ home: Home }>();
 const emit = defineEmits(["refresh"]);
 
 const { token } = useAuthReady();
@@ -37,8 +39,8 @@ const save = async () => {
 		});
 		toast.add({ title: "Regeln & Info gespeichert!", color: "success" });
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Speichern", color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Speichern", color: "error" });
 	} finally {
 		loading.value = false;
 	}

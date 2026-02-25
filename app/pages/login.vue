@@ -54,7 +54,7 @@ async function loginToFirebase(method: "google" | "password", email?: string, pa
 		} else if (method === "password" && password && email) {
 			await loginWithPassword(email, password);
 		}
-	} catch (e: any) {
+	} catch (e: unknown) {
 		toast.error("Fehler", e?.message || "Ein Fehler ist aufgetreten.");
 	}
 }
@@ -67,7 +67,7 @@ async function loginWithGoogle() {
 	try {
 		await signInWithPopup($auth, provider);
 		toast.success("Sie haben sich erfolgreich angemeldet.");
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
 	}
 }
@@ -80,7 +80,7 @@ async function loginWithApple() {
 	try {
 		await signInWithPopup($auth, provider);
 		toast.success("Sie haben sich erfolgreich angemeldet.");
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
 	}
 }
@@ -93,7 +93,7 @@ async function loginWithPassword(email: string, password: string) {
 		if (!user.emailVerified) {
 			toast.add({ color: "warning", title: "Warnung", description: "Bitte verifizieren Sie Ihre E-Mail-Adresse." });
 		}
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw new Error(e?.message || "Ein Fehler ist aufgetreten.");
 	}
 }

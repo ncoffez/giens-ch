@@ -85,7 +85,7 @@ async function resetPassword() {
 			description: "Prüfe deinen Posteingang für den Link zum Zurücksetzen deines Passworts.",
 		});
 		router.push("/login");
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast.add({
 			color: "error",
 			title: "Fehler",

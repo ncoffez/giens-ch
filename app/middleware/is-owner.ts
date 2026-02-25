@@ -1,4 +1,6 @@
-export const isOwnerLogic = async (nuxtApp: any) => {
+import type { MiddlewareNuxtApp } from "../../types/nuxt";
+
+export const isOwnerLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $isOwner } = nuxtApp;
 	if ($isOwner.value) return true;
 	return "/";

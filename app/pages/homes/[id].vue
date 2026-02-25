@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ["is-owner", "homes-feature"] });
+
 const { $currentUser, $isAdmin } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
@@ -18,8 +20,8 @@ const fetchHome = async () => {
 		home.value = await $fetch(`/api/homes/${homeId.value}`, {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Laden";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}

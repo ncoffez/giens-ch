@@ -18,7 +18,7 @@ const fetchOwners = async () => {
 		owners.value = await $fetch("/api/users/owners", {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
-	} catch (e: any) {
+	} catch (e: unknown) {
 		if (e?.statusCode === 403) {
 			ownersError.value = "Zugriff verweigert - keine Admin-Berechtigung";
 		} else if (e?.statusCode >= 500) {
@@ -37,8 +37,8 @@ const fetchHome = async () => {
 		home.value = await $fetch(`/api/admin/homes/${homeId.value}`, {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Failed to load home";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Failed to load home";
 	} finally {
 		loading.value = false;
 	}
@@ -55,8 +55,8 @@ const save = async () => {
 		});
 		toast.add({ title: "Haus erfolgreich gespeichert", color: "success" });
 		navigateTo("/admin/homes");
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Speichern", color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Speichern", color: "error" });
 	} finally {
 		loading.value = false;
 	}

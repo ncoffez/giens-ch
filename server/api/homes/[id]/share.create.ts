@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
 			shareUrl: `${getRequestProtocol(event)}://${getRequestHost(event)}/homes/view/${share.id}`,
 			...share,
 		};
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error",

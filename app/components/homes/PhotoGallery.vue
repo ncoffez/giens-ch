@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{ home: any }>();
+import type { Home } from "../../types";
+
+const props = defineProps<{ home: Home }>();
 const emit = defineEmits(["refresh"]);
 
 const { token } = useAuthReady();
@@ -40,8 +42,8 @@ const uploadPhoto = async (file: File) => {
 			uploading.value = false;
 		};
 		reader.readAsDataURL(file);
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Upload fehlgeschlagen", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Upload fehlgeschlagen", color: "red" });
 		uploading.value = false;
 	}
 };
@@ -64,8 +66,8 @@ const deletePhoto = async (photoUrl: string) => {
 		});
 		toast.add({ title: "Foto gelöscht", color: "green" });
 		emit("refresh");
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Löschen fehlgeschlagen", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Löschen fehlgeschlagen", color: "red" });
 	}
 };
 

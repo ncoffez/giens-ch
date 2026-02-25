@@ -1,16 +1,18 @@
 <script setup lang="ts">
-const props = defineProps<{ home: any }>();
+import type { Home } from "../../types";
+
+const props = defineProps<{ home: Home }>();
 
 const { $currentUser, $isAdmin } = useNuxtApp();
 const { token } = useAuthReady();
 const toast = useToast();
 
-const editors = ref<any[]>([]);
+const editors = ref<{ uid: string }[]>([]);
 const loading = ref(false);
 const editorEmail = ref("");
 const daysToExpire = ref(7);
 const shareUrl = ref<string | null>(null);
-const shareCreated = ref<any | null>(null);
+const shareCreated = ref<{ id: string; expiresAt: string } | null>(null);
 
 const fetchEditors = async () => {
 	editors.value = (props.home?.editors || []).map((uid: string) => ({ uid }));
@@ -29,8 +31,8 @@ const addEditor = async () => {
 		toast.add({ title: "Editor erfolgreich hinzugefügt", color: "green" });
 		editorEmail.value = "";
 		fetchEditors();
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Hinzufügen", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Hinzufügen", color: "red" });
 	} finally {
 		loading.value = false;
 	}
@@ -48,8 +50,8 @@ const removeEditor = async (editorUid: string) => {
 		});
 		toast.add({ title: "Editor entfernt", color: "green" });
 		fetchEditors();
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Entfernen", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Entfernen", color: "red" });
 	} finally {
 		loading.value = false;
 	}
@@ -66,8 +68,8 @@ const generateShareLink = async () => {
 		shareUrl.value = result.shareUrl;
 		shareCreated.value = result;
 		toast.add({ title: "Freigabelink erstellt!", color: "green" });
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Erstellen", color: "red" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Erstellen", color: "red" });
 	} finally {
 		loading.value = false;
 	}

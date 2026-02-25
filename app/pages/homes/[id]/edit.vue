@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-logged-in"] });
+definePageMeta({ middleware: ["is-owner", "homes-feature"] });
 
 import BasicInfoEditor from "~/components/homes/BasicInfoEditor.vue";
 import PhotoGallery from "~/components/homes/PhotoGallery.vue";
@@ -77,8 +77,8 @@ const fetchHome = async () => {
 			const missingSections = Object.keys(allSections).filter(id => !savedOrder.includes(id));
 			sectionOrder.value = [...savedOrder, ...missingSections];
 		}
-	} catch (e: any) {
-		error.value = e.data?.message || e.message || "Fehler beim Laden des Hauses";
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || "Fehler beim Laden des Hauses";
 	} finally {
 		loading.value = false;
 	}
@@ -93,7 +93,7 @@ const saveOrder = async () => {
 		});
 		toast.add({ title: "Layout gespeichert", color: "success" });
 		isReordering.value = false;
-	} catch (e: any) {
+	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Speichern des Layouts", color: "error" });
 	}
 };
@@ -118,8 +118,8 @@ const deleteHome = async () => {
 
 		toast.add({ title: "Haus erfolgreich gelöscht", color: "success" });
 		navigateTo("/homes");
-	} catch (e: any) {
-		toast.add({ title: e.data?.message || e.message || "Fehler beim Löschen", color: "error" });
+	} catch (e: unknown) {
+		toast.add({ title: getFetchError(e) || "Fehler beim Löschen", color: "error" });
 	}
 };
 

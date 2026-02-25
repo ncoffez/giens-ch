@@ -87,14 +87,19 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const route = useRoute();
-const nuxtApp = useNuxtApp() as any;
+const nuxtApp = useNuxtApp();
 const colorMode = useColorMode();
+const { canAccessHomes, fetchSettings } = useFeatureFlags();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
 const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
+
+onMounted(async () => {
+	await fetchSettings();
+});
 
 const isDark = computed({
 	get() {
@@ -213,7 +218,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		},
 	];
 
-	if (import.meta.client && isOwner.value) {
+	if (import.meta.client && isOwner.value && canAccessHomes.value) {
 		items.push({
 			label: "Mein Haus",
 			icon: "i-lucide-building-2",

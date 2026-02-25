@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 		await articleRef.delete();
 
 		return { success: true, id: articleId };
-	} catch (e: any) {
+	} catch (e: unknown) {
 		throw createError({
 			statusCode: e.statusCode || 500,
 			message: e.message || "Internal Server Error"

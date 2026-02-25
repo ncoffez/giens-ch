@@ -1,4 +1,6 @@
-export const isLoggedInLogic = (nuxtApp: any) => {
+import type { MiddlewareNuxtApp } from "../../types/nuxt";
+
+export const isLoggedInLogic = (nuxtApp: MiddlewareNuxtApp) => {
 	const { $currentUser } = nuxtApp;
 	if ($currentUser.value) return true;
 	return "/login";
