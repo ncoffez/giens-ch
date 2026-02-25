@@ -21,7 +21,9 @@ export default defineEventHandler(async (event) => {
 	const filesSnapshot = await db.collection("globalFiles").where("folderId", "==", folderId).get();
 	const foldersSnapshot = await db.collection("globalFolders").where("parentId", "==", folderId).get();
 
-	if (!filesSnapshot.empty || !foldersSnapshot.empty) {
+	const activeFiles = filesSnapshot.docs.filter(doc => !doc.data().deletedAt);
+
+	if (activeFiles.length > 0 || !foldersSnapshot.empty) {
 		throw createError({ statusCode: 400, message: "Folder is not empty. Please delete all files and subfolders first." });
 	}
 

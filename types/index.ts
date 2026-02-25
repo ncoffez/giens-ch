@@ -114,6 +114,8 @@ export interface GlobalFile {
 	folderId: string | null;
 	uploadedAt: string;
 	uploadedBy: string;
+	uploadedByName?: string;
+	lastModified?: number;
 	storagePath?: string;
 	deletedAt?: string;
 	deletedBy?: string;
@@ -125,4 +127,5 @@ export interface GlobalFolder {
 	parentId: string | null;
 	createdAt: string;
 	createdBy: string;
+	createdByName?: string;
 }
