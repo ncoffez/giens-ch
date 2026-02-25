@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { GlobalFile, GlobalFolder } from "~/types";
+import GalleryViewer from "~/components/documents/GalleryViewer.vue";
+import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 
 definePageMeta({ middleware: ["is-logged-in"] });
 
 const { $isAdmin } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
+const route = useRoute();
 
 const files = ref<GlobalFile[]>([]);
 const folders = ref<GlobalFolder[]>([]);
@@ -15,9 +18,6 @@ const error = ref<string | null>(null);
 const currentFolderId = ref<string | null>(null);
 const selectedFiles = ref<GlobalFile[]>([]);
 const selectedFolders = ref<GlobalFolder[]>([]);
-const isUploading = ref(false);
-const isCreatingFolder = ref(false);
-const newFolderName = ref("");
 const dragover = ref(false);
 const downloadingFileId = ref<string | null>(null);
 const isRenameModalOpen = ref(false);
@@ -28,6 +28,27 @@ const isSaving = ref(false);
 const viewMode = ref<"grid" | "list">("list");
 const sortBy = ref<"name" | "date" | "size">("name");
 const sortOrder = ref<"asc" | "desc">("asc");
+
+const uploadQueue = ref<{
+	total: number;
+	completed: number;
+	currentFile: string | null;
+	isUploading: boolean;
+}>({
+	total: 0,
+	completed: 0,
+	currentFile: null,
+	isUploading: false,
+});
+
+const editingFolderId = ref<string | null>(null);
+const editingFolderName = ref("");
+const tempFolders = ref<GlobalFolder[]>([]);
+
+const galleryOpen = ref(false);
+const galleryIndex = ref(0);
+const videoOpen = ref(false);
+const currentVideo = ref<GlobalFile | null>(null);
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -54,8 +75,12 @@ const currentSubfolders = computed(() => {
 	return folders.value.filter(f => f.parentId === currentFolderId.value);
 });
 
+const currentImages = computed(() => {
+	return currentFiles.value.filter(f => f.type.startsWith("image/"));
+});
+
 const sortedSubfolders = computed(() => {
-	const sorted = [...currentSubfolders.value];
+	const sorted = [...currentSubfolders.value, ...tempFolders.value.filter(f => f.parentId === currentFolderId.value)];
 	sorted.sort((a, b) => {
 		let comparison = 0;
 		if (sortBy.value === "name") {
@@ -89,7 +114,6 @@ const sortedFiles = computed(() => {
 const availableFoldersForMove = computed(() => {
 	const currentFolderIds = new Set<string>();
 	
-	// Collect all descendant folder IDs if we're moving folders
 	if (selectedFolders.value.length > 0) {
 		const collectDescendants = (parentId: string) => {
 			folders.value.filter(f => f.parentId === parentId).forEach(f => {
@@ -108,14 +132,26 @@ const availableFoldersForMove = computed(() => {
 	);
 });
 
-const isMultiSelect = computed(() => selectedFiles.value.length > 1 || selectedFolders.value.length > 1);
-
 const hasSelection = computed(() => selectedFiles.value.length > 0 || selectedFolders.value.length > 0);
+
+const totalItemsInFolder = computed(() => currentFiles.value.length + currentSubfolders.value.length);
+
+const folderFileCount = (folderId: string) => 
+	files.value.filter(f => f.folderId === folderId).length;
+
+const folderImageCount = (folderId: string) => 
+	files.value.filter(f => f.folderId === folderId && f.type.startsWith("image/")).length;
 
 const navigateToFolder = (folderId: string | null) => {
 	currentFolderId.value = folderId;
 	selectedFiles.value = [];
 	selectedFolders.value = [];
+	cancelFolderCreation();
+	
+	const url = folderId 
+		? `${route.path}?folder=${folderId}`
+		: route.path;
+	history.pushState({}, "", url);
 };
 
 const formatFileSize = (bytes: number) => {
@@ -212,14 +248,14 @@ const handleFileSelect = (e: Event) => {
 	if (target.files) {
 		uploadFiles(Array.from(target.files));
 	}
+	(target as HTMLInputElement).value = "";
 };
 
-const uploadFiles = async (fileList: File[]) => {
-	for (const file of fileList) {
-		try {
-			isUploading.value = true;
-			const reader = new FileReader();
-			reader.onload = async () => {
+const uploadSingleFile = async (file: File): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = async () => {
+			try {
 				const base64 = reader.result as string;
 				await $fetch("/api/files/upload", {
 					method: "POST",
@@ -233,36 +269,117 @@ const uploadFiles = async (fileList: File[]) => {
 						lastModified: file.lastModified,
 					},
 				});
-				toast.add({ title: `${file.name} hochgeladen`, color: "success" });
-				fetchData();
-			};
-			reader.readAsDataURL(file);
-		} catch (e: unknown) {
-			toast.add({ title: "Fehler beim Hochladen", description: getErrorMessage(e), color: "error" });
-		} finally {
-			isUploading.value = false;
+				resolve();
+			} catch (e) {
+				reject(e);
+			}
+		};
+		reader.onerror = () => reject(new Error("Failed to read file"));
+		reader.readAsDataURL(file);
+	});
+};
+
+const uploadFiles = async (fileList: File[]) => {
+	if (fileList.length === 0) return;
+
+	uploadQueue.value = {
+		total: fileList.length,
+		completed: 0,
+		currentFile: null,
+		isUploading: true,
+	};
+
+	let errorCount = 0;
+
+	for (const file of fileList) {
+		uploadQueue.value.currentFile = file.name;
+		
+		try {
+			await uploadSingleFile(file);
+			uploadQueue.value.completed++;
+		} catch (e) {
+			errorCount++;
+			console.error(`Failed to upload ${file.name}:`, e);
 		}
+	}
+
+	uploadQueue.value.isUploading = false;
+	uploadQueue.value.currentFile = null;
+
+	await fetchData();
+
+	const successCount = uploadQueue.value.completed;
+	if (errorCount > 0) {
+		toast.add({ 
+			title: `${successCount}/${fileList.length} Dateien hochgeladen`, 
+			description: `${errorCount} fehlgeschlagen`,
+			color: "warning" 
+		});
+	} else {
+		toast.add({ 
+			title: `${successCount} Datei${successCount !== 1 ? 'en' : ''} hochgeladen`, 
+			color: "success" 
+		});
 	}
 };
 
-const createFolder = async () => {
-	if (!newFolderName.value.trim()) return;
+const createFolderInline = () => {
+	const tempId = `temp-${Date.now()}`;
+	const newFolder: GlobalFolder = {
+		id: tempId,
+		name: "Neuer Ordner",
+		parentId: currentFolderId.value,
+		createdAt: new Date().toISOString(),
+		createdBy: "",
+	};
+	
+	tempFolders.value.push(newFolder);
+	editingFolderId.value = tempId;
+	editingFolderName.value = "Neuer Ordner";
+	
+	nextTick(() => {
+		const input = document.querySelector('.folder-name-input') as HTMLInputElement;
+		input?.focus();
+		input?.select();
+	});
+};
 
+const saveFolderName = async (tempId: string) => {
+	if (!editingFolderName.value.trim()) {
+		return;
+	}
+	
 	try {
 		await $fetch("/api/folders/create", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: {
-				name: newFolderName.value.trim(),
+				name: editingFolderName.value.trim(),
 				parentId: currentFolderId.value,
 			},
 		});
+		
+		tempFolders.value = tempFolders.value.filter(f => f.id !== tempId);
+		editingFolderId.value = null;
+		
+		await fetchData();
 		toast.add({ title: "Ordner erstellt", color: "success" });
-		newFolderName.value = "";
-		isCreatingFolder.value = false;
-		fetchData();
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Erstellen", description: getErrorMessage(e), color: "error" });
+	}
+};
+
+const cancelFolderCreation = () => {
+	tempFolders.value = [];
+	editingFolderId.value = null;
+};
+
+const handleFolderKeydown = (e: KeyboardEvent, folderId: string) => {
+	if (e.key === "Enter") {
+		saveFolderName(folderId);
+	} else if (e.key === "Escape") {
+		tempFolders.value = tempFolders.value.filter(f => f.id !== folderId);
+		editingFolderId.value = null;
 	}
 };
 
@@ -290,6 +407,29 @@ const isFileSelected = (file: GlobalFile) => {
 
 const isFolderSelected = (folder: GlobalFolder) => {
 	return selectedFolders.value.some(f => f.id === folder.id);
+};
+
+const openGallery = (file: GlobalFile) => {
+	const index = currentImages.value.findIndex(f => f.id === file.id);
+	if (index !== -1) {
+		galleryIndex.value = index;
+		galleryOpen.value = true;
+	}
+};
+
+const openVideo = (file: GlobalFile) => {
+	currentVideo.value = file;
+	videoOpen.value = true;
+};
+
+const handleFileClick = (file: GlobalFile) => {
+	if (file.type.startsWith("image/")) {
+		openGallery(file);
+	} else if (file.type === "video/mp4") {
+		openVideo(file);
+	} else {
+		downloadFile(file);
+	}
 };
 
 const downloadFile = async (file: GlobalFile) => {
@@ -327,77 +467,6 @@ const deleteFile = async (file: GlobalFile) => {
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
-};
-
-const deleteSelectedFiles = async () => {
-	if (!confirm(`${selectedFiles.value.length} Dateien wirklich löschen?`)) return;
-
-	for (const file of [...selectedFiles.value]) {
-		try {
-			await $fetch("/api/files/delete", {
-				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
-				body: { fileId: file.id },
-			});
-		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: getErrorMessage(e), color: "error" });
-		}
-	}
-	toast.add({ title: `${selectedFiles.value.length} Dateien gelöscht`, color: "success" });
-	selectedFiles.value = [];
-	fetchData();
-};
-
-const deleteFolder = async (folder: GlobalFolder) => {
-	const hasFiles = files.value.some(f => f.folderId === folder.id);
-	const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
-
-	if (hasFiles || hasSubfolders) {
-		toast.add({ title: "Ordner ist nicht leer", description: "Bitte löschen Sie zuerst alle Dateien und Unterordner.", color: "warning" });
-		return;
-	}
-
-	if (!confirm(`"${folder.name}" wirklich löschen?`)) return;
-
-	try {
-		await $fetch("/api/folders/delete", {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
-			body: { folderId: folder.id },
-		});
-		toast.add({ title: "Ordner gelöscht", color: "success" });
-		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
-		fetchData();
-	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
-	}
-};
-
-const deleteSelectedFolders = async () => {
-	if (!confirm(`${selectedFolders.value.length} Ordner wirklich löschen?`)) return;
-
-	for (const folder of [...selectedFolders.value]) {
-		const hasFiles = files.value.some(f => f.folderId === folder.id);
-		const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
-
-		if (hasFiles || hasSubfolders) {
-			toast.add({ title: `"${folder.name}" ist nicht leer`, description: "Übersprungen.", color: "warning" });
-			continue;
-		}
-
-		try {
-			await $fetch("/api/folders/delete", {
-				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
-				body: { folderId: folder.id },
-			});
-		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: getFetchError(e), color: "error" });
-		}
-	}
-	toast.add({ title: "Ordner gelöscht", color: "success" });
-	selectedFolders.value = [];
-	fetchData();
 };
 
 const deleteSelectedItems = async () => {
@@ -448,12 +517,38 @@ const deleteSelectedItems = async () => {
 	fetchData();
 };
 
+const deleteFolder = async (folder: GlobalFolder) => {
+	const hasFiles = files.value.some(f => f.folderId === folder.id);
+	const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
+
+	if (hasFiles || hasSubfolders) {
+		toast.add({ title: "Ordner ist nicht leer", description: "Bitte löschen Sie zuerst alle Dateien und Unterordner.", color: "warning" });
+		return;
+	}
+
+	if (!confirm(`"${folder.name}" wirklich löschen?`)) return;
+
+	try {
+		await $fetch("/api/folders/delete", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+			body: { folderId: folder.id },
+		});
+		toast.add({ title: "Ordner gelöscht", color: "success" });
+		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
+		fetchData();
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
+	}
+};
+
 const getFolderMenuItems = (folder: GlobalFolder) => [
 	[{
 		label: "Verschieben",
 		icon: "i-lucide-folder-input",
 		onSelect: () => {
 			selectedFolders.value = [folder];
+			selectedFiles.value = [];
 			isMoveModalOpen.value = true;
 		},
 	}],
@@ -466,15 +561,20 @@ const getFolderMenuItems = (folder: GlobalFolder) => [
 
 const getFileMenuItems = (file: GlobalFile) => [
 	[{
+		label: file.type.startsWith("image/") ? "Anzeigen" : file.type === "video/mp4" ? "Abspielen" : "Download",
+		icon: file.type.startsWith("image/") ? "i-lucide-eye" : file.type === "video/mp4" ? "i-lucide-play" : "i-lucide-download",
+		onSelect: () => handleFileClick(file),
+	}],
+	[{
 		label: "Download",
 		icon: "i-lucide-download",
 		onSelect: () => downloadFile(file),
-	}],
-	[{
+	}, {
 		label: "Umbenennen",
 		icon: "i-lucide-pencil",
 		onSelect: () => {
 			selectedFiles.value = [file];
+			selectedFolders.value = [];
 			openRenameModal();
 		},
 	}, {
@@ -587,7 +687,17 @@ const clearSelection = () => {
 	selectedFolders.value = [];
 };
 
-onMounted(fetchData);
+onMounted(async () => {
+	const folderFromUrl = route.query.folder as string | undefined;
+	if (folderFromUrl) {
+		currentFolderId.value = folderFromUrl;
+	}
+	await fetchData();
+});
+
+watch(() => route.query.folder, (newFolderId) => {
+	currentFolderId.value = (newFolderId as string) || null;
+});
 </script>
 
 <template>
@@ -603,7 +713,7 @@ onMounted(fetchData);
 						variant="soft"
 						color="neutral"
 						icon="i-lucide-folder-plus"
-						@click="isCreatingFolder = true"
+						@click="createFolderInline"
 					>
 						<span class="hidden sm:inline">Neuer Ordner</span>
 					</UButton>
@@ -612,12 +722,33 @@ onMounted(fetchData);
 							as="span"
 							color="primary"
 							icon="i-lucide-upload"
-							:loading="isUploading"
+							:loading="uploadQueue.isUploading"
 						>
 							<span class="hidden sm:inline">Hochladen</span>
 						</UButton>
-						<input type="file" multiple class="hidden" @change="handleFileSelect" />
+						<input type="file" multiple accept="image/*,video/mp4,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar" class="hidden" @change="handleFileSelect" />
 					</label>
+				</div>
+			</div>
+
+			<div v-if="uploadQueue.isUploading" class="mb-6 bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-4">
+				<div class="flex items-center gap-4">
+					<div class="flex-1">
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-sm font-medium text-stone-700 dark:text-stone-300">
+								Lade hoch: {{ uploadQueue.currentFile }}
+							</span>
+							<span class="text-sm text-stone-500">
+								{{ uploadQueue.completed }}/{{ uploadQueue.total }}
+							</span>
+						</div>
+						<div class="h-2 bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden">
+							<div 
+								class="h-full bg-primary transition-all duration-300 rounded-full"
+								:style="{ width: `${(uploadQueue.completed / uploadQueue.total) * 100}%` }"
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -712,8 +843,7 @@ onMounted(fetchData);
 					<div v-if="hasSelection && $isAdmin" class="flex flex-wrap items-center gap-2 px-4 md:px-6 py-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800">
 						<UIcon name="i-lucide-files" class="w-5 h-5 text-primary shrink-0" />
 						<span class="text-sm font-medium text-primary">
-							{{ selectedFiles.length + selectedFolders.length }} ausgewählt
-							<template v-if="selectedFolders.length > 0">({{ selectedFolders.length }} Ordner, {{ selectedFiles.length }} Dateien)</template>
+							{{ selectedFiles.length + selectedFolders.length }} von {{ totalItemsInFolder }} ausgewählt
 						</span>
 						<div class="flex-1" />
 						<div class="flex items-center gap-1">
@@ -734,27 +864,6 @@ onMounted(fetchData);
 					</div>
 
 					<div
-						v-if="isCreatingFolder"
-						class="px-4 md:px-6 py-3 md:py-4 bg-stone-50 dark:bg-stone-800/50 border-b border-stone-100 dark:border-stone-700"
-					>
-						<div class="flex items-center gap-2 md:gap-3">
-							<UIcon name="i-lucide-folder" class="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0" />
-							<input
-								v-model="newFolderName"
-								type="text"
-								placeholder="Ordnername..."
-								class="flex-1 px-3 py-2 text-sm bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-								@keyup.enter="createFolder"
-								@keyup.escape="isCreatingFolder = false"
-							/>
-							<UButton size="sm" @click="createFolder">OK</UButton>
-							<UButton size="sm" variant="ghost" color="neutral" @click="isCreatingFolder = false">
-								<UIcon name="i-lucide-x" class="w-4 h-4" />
-							</UButton>
-						</div>
-					</div>
-
-					<div
 						class="min-h-[300px]"
 						:class="{ 'border-2 border-dashed border-primary bg-primary-50 dark:bg-primary-900/10': dragover && $isAdmin }"
 						@dragover.prevent="dragover = true"
@@ -767,7 +876,6 @@ onMounted(fetchData);
 							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">Ziehen Sie Dateien hierher oder klicken Sie auf "Hochladen"</p>
 						</div>
 
-						<!-- Grid View -->
 						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
 							<div
 								v-for="folder in sortedSubfolders"
@@ -776,13 +884,14 @@ onMounted(fetchData);
 								:class="isFolderSelected(folder) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
 							>
 								<button
+									v-if="!editingFolderId || editingFolderId !== folder.id"
 									class="absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors z-10"
 									:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
 									@click.stop="toggleFolderSelection(folder)"
 								>
 									<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-3 h-3 text-white" />
 								</button>
-								<UDropdownMenu v-if="$isAdmin" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+								<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
 									<button
 										class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all z-10 flex items-center justify-center"
 										@click.stop
@@ -790,11 +899,29 @@ onMounted(fetchData);
 										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 									</button>
 								</UDropdownMenu>
-								<button class="w-full" @click="navigateToFolder(folder.id)">
+								
+								<div v-if="editingFolderId === folder.id" class="w-full" @click.stop>
+									<div class="aspect-[4/3] rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-2 md:mb-3">
+										<UIcon name="i-lucide-folder" class="w-8 h-8 md:w-12 md:h-12 text-primary" />
+									</div>
+									<input
+										v-model="editingFolderName"
+										type="text"
+										class="folder-name-input w-full px-2 py-1 text-xs md:text-sm bg-white dark:bg-stone-900 border border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-center"
+										@keydown="handleFolderKeydown($event, folder.id)"
+										@blur="saveFolderName(folder.id)"
+									/>
+								</div>
+								<button v-else class="w-full" @click="navigateToFolder(folder.id)">
 									<div class="aspect-[4/3] rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-2 md:mb-3">
 										<UIcon name="i-lucide-folder" class="w-8 h-8 md:w-12 md:h-12 text-primary group-hover:scale-110 transition-transform" />
 									</div>
 									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
+									<p class="text-[10px] text-stone-400 mt-0.5">
+										<template v-if="folderImageCount(folder.id) > 0">{{ folderImageCount(folder.id) }} Bilder</template>
+										<template v-if="folderImageCount(folder.id) > 0 && folderFileCount(folder.id) > 0"> · </template>
+										<template v-if="folderFileCount(folder.id) > 0">{{ folderFileCount(folder.id) }} Dateien</template>
+									</p>
 								</button>
 							</div>
 
@@ -819,9 +946,17 @@ onMounted(fetchData);
 										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 									</button>
 								</UDropdownMenu>
-								<button class="w-full" @click="downloadFile(file)" @dblclick="downloadFile(file)">
+								<button class="w-full" @click="handleFileClick(file)">
 									<div v-if="file.type.startsWith('image/')" class="aspect-[4/3] rounded-xl overflow-hidden mb-2 md:mb-3 bg-stone-100 dark:bg-stone-700">
-										<img :src="file.url" :alt="file.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+										<img :src="file.thumbnailUrl || file.url" :alt="file.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+									</div>
+									<div v-else-if="file.type === 'video/mp4'" class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3 relative" :class="getFileIconBg(file.type)">
+										<UIcon :name="getFileIcon(file.type)" class="w-8 h-8 md:w-12 md:h-12" :class="getFileIconColor(file.type)" />
+										<div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+											<div class="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+												<UIcon name="i-lucide-play" class="w-5 h-5 text-stone-800 ml-0.5" />
+											</div>
+										</div>
 									</div>
 									<div v-else class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3" :class="getFileIconBg(file.type)">
 										<UIcon :name="getFileIcon(file.type)" class="w-8 h-8 md:w-12 md:h-12" :class="getFileIconColor(file.type)" />
@@ -832,7 +967,6 @@ onMounted(fetchData);
 							</div>
 						</div>
 
-						<!-- List View -->
 						<div v-else class="p-3 md:p-6">
 							<div class="overflow-x-auto">
 								<table class="w-full text-sm">
@@ -857,6 +991,7 @@ onMounted(fetchData);
 										>
 											<td class="py-3 px-2">
 												<button 
+													v-if="!editingFolderId || editingFolderId !== folder.id"
 													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
 													:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
 													@click.stop="toggleFolderSelection(folder)"
@@ -865,18 +1000,33 @@ onMounted(fetchData);
 												</button>
 											</td>
 											<td class="py-3 px-2">
-												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="navigateToFolder(folder.id)">
+												<div v-if="editingFolderId === folder.id" class="flex items-center gap-2" @click.stop>
+													<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary shrink-0" />
+													<input
+														v-model="editingFolderName"
+														type="text"
+														class="folder-name-input flex-1 px-2 py-1 bg-white dark:bg-stone-900 border border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+														@keydown="handleFolderKeydown($event, folder.id)"
+														@blur="saveFolderName(folder.id)"
+													/>
+												</div>
+												<button v-else class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="navigateToFolder(folder.id)">
 													<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary shrink-0" />
 													<span class="font-medium truncate">{{ folder.name }}</span>
 												</button>
 											</td>
-											<td class="py-3 px-2 hidden md:table-cell text-stone-500">Ordner</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500">
+												<template v-if="folderImageCount(folder.id) > 0">{{ folderImageCount(folder.id) }} Bilder</template>
+												<template v-if="folderImageCount(folder.id) > 0 && folderFileCount(folder.id) > 0">, </template>
+												<template v-if="folderFileCount(folder.id) > 0">{{ folderFileCount(folder.id) }} Dateien</template>
+												<template v-if="folderImageCount(folder.id) === 0 && folderFileCount(folder.id) === 0">Ordner</template>
+											</td>
 											<td class="py-3 px-2 hidden sm:table-cell text-stone-500">—</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500">—</td>
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(folder.createdAt) }}</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ folder.createdByName || "—" }}</td>
 											<td class="py-3 px-2">
-												<UDropdownMenu v-if="$isAdmin" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+												<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
 													<button class="w-6 h-6 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
 														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 													</button>
@@ -899,9 +1049,12 @@ onMounted(fetchData);
 												</button>
 											</td>
 											<td class="py-3 px-2">
-												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="downloadFile(file)">
+												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="handleFileClick(file)">
 													<div v-if="file.type.startsWith('image/')" class="w-8 h-8 rounded overflow-hidden bg-stone-100 dark:bg-stone-700 shrink-0">
-														<img :src="file.url" :alt="file.name" class="w-full h-full object-cover" />
+														<img :src="file.thumbnailUrl || file.url" :alt="file.name" class="w-full h-full object-cover" />
+													</div>
+													<div v-else-if="file.type === 'video/mp4'" class="w-8 h-8 rounded flex items-center justify-center shrink-0 relative" :class="getFileIconBg(file.type)">
+														<UIcon :name="getFileIcon(file.type)" class="w-4 h-4" :class="getFileIconColor(file.type)" />
 													</div>
 													<div v-else class="w-8 h-8 rounded flex items-center justify-center shrink-0" :class="getFileIconBg(file.type)">
 														<UIcon :name="getFileIcon(file.type)" class="w-4 h-4" :class="getFileIconColor(file.type)" />
@@ -979,5 +1132,18 @@ onMounted(fetchData);
 				</UModal>
 			</template>
 		</div>
+
+		<GalleryViewer 
+			v-if="galleryOpen"
+			:images="currentImages"
+			:initial-index="galleryIndex"
+			@close="galleryOpen = false"
+		/>
+
+		<VideoPlayer
+			v-if="videoOpen && currentVideo"
+			:video="currentVideo"
+			@close="videoOpen = false; currentVideo = null"
+		/>
 	</div>
 </template>
