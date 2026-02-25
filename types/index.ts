@@ -118,6 +118,10 @@ export interface GlobalFile {
 	uploadedByName?: string;
 	lastModified?: number;
 	storagePath?: string;
+	thumbnailPath?: string;
+	thumbnailUrl?: string;
+	optimizedPath?: string;
+	optimizedUrl?: string;
 	deletedAt?: string;
 	deletedBy?: string;
 }

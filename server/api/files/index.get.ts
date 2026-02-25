@@ -1,7 +1,20 @@
 import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 
-const SIGNED_URL_EXPIRY_MINUTES = 5;
+const SIGNED_URL_EXPIRY_MINUTES = 60;
+
+const generateSignedUrl = async (bucket: ReturnType<typeof storage.bucket>, path: string): Promise<string | null> => {
+	try {
+		const file = bucket.file(path);
+		const [url] = await file.getSignedUrl({
+			action: "read",
+			expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
+		});
+		return url;
+	} catch {
+		return null;
+	}
+};
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -50,7 +63,6 @@ export default defineEventHandler(async (event) => {
 					const userRecord = await auth.getUser(uid);
 					displayName = userRecord.displayName || undefined;
 				} catch {
-					// User not found in Auth, skip
 				}
 			}
 			if (displayName) {
@@ -61,23 +73,15 @@ export default defineEventHandler(async (event) => {
 
 	const files = await Promise.all(
 		rawFiles.map(async (data) => {
-			let url = null;
-
-			if (data.storagePath) {
-				try {
-					const file = bucket.file(data.storagePath);
-					[url] = await file.getSignedUrl({
-						action: "read",
-						expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
-					});
-				} catch (e) {
-					console.error("Error generating signed URL:", e);
-				}
-			}
+			const url = data.storagePath ? await generateSignedUrl(bucket, data.storagePath) : null;
+			const thumbnailUrl = data.thumbnailPath ? await generateSignedUrl(bucket, data.thumbnailPath) : null;
+			const optimizedUrl = data.optimizedPath ? await generateSignedUrl(bucket, data.optimizedPath) : null;
 
 			return {
 				...data,
 				url,
+				thumbnailUrl,
+				optimizedUrl,
 				uploadedByName: data.uploadedBy ? userNames[data.uploadedBy] : undefined,
 			};
 		})
