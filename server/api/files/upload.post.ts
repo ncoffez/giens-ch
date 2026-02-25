@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const body = await readBody(event);
-	const { file: base64Data, name, type, size, folderId } = body;
+	const { file: base64Data, name, type, size, folderId, lastModified } = body;
 
 	if (!base64Data || !name) {
 		throw createError({ statusCode: 400, message: "File data and name are required" });
@@ -59,6 +59,7 @@ export default defineEventHandler(async (event) => {
 		folderId: folderId || null,
 		uploadedAt: new Date().toISOString(),
 		uploadedBy: claims.uid,
+		lastModified: typeof lastModified === "number" ? lastModified : undefined,
 	};
 
 	await db.collection("globalFiles").doc(fileId).set(fileRecord);

@@ -1,4 +1,4 @@
-import { db, storage } from "../../useFirebaseAdmin";
+import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 
 const SIGNED_URL_EXPIRY_MINUTES = 5;
@@ -18,11 +18,49 @@ export default defineEventHandler(async (event) => {
 
 	const bucket = storage.bucket();
 
+	const rawFiles = filesSnapshot.docs
+		.filter((doc) => !doc.data().deletedAt)
+		.map((doc) => doc.data());
+
+	const rawFolders = foldersSnapshot.docs.map((doc) => doc.data());
+
+	const userIds = new Set<string>();
+	rawFiles.forEach((f) => {
+		if (f.uploadedBy) userIds.add(f.uploadedBy);
+	});
+	rawFolders.forEach((f) => {
+		if (f.createdBy) userIds.add(f.createdBy);
+	});
+
+	const userNames: Record<string, string> = {};
+	if (userIds.size > 0) {
+		const firestoreUsersSnapshot = await db.collection("users").get();
+		const firestoreUsersMap = new Map<string, { displayName?: string }>();
+		firestoreUsersSnapshot.forEach((doc) => {
+			firestoreUsersMap.set(doc.id, doc.data() as { displayName?: string });
+		});
+
+		for (const uid of userIds) {
+			let displayName: string | undefined;
+			const firestoreData = firestoreUsersMap.get(uid);
+			if (firestoreData?.displayName) {
+				displayName = firestoreData.displayName;
+			} else {
+				try {
+					const userRecord = await auth.getUser(uid);
+					displayName = userRecord.displayName || undefined;
+				} catch {
+					// User not found in Auth, skip
+				}
+			}
+			if (displayName) {
+				userNames[uid] = displayName;
+			}
+		}
+	}
+
 	const files = await Promise.all(
-		filesSnapshot.docs
-			.filter((doc) => !doc.data().deletedAt)
-			.map(async (doc) => {
-			const data = doc.data();
+		rawFiles.map(async (data) => {
 			let url = null;
 
 			if (data.storagePath) {
@@ -40,11 +78,15 @@ export default defineEventHandler(async (event) => {
 			return {
 				...data,
 				url,
+				uploadedByName: data.uploadedBy ? userNames[data.uploadedBy] : undefined,
 			};
 		})
 	);
 
-	const folders = foldersSnapshot.docs.map((doc) => doc.data());
+	const folders = rawFolders.map((data) => ({
+		...data,
+		createdByName: data.createdBy ? userNames[data.createdBy] : undefined,
+	}));
 
 	return { files, folders };
 });

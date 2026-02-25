@@ -14,6 +14,7 @@ const error = ref<string | null>(null);
 
 const currentFolderId = ref<string | null>(null);
 const selectedFiles = ref<GlobalFile[]>([]);
+const selectedFolders = ref<GlobalFolder[]>([]);
 const isUploading = ref(false);
 const isCreatingFolder = ref(false);
 const newFolderName = ref("");
@@ -23,6 +24,10 @@ const isRenameModalOpen = ref(false);
 const isMoveModalOpen = ref(false);
 const renameValue = ref("");
 const isSaving = ref(false);
+
+const viewMode = ref<"grid" | "list">("list");
+const sortBy = ref<"name" | "date" | "size">("name");
+const sortOrder = ref<"asc" | "desc">("asc");
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -49,21 +54,92 @@ const currentSubfolders = computed(() => {
 	return folders.value.filter(f => f.parentId === currentFolderId.value);
 });
 
-const availableFoldersForMove = computed(() => {
-	return folders.value.filter(f => f.id !== currentFolderId.value);
+const sortedSubfolders = computed(() => {
+	const sorted = [...currentSubfolders.value];
+	sorted.sort((a, b) => {
+		let comparison = 0;
+		if (sortBy.value === "name") {
+			comparison = a.name.localeCompare(b.name, "de");
+		} else if (sortBy.value === "date") {
+			comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+		}
+		return sortOrder.value === "asc" ? comparison : -comparison;
+	});
+	return sorted;
 });
 
-const isMultiSelect = computed(() => selectedFiles.value.length > 1);
+const sortedFiles = computed(() => {
+	const sorted = [...currentFiles.value];
+	sorted.sort((a, b) => {
+		let comparison = 0;
+		if (sortBy.value === "name") {
+			comparison = a.name.localeCompare(b.name, "de");
+		} else if (sortBy.value === "date") {
+			const dateA = a.lastModified ? a.lastModified : new Date(a.uploadedAt).getTime();
+			const dateB = b.lastModified ? b.lastModified : new Date(b.uploadedAt).getTime();
+			comparison = dateA - dateB;
+		} else if (sortBy.value === "size") {
+			comparison = a.size - b.size;
+		}
+		return sortOrder.value === "asc" ? comparison : -comparison;
+	});
+	return sorted;
+});
+
+const availableFoldersForMove = computed(() => {
+	const currentFolderIds = new Set<string>();
+	
+	// Collect all descendant folder IDs if we're moving folders
+	if (selectedFolders.value.length > 0) {
+		const collectDescendants = (parentId: string) => {
+			folders.value.filter(f => f.parentId === parentId).forEach(f => {
+				currentFolderIds.add(f.id);
+				collectDescendants(f.id);
+			});
+		};
+		selectedFolders.value.forEach(f => {
+			currentFolderIds.add(f.id);
+			collectDescendants(f.id);
+		});
+	}
+	
+	return folders.value.filter(f => 
+		f.id !== currentFolderId.value && !currentFolderIds.has(f.id)
+	);
+});
+
+const isMultiSelect = computed(() => selectedFiles.value.length > 1 || selectedFolders.value.length > 1);
+
+const hasSelection = computed(() => selectedFiles.value.length > 0 || selectedFolders.value.length > 0);
 
 const navigateToFolder = (folderId: string | null) => {
 	currentFolderId.value = folderId;
 	selectedFiles.value = [];
+	selectedFolders.value = [];
 };
 
 const formatFileSize = (bytes: number) => {
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const formatDate = (dateString: string) => {
+	const date = new Date(dateString);
+	return date.toLocaleDateString("de-CH", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
+};
+
+const formatTimestamp = (timestamp: number) => {
+	const date = new Date(timestamp);
+	return date.toLocaleDateString("de-CH", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 };
 
 const getFileIcon = (type: string) => {
@@ -90,6 +166,19 @@ const getFileIconColor = (type: string) => {
 	if (type.startsWith("audio/")) return "text-cyan-500";
 	if (type.includes("json") || type.includes("javascript") || type.includes("typescript")) return "text-emerald-500";
 	return "text-stone-400";
+};
+
+const getFileIconBg = (type: string) => {
+	if (type.startsWith("image/")) return "bg-purple-100 dark:bg-purple-900/30";
+	if (type === "application/pdf") return "bg-red-100 dark:bg-red-900/30";
+	if (type.includes("word") || type.includes("document")) return "bg-blue-100 dark:bg-blue-900/30";
+	if (type.includes("sheet") || type.includes("excel")) return "bg-green-100 dark:bg-green-900/30";
+	if (type.includes("presentation") || type.includes("powerpoint")) return "bg-orange-100 dark:bg-orange-900/30";
+	if (type.includes("zip") || type.includes("rar") || type.includes("archive")) return "bg-yellow-100 dark:bg-yellow-900/30";
+	if (type.startsWith("video/")) return "bg-pink-100 dark:bg-pink-900/30";
+	if (type.startsWith("audio/")) return "bg-cyan-100 dark:bg-cyan-900/30";
+	if (type.includes("json") || type.includes("javascript") || type.includes("typescript")) return "bg-emerald-100 dark:bg-emerald-900/30";
+	return "bg-stone-100 dark:bg-stone-800";
 };
 
 const fetchData = async () => {
@@ -141,6 +230,7 @@ const uploadFiles = async (fileList: File[]) => {
 						type: file.type,
 						size: file.size,
 						folderId: currentFolderId.value,
+						lastModified: file.lastModified,
 					},
 				});
 				toast.add({ title: `${file.name} hochgeladen`, color: "success" });
@@ -185,8 +275,21 @@ const toggleFileSelection = (file: GlobalFile) => {
 	}
 };
 
+const toggleFolderSelection = (folder: GlobalFolder) => {
+	const index = selectedFolders.value.findIndex(f => f.id === folder.id);
+	if (index === -1) {
+		selectedFolders.value.push(folder);
+	} else {
+		selectedFolders.value.splice(index, 1);
+	}
+};
+
 const isFileSelected = (file: GlobalFile) => {
 	return selectedFiles.value.some(f => f.id === file.id);
+};
+
+const isFolderSelected = (folder: GlobalFolder) => {
+	return selectedFolders.value.some(f => f.id === folder.id);
 };
 
 const downloadFile = async (file: GlobalFile) => {
@@ -263,16 +366,130 @@ const deleteFolder = async (folder: GlobalFolder) => {
 			body: { folderId: folder.id },
 		});
 		toast.add({ title: "Ordner gelöscht", color: "success" });
+		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
 		fetchData();
 	} catch (e: any) {
 		toast.add({ title: "Fehler beim Löschen", description: e.message, color: "error" });
 	}
 };
 
+const deleteSelectedFolders = async () => {
+	if (!confirm(`${selectedFolders.value.length} Ordner wirklich löschen?`)) return;
+
+	for (const folder of [...selectedFolders.value]) {
+		const hasFiles = files.value.some(f => f.folderId === folder.id);
+		const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
+
+		if (hasFiles || hasSubfolders) {
+			toast.add({ title: `"${folder.name}" ist nicht leer`, description: "Übersprungen.", color: "warning" });
+			continue;
+		}
+
+		try {
+			await $fetch("/api/folders/delete", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: { folderId: folder.id },
+			});
+		} catch (e: any) {
+			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: e.data?.message || e.message, color: "error" });
+		}
+	}
+	toast.add({ title: "Ordner gelöscht", color: "success" });
+	selectedFolders.value = [];
+	fetchData();
+};
+
+const deleteSelectedItems = async () => {
+	const total = selectedFiles.value.length + selectedFolders.value.length;
+	if (!confirm(`${total} Element(e) wirklich löschen?`)) return;
+
+	let deletedCount = 0;
+
+	for (const folder of [...selectedFolders.value]) {
+		const hasFiles = files.value.some(f => f.folderId === folder.id);
+		const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
+
+		if (hasFiles || hasSubfolders) {
+			toast.add({ title: `"${folder.name}" ist nicht leer`, description: "Übersprungen.", color: "warning" });
+			continue;
+		}
+
+		try {
+			await $fetch("/api/folders/delete", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: { folderId: folder.id },
+			});
+			deletedCount++;
+		} catch (e: any) {
+			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: e.data?.message || e.message, color: "error" });
+		}
+	}
+
+	for (const file of [...selectedFiles.value]) {
+		try {
+			await $fetch("/api/files/delete", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: { fileId: file.id },
+			});
+			deletedCount++;
+		} catch (e: any) {
+			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: e.data?.message || e.message, color: "error" });
+		}
+	}
+
+	if (deletedCount > 0) {
+		toast.add({ title: `${deletedCount} Element(e) gelöscht`, color: "success" });
+	}
+	selectedFiles.value = [];
+	selectedFolders.value = [];
+	fetchData();
+};
+
 const getFolderMenuItems = (folder: GlobalFolder) => [
 	[{
+		label: "Verschieben",
+		icon: "i-lucide-folder-input",
+		onSelect: () => {
+			selectedFolders.value = [folder];
+			isMoveModalOpen.value = true;
+		},
+	}],
+	[{
 		label: "Löschen",
+		icon: "i-lucide-trash-2",
 		onSelect: () => deleteFolder(folder),
+	}],
+];
+
+const getFileMenuItems = (file: GlobalFile) => [
+	[{
+		label: "Download",
+		icon: "i-lucide-download",
+		onSelect: () => downloadFile(file),
+	}],
+	[{
+		label: "Umbenennen",
+		icon: "i-lucide-pencil",
+		onSelect: () => {
+			selectedFiles.value = [file];
+			openRenameModal();
+		},
+	}, {
+		label: "Verschieben",
+		icon: "i-lucide-folder-input",
+		onSelect: () => {
+			selectedFiles.value = [file];
+			selectedFolders.value = [];
+			isMoveModalOpen.value = true;
+		},
+	}],
+	[{
+		label: "Löschen",
+		icon: "i-lucide-trash-2",
+		onSelect: () => deleteFile(file),
 	}],
 ];
 
@@ -307,11 +524,12 @@ const renameFile = async () => {
 	}
 };
 
-const moveFiles = async (targetFolderId: string | null) => {
-	if (selectedFiles.value.length === 0) return;
+const moveItems = async (targetFolderId: string | null) => {
+	if (selectedFiles.value.length === 0 && selectedFolders.value.length === 0) return;
 
 	isSaving.value = true;
 	let successCount = 0;
+
 	for (const file of selectedFiles.value) {
 		try {
 			await $fetch("/api/files/move", {
@@ -327,14 +545,46 @@ const moveFiles = async (targetFolderId: string | null) => {
 			toast.add({ title: `Fehler beim Verschieben von ${file.name}`, description: e.message, color: "error" });
 		}
 	}
+
+	for (const folder of selectedFolders.value) {
+		try {
+			await $fetch("/api/folders/move", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: {
+					folderId: folder.id,
+					targetParentId: targetFolderId,
+				},
+			});
+			successCount++;
+		} catch (e: any) {
+			toast.add({ title: `Fehler beim Verschieben von ${folder.name}`, description: e.message, color: "error" });
+		}
+	}
 	
 	if (successCount > 0) {
-		toast.add({ title: `${successCount} Datei(en) verschoben`, color: "success" });
+		const itemWord = successCount === 1 ? "Element" : "Elemente";
+		toast.add({ title: `${successCount} ${itemWord} verschoben`, color: "success" });
 	}
 	isMoveModalOpen.value = false;
 	selectedFiles.value = [];
+	selectedFolders.value = [];
 	fetchData();
 	isSaving.value = false;
+};
+
+const toggleSort = (column: "name" | "date" | "size") => {
+	if (sortBy.value === column) {
+		sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+	} else {
+		sortBy.value = column;
+		sortOrder.value = "asc";
+	}
+};
+
+const clearSelection = () => {
+	selectedFiles.value = [];
+	selectedFolders.value = [];
 };
 
 onMounted(fetchData);
@@ -411,24 +661,75 @@ onMounted(fetchData);
 						</div>
 					</div>
 
-					<div v-if="selectedFiles.length > 0 && $isAdmin" class="flex flex-wrap items-center gap-2 px-4 md:px-6 py-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800">
+					<div class="px-4 md:px-6 py-2 md:py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4">
+						<div class="flex items-center gap-2">
+							<UButtonGroup size="xs">
+								<UButton
+									:variant="viewMode === 'grid' ? 'solid' : 'ghost'"
+									color="neutral"
+									icon="i-lucide-grid-3x3"
+									@click="viewMode = 'grid'"
+								/>
+								<UButton
+									:variant="viewMode === 'list' ? 'solid' : 'ghost'"
+									color="neutral"
+									icon="i-lucide-list"
+									@click="viewMode = 'list'"
+								/>
+							</UButtonGroup>
+						</div>
+						<div class="flex items-center gap-2 text-xs">
+							<span class="text-stone-500 hidden sm:inline">Sortieren:</span>
+							<UButtonGroup size="xs">
+								<UButton
+									:variant="sortBy === 'name' ? 'soft' : 'ghost'"
+									color="neutral"
+									@click="toggleSort('name')"
+								>
+									Name
+									<UIcon v-if="sortBy === 'name'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
+								</UButton>
+								<UButton
+									:variant="sortBy === 'date' ? 'soft' : 'ghost'"
+									color="neutral"
+									@click="toggleSort('date')"
+								>
+									Datum
+									<UIcon v-if="sortBy === 'date'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
+								</UButton>
+								<UButton
+									:variant="sortBy === 'size' ? 'soft' : 'ghost'"
+									color="neutral"
+									@click="toggleSort('size')"
+								>
+									Größe
+									<UIcon v-if="sortBy === 'size'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
+								</UButton>
+							</UButtonGroup>
+						</div>
+					</div>
+
+					<div v-if="hasSelection && $isAdmin" class="flex flex-wrap items-center gap-2 px-4 md:px-6 py-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800">
 						<UIcon name="i-lucide-files" class="w-5 h-5 text-primary shrink-0" />
-						<span class="text-sm font-medium text-primary">{{ selectedFiles.length }} ausgewählt</span>
+						<span class="text-sm font-medium text-primary">
+							{{ selectedFiles.length + selectedFolders.length }} ausgewählt
+							<template v-if="selectedFolders.length > 0">({{ selectedFolders.length }} Ordner, {{ selectedFiles.length }} Dateien)</template>
+						</span>
 						<div class="flex-1" />
 						<div class="flex items-center gap-1">
-							<UButton size="xs" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
+							<UButton v-if="selectedFiles.length > 0" size="xs" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
 								<span class="hidden md:inline">Download</span>
 							</UButton>
-							<UButton v-if="selectedFiles.length === 1" size="xs" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
+							<UButton v-if="selectedFiles.length === 1 && selectedFolders.length === 0" size="xs" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
 								<span class="hidden md:inline">Umbenennen</span>
 							</UButton>
 							<UButton size="xs" variant="ghost" color="neutral" @click="isMoveModalOpen = true" icon="i-lucide-folder-input">
 								<span class="hidden md:inline">Verschieben</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="error" @click="deleteSelectedFiles" icon="i-lucide-trash-2">
+							<UButton size="xs" variant="ghost" color="error" @click="deleteSelectedItems" icon="i-lucide-trash-2">
 								<span class="hidden md:inline">Löschen</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-x" @click="selectedFiles = []" />
+							<UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearSelection" />
 						</div>
 					</div>
 
@@ -460,57 +761,170 @@ onMounted(fetchData);
 						@dragleave.prevent="dragover = false"
 						@drop.prevent="handleFileDrop"
 					>
-						<div v-if="currentSubfolders.length === 0 && currentFiles.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-stone-400">
+						<div v-if="sortedSubfolders.length === 0 && sortedFiles.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-stone-400">
 							<UIcon name="i-lucide-folder-open" class="w-12 h-12 md:w-16 md:h-16 mb-4" />
 							<p class="font-medium text-base md:text-lg">Keine Dateien</p>
 							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">Ziehen Sie Dateien hierher oder klicken Sie auf "Hochladen"</p>
 						</div>
 
-						<div v-else class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
-							<button
-								v-for="folder in currentSubfolders"
+						<!-- Grid View -->
+						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
+							<div
+								v-for="folder in sortedSubfolders"
 								:key="folder.id"
-								class="group p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 border border-stone-100 dark:border-stone-700 hover:border-primary transition-all text-center"
-								@click="navigateToFolder(folder.id)"
+								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
+								:class="isFolderSelected(folder) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
 							>
-								<div class="relative">
-									<div class="aspect-square rounded-xl bg-stone-100 dark:bg-stone-700 flex items-center justify-center mb-2">
-										<UIcon name="i-lucide-folder" class="w-10 h-10 text-primary group-hover:scale-110 transition-transform" />
+								<button
+									class="absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors z-10"
+									:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									@click.stop="toggleFolderSelection(folder)"
+								>
+									<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-3 h-3 text-white" />
+								</button>
+								<UDropdownMenu v-if="$isAdmin" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+									<button
+										class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all z-10 flex items-center justify-center"
+										@click.stop
+									>
+										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+									</button>
+								</UDropdownMenu>
+								<button class="w-full" @click="navigateToFolder(folder.id)">
+									<div class="aspect-[4/3] rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-2 md:mb-3">
+										<UIcon name="i-lucide-folder" class="w-8 h-8 md:w-12 md:h-12 text-primary group-hover:scale-110 transition-transform" />
 									</div>
-									<UDropdownMenu v-if="$isAdmin" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-32' }">
-										<button
-											class="absolute top-0 right-0 p-1 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all"
-											@click.stop
-										>
-											<UIcon name="i-lucide-more-horizontal" class="w-3.5 h-3.5 text-stone-500" />
-										</button>
-									</UDropdownMenu>
-								</div>
-								<p class="text-xs font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
-							</button>
+									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
+								</button>
+							</div>
 
-							<button
-								v-for="file in currentFiles"
+							<div
+								v-for="file in sortedFiles"
 								:key="file.id"
-								class="p-3 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center"
-								:class="isFileSelected(file) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-100 dark:border-stone-700 hover:border-primary'"
-								@click="toggleFileSelection(file)"
-								@dblclick="downloadFile(file)"
+								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
+								:class="isFileSelected(file) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
 							>
-								<div class="relative">
-									<div v-if="file.type.startsWith('image/')" class="aspect-square rounded-xl overflow-hidden mb-2 bg-stone-100 dark:bg-stone-700">
-										<img :src="file.url" :alt="file.name" class="w-full h-full object-cover" />
+								<button
+									class="absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors z-10"
+									:class="isFileSelected(file) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									@click.stop="toggleFileSelection(file)"
+								>
+									<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-3 h-3 text-white" />
+								</button>
+								<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
+									<button
+										class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all z-10 flex items-center justify-center"
+										@click.stop
+									>
+										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+									</button>
+								</UDropdownMenu>
+								<button class="w-full" @click="downloadFile(file)" @dblclick="downloadFile(file)">
+									<div v-if="file.type.startsWith('image/')" class="aspect-[4/3] rounded-xl overflow-hidden mb-2 md:mb-3 bg-stone-100 dark:bg-stone-700">
+										<img :src="file.url" :alt="file.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
 									</div>
-									<div v-else class="aspect-square rounded-xl bg-stone-100 dark:bg-stone-700 flex items-center justify-center mb-2">
-										<UIcon :name="getFileIcon(file.type)" class="w-10 h-10" :class="getFileIconColor(file.type)" />
+									<div v-else class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3" :class="getFileIconBg(file.type)">
+										<UIcon :name="getFileIcon(file.type)" class="w-8 h-8 md:w-12 md:h-12" :class="getFileIconColor(file.type)" />
 									</div>
-									<div v-if="isFileSelected(file)" class="absolute top-1 left-1 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center">
-										<UIcon name="i-lucide-check" class="w-3 h-3" />
-									</div>
-								</div>
-								<p class="text-xs font-medium text-stone-700 dark:text-stone-300 truncate">{{ file.name }}</p>
-								<p class="text-[10px] text-stone-400">{{ formatFileSize(file.size) }}</p>
-							</button>
+									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ file.name }}</p>
+									<p class="text-[10px] md:text-xs text-stone-400 mt-0.5">{{ formatDate(file.uploadedAt) }}</p>
+								</button>
+							</div>
+						</div>
+
+						<!-- List View -->
+						<div v-else class="p-3 md:p-6">
+							<div class="overflow-x-auto">
+								<table class="w-full text-sm">
+									<thead>
+										<tr class="border-b border-stone-200 dark:border-stone-700 text-left">
+											<th class="py-3 px-2 w-8"></th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400">Name</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">Typ</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden sm:table-cell">Größe</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">Dateidatum</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">Hochgeladen</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">Von</th>
+											<th class="py-3 px-2 w-10"></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr
+											v-for="folder in sortedSubfolders"
+											:key="folder.id"
+											class="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+											:class="{ 'bg-primary-50 dark:bg-primary-900/20': isFolderSelected(folder) }"
+										>
+											<td class="py-3 px-2">
+												<button 
+													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
+													@click.stop="toggleFolderSelection(folder)"
+												>
+													<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-3 h-3 text-white" />
+												</button>
+											</td>
+											<td class="py-3 px-2">
+												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="navigateToFolder(folder.id)">
+													<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary shrink-0" />
+													<span class="font-medium truncate">{{ folder.name }}</span>
+												</button>
+											</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500">Ordner</td>
+											<td class="py-3 px-2 hidden sm:table-cell text-stone-500">—</td>
+											<td class="py-3 px-2 hidden lg:table-cell text-stone-500">—</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(folder.createdAt) }}</td>
+											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ folder.createdByName || "—" }}</td>
+											<td class="py-3 px-2">
+												<UDropdownMenu v-if="$isAdmin" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+													<button class="w-6 h-6 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
+														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+													</button>
+												</UDropdownMenu>
+											</td>
+										</tr>
+										<tr
+											v-for="file in sortedFiles"
+											:key="file.id"
+											class="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+											:class="{ 'bg-primary-50 dark:bg-primary-900/20': isFileSelected(file) }"
+										>
+											<td class="py-3 px-2">
+												<button 
+													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													:class="isFileSelected(file) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
+													@click.stop="toggleFileSelection(file)"
+												>
+													<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-3 h-3 text-white" />
+												</button>
+											</td>
+											<td class="py-3 px-2">
+												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="downloadFile(file)">
+													<div v-if="file.type.startsWith('image/')" class="w-8 h-8 rounded overflow-hidden bg-stone-100 dark:bg-stone-700 shrink-0">
+														<img :src="file.url" :alt="file.name" class="w-full h-full object-cover" />
+													</div>
+													<div v-else class="w-8 h-8 rounded flex items-center justify-center shrink-0" :class="getFileIconBg(file.type)">
+														<UIcon :name="getFileIcon(file.type)" class="w-4 h-4" :class="getFileIconColor(file.type)" />
+													</div>
+													<span class="font-medium truncate">{{ file.name }}</span>
+												</button>
+											</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500 truncate">{{ file.type || "Unbekannt" }}</td>
+											<td class="py-3 px-2 hidden sm:table-cell text-stone-500">{{ formatFileSize(file.size) }}</td>
+											<td class="py-3 px-2 hidden lg:table-cell text-stone-500">{{ file.lastModified ? formatTimestamp(file.lastModified) : "—" }}</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(file.uploadedAt) }}</td>
+											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ file.uploadedByName || "—" }}</td>
+											<td class="py-3 px-2">
+												<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
+													<button class="w-6 h-6 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
+														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+													</button>
+												</UDropdownMenu>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -529,17 +943,18 @@ onMounted(fetchData);
 					</template>
 				</UModal>
 
-				<UModal v-model:open="isMoveModalOpen" title="Dateien verschieben">
+				<UModal v-model:open="isMoveModalOpen" title="Elemente verschieben">
 					<template #body>
 						<div class="p-6 space-y-4">
 							<p class="text-sm text-stone-500">
-								Wählen Sie einen Zielordner für <strong>{{ selectedFiles.length }} Datei(en)</strong>
+								Wählen Sie einen Zielordner für <strong>{{ selectedFiles.length + selectedFolders.length }} Element(e)</strong>
 							</p>
 							<div class="max-h-64 overflow-y-auto space-y-2">
 								<button
 									class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
 									:class="currentFolderId === null ? 'border-primary bg-primary-50 dark:bg-primary-900/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
-									@click="moveFiles(null)"
+									@click="moveItems(null)"
+									:disabled="isSaving"
 								>
 									<UIcon name="i-lucide-home" class="w-5 h-5 text-primary" />
 									<span class="font-medium">Stammverzeichnis</span>
@@ -549,7 +964,8 @@ onMounted(fetchData);
 									:key="folder.id"
 									class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
 									:class="'border-stone-200 dark:border-stone-700 hover:border-primary'"
-									@click="moveFiles(folder.id)"
+									@click="moveItems(folder.id)"
+									:disabled="isSaving"
 								>
 									<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary" />
 									<span class="font-medium">{{ folder.name }}</span>
