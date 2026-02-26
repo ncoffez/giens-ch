@@ -6,6 +6,7 @@ definePageMeta({ middleware: ["is-admin"] });
 const { $currentUser } = useNuxtApp();
 const { token } = useAuthReady();
 const toast = useToast();
+const { clearUserPreferenceCache, fetchUserPreference } = useFeatureFlags();
 
 const globalSettings = ref<GlobalSettings>({
 	id: "",
@@ -77,6 +78,8 @@ const savePersonalSettings = async () => {
 				homesFeatureEnabled: personalSettings.value.homesFeatureEnabled,
 			},
 		});
+		clearUserPreferenceCache();
+		await fetchUserPreference();
 		toast.add({ title: "Persönliche Einstellungen gespeichert", color: "success" });
 	} catch (e: unknown) {
 		toast.add({ title: getFetchError(e) || "Fehler beim Speichern", color: "error" });

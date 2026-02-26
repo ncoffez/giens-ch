@@ -42,7 +42,8 @@ export default defineEventHandler(async (event) => {
 			uid,
 			email: canAccessPrivate ? user.email : undefined,
 			emailVerified: canAccessPrivate ? user.emailVerified : undefined,
-			metadata: canAccessPrivate ? user.metadata : undefined
+			metadata: canAccessPrivate ? user.metadata : undefined,
+			homesFeatureEnabled: canAccessPrivate ? firestoreData?.homesFeatureEnabled ?? false : undefined,
 		};
 	} catch (e: unknown) {
 		const articlesByUid = await db.collection("articles")
@@ -130,6 +131,7 @@ export default defineEventHandler(async (event) => {
 		};
 	} catch (e: unknown) {
 		console.error("Profile API Error:", e);
-		throw createError({ statusCode: 500, message: "Error fetching user articles: " + e.message });
+		const errorMessage = e instanceof Error ? e.message : "Unknown error";
+		throw createError({ statusCode: 500, message: "Error fetching user articles: " + errorMessage });
 	}
 });

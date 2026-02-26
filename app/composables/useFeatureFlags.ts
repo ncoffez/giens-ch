@@ -65,5 +65,8 @@ export function useFeatureFlags() {
 		isHomesFeatureEnabledForUser,
 		canAccessHomes,
 		isAdmin,
+		clearUserPreferenceCache: () => {
+			userPreferenceCache.value = null;
+		},
 	};
 }
