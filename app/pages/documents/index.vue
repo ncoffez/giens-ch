@@ -289,7 +289,7 @@ const uploadSingleFile = async (file: File): Promise<void> => {
 					},
 				});
 				resolve();
-			} catch (e) {
+			} catch (e: unknown) {
 				reject(e);
 			}
 		};

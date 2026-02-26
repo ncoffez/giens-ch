@@ -24,7 +24,7 @@ async function syncOwnerClaims() {
 				try {
 					await auth.setCustomUserClaims(user.uid, { ...claims, owner: true });
 					grantedClaims++;
-				} catch (e) {
+				} catch (e: unknown) {
 					throw new Error(`Failed to grant owner claim to ${user.uid}: ${e}`);
 				}
 			} else if (!shouldBeOwner && isClaimed) {
@@ -32,7 +32,7 @@ async function syncOwnerClaims() {
 					const { owner, ...remainingClaims } = claims;
 					await auth.setCustomUserClaims(user.uid, remainingClaims);
 					revokedClaims++;
-				} catch (e) {
+				} catch (e: unknown) {
 					throw new Error(`Failed to revoke owner claim from ${user.uid}: ${e}`);
 				}
 			}
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
 					});
 					migratedHomes++;
 				} catch (e: unknown) {
-					errors.push(`Failed to migrate home ${doc.id}: ${e.message}`);
+					errors.push(`Failed to migrate home ${doc.id}: ${e instanceof Error ? e.message : 'Unknown error'}`);
 				}
 			} else if (ownerId !== undefined && ownerId !== undefined) {
 				try {
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
 						ownerId: ""
 					});
 				} catch (e: unknown) {
-					errors.push(`Failed to remove ownerId from home ${doc.id}: ${e.message}`);
+					errors.push(`Failed to remove ownerId from home ${doc.id}: ${e instanceof Error ? e.message : 'Unknown error'}`);
 				}
 			}
 		}
@@ -95,8 +95,8 @@ export default defineEventHandler(async (event) => {
 		};
 	} catch (e: unknown) {
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (e as { statusCode?: number }).statusCode || 500,
+			message: e instanceof Error ? e.message : "Internal Server Error",
 		});
 	}
 });

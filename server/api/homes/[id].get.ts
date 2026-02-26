@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
 								expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
 							});
 							return { ...file, url };
-						} catch (e) {
+						} catch (e: unknown) {
 							console.error("Error generating signed URL for file:", e);
 							return file;
 						}
@@ -56,8 +56,8 @@ export default defineEventHandler(async (event) => {
 		return home;
 	} catch (e: unknown) {
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (e as { statusCode?: number }).statusCode || 500,
+			message: e instanceof Error ? e.message : "Internal Server Error",
 		});
 	}
 });

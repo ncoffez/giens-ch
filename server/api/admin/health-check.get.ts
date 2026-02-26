@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 			console.log('[Health Check] Firebase Admin initialized:', health.firebaseAdminInitialized);
 			console.log('[Health Check] Project ID:', health.projectId);
 		} catch (e: unknown) {
-			health.errors.push(`Failed to get project ID: ${e?.message || 'Unknown error'}`);
+			health.errors.push(`Failed to get project ID: ${e instanceof Error ? e.message : 'Unknown error'}`);
 		}
 
 		// Try to get current authenticated user (if any)
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
 					console.log('[Health Check] Authenticated user:', health.authenticatedUser.uid);
 				}
 			}
-		} catch (e) {
+		} catch (e: unknown) {
 			console.log('[Health Check] No authenticated user or token verification failed');
 		}
 
@@ -48,12 +48,12 @@ export default defineEventHandler(async (event) => {
 			health.testQuerySuccessful = true;
 			console.log('[Health Check] Database query successful, found:', sampleQuery.size, 'articles');
 		} catch (e: unknown) {
-			health.errors.push(`Database query failed: ${e?.message || 'Unknown error'}`);
+			health.errors.push(`Database query failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
 		}
 
 		return health;
 	} catch (e: unknown) {
-		health.errors.push(e?.message || "Unknown error");
+		health.errors.push(e instanceof Error ? e.message : "Unknown error");
 		console.error('[Health Check] Fatal error:', health.errors);
 		throw createError({
 			statusCode: 500,

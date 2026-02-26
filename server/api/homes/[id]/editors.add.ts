@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
 		let editorUid;
 		try {
 			editorUid = email.includes("@") ? email : email;
-		} catch (e) {
+		} catch (e: unknown) {
 			throw createError({ statusCode: 400, message: "Invalid email format" });
 		}
 
@@ -62,12 +62,12 @@ export default defineEventHandler(async (event) => {
 		const updatedHome = await db.collection("homes").doc(homeId).get();
 		return { id: updatedHome.id, ...updatedHome.data() };
 	} catch (e: unknown) {
-		if (e.code === "auth/user-not-found") {
+		if ((e as { code?: string }).code === "auth/user-not-found") {
 			throw createError({ statusCode: 404, message: "User not found or does not have an account" });
 		}
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (e as { statusCode?: number }).statusCode || 500,
+			message: e instanceof Error ? e.message : "Internal Server Error",
 		});
 	}
 });

@@ -135,7 +135,7 @@ function filterByDateRange(range: string, articles: ArticleMetadata[]): ArticleM
 			const pubDate = new Date(article.published).getTime();
 			return !isNaN(pubDate) && pubDate >= startTime;
 		});
-	} catch (e) {
+	} catch (e: unknown) {
 		console.error("Error in filterByDateRange:", e);
 		return articles;
 	}

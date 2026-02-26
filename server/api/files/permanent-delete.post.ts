@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 			const bucket = storage.bucket();
 			const file = bucket.file(fileData.storagePath);
 			await file.delete();
-		} catch (e) {
+		} catch (e: unknown) {
 			console.error("Error deleting file from storage:", e);
 		}
 	}

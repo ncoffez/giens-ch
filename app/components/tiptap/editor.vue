@@ -219,7 +219,7 @@ const loadDemo = async () => {
 		if (response) {
 			editor.value?.commands.setContent(`<h1>${response.title}</h1> ${response.body}`);
 		}
-	} catch (e) {
+	} catch (e: unknown) {
 		console.error("Failed to load demo article", e);
 	}
 };

@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 	let body: any;
 	try {
 		body = JSON.parse(rawBody.toString());
-	} catch (e) {
+	} catch (e: unknown) {
 		throw createError({ statusCode: 400, message: "Datei zu groß oder ungültiges Format." });
 	}
 
@@ -93,6 +93,6 @@ export default defineEventHandler(async (event) => {
 
 		return { success: true, photoURL: publicUrl };
 	} catch (e: unknown) {
-		throw createError({ statusCode: 503, message: "Speicherdienst Fehler: " + e.message });
+		throw createError({ statusCode: 503, message: "Speicherdienst Fehler: " + (e instanceof Error ? e.message : 'Unknown error') });
 	}
 });
