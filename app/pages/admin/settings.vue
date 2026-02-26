@@ -27,7 +27,7 @@ const savingPersonal = ref(false);
 const error = ref<string | null>(null);
 const isInitialized = ref(false);
 
-const fetchSettings = async () => {
+	const fetchSettings = async () => {
 	try {
 		loading.value = true;
 		error.value = null;
@@ -35,7 +35,9 @@ const fetchSettings = async () => {
 		const [globalData, userData] = await Promise.all([
 			$fetch<GlobalSettings>("/api/settings"),
 			$currentUser?.value?.uid
-				? $fetch<{ homesFeatureEnabled?: boolean }>(`/api/profile/${$currentUser.value.uid}`)
+				? $fetch<{ homesFeatureEnabled?: boolean }>(`/api/profile/${$currentUser.value.uid}`, {
+						headers: { Authorization: `Bearer ${token.value}` },
+					})
 				: null,
 		]);
 
