@@ -6,7 +6,7 @@ const settingsLoading = ref(false);
 
 export function useFeatureFlags() {
 	const nuxtApp = useNuxtApp();
-	const { $currentUser } = nuxtApp;
+	const { $currentUser, $token } = nuxtApp;
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
 
 	const fetchSettings = async (): Promise<GlobalSettings | null> => {
@@ -30,8 +30,14 @@ export function useFeatureFlags() {
 		const uid = $currentUser?.value?.uid;
 		if (!uid) return null;
 
+		const token = $token?.value;
+		const headers: Record<string, string> = {};
+		if (token) {
+			headers.Authorization = `Bearer ${token}`;
+		}
+
 		try {
-			const data = await $fetch<{ homesFeatureEnabled?: boolean }>(`/api/profile/${uid}`);
+			const data = await $fetch<{ homesFeatureEnabled?: boolean }>(`/api/profile/${uid}`, { headers });
 			userPreferenceCache.value = { homesFeatureEnabled: data.homesFeatureEnabled };
 			return userPreferenceCache.value;
 		} catch {
