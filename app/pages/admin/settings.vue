@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GlobalSettings } from "~/types";
+import { useDebounceFn } from "@vueuse/core";
 
 definePageMeta({ middleware: ["is-admin"] });
 
