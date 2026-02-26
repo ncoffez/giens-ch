@@ -88,8 +88,8 @@ import type { NavigationMenuItem } from "@nuxt/ui";
 
 const route = useRoute();
 const nuxtApp = useNuxtApp();
-const colorMode = useColorMode();
-const { canAccessHomes, fetchSettings } = useFeatureFlags();
+	const colorMode = useColorMode();
+const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
@@ -99,6 +99,7 @@ const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
 
 onMounted(async () => {
 	await fetchSettings();
+	await fetchUserPreference();
 });
 
 const isDark = computed({

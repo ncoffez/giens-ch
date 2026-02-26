@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 	const nuxtApp = useNuxtApp() as any;
+	const { canAccessHomes } = useFeatureFlags();
 
 	const navItems = computed(() => {
 		const items = [
@@ -27,7 +28,7 @@
 			items.push({ label: "Docs", icon: "i-lucide-folder", to: "/documents" });
 		}
 
-		if (import.meta.client && nuxtApp.$isOwner?.value) {
+		if (import.meta.client && nuxtApp.$isOwner?.value && canAccessHomes.value) {
 			items.push({ label: "Haus", icon: "i-lucide-building-2", to: "/homes" });
 		}
 
