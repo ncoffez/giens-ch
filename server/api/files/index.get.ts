@@ -16,6 +16,14 @@ const generateSignedUrl = async (bucket: ReturnType<typeof storage.bucket>, path
 	}
 };
 
+const getResizedPath = (originalPath: string, size: string): string => {
+	const pathParts = originalPath.split("/");
+	const fileName = pathParts.pop() || "";
+	const dirPath = pathParts.join("/");
+	const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+	return `${dirPath}/resized/${nameWithoutExt}_${size}.webp`;
+};
+
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
@@ -74,15 +82,32 @@ export default defineEventHandler(async (event) => {
 	const files = await Promise.all(
 		rawFiles.map(async (data) => {
 			const url = data.storagePath ? await generateSignedUrl(bucket, data.storagePath) : null;
-			const thumbnailUrl = data.thumbnailPath ? await generateSignedUrl(bucket, data.thumbnailPath) : null;
-			const optimizedUrl = data.optimizedPath ? await generateSignedUrl(bucket, data.optimizedPath) : null;
+
+			let thumbnailUrl: string | null = null;
+			let optimizedUrl: string | null = null;
+
+			if (data.storagePath && data.type?.startsWith("image/")) {
+				const thumbnailPath = getResizedPath(data.storagePath, "400x400");
+				const optimizedPath = getResizedPath(data.storagePath, "1920x1920");
+
+				thumbnailUrl = await generateSignedUrl(bucket, thumbnailPath);
+				optimizedUrl = await generateSignedUrl(bucket, optimizedPath);
+			}
 
 			return {
-				...data,
+				id: data.id,
+				name: data.name,
+				type: data.type,
+				size: data.size,
 				url,
 				thumbnailUrl,
 				optimizedUrl,
+				folderId: data.folderId,
+				uploadedAt: data.uploadedAt,
+				uploadedBy: data.uploadedBy,
 				uploadedByName: data.uploadedBy ? userNames[data.uploadedBy] : undefined,
+				lastModified: data.lastModified,
+				storagePath: data.storagePath,
 			};
 		})
 	);

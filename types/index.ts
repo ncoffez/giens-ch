@@ -18,6 +18,7 @@ export interface User {
 	photoURL?: string;
 	emailVerified?: boolean;
 	uid?: string;
+	homesFeatureEnabled?: boolean;
 }
 
 export interface AdminUser extends User {
@@ -102,7 +103,7 @@ export interface GlobalSettings {
 	id: string;
 	maxHomeNumber: number;
 	washingMachineUse: string;
-	homesFeatureEnabled: boolean;
+	homesFeatureGloballyEnabled: boolean;
 	updatedAt: string;
 }
 
@@ -112,16 +113,14 @@ export interface GlobalFile {
 	type: string;
 	size: number;
 	url: string;
+	thumbnailUrl?: string;
+	optimizedUrl?: string;
 	folderId: string | null;
 	uploadedAt: string;
 	uploadedBy: string;
 	uploadedByName?: string;
 	lastModified?: number;
 	storagePath?: string;
-	thumbnailPath?: string;
-	thumbnailUrl?: string;
-	optimizedPath?: string;
-	optimizedUrl?: string;
 	deletedAt?: string;
 	deletedBy?: string;
 }

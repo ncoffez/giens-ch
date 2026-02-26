@@ -134,6 +134,25 @@ const availableFoldersForMove = computed(() => {
 
 const hasSelection = computed(() => selectedFiles.value.length > 0 || selectedFolders.value.length > 0);
 
+const isAllSelected = computed(() => {
+	const totalItems = currentFiles.value.length + currentSubfolders.value.length;
+	return totalItems > 0 && selectedFiles.value.length + selectedFolders.value.length === totalItems;
+});
+
+const isSomeSelected = computed(() => {
+	return hasSelection.value && !isAllSelected.value;
+});
+
+const toggleSelectAll = () => {
+	if (isAllSelected.value) {
+		selectedFiles.value = [];
+		selectedFolders.value = [];
+	} else {
+		selectedFiles.value = [...currentFiles.value];
+		selectedFolders.value = [...currentSubfolders.value];
+	}
+};
+
 const totalItemsInFolder = computed(() => currentFiles.value.length + currentSubfolders.value.length);
 
 const folderFileCount = (folderId: string) => 
@@ -289,19 +308,38 @@ const uploadFiles = async (fileList: File[]) => {
 		isUploading: true,
 	};
 
+	const CONCURRENCY_LIMIT = 3;
 	let errorCount = 0;
 
-	for (const file of fileList) {
-		uploadQueue.value.currentFile = file.name;
+	const uploadWithConcurrency = async (files: File[]) => {
+		const results: { success: boolean; fileName: string }[] = [];
 		
-		try {
-			await uploadSingleFile(file);
-			uploadQueue.value.completed++;
-		} catch (e) {
-			errorCount++;
-			console.error(`Failed to upload ${file.name}:`, e);
+		for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
+			const batch = files.slice(i, i + CONCURRENCY_LIMIT);
+			
+			const batchResults = await Promise.allSettled(
+				batch.map(async (file) => {
+					uploadQueue.value.currentFile = file.name;
+					await uploadSingleFile(file);
+					return { success: true, fileName: file.name };
+				})
+			);
+
+			for (const result of batchResults) {
+				if (result.status === "fulfilled") {
+					results.push(result.value);
+					uploadQueue.value.completed++;
+				} else {
+					errorCount++;
+					console.error("Upload failed:", result.reason);
+				}
+			}
 		}
-	}
+		
+		return results;
+	};
+
+	await uploadWithConcurrency(fileList);
 
 	uploadQueue.value.isUploading = false;
 	uploadQueue.value.currentFile = null;
@@ -310,15 +348,15 @@ const uploadFiles = async (fileList: File[]) => {
 
 	const successCount = uploadQueue.value.completed;
 	if (errorCount > 0) {
-		toast.add({ 
-			title: `${successCount}/${fileList.length} Dateien hochgeladen`, 
+		toast.add({
+			title: `${successCount}/${fileList.length} Dateien hochgeladen`,
 			description: `${errorCount} fehlgeschlagen`,
-			color: "warning" 
+			color: "warning",
 		});
 	} else {
-		toast.add({ 
-			title: `${successCount} Datei${successCount !== 1 ? 'en' : ''} hochgeladen`, 
-			color: "success" 
+		toast.add({
+			title: `${successCount} Datei${successCount !== 1 ? "en" : ""} hochgeladen`,
+			color: "success",
 		});
 	}
 };
@@ -427,8 +465,10 @@ const handleFileClick = (file: GlobalFile) => {
 		openGallery(file);
 	} else if (file.type === "video/mp4") {
 		openVideo(file);
-	} else {
+	} else if (file.type === "application/pdf") {
 		downloadFile(file);
+	} else {
+		downloadFileToDisk(file);
 	}
 };
 
@@ -446,9 +486,31 @@ const downloadFile = async (file: GlobalFile) => {
 	}
 };
 
+const downloadFileToDisk = async (file: GlobalFile) => {
+	try {
+		downloadingFileId.value = file.id;
+		const response = await $fetch<{ url: string }>(`/api/files/download?fileId=${file.id}`, {
+			headers: { Authorization: `Bearer ${token.value}` },
+		});
+		
+		const a = document.createElement("a");
+		a.href = response.url;
+		a.download = file.name;
+		a.target = "_blank";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
+	} finally {
+		downloadingFileId.value = null;
+	}
+};
+
 const downloadSelectedFiles = async () => {
 	for (const file of selectedFiles.value) {
-		await downloadFile(file);
+		await downloadFileToDisk(file);
+		await new Promise(resolve => setTimeout(resolve, 100));
 	}
 };
 
@@ -561,14 +623,14 @@ const getFolderMenuItems = (folder: GlobalFolder) => [
 
 const getFileMenuItems = (file: GlobalFile) => [
 	[{
-		label: file.type.startsWith("image/") ? "Anzeigen" : file.type === "video/mp4" ? "Abspielen" : "Download",
-		icon: file.type.startsWith("image/") ? "i-lucide-eye" : file.type === "video/mp4" ? "i-lucide-play" : "i-lucide-download",
+		label: file.type.startsWith("image/") ? "Anzeigen" : file.type === "video/mp4" ? "Abspielen" : file.type === "application/pdf" ? "Öffnen" : "Download",
+		icon: file.type.startsWith("image/") ? "i-lucide-eye" : file.type === "video/mp4" ? "i-lucide-play" : file.type === "application/pdf" ? "i-lucide-external-link" : "i-lucide-download",
 		onSelect: () => handleFileClick(file),
 	}],
 	[{
 		label: "Download",
 		icon: "i-lucide-download",
-		onSelect: () => downloadFile(file),
+		onSelect: () => downloadFileToDisk(file),
 	}, {
 		label: "Umbenennen",
 		icon: "i-lucide-pencil",
@@ -972,7 +1034,16 @@ watch(() => route.query.folder, (newFolderId) => {
 								<table class="w-full text-sm">
 									<thead>
 										<tr class="border-b border-stone-200 dark:border-stone-700 text-left">
-											<th class="py-3 px-2 w-8"></th>
+											<th class="py-3 px-2 w-8">
+												<button 
+													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													:class="isAllSelected ? 'bg-primary border-primary' : isSomeSelected ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
+													@click="toggleSelectAll"
+												>
+													<UIcon v-if="isAllSelected" name="i-lucide-check" class="w-3 h-3 text-white" />
+													<UIcon v-else-if="isSomeSelected" name="i-lucide-minus" class="w-3 h-3 text-white" />
+												</button>
+											</th>
 											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400">Name</th>
 											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">Typ</th>
 											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden sm:table-cell">Größe</th>

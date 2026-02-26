@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
 		}
 
-		const { maxHomeNumber, washingMachineUse, homesFeatureEnabled } = body;
+		const { maxHomeNumber, washingMachineUse, homesFeatureGloballyEnabled } = body;
 
 		if (maxHomeNumber !== undefined && (typeof maxHomeNumber !== "number" || maxHomeNumber < 1)) {
 			throw createError({ statusCode: 400, message: "maxHomeNumber must be a positive number" });
@@ -26,16 +26,17 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 400, message: "washingMachineUse must be a string" });
 		}
 
-		if (homesFeatureEnabled !== undefined && typeof homesFeatureEnabled !== "boolean") {
-			throw createError({ statusCode: 400, message: "homesFeatureEnabled must be a boolean" });
+		if (homesFeatureGloballyEnabled !== undefined && typeof homesFeatureGloballyEnabled !== "boolean") {
+			throw createError({ statusCode: 400, message: "homesFeatureGloballyEnabled must be a boolean" });
 		}
 
-		const updatedSettings = await updateGlobalSettings({ maxHomeNumber, washingMachineUse, homesFeatureEnabled });
+		const updatedSettings = await updateGlobalSettings({ maxHomeNumber, washingMachineUse, homesFeatureGloballyEnabled });
 		return updatedSettings;
 	} catch (e: unknown) {
+		const error = e instanceof Error ? e : new Error(String(e));
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (error as { statusCode?: number }).statusCode || 500,
+			message: error.message || "Internal Server Error",
 		});
 	}
 });

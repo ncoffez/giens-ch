@@ -2,12 +2,13 @@ import type { MiddlewareNuxtApp } from "../../types/nuxt";
 
 export const homesFeatureLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $isAdmin } = nuxtApp;
-	
+
 	if ($isAdmin.value) return true;
 
-	const { canAccessHomes, fetchSettings } = useFeatureFlags();
-	await fetchSettings();
-	
+	const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
+
+	await Promise.all([fetchSettings(), fetchUserPreference()]);
+
 	if (canAccessHomes.value) return true;
 	return "/";
 };

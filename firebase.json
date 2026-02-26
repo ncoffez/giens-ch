@@ -2,7 +2,6 @@
   "functions": [
     {
       "source": ".output/server",
-
       "ignore": [
         ".git",
         "firebase-debug.log",
@@ -12,7 +11,6 @@
   ],
   "hosting": {
     "public": ".output/public",
-
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
@@ -58,5 +56,8 @@
       "firebase-debug.log",
       "firebase-debug.*.log"
     ]
+  },
+  "extensions": {
+    "storage-resize-images": "firebase/storage-resize-images@0.3.1"
   }
 }
