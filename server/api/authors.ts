@@ -21,7 +21,7 @@ export default defineEventHandler(async (_event) => {
 		}));
 		
 		return authors.sort((a, b) => a.name.localeCompare(b.name));
-	} catch (e) {
+	} catch (e: unknown) {
 		return [];
 	}
 });

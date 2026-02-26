@@ -88,6 +88,12 @@ const savePersonalSettings = async () => {
 	}
 };
 
+const debouncedSavePersonal = useDebounceFn(savePersonalSettings, 300);
+
+watch(() => personalSettings.value.homesFeatureEnabled, () => {
+	debouncedSavePersonal();
+});
+
 onMounted(fetchSettings);
 </script>
 
@@ -117,7 +123,7 @@ onMounted(fetchSettings);
 					</div>
 				</template>
 
-				<form @submit.prevent="savePersonalSettings" class="space-y-6">
+				<div class="space-y-6">
 					<div class="flex items-start justify-between gap-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/50">
 						<div class="flex items-start gap-3">
 							<UIcon name="i-lucide-home" class="w-5 h-5 text-stone-400 mt-0.5" />
@@ -128,15 +134,9 @@ onMounted(fetchSettings);
 								</p>
 							</div>
 						</div>
-						<USwitch v-model="personalSettings.homesFeatureEnabled" />
+						<USwitch v-model="personalSettings.homesFeatureEnabled" :loading="savingPersonal" />
 					</div>
-
-					<div class="flex justify-end">
-						<UButton type="submit" :loading="savingPersonal">
-							Speichern
-						</UButton>
-					</div>
-				</form>
+				</div>
 			</UCard>
 
 			<UCard>

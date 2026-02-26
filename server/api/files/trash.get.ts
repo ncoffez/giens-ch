@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 						action: "read",
 						expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
 					});
-				} catch (e) {
+				} catch (e: unknown) {
 					console.error("Error generating signed URL:", e);
 				}
 			}

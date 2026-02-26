@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
 		try {
 			await bucket.file(fileName).delete();
-		} catch (e) {
+		} catch (e: unknown) {
 			console.warn("Failed to delete photo from storage:", e);
 		}
 
@@ -62,8 +62,8 @@ export default defineEventHandler(async (event) => {
 		return { id: updatedHome.id, ...updatedHome.data() };
 	} catch (e: unknown) {
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (e as { statusCode?: number }).statusCode || 500,
+			message: e instanceof Error ? e.message : "Internal Server Error",
 		});
 	}
 });
