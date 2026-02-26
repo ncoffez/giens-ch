@@ -24,6 +24,7 @@ const loading = ref(false);
 const savingGlobal = ref(false);
 const savingPersonal = ref(false);
 const error = ref<string | null>(null);
+const isInitialized = ref(false);
 
 const fetchSettings = async () => {
 	try {
@@ -41,6 +42,7 @@ const fetchSettings = async () => {
 		if (userData) {
 			personalSettings.value.homesFeatureEnabled = userData.homesFeatureEnabled ?? false;
 		}
+		isInitialized.value = true;
 	} catch (e: unknown) {
 		error.value = getFetchError(e) || "Failed to load settings";
 	} finally {
@@ -91,7 +93,9 @@ const savePersonalSettings = async () => {
 const debouncedSavePersonal = useDebounceFn(savePersonalSettings, 300);
 
 watch(() => personalSettings.value.homesFeatureEnabled, () => {
-	debouncedSavePersonal();
+	if (isInitialized.value) {
+		debouncedSavePersonal();
+	}
 });
 
 onMounted(fetchSettings);
