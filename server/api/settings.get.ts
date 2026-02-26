@@ -5,9 +5,10 @@ export default defineEventHandler(async (event) => {
 		const settings = await getGlobalSettings();
 		return settings;
 	} catch (e: unknown) {
+		const error = e instanceof Error ? e : new Error(String(e));
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: (error as { statusCode?: number }).statusCode || 500,
+			message: error.message || "Internal Server Error",
 		});
 	}
 });
