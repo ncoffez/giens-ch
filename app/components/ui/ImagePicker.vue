@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UnsplashImage, UnsplashSearchResult } from "../../types";
+import type { UnsplashImage, UnsplashSearchResult } from "../../../types";
 
 const props = defineProps<{
 	modelValue?: string;

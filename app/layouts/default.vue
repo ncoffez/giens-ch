@@ -18,7 +18,10 @@
 
 			<ClientOnly>
 				<div class="flex items-center gap-2 md:gap-3">
-					<!-- Language Switcher Placeholder -->
+					<div class="hidden lg:block">
+						<UiSearchModal />
+					</div>
+
 					<UDropdownMenu
 						:items="languageItems"
 						:ui="{ content: 'w-24' }">
@@ -219,15 +222,6 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		},
 	];
 
-	if (import.meta.client && isOwner.value && canAccessHomes.value) {
-		items.push({
-			label: "Mein Haus",
-			icon: "i-lucide-building-2",
-			to: "/homes",
-			active: route.path.startsWith("/homes"),
-		});
-	}
-
 	if (import.meta.client && (isOwner.value || isReader.value)) {
 		items.push({
 			label: "Dokumente",
@@ -270,6 +264,14 @@ const userItems = computed(() => {
 			icon: "i-lucide-user",
 		}
 	];
+
+	if (import.meta.client && isOwner.value && canAccessHomes.value) {
+		items.push({
+			label: "Mein Haus",
+			to: "/homes",
+			icon: "i-lucide-building-2",
+		});
+	}
 
 	if (import.meta.client && isAdmin.value) {
 		items.push({

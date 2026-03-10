@@ -10,7 +10,7 @@
 				loading="eager"
 				fetchpriority="high" />
 		</picture>
-		<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6 md:p-12">
+		<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent dark:from-black/70 dark:via-black/20 flex items-end p-6 md:p-12">
 			<div class="text-white max-w-4xl">
 				<h1 class="text-3xl md:text-7xl font-black mb-2 md:mb-4 tracking-tighter leading-tight">
 					{{ title }}

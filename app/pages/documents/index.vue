@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GlobalFile, GlobalFolder } from "~/types";
+import type { GlobalFile, GlobalFolder } from "../../../types";
 import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 
@@ -75,8 +75,8 @@ const currentSubfolders = computed(() => {
 	return folders.value.filter(f => f.parentId === currentFolderId.value);
 });
 
-const currentImages = computed(() => {
-	return currentFiles.value.filter(f => f.type.startsWith("image/"));
+const sortedImages = computed(() => {
+	return sortedFiles.value.filter(f => f.type.startsWith("image/"));
 });
 
 const sortedSubfolders = computed(() => {
@@ -167,10 +167,13 @@ const navigateToFolder = (folderId: string | null) => {
 	selectedFolders.value = [];
 	cancelFolderCreation();
 	
+	const basePath = route.path || "/documents";
 	const url = folderId 
-		? `${route.path}?folder=${folderId}`
-		: route.path;
+		? `${basePath}?folder=${folderId}`
+		: basePath;
 	history.pushState({}, "", url);
+	
+	fetchData(folderId);
 };
 
 const formatFileSize = (bytes: number) => {
@@ -236,13 +239,15 @@ const getFileIconBg = (type: string) => {
 	return "bg-stone-100 dark:bg-stone-800";
 };
 
-const fetchData = async () => {
+const fetchData = async (folderId: string | null = null) => {
 	try {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		const data = await $fetch("/api/files", {
+			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
+			body: { folderId },
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
@@ -344,7 +349,7 @@ const uploadFiles = async (fileList: File[]) => {
 	uploadQueue.value.isUploading = false;
 	uploadQueue.value.currentFile = null;
 
-	await fetchData();
+	await fetchData(currentFolderId.value);
 
 	const successCount = uploadQueue.value.completed;
 	if (errorCount > 0) {
@@ -400,7 +405,7 @@ const saveFolderName = async (tempId: string) => {
 		tempFolders.value = tempFolders.value.filter(f => f.id !== tempId);
 		editingFolderId.value = null;
 		
-		await fetchData();
+		await fetchData(currentFolderId.value);
 		toast.add({ title: "Ordner erstellt", color: "success" });
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Erstellen", description: getErrorMessage(e), color: "error" });
@@ -448,7 +453,7 @@ const isFolderSelected = (folder: GlobalFolder) => {
 };
 
 const openGallery = (file: GlobalFile) => {
-	const index = currentImages.value.findIndex(f => f.id === file.id);
+	const index = sortedImages.value.findIndex(f => f.id === file.id);
 	if (index !== -1) {
 		galleryIndex.value = index;
 		galleryOpen.value = true;
@@ -525,7 +530,7 @@ const deleteFile = async (file: GlobalFile) => {
 		});
 		toast.add({ title: "Datei gelöscht", color: "success" });
 		selectedFiles.value = selectedFiles.value.filter(f => f.id !== file.id);
-		fetchData();
+		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
@@ -576,7 +581,7 @@ const deleteSelectedItems = async () => {
 	}
 	selectedFiles.value = [];
 	selectedFolders.value = [];
-	fetchData();
+	fetchData(currentFolderId.value);
 };
 
 const deleteFolder = async (folder: GlobalFolder) => {
@@ -598,7 +603,7 @@ const deleteFolder = async (folder: GlobalFolder) => {
 		});
 		toast.add({ title: "Ordner gelöscht", color: "success" });
 		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
-		fetchData();
+		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
 	}
@@ -678,7 +683,7 @@ const renameFile = async () => {
 		toast.add({ title: "Datei umbenannt", color: "success" });
 		isRenameModalOpen.value = false;
 		selectedFiles.value = [];
-		fetchData();
+		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Umbenennen", description: getErrorMessage(e), color: "error" });
 	} finally {
@@ -731,7 +736,7 @@ const moveItems = async (targetFolderId: string | null) => {
 	isMoveModalOpen.value = false;
 	selectedFiles.value = [];
 	selectedFolders.value = [];
-	fetchData();
+	fetchData(currentFolderId.value);
 	isSaving.value = false;
 };
 
@@ -754,11 +759,15 @@ onMounted(async () => {
 	if (folderFromUrl) {
 		currentFolderId.value = folderFromUrl;
 	}
-	await fetchData();
+	await fetchData(currentFolderId.value);
 });
 
 watch(() => route.query.folder, (newFolderId) => {
-	currentFolderId.value = (newFolderId as string) || null;
+	const folderId = (newFolderId as string) || null;
+	if (folderId !== currentFolderId.value) {
+		currentFolderId.value = folderId;
+		fetchData(folderId);
+	}
 });
 </script>
 
@@ -1206,7 +1215,7 @@ watch(() => route.query.folder, (newFolderId) => {
 
 		<GalleryViewer 
 			v-if="galleryOpen"
-			:images="currentImages"
+			:images="sortedImages"
 			:initial-index="galleryIndex"
 			@close="galleryOpen = false"
 		/>

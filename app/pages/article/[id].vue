@@ -15,7 +15,10 @@ const {
 	method: "post",
 	body: { id },
 	headers: computed(() => {
-		return token.value ? { Authorization: `Bearer ${token.value}` } : {};
+		if (token.value) {
+			return { Authorization: `Bearer ${token.value}` };
+		}
+		return {};
 	}),
 });
 
@@ -43,7 +46,7 @@ const canReadBody = computed(() => {
 			<div v-if="isPublisher" class="absolute top-4 right-4">
 				<UButton
 					:to="`/news/${id}/edit`"
-					color="white"
+					color="neutral"
 					variant="solid"
 					icon="i-lucide-edit-3"
 					class="shadow-lg"

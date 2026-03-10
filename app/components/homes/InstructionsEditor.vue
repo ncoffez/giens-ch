@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Home } from "../../types";
+import type { Home } from "../../../types";
 
 const props = defineProps<{ home: Home }>();
 const emit = defineEmits(["refresh"]);

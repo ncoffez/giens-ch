@@ -34,8 +34,21 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
-	const filesSnapshot = await db.collection("globalFiles").get();
-	const foldersSnapshot = await db.collection("globalFolders").get();
+	const body = await readBody(event).catch(() => ({}));
+	const { folderId } = body;
+
+	let filesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFiles");
+	let foldersQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFolders");
+
+	if (folderId !== undefined) {
+		filesQuery = filesQuery.where("folderId", "==", folderId || null);
+		foldersQuery = foldersQuery.where("parentId", "==", folderId || null);
+	}
+
+	const [filesSnapshot, foldersSnapshot] = await Promise.all([
+		filesQuery.get(),
+		foldersQuery.get(),
+	]);
 
 	const bucket = storage.bucket();
 
@@ -55,26 +68,23 @@ export default defineEventHandler(async (event) => {
 
 	const userNames: Record<string, string> = {};
 	if (userIds.size > 0) {
-		const firestoreUsersSnapshot = await db.collection("users").get();
-		const firestoreUsersMap = new Map<string, { displayName?: string }>();
-		firestoreUsersSnapshot.forEach((doc) => {
-			firestoreUsersMap.set(doc.id, doc.data() as { displayName?: string });
-		});
+		const userDocs = await Promise.all(
+			Array.from(userIds).map((uid) =>
+				db.collection("users").doc(uid).get().then((doc) => ({ uid, data: doc.data() }))
+			)
+		);
 
-		for (const uid of userIds) {
-			let displayName: string | undefined;
-			const firestoreData = firestoreUsersMap.get(uid);
-			if (firestoreData?.displayName) {
-				displayName = firestoreData.displayName;
+		for (const { uid, data } of userDocs) {
+			if (data?.displayName) {
+				userNames[uid] = data.displayName;
 			} else {
 				try {
 					const userRecord = await auth.getUser(uid);
-					displayName = userRecord.displayName || undefined;
+					if (userRecord.displayName) {
+						userNames[uid] = userRecord.displayName;
+					}
 				} catch {
 				}
-			}
-			if (displayName) {
-				userNames[uid] = displayName;
 			}
 		}
 	}

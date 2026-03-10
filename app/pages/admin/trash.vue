@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GlobalFile } from "~/types";
+import type { GlobalFile } from "../../../types";
 
 definePageMeta({ middleware: ["is-admin"] });
 
