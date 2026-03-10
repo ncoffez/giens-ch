@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Home } from "../../types";
+import type { Home } from "../../../types";
 
 const props = defineProps<{ home: Home }>();
 
@@ -28,11 +28,11 @@ const addEditor = async () => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { email: editorEmail.value },
 		});
-		toast.add({ title: "Editor erfolgreich hinzugefügt", color: "green" });
+		toast.add({ title: "Editor erfolgreich hinzugefügt", color: "success" });
 		editorEmail.value = "";
 		fetchEditors();
 	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Fehler beim Hinzufügen", color: "red" });
+		toast.add({ title: getFetchError(e) || "Fehler beim Hinzufügen", color: "error" });
 	} finally {
 		loading.value = false;
 	}
@@ -48,10 +48,10 @@ const removeEditor = async (editorUid: string) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { editorUid },
 		});
-		toast.add({ title: "Editor entfernt", color: "green" });
+		toast.add({ title: "Editor entfernt", color: "success" });
 		fetchEditors();
 	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Fehler beim Entfernen", color: "red" });
+		toast.add({ title: getFetchError(e) || "Fehler beim Entfernen", color: "error" });
 	} finally {
 		loading.value = false;
 	}
@@ -67,9 +67,9 @@ const generateShareLink = async () => {
 		});
 		shareUrl.value = result.shareUrl;
 		shareCreated.value = result;
-		toast.add({ title: "Freigabelink erstellt!", color: "green" });
+		toast.add({ title: "Freigabelink erstellt!", color: "success" });
 	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Fehler beim Erstellen", color: "red" });
+		toast.add({ title: getFetchError(e) || "Fehler beim Erstellen", color: "error" });
 	} finally {
 		loading.value = false;
 	}
@@ -78,7 +78,7 @@ const generateShareLink = async () => {
 const copyShareLink = () => {
 	if (!shareUrl.value) return;
 	navigator.clipboard.writeText(shareUrl.value);
-	toast.add({ title: "Link in Zwischenablage kopiert", color: "green" });
+	toast.add({ title: "Link in Zwischenablage kopiert", color: "success" });
 };
 
 onMounted(fetchEditors);
@@ -126,7 +126,7 @@ onMounted(fetchEditors);
 		</div>
 
 		<!-- Editors -->
-		<div v-if="$isAdmin.value || props.home.ownerIds?.includes($currentUser?.uid)" class="pt-12 border-t border-stone-100 dark:border-stone-800 space-y-8">
+		<div v-if="$isAdmin || (props.home.ownerIds?.includes($currentUser?.uid || ''))" class="pt-12 border-t border-stone-100 dark:border-stone-800 space-y-8">
 			<div>
 				<h3 class="text-xl font-bold text-gray-900 dark:text-white">Editoren verwalten</h3>
 				<p class="text-sm text-stone-500">Andere Nutzer können die Details dieses Hauses mitbearbeiten.</p>

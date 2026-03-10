@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { watch } from 'vue';
-import type { AdminUser } from '../../types';
+import type { AdminUser } from '../../../types';
 
 const toast = useToast();
 const { checkAdminAccess, getAuthHeaders, isCheckingAuth, authError } = useAdminAuth();

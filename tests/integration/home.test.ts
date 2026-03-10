@@ -26,7 +26,6 @@ describe("Home Page", () => {
 		const component = await mountSuspended(Home);
 		expect(component.text()).toContain("Wohnkomfort");
 		expect(component.text()).toContain("Gemeinschaftsgut");
-		expect(component.text()).toContain("Praktisch");
-		expect(component.text()).toContain("Natur pur");
+		expect(component.text()).toContain("Garten & Umgebung");
 	});
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Label } from "~/types";
+import type { Label } from "../../../types";
 
 const filters = defineModel<{
 	search: string;

@@ -214,7 +214,7 @@ const loadDemo = async () => {
 	try {
 		const response = await $fetch<any>(`/api/randomArticle`, {
 			method: "post",
-			headers: $token.value ? { Authorization: `Bearer ${token.value}` } : {},
+			headers: token.value ? { Authorization: `Bearer ${token.value}` } : {},
 		});
 		if (response) {
 			editor.value?.commands.setContent(`<h1>${response.title}</h1> ${response.body}`);
@@ -381,8 +381,10 @@ const setLink = () => {
 	const url = window.prompt("URL", previousUrl);
 
 	if (url === null) return;
-	if (url === "")
-		return editor.value.chain().focus().extendMarkRange("link").unsetLink().run();
+	if (url === "") {
+		editor.value.chain().focus().extendMarkRange("link").unsetLink().run();
+		return;
+	}
 	editor.value.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
 };
 

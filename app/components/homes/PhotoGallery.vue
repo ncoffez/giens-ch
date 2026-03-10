@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Home } from "../../types";
+import type { Home } from "../../../types";
 
 const props = defineProps<{ home: Home }>();
 const emit = defineEmits(["refresh"]);
@@ -13,17 +13,17 @@ const dragOver = ref(false);
 
 const uploadPhoto = async (file: File) => {
 	if (!file.type.startsWith("image/")) {
-		toast.add({ title: "Nur Bilddateien sind erlaubt", color: "red" });
+		toast.add({ title: "Nur Bilddateien sind erlaubt", color: "error" });
 		return;
 	}
 
 	if (file.size > 10 * 1024 * 1024) {
-		toast.add({ title: "Datei ist zu groß (max. 10MB)", color: "red" });
+		toast.add({ title: "Datei ist zu groß (max. 10MB)", color: "error" });
 		return;
 	}
 
 	if ((props.home.photos?.length || 0) >= MAX_PHOTOS) {
-		toast.add({ title: `Maximal ${MAX_PHOTOS} Fotos erlaubt`, color: "red" });
+		toast.add({ title: `Maximal ${MAX_PHOTOS} Fotos erlaubt`, color: "error" });
 		return;
 	}
 
@@ -37,13 +37,13 @@ const uploadPhoto = async (file: File) => {
 				headers: { Authorization: `Bearer ${token.value}` },
 				body: { file: base64 },
 			});
-			toast.add({ title: "Foto erfolgreich hochgeladen", color: "green" });
+			toast.add({ title: "Foto erfolgreich hochgeladen", color: "success" });
 			emit("refresh");
 			uploading.value = false;
 		};
 		reader.readAsDataURL(file);
 	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Upload fehlgeschlagen", color: "red" });
+		toast.add({ title: getFetchError(e) || "Upload fehlgeschlagen", color: "error" });
 		uploading.value = false;
 	}
 };
@@ -60,14 +60,14 @@ const deletePhoto = async (photoUrl: string) => {
 
 	try {
 		await $fetch(`/api/homes/${props.home.id}/photos.delete`, {
-			method: "POST",
+			method: "post",
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { photoUrl },
 		});
-		toast.add({ title: "Foto gelöscht", color: "green" });
+		toast.add({ title: "Foto gelöscht", color: "success" });
 		emit("refresh");
 	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Löschen fehlgeschlagen", color: "red" });
+		toast.add({ title: getFetchError(e) || "Löschen fehlgeschlagen", color: "error" });
 	}
 };
 

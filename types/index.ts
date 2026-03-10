@@ -11,10 +11,23 @@ export interface Article {
 	hasAttachments?: boolean;
 }
 
+export interface ArticleMetadata {
+	id: string;
+	title: string;
+	intro: string;
+	image: string;
+	published: string;
+	tags: string[];
+	author: string | null;
+	authorUid: string | null;
+	hasAttachments: boolean;
+}
+
 export interface User {
 	id?: string;
 	email?: string;
 	displayName?: string;
+	name?: string;
 	photoURL?: string;
 	emailVerified?: boolean;
 	uid?: string;
@@ -27,6 +40,12 @@ export interface AdminUser extends User {
 	owner: boolean;
 	reader: boolean;
 	disabled?: boolean;
+	customClaims?: {
+		admin?: boolean;
+		publisher?: boolean;
+		owner?: boolean;
+		reader?: boolean;
+	};
 }
 
 export interface Label {
