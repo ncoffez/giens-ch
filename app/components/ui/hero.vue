@@ -1,14 +1,24 @@
 <template>
 	<section class="relative w-full overflow-hidden rounded-[2.5rem] shadow-2xl bg-stone-100 dark:bg-stone-800" :class="[height || 'h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]']">
 		<picture v-if="src" class="absolute inset-0">
-			<source :srcset="getResponsiveImage(src, 800)" media="(max-width: 768px)" />
-			<source :srcset="getResponsiveImage(src, 1200)" media="(max-width: 1200px)" />
-			<img
-				:src="getResponsiveImage(src, 1920)"
-				:alt="alt"
-				class="absolute inset-0 object-cover h-full w-full brightness-110 contrast-[90%] scale-100 md:scale-105"
-				loading="eager"
-				fetchpriority="high" />
+			<template v-if="isExternalUrl">
+				<img
+					:src="src"
+					:alt="alt"
+					class="absolute inset-0 object-cover h-full w-full brightness-110 contrast-[90%] scale-100 md:scale-105"
+					loading="eager"
+					fetchpriority="high" />
+			</template>
+			<template v-else>
+				<source :srcset="getResponsiveImage(src, 800)" media="(max-width: 768px)" />
+				<source :srcset="getResponsiveImage(src, 1200)" media="(max-width: 1200px)" />
+				<img
+					:src="getResponsiveImage(src, 1920)"
+					:alt="alt"
+					class="absolute inset-0 object-cover h-full w-full brightness-110 contrast-[90%] scale-100 md:scale-105"
+					loading="eager"
+					fetchpriority="high" />
+			</template>
 		</picture>
 		<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent dark:from-black/70 dark:via-black/20 flex items-end p-6 md:p-12">
 			<div class="text-white max-w-4xl">
@@ -32,9 +42,14 @@ interface Props {
 	height?: string;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
 	height: "h-[50vh] min-h-[400px]",
 	alt: "",
+});
+
+const isExternalUrl = computed(() => {
+	if (!props.src) return false;
+	return props.src.startsWith("http://") || props.src.startsWith("https://");
 });
 
 const getResponsiveImage = (src: string | undefined, width: number): string => {

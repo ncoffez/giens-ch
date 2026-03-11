@@ -64,8 +64,8 @@ useHead({
 		<UiHero
 			title="Organisatorisches"
 			subtitle="Wichtige Informationen zur Résidence Beausoleil"
-			src="/giens/gienseingangstor.webp"
-			alt="Eingangstor der Résidence"
+			src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1920&q=80"
+			alt="Dokumente und Organisation"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<section class="max-w-screen-lg mx-auto px-4">
