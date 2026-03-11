@@ -38,16 +38,14 @@ export default defineEventHandler(async (event) => {
 	const { folderId } = body;
 
 	let filesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFiles");
-	let foldersQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFolders");
 
 	if (folderId !== undefined) {
 		filesQuery = filesQuery.where("folderId", "==", folderId || null);
-		foldersQuery = foldersQuery.where("parentId", "==", folderId || null);
 	}
 
 	const [filesSnapshot, foldersSnapshot] = await Promise.all([
 		filesQuery.get(),
-		foldersQuery.get(),
+		db.collection("globalFolders").get(),
 	]);
 
 	const bucket = storage.bucket();
