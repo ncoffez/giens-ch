@@ -21,17 +21,33 @@ interface OrganisatorischesContent {
 	updatedBy: string;
 }
 
-interface SearchOrganisatorisches {
+interface SearchOrganisatorischesHeading {
 	id: string;
-	searchText: string;
-	label: string;
-	description: string;
+	heading: string;
+	context: string;
+	pageLabel: string;
+}
+
+interface StoredHeading {
+	id: string;
+	text: string;
+	context: string;
 }
 
 const articlesCache = ref<SearchArticle[] | null>(null);
-const organisatorischesCache = ref<SearchOrganisatorisches | null>(null);
+const organisatorischesHeadingsCache = ref<StoredHeading[]>([]);
 const isLoading = ref(false);
-const hasLoaded = ref(false);
+
+function slugify(text: string): string {
+	return text
+		.toLowerCase()
+		.replace(/ä/g, "ae")
+		.replace(/ö/g, "oe")
+		.replace(/ü/g, "ue")
+		.replace(/ß/g, "ss")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+}
 
 function stripHtml(html: string): string {
 	if (!html) return "";
@@ -41,10 +57,10 @@ function stripHtml(html: string): string {
 		.trim();
 }
 
-function extractHeadings(html: string): { label: string; description: string }[] {
+function extractHeadings(html: string): StoredHeading[] {
 	if (!html) return [];
 	
-	const headings: { label: string; description: string }[] = [];
+	const headings: StoredHeading[] = [];
 	const headingRegex = /<h[1-4][^>]*>(.*?)<\/h[1-4]>/gi;
 	let match;
 	
@@ -52,15 +68,16 @@ function extractHeadings(html: string): { label: string; description: string }[]
 		const headingText = stripHtml(match[1] || "");
 		if (headingText) {
 			const nextContent = html.substring(match.index + match[0].length, match.index + match[0].length + 200);
-			const description = stripHtml(nextContent).substring(0, 100);
+			const context = stripHtml(nextContent).substring(0, 100);
 			headings.push({
-				label: headingText,
-				description: description,
+				id: slugify(headingText),
+				text: headingText,
+				context: context,
 			});
 		}
 	}
 	
-	return headings.slice(0, 10);
+	return headings;
 }
 
 export function useSearchData() {
@@ -68,7 +85,7 @@ export function useSearchData() {
 	const token = computed(() => import.meta.client ? nuxtApp.$token?.value : null);
 
 	const loadArticles = async () => {
-		if (hasLoaded.value || isLoading.value) return;
+		if (isLoading.value) return;
 
 		isLoading.value = true;
 		try {
@@ -94,18 +111,8 @@ export function useSearchData() {
 			}
 
 			if (orgData?.content) {
-				const plainText = stripHtml(orgData.content);
-				const headings = extractHeadings(orgData.content);
-				const firstHeadingLabel = headings[0]?.label || "";
-				organisatorischesCache.value = {
-					id: "organisatorisches",
-					searchText: `organisatorisches ${plainText} ${headings.map(h => h.label).join(" ")}`.toLowerCase(),
-					label: "Organisatorisches",
-					description: firstHeadingLabel || plainText.substring(0, 100) || "Wichtige Informationen zur Résidence",
-				};
+				organisatorischesHeadingsCache.value = extractHeadings(orgData.content);
 			}
-
-			hasLoaded.value = true;
 		} catch (error) {
 			console.error("Failed to load search data:", error);
 		} finally {
@@ -123,13 +130,19 @@ export function useSearchData() {
 		);
 	};
 
-	const searchOrganisatorisches = (query: string): SearchOrganisatorisches | null => {
-		if (!organisatorischesCache.value || !query.trim()) return null;
+	const searchOrganisatorischesHeadings = (query: string): SearchOrganisatorischesHeading[] => {
+		if (organisatorischesHeadingsCache.value.length === 0 || !query.trim()) return [];
 
 		const searchTerms = query.toLowerCase().trim().split(/\s+/);
-		const matches = searchTerms.every(term => organisatorischesCache.value!.searchText.includes(term));
 		
-		return matches ? organisatorischesCache.value : null;
+		return organisatorischesHeadingsCache.value
+			.filter(h => searchTerms.every(term => h.text.toLowerCase().includes(term)))
+			.map(h => ({
+				id: h.id,
+				heading: h.text,
+				context: h.context.substring(0, 80),
+				pageLabel: "Organisatorisches",
+			}));
 	};
 
 	const articles = computed(() => articlesCache.value || []);
@@ -137,9 +150,8 @@ export function useSearchData() {
 	return {
 		articles,
 		isLoading: readonly(isLoading),
-		hasLoaded: readonly(hasLoaded),
 		loadArticles,
 		searchArticles,
-		searchOrganisatorisches,
+		searchOrganisatorischesHeadings,
 	};
 }
