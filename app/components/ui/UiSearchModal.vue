@@ -52,18 +52,13 @@ const staticPageItems = computed(() => {
 			icon: "i-lucide-car",
 			to: "/travel",
 		},
-		{
-			label: "Über uns",
-			icon: "i-lucide-info",
-			to: "/about",
-		},
 	];
 
 	if (isOwner.value && canAccessHomes.value) {
 		items.push({
 			label: "Mein Haus",
 			icon: "i-lucide-building-2",
-			to: "/homes",
+			to: "/my-homes",
 		});
 	}
 
