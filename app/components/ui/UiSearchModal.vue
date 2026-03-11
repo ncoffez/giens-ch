@@ -7,7 +7,7 @@ const route = useRoute();
 const router = useRouter();
 const nuxtApp = useNuxtApp();
 const { canAccessHomes } = useFeatureFlags();
-const { loadArticles, searchArticles, isLoading, hasLoaded } = useSearchData();
+const { loadArticles, searchArticles, searchOrganisatorisches, isLoading, hasLoaded } = useSearchData();
 
 const searchQuery = ref("");
 
@@ -43,6 +43,11 @@ const staticPageItems = computed(() => {
 			to: "/news",
 		},
 		{
+			label: "Organisatorisches",
+			icon: "i-lucide-clipboard-list",
+			to: "/organisatorisches",
+		},
+		{
 			label: "Anreise",
 			icon: "i-lucide-car",
 			to: "/travel",
@@ -73,40 +78,19 @@ const staticPageItems = computed(() => {
 	return items;
 });
 
-const pageSectionItems = computed(() => {
-	const items: CommandPaletteItem[] = [
-		{
-			label: "Freizeit & Sport",
-			icon: "i-lucide-sailboat",
-			onSelect: () => navigateToAnchor("#freizeit"),
-		},
-		{
-			label: "Einkaufsmöglichkeiten",
-			icon: "i-lucide-shopping-cart",
-			onSelect: () => navigateToAnchor("#einkauf"),
-		},
-		{
-			label: "Wochenmärkte",
-			icon: "i-lucide-store",
-			onSelect: () => navigateToAnchor("#maerkte"),
-		},
-		{
-			label: "Ausflüge",
-			icon: "i-lucide-map",
-			onSelect: () => navigateToAnchor("#ausfluege"),
-		},
-		{
-			label: "Abfalltrennung",
-			icon: "i-lucide-trash-2",
-			onSelect: () => navigateToAnchor("#abfall"),
-		},
-		{
-			label: "Wichtige Links",
-			icon: "i-lucide-link",
-			onSelect: () => navigateToAnchor("#links"),
-		},
-	];
-	return items;
+const organisatorischesItem = computed(() => {
+	const query = searchQuery.value.trim();
+	if (!query) return null;
+
+	const result = searchOrganisatorisches(query);
+	if (!result) return null;
+
+	return {
+		label: result.label,
+		icon: "i-lucide-clipboard-list",
+		to: "/organisatorisches",
+		suffix: result.description.substring(0, 30) + "...",
+	};
 });
 
 const articleItems = computed(() => {
@@ -139,11 +123,11 @@ const groups = computed(() => {
 		});
 	}
 
-	if (pageSectionItems.value.length > 0) {
+	if (organisatorischesItem.value) {
 		result.push({
-			id: "sections",
+			id: "organisatorisches",
 			label: "Informationen",
-			items: pageSectionItems.value,
+			items: [organisatorischesItem.value],
 		});
 	}
 
