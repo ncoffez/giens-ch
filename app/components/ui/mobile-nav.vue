@@ -22,6 +22,7 @@
 		const items = [
 			{ label: "Home", icon: "i-lucide-house", to: "/" },
 			{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
+			{ label: "Org", icon: "i-lucide-clipboard-list", to: "/organisatorisches" },
 		];
 
 		if (import.meta.client && (nuxtApp.$isReader?.value || nuxtApp.$isOwner?.value)) {
@@ -29,7 +30,7 @@
 		}
 
 		if (import.meta.client && nuxtApp.$isOwner?.value && canAccessHomes.value) {
-			items.push({ label: "Haus", icon: "i-lucide-building-2", to: "/homes" });
+			items.push({ label: "Haus", icon: "i-lucide-building-2", to: "/my-homes" });
 		}
 
 		if (import.meta.client && nuxtApp.$currentUser?.value) {

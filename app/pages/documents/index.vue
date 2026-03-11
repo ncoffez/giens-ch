@@ -843,12 +843,19 @@ watch(() => route.query.folder, (newFolderId) => {
 					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto">
 						<div class="flex items-center gap-2 text-sm whitespace-nowrap">
 							<button
+								v-if="currentFolderId"
+								@click="navigateToFolder(breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2].id : null)"
+								class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+							>
+								<UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
+								<span>Zurück</span>
+							</button>
+							<button
 								@click="navigateToFolder(null)"
 								class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 								:class="{ 'text-primary font-bold': !currentFolderId }"
 							>
-								<UIcon name="i-lucide-home" class="w-4 h-4" />
-								<span>Start</span>
+								<span>Dokumente</span>
 							</button>
 							<template v-for="(folder, index) in breadcrumbs" :key="folder.id">
 								<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400" />

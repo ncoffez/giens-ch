@@ -100,8 +100,15 @@ export default defineEventHandler(async (event) => {
 				const thumbnailPath = getResizedPath(data.storagePath, "400x400");
 				const optimizedPath = getResizedPath(data.storagePath, "1920x1920");
 
-				thumbnailUrl = await generateSignedUrl(bucket, thumbnailPath);
-				optimizedUrl = await generateSignedUrl(bucket, optimizedPath);
+				const [thumbnailExists] = await bucket.file(thumbnailPath).exists();
+				const [optimizedExists] = await bucket.file(optimizedPath).exists();
+
+				if (thumbnailExists) {
+					thumbnailUrl = await generateSignedUrl(bucket, thumbnailPath);
+				}
+				if (optimizedExists) {
+					optimizedUrl = await generateSignedUrl(bucket, optimizedPath);
+				}
 			}
 
 			return {

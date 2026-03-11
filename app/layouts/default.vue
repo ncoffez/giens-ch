@@ -220,6 +220,12 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			to: "/news",
 			active: route.path.startsWith("/news"),
 		},
+		{
+			label: "Organisatorisches",
+			icon: "i-lucide-clipboard-list",
+			to: "/organisatorisches",
+			active: route.path === "/organisatorisches",
+		},
 	];
 
 	if (import.meta.client && (isOwner.value || isReader.value)) {
@@ -236,11 +242,6 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		to: "/travel",
 		icon: "i-lucide-car",
 		active: route.path === "/travel",
-	}, {
-		label: "Über uns",
-		to: "/about",
-		icon: "i-lucide-info",
-		active: route.path === "/about",
 	});
 
 	return items;
