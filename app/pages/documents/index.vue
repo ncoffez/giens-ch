@@ -24,6 +24,7 @@ const isRenameModalOpen = ref(false);
 const isMoveModalOpen = ref(false);
 const renameValue = ref("");
 const isSaving = ref(false);
+const moveBrowseFolderId = ref<string | null>(null);
 
 const viewMode = ref<"grid" | "list">("list");
 const sortBy = ref<"name" | "date" | "size">("name");
@@ -130,6 +131,40 @@ const availableFoldersForMove = computed(() => {
 	return folders.value.filter(f => 
 		f.id !== currentFolderId.value && !currentFolderIds.has(f.id)
 	);
+});
+
+const moveBrowseSubfolders = computed(() => {
+	const selectedFolderIds = new Set(selectedFolders.value.map(f => f.id));
+	const collectDescendants = (parentId: string): string[] => {
+		const result: string[] = [parentId];
+		folders.value.filter(f => f.parentId === parentId).forEach(f => {
+			result.push(...collectDescendants(f.id));
+		});
+		return result;
+	};
+	
+	const excludedIds = new Set<string>();
+	selectedFolders.value.forEach(f => {
+		excludedIds.add(f.id);
+		collectDescendants(f.id).forEach(id => excludedIds.add(id));
+	});
+	
+	return folders.value
+		.filter(f => f.parentId === moveBrowseFolderId.value)
+		.filter(f => !excludedIds.has(f.id))
+		.sort((a, b) => a.name.localeCompare(b.name, "de"));
+});
+
+const moveBrowseBreadcrumbs = computed(() => {
+	const crumbs: GlobalFolder[] = [];
+	if (!moveBrowseFolderId.value) return crumbs;
+	
+	let folder = folders.value.find(f => f.id === moveBrowseFolderId.value);
+	while (folder) {
+		crumbs.unshift(folder);
+		folder = folders.value.find(f => f.id === folder.parentId);
+	}
+	return crumbs;
 });
 
 const hasSelection = computed(() => selectedFiles.value.length > 0 || selectedFolders.value.length > 0);
@@ -616,7 +651,7 @@ const getFolderMenuItems = (folder: GlobalFolder) => [
 		onSelect: () => {
 			selectedFolders.value = [folder];
 			selectedFiles.value = [];
-			isMoveModalOpen.value = true;
+			openMoveModal();
 		},
 	}],
 	[{
@@ -650,7 +685,7 @@ const getFileMenuItems = (file: GlobalFile) => [
 		onSelect: () => {
 			selectedFiles.value = [file];
 			selectedFolders.value = [];
-			isMoveModalOpen.value = true;
+			openMoveModal();
 		},
 	}],
 	[{
@@ -736,8 +771,28 @@ const moveItems = async (targetFolderId: string | null) => {
 	isMoveModalOpen.value = false;
 	selectedFiles.value = [];
 	selectedFolders.value = [];
+	moveBrowseFolderId.value = null;
 	fetchData(currentFolderId.value);
 	isSaving.value = false;
+};
+
+const openMoveModal = () => {
+	moveBrowseFolderId.value = null;
+	isMoveModalOpen.value = true;
+};
+
+const navigateMoveBrowse = (folderId: string | null) => {
+	moveBrowseFolderId.value = folderId;
+};
+
+const navigateMoveBrowseUp = () => {
+	if (!moveBrowseFolderId.value) return;
+	const currentFolder = folders.value.find(f => f.id === moveBrowseFolderId.value);
+	if (currentFolder?.parentId) {
+		moveBrowseFolderId.value = currentFolder.parentId;
+	} else {
+		moveBrowseFolderId.value = null;
+	}
 };
 
 const toggleSort = (column: "name" | "date" | "size") => {
@@ -848,7 +903,6 @@ watch(() => route.query.folder, (newFolderId) => {
 								class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 							>
 								<UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
-								<span>Zurück</span>
 							</button>
 							<button
 								@click="navigateToFolder(null)"
@@ -931,7 +985,7 @@ watch(() => route.query.folder, (newFolderId) => {
 							<UButton v-if="selectedFiles.length === 1 && selectedFolders.length === 0" size="xs" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
 								<span class="hidden md:inline">Umbenennen</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="neutral" @click="isMoveModalOpen = true" icon="i-lucide-folder-input">
+							<UButton size="xs" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
 								<span class="hidden md:inline">Verschieben</span>
 							</UButton>
 							<UButton size="xs" variant="ghost" color="error" @click="deleteSelectedItems" icon="i-lucide-trash-2">
@@ -1187,32 +1241,73 @@ watch(() => route.query.folder, (newFolderId) => {
 					<template #body>
 						<div class="p-6 space-y-4">
 							<p class="text-sm text-stone-500">
-								Wählen Sie einen Zielordner für <strong>{{ selectedFiles.length + selectedFolders.length }} Element(e)</strong>
+								Verschiebe <strong>{{ selectedFiles.length + selectedFolders.length }} Element(e)</strong> in einen Zielordner:
 							</p>
-							<div class="max-h-64 overflow-y-auto space-y-2">
-								<button
-									class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
-									:class="currentFolderId === null ? 'border-primary bg-primary-50 dark:bg-primary-900/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
-									@click="moveItems(null)"
-									:disabled="isSaving"
-								>
-									<UIcon name="i-lucide-home" class="w-5 h-5 text-primary" />
-									<span class="font-medium">Stammverzeichnis</span>
-								</button>
-								<button
-									v-for="folder in availableFoldersForMove"
-									:key="folder.id"
-									class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
-									:class="'border-stone-200 dark:border-stone-700 hover:border-primary'"
-									@click="moveItems(folder.id)"
-									:disabled="isSaving"
-								>
-									<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary" />
-									<span class="font-medium">{{ folder.name }}</span>
-								</button>
+							
+							<div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-3 space-y-2">
+								<div class="flex items-center gap-2 text-sm flex-wrap">
+									<button
+										@click="navigateMoveBrowse(null)"
+										class="text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+										:class="{ 'text-primary font-bold': !moveBrowseFolderId }"
+									>
+										Dokumente
+									</button>
+									<template v-for="(folder, index) in moveBrowseBreadcrumbs" :key="folder.id">
+										<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400" />
+										<button
+											@click="navigateMoveBrowse(folder.id)"
+											class="text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
+											:class="{ 'text-primary font-bold': index === moveBrowseBreadcrumbs.length - 1 }"
+										>
+											{{ folder.name }}
+										</button>
+									</template>
+								</div>
+								
+								<div class="max-h-48 overflow-y-auto space-y-1">
+									<button
+										v-if="moveBrowseFolderId"
+										@click="navigateMoveBrowseUp"
+										class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-left"
+									>
+										<UIcon name="i-lucide-arrow-up" class="w-4 h-4 text-stone-400" />
+										<span class="text-stone-500">..</span>
+									</button>
+									
+									<button
+										v-for="folder in moveBrowseSubfolders"
+										:key="folder.id"
+										@click="navigateMoveBrowse(folder.id)"
+										class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors text-left group"
+									>
+										<UIcon name="i-lucide-folder" class="w-4 h-4 text-primary" />
+										<span class="flex-1 truncate">{{ folder.name }}</span>
+										<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</button>
+									
+									<p v-if="moveBrowseSubfolders.length === 0 && !moveBrowseFolderId" class="text-sm text-stone-400 text-center py-4">
+										Keine Unterordner vorhanden
+									</p>
+									<p v-if="moveBrowseSubfolders.length === 0 && moveBrowseFolderId" class="text-sm text-stone-400 text-center py-4">
+										Keine weiteren Unterordner
+									</p>
+								</div>
 							</div>
-							<div class="flex justify-end gap-3 pt-4">
-								<UButton variant="ghost" color="neutral" @click="isMoveModalOpen = false">Abbrechen</UButton>
+							
+							<div class="flex items-center justify-between gap-3 pt-2">
+								<UButton variant="ghost" color="neutral" @click="isMoveModalOpen = false">
+									Abbrechen
+								</UButton>
+								<UButton
+									color="primary"
+									:loading="isSaving"
+									:disabled="moveBrowseFolderId === currentFolderId"
+									@click="moveItems(moveBrowseFolderId)"
+								>
+									<UIcon name="i-lucide-folder-input" class="w-4 h-4 mr-1" />
+									{{ moveBrowseFolderId ? 'Hierher verschieben' : 'Ins Stammverzeichnis verschieben' }}
+								</UButton>
 							</div>
 						</div>
 					</template>
