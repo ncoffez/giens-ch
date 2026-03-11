@@ -14,7 +14,28 @@ const { token } = useAuthReady();
 const toast = useToast();
 
 const creating = ref(false);
-const daysToExpire = ref(7);
+const durationPreset = ref<"7" | "30" | "unlimited" | "custom">("7");
+const customDays = ref(14);
+
+const daysToExpire = computed(() => {
+	switch (durationPreset.value) {
+		case "7": return 7;
+		case "30": return 30;
+		case "unlimited": return 3650;
+		case "custom": return Math.min(Math.max(customDays.value || 1, 1), 3650);
+		default: return 7;
+	}
+});
+
+const expirationDate = computed(() => {
+	const date = new Date();
+	date.setDate(date.getDate() + daysToExpire.value);
+	return date.toLocaleDateString("de-CH", { 
+		day: "2-digit", 
+		month: "2-digit", 
+		year: "numeric" 
+	});
+});
 
 const activeShares = computed(() => {
 	return props.shares.filter((s) => !s.revoked && new Date(s.expiresAt) > new Date());
@@ -76,6 +97,13 @@ const formatDate = (date: string) => {
 		minute: "2-digit",
 	});
 };
+
+const durationOptions = [
+	{ value: "7", label: "7 Tage" },
+	{ value: "30", label: "30 Tage" },
+	{ value: "unlimited", label: "Unbegrenzt (10 Jahre)" },
+	{ value: "custom", label: "Benutzerdefiniert" },
+];
 </script>
 
 <template>
@@ -83,10 +111,47 @@ const formatDate = (date: string) => {
 		<!-- Create new share -->
 		<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6">
 			<h3 class="font-bold mb-4">Neuen Link erstellen</h3>
-			<div class="flex flex-col sm:flex-row gap-4 items-end">
-				<UFormField label="Gültig für (Tage)" class="flex-1">
-					<UInput v-model.number="daysToExpire" type="number" min="1" max="30" size="lg" />
-				</UFormField>
+			
+			<div class="space-y-4">
+				<!-- Duration options -->
+				<div class="space-y-2">
+					<p class="text-sm font-medium text-stone-700 dark:text-stone-300">Gültigkeitsdauer</p>
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+						<button
+							v-for="option in durationOptions"
+							:key="option.value"
+							@click="durationPreset = option.value as any"
+							class="px-3 py-2 text-sm rounded-lg border-2 transition-all text-center"
+							:class="durationPreset === option.value
+								? 'border-primary bg-primary-50 dark:bg-primary-900/20 text-primary font-medium'
+								: 'border-stone-200 dark:border-stone-700 hover:border-primary text-stone-600 dark:text-stone-400'"
+						>
+							{{ option.label }}
+						</button>
+					</div>
+				</div>
+
+				<!-- Custom days input -->
+				<div v-if="durationPreset === 'custom'" class="flex items-center gap-2">
+					<UInput
+						v-model.number="customDays"
+						type="number"
+						min="1"
+						max="3650"
+						placeholder="Anzahl Tage"
+						size="lg"
+						class="w-32"
+					/>
+					<span class="text-sm text-stone-500">Tage</span>
+				</div>
+
+				<!-- Expiration preview -->
+				<div class="flex items-center gap-2 text-sm text-stone-500">
+					<UIcon name="i-lucide-calendar" class="w-4 h-4" />
+					<span>Läuft ab am: <strong class="text-stone-700 dark:text-stone-300">{{ expirationDate }}</strong></span>
+				</div>
+
+				<!-- Create button -->
 				<UButton :loading="creating" icon="i-lucide-link" size="lg" @click="createShare">
 					Link erstellen
 				</UButton>

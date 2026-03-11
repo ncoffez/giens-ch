@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	// Filter allowed fields
-	const allowedFields = ["name", "photos", "wifiSSID", "wifiPassword", "instructions", "files", "folders"];
+	const allowedFields = ["name", "photos", "wifiSSID", "wifiPassword", "instructions", "files", "folders", "contacts"];
 	const filteredBody: Record<string, unknown> = {};
 	for (const key of allowedFields) {
 		if (body[key] !== undefined) {

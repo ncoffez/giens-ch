@@ -56,11 +56,16 @@ export default defineEventHandler(async (event) => {
 		contentType: body.type || "application/octet-stream",
 	});
 
-	// Get signed URL
-	const [url] = await file.getSignedUrl({
-		action: "read",
-		expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
-	});
+	// Make the file public
+	try {
+		await file.makePublic();
+	} catch (e) {
+		// Ignore if bucket-level access is enabled
+		console.warn("[Home Files Upload] Could not make public:", e);
+	}
+
+	// Use public URL format
+	const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`;
 
 	// Create file record
 	const fileRecord = {
@@ -68,7 +73,7 @@ export default defineEventHandler(async (event) => {
 		name: body.name,
 		type: body.type || "application/octet-stream",
 		size: body.size || 0,
-		url,
+		url: publicUrl,
 		folderId: body.folderId || null,
 		uploadedAt: new Date().toISOString(),
 		uploadedBy: claims.uid,

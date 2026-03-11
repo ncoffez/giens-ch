@@ -2,6 +2,7 @@
 import type { GlobalFile, GlobalFolder } from "../../../types";
 import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
+import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg } from "~/utils/fileTypes";
 
 definePageMeta({ middleware: ["is-logged-in"] });
 
@@ -235,45 +236,6 @@ const formatTimestamp = (timestamp: number) => {
 	});
 };
 
-const getFileIcon = (type: string) => {
-	if (type.startsWith("image/")) return "i-lucide-image";
-	if (type === "application/pdf") return "i-lucide-file-text";
-	if (type.includes("word") || type.includes("document")) return "i-lucide-file-text";
-	if (type.includes("sheet") || type.includes("excel")) return "i-lucide-spreadsheet";
-	if (type.includes("presentation") || type.includes("powerpoint")) return "i-lucide-presentation";
-	if (type.includes("zip") || type.includes("rar") || type.includes("archive") || type.includes("compressed")) return "i-lucide-archive";
-	if (type.startsWith("video/")) return "i-lucide-video";
-	if (type.startsWith("audio/")) return "i-lucide-music";
-	if (type.includes("json") || type.includes("javascript") || type.includes("typescript") || type.includes("html") || type.includes("css")) return "i-lucide-code";
-	return "i-lucide-file";
-};
-
-const getFileIconColor = (type: string) => {
-	if (type.startsWith("image/")) return "text-purple-500";
-	if (type === "application/pdf") return "text-red-500";
-	if (type.includes("word") || type.includes("document")) return "text-blue-500";
-	if (type.includes("sheet") || type.includes("excel")) return "text-green-500";
-	if (type.includes("presentation") || type.includes("powerpoint")) return "text-orange-500";
-	if (type.includes("zip") || type.includes("rar") || type.includes("archive")) return "text-yellow-600";
-	if (type.startsWith("video/")) return "text-pink-500";
-	if (type.startsWith("audio/")) return "text-cyan-500";
-	if (type.includes("json") || type.includes("javascript") || type.includes("typescript")) return "text-emerald-500";
-	return "text-stone-400";
-};
-
-const getFileIconBg = (type: string) => {
-	if (type.startsWith("image/")) return "bg-purple-100 dark:bg-purple-900/30";
-	if (type === "application/pdf") return "bg-red-100 dark:bg-red-900/30";
-	if (type.includes("word") || type.includes("document")) return "bg-blue-100 dark:bg-blue-900/30";
-	if (type.includes("sheet") || type.includes("excel")) return "bg-green-100 dark:bg-green-900/30";
-	if (type.includes("presentation") || type.includes("powerpoint")) return "bg-orange-100 dark:bg-orange-900/30";
-	if (type.includes("zip") || type.includes("rar") || type.includes("archive")) return "bg-yellow-100 dark:bg-yellow-900/30";
-	if (type.startsWith("video/")) return "bg-pink-100 dark:bg-pink-900/30";
-	if (type.startsWith("audio/")) return "bg-cyan-100 dark:bg-cyan-900/30";
-	if (type.includes("json") || type.includes("javascript") || type.includes("typescript")) return "bg-emerald-100 dark:bg-emerald-900/30";
-	return "bg-stone-100 dark:bg-stone-800";
-};
-
 const fetchData = async (folderId: string | null = null) => {
 	try {
 		await waitForAuth();
@@ -286,6 +248,12 @@ const fetchData = async (folderId: string | null = null) => {
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
+		
+		// Auto-select grid view if images present
+		const hasImages = (data.files || []).some((f: GlobalFile) => 
+			f.folderId === folderId && f.type.startsWith("image/")
+		);
+		viewMode.value = hasImages ? "grid" : "list";
 	} catch (e: unknown) {
 		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
@@ -926,20 +894,22 @@ watch(() => route.query.folder, (newFolderId) => {
 
 					<div class="px-4 md:px-6 py-2 md:py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4">
 						<div class="flex items-center gap-2">
-							<UFieldGroup size="xs">
+							<div class="flex items-center gap-1 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg">
 								<UButton
 									:variant="viewMode === 'grid' ? 'solid' : 'ghost'"
 									color="neutral"
 									icon="i-lucide-grid-3x3"
+									size="sm"
 									@click="viewMode = 'grid'"
 								/>
 								<UButton
 									:variant="viewMode === 'list' ? 'solid' : 'ghost'"
 									color="neutral"
 									icon="i-lucide-list"
+									size="sm"
 									@click="viewMode = 'list'"
 								/>
-							</UFieldGroup>
+							</div>
 						</div>
 						<div class="flex items-center gap-2 text-xs">
 							<span class="text-stone-500 hidden sm:inline">Sortieren:</span>
@@ -1203,7 +1173,7 @@ watch(() => route.query.folder, (newFolderId) => {
 													<span class="font-medium truncate">{{ file.name }}</span>
 												</button>
 											</td>
-											<td class="py-3 px-2 hidden md:table-cell text-stone-500 truncate">{{ file.type || "Unbekannt" }}</td>
+											<td class="py-3 px-2 hidden md:table-cell text-stone-500 truncate">{{ getFileTypeName(file.type) }}</td>
 											<td class="py-3 px-2 hidden sm:table-cell text-stone-500">{{ formatFileSize(file.size) }}</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500">{{ file.lastModified ? formatTimestamp(file.lastModified) : "—" }}</td>
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(file.uploadedAt) }}</td>

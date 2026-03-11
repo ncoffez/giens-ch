@@ -1,6 +1,11 @@
 <template>
 	<div
-		class="relative bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-stone-100 dark:border-stone-700">
+		class="relative bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-stone-100 dark:border-stone-700"
+		:class="{ 'ring-2 ring-primary ring-offset-2': isDragging }"
+		@dragover.prevent="isDragging = true"
+		@dragleave.prevent="isDragging = false"
+		@drop.prevent="handleDrop"
+	>
 		<div
 		class="sticky top-0 z-10 flex text-gray-800 dark:text-gray-200 dark:bg-stone-800 flex-wrap items-center rounded-t-lg gap-1 py-1 border-b border-stone-200 dark:border-stone-700 place-content-center"
 			v-if="editor">
@@ -121,13 +126,25 @@
 			<UProgress :value="uploadProgress" color="primary" size="sm" />
 			<p class="text-xs text-stone-500 mt-1">Datei wird hochgeladen...</p>
 		</div>
+		
+		<!-- Drag overlay -->
+		<div
+			v-if="isDragging && !uploading"
+			class="absolute inset-0 bg-primary/5 dark:bg-primary/10 flex items-center justify-center z-20 pointer-events-none"
+		>
+			<div class="text-center">
+				<UIcon name="i-lucide-file-up" class="w-12 h-12 text-primary mx-auto mb-2" />
+				<p class="text-primary font-medium">Datei hier ablegen</p>
+			</div>
+		</div>
+		
 		<input type="file" ref="fileInput" @change="handleFileChange" style="display: none" />
 		<editor-content :editor="editor" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted, computed, type Ref } from "vue";
+import { ref, onBeforeUnmount, onMounted, computed } from "vue";
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import { Placeholder } from "@tiptap/extensions";
 import StarterKit from "@tiptap/starter-kit";
@@ -144,6 +161,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const editor = ref<Editor>();
 const uploading = ref(false);
 const uploadProgress = ref(0);
+const isDragging = ref(false);
 
 const { token } = useAuthReady();
 const toast = useAppToast();
@@ -152,11 +170,7 @@ const triggerFileUpload = () => {
 	fileInput.value?.click();
 };
 
-const handleFileChange = async (event: Event) => {
-	const target = event.target as HTMLInputElement;
-	const file = target.files?.[0];
-	if (!file) return;
-
+const processFile = async (file: File) => {
 	uploading.value = true;
 	uploadProgress.value = 10;
 
@@ -189,7 +203,6 @@ const handleFileChange = async (event: Event) => {
 				.setImage({ src: response.url, alt: response.filename })
 				.run();
 		} else {
-			// Insert as a link with CSS-based icon
 			const html = `<a href="${response.url}" target="_blank" rel="noopener noreferrer" class="document-link" data-type="${file.type}">
 				<span>${file.name}</span>
 			</a>`;
@@ -208,6 +221,20 @@ const handleFileChange = async (event: Event) => {
 		}, 500);
 		if (fileInput.value) fileInput.value.value = "";
 	}
+};
+
+const handleFileChange = async (event: Event) => {
+	const target = event.target as HTMLInputElement;
+	const file = target.files?.[0];
+	if (!file) return;
+	await processFile(file);
+};
+
+const handleDrop = async (event: DragEvent) => {
+	isDragging.value = false;
+	const file = event.dataTransfer?.files[0];
+	if (!file) return;
+	await processFile(file);
 };
 
 const loadDemo = async () => {
@@ -231,7 +258,7 @@ onMounted(() => {
 			StarterKit.configure({
 				code: false,
 				codeBlock: false,
-				link: false, // Disable default link to use custom one
+				link: false,
 			}),
 			Link.configure({
 				openOnClick: "whenNotEditable",

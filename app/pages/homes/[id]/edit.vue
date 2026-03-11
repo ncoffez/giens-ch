@@ -1,10 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ["home-owner"] });
 
-import type { Home, HomeShare } from "~/types";
+import type { Home, HomeShare, HomeContact } from "~/types";
 import HomeFiles from "~/components/homes/HomeFiles.vue";
 import HomePhotos from "~/components/homes/HomePhotos.vue";
 import HomeShareLinks from "~/components/homes/HomeShareLinks.vue";
+import ContactCard from "~/components/homes/ContactCard.vue";
 
 const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
@@ -22,14 +23,25 @@ const formName = ref("");
 const formWifiSSID = ref("");
 const formWifiPassword = ref("");
 const formInstructions = ref("");
+const formContacts = ref<HomeContact[]>([]);
 const showWifi = ref(false);
 
 // Active section
-const activeSection = ref<"links" | "photos" | "wifi" | "instructions" | "files">("links");
+const activeSection = ref<"links" | "photos" | "wifi" | "instructions" | "files" | "contacts">("links");
 
 // Preview
-const previewOpen = ref(false);
 const previewUrl = ref<string | null>(null);
+
+// Contact editing
+const editingContact = ref<HomeContact | null>(null);
+const showContactModal = ref(false);
+const contactForm = ref({
+	name: "",
+	email: "",
+	phone: "",
+	notes: "",
+	hidden: false,
+});
 
 const fetchHome = async () => {
 	try {
@@ -55,6 +67,7 @@ const fetchHome = async () => {
 		formWifiSSID.value = home.value.wifiSSID || "";
 		formWifiPassword.value = home.value.wifiPassword || "";
 		formInstructions.value = home.value.instructions || "";
+		formContacts.value = [...(home.value.contacts || [])];
 
 		// Get latest active share for preview
 		const activeShare = shares.value.find(s => !s.revoked && new Date(s.expiresAt) > new Date());
@@ -90,6 +103,107 @@ const saveBasicInfo = async () => {
 		toast.add({ title: "Fehler beim Speichern", description: getFetchError(e), color: "error" });
 	} finally {
 		saving.value = false;
+	}
+};
+
+const saveContacts = async () => {
+	try {
+		saving.value = true;
+		await $fetch(`/api/homes/${homeId.value}`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+			body: {
+				contacts: formContacts.value,
+			},
+		});
+		toast.add({ title: "Kontakte gespeichert", color: "success" });
+		await fetchHome();
+	} catch (e: unknown) {
+		toast.add({ title: "Fehler beim Speichern", description: getFetchError(e), color: "error" });
+	} finally {
+		saving.value = false;
+	}
+};
+
+const openContactModal = (contact?: HomeContact) => {
+	if (contact) {
+		editingContact.value = contact;
+		contactForm.value = {
+			name: contact.name,
+			email: contact.email || "",
+			phone: contact.phone || "",
+			notes: contact.notes || "",
+			hidden: contact.hidden,
+		};
+	} else {
+		editingContact.value = null;
+		contactForm.value = {
+			name: "",
+			email: "",
+			phone: "",
+			notes: "",
+			hidden: false,
+		};
+	}
+	showContactModal.value = true;
+};
+
+const saveContact = () => {
+	if (!contactForm.value.name.trim()) {
+		toast.add({ title: "Name erforderlich", color: "warning" });
+		return;
+	}
+
+	if (editingContact.value) {
+		// Update existing contact
+		const index = formContacts.value.findIndex(c => c.id === editingContact.value!.id);
+		if (index !== -1) {
+			formContacts.value[index] = {
+				...formContacts.value[index],
+				name: contactForm.value.name,
+				email: contactForm.value.email || undefined,
+				phone: contactForm.value.phone || undefined,
+				notes: contactForm.value.notes || undefined,
+				hidden: contactForm.value.hidden,
+			};
+		}
+	} else {
+		// Add new contact
+		const newContact: HomeContact = {
+			id: `contact-${Date.now()}`,
+			name: contactForm.value.name,
+			email: contactForm.value.email || undefined,
+			phone: contactForm.value.phone || undefined,
+			notes: contactForm.value.notes || undefined,
+			hidden: contactForm.value.hidden,
+			isOwner: false,
+		};
+		formContacts.value.push(newContact);
+	}
+
+	showContactModal.value = false;
+	saveContacts();
+};
+
+const deleteContact = (contactId: string) => {
+	const contact = formContacts.value.find(c => c.id === contactId);
+	if (contact?.isOwner) {
+		toast.add({ title: "Eigentümer können nicht gelöscht werden", description: "Sie können sie stattdessen verstecken.", color: "warning" });
+		return;
+	}
+
+	const index = formContacts.value.findIndex(c => c.id === contactId);
+	if (index !== -1) {
+		formContacts.value.splice(index, 1);
+		saveContacts();
+	}
+};
+
+const toggleContactHidden = (contactId: string) => {
+	const index = formContacts.value.findIndex(c => c.id === contactId);
+	if (index !== -1) {
+		formContacts.value[index].hidden = !formContacts.value[index].hidden;
+		saveContacts();
 	}
 };
 
@@ -161,6 +275,7 @@ onMounted(fetchHome);
 									{ id: 'links', label: 'Links', icon: 'i-lucide-link' },
 									{ id: 'photos', label: 'Fotos', icon: 'i-lucide-image' },
 									{ id: 'wifi', label: 'WLAN', icon: 'i-lucide-wifi' },
+									{ id: 'contacts', label: 'Kontakte', icon: 'i-lucide-users' },
 									{ id: 'instructions', label: 'Anleitung', icon: 'i-lucide-file-text' },
 									{ id: 'files', label: 'Dateien', icon: 'i-lucide-folder' },
 								]"
@@ -239,6 +354,62 @@ onMounted(fetchHome);
 							</div>
 						</div>
 
+						<!-- Contacts Section -->
+						<div v-else-if="activeSection === 'contacts'" class="space-y-6">
+							<div class="flex items-center justify-between">
+								<div>
+									<h2 class="text-2xl font-black mb-2">Kontakte</h2>
+									<p class="text-stone-500">Verwalten Sie Kontaktpersonen für Ihre Mieter.</p>
+								</div>
+								<UButton
+									icon="i-lucide-plus"
+									@click="openContactModal()"
+								>
+									Kontakt hinzufügen
+								</UButton>
+							</div>
+
+							<div v-if="formContacts.length === 0" class="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700">
+								<UIcon name="i-lucide-users" class="w-12 h-12 text-stone-300 mx-auto mb-4" />
+								<p class="text-stone-500">Keine Kontakte vorhanden</p>
+								<UButton class="mt-4" @click="openContactModal()">
+									Ersten Kontakt hinzufügen
+								</UButton>
+							</div>
+
+							<div v-else class="space-y-4">
+								<div v-for="contact in formContacts" :key="contact.id" class="relative">
+									<ContactCard :contact="contact" :show-hidden-badge="true" />
+									<div class="absolute top-4 right-4 flex items-center gap-2">
+										<UButton
+											:icon="contact.hidden ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+											color="neutral"
+											variant="ghost"
+											size="sm"
+											@click="toggleContactHidden(contact.id)"
+											:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
+										/>
+										<UButton
+											v-if="!contact.isOwner"
+											icon="i-lucide-pencil"
+											color="neutral"
+											variant="ghost"
+											size="sm"
+											@click="openContactModal(contact)"
+										/>
+										<UButton
+											v-if="!contact.isOwner"
+											icon="i-lucide-trash-2"
+											color="error"
+											variant="ghost"
+											size="sm"
+											@click="deleteContact(contact.id)"
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+
 						<!-- Instructions Section -->
 						<div v-else-if="activeSection === 'instructions'" class="space-y-6">
 							<div>
@@ -267,5 +438,48 @@ onMounted(fetchHome);
 				</div>
 			</template>
 		</div>
+
+		<!-- Contact Modal -->
+		<UModal v-model:open="showContactModal">
+			<template #content>
+				<div class="p-6">
+					<h3 class="text-lg font-bold mb-4">
+						{{ editingContact ? "Kontakt bearbeiten" : "Neuer Kontakt" }}
+					</h3>
+
+					<div class="space-y-4">
+						<UFormField label="Name" required>
+							<UInput v-model="contactForm.name" placeholder="Vorname Nachname" size="xl" />
+						</UFormField>
+
+						<UFormField label="E-Mail">
+							<UInput v-model="contactForm.email" type="email" placeholder="email@beispiel.ch" size="xl" />
+						</UFormField>
+
+						<UFormField label="Telefon">
+							<UInput v-model="contactForm.phone" type="tel" placeholder="+41 79 123 45 67" size="xl" />
+						</UFormField>
+
+						<UFormField label="Notizen">
+							<UInput v-model="contactForm.notes" placeholder="z.B. Hausverwaltung, Nachbar" size="xl" />
+						</UFormField>
+
+						<UFormField label="Versteckt">
+							<USwitch v-model="contactForm.hidden" />
+							<p class="text-xs text-stone-500 mt-1">Versteckte Kontakte werden Mietern nicht angezeigt.</p>
+						</UFormField>
+					</div>
+
+					<div class="flex justify-end gap-2 mt-6">
+						<UButton color="neutral" variant="ghost" @click="showContactModal = false">
+							Abbrechen
+						</UButton>
+						<UButton @click="saveContact">
+							Speichern
+						</UButton>
+					</div>
+				</div>
+			</template>
+		</UModal>
 	</div>
 </template>
