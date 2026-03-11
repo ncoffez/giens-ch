@@ -31,6 +31,12 @@ const viewMode = ref<"grid" | "list">("list");
 const sortBy = ref<"name" | "date" | "size">("name");
 const sortOrder = ref<"asc" | "desc">("asc");
 
+const cursor = ref<string | null>(null);
+const hasMore = ref(false);
+const isLoadingMore = ref(false);
+const sentinelRef = ref<HTMLElement | null>(null);
+const PAGE_SIZE = 50;
+
 const uploadQueue = ref<{
 	total: number;
 	completed: number;
@@ -69,10 +75,6 @@ const breadcrumbs = computed(() => {
 	return crumbs;
 });
 
-const currentFiles = computed(() => {
-	return files.value.filter(f => f.folderId === currentFolderId.value);
-});
-
 const currentSubfolders = computed(() => {
 	return folders.value.filter(f => f.parentId === currentFolderId.value);
 });
@@ -96,21 +98,7 @@ const sortedSubfolders = computed(() => {
 });
 
 const sortedFiles = computed(() => {
-	const sorted = [...currentFiles.value];
-	sorted.sort((a, b) => {
-		let comparison = 0;
-		if (sortBy.value === "name") {
-			comparison = a.name.localeCompare(b.name, "de");
-		} else if (sortBy.value === "date") {
-			const dateA = a.lastModified ? a.lastModified : new Date(a.uploadedAt).getTime();
-			const dateB = b.lastModified ? b.lastModified : new Date(b.uploadedAt).getTime();
-			comparison = dateA - dateB;
-		} else if (sortBy.value === "size") {
-			comparison = a.size - b.size;
-		}
-		return sortOrder.value === "asc" ? comparison : -comparison;
-	});
-	return sorted;
+	return files.value.filter(f => f.folderId === currentFolderId.value);
 });
 
 const availableFoldersForMove = computed(() => {
@@ -171,7 +159,7 @@ const moveBrowseBreadcrumbs = computed(() => {
 const hasSelection = computed(() => selectedFiles.value.length > 0 || selectedFolders.value.length > 0);
 
 const isAllSelected = computed(() => {
-	const totalItems = currentFiles.value.length + currentSubfolders.value.length;
+	const totalItems = sortedFiles.value.length + currentSubfolders.value.length;
 	return totalItems > 0 && selectedFiles.value.length + selectedFolders.value.length === totalItems;
 });
 
@@ -184,12 +172,12 @@ const toggleSelectAll = () => {
 		selectedFiles.value = [];
 		selectedFolders.value = [];
 	} else {
-		selectedFiles.value = [...currentFiles.value];
+		selectedFiles.value = [...sortedFiles.value];
 		selectedFolders.value = [...currentSubfolders.value];
 	}
 };
 
-const totalItemsInFolder = computed(() => currentFiles.value.length + currentSubfolders.value.length);
+const totalItemsInFolder = computed(() => sortedFiles.value.length + currentSubfolders.value.length);
 
 const folderFileCount = (folderId: string) => 
 	files.value.filter(f => f.folderId === folderId).length;
@@ -241,15 +229,25 @@ const fetchData = async (folderId: string | null = null) => {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
+		files.value = [];
+		cursor.value = null;
+		hasMore.value = false;
+		
 		const data = await $fetch("/api/files", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
-			body: { folderId },
+			body: { 
+				folderId,
+				limit: PAGE_SIZE,
+				sortBy: sortBy.value,
+				sortOrder: sortOrder.value
+			},
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
+		cursor.value = data.nextCursor || null;
+		hasMore.value = data.hasMore || false;
 		
-		// Auto-select grid view if images present
 		const hasImages = (data.files || []).some((f: GlobalFile) => 
 			f.folderId === folderId && f.type.startsWith("image/")
 		);
@@ -260,6 +258,64 @@ const fetchData = async (folderId: string | null = null) => {
 		loading.value = false;
 	}
 };
+
+const loadMore = async () => {
+	if (isLoadingMore.value || !hasMore.value || !cursor.value) return;
+	
+	try {
+		isLoadingMore.value = true;
+		const data = await $fetch("/api/files", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+			body: { 
+				folderId: currentFolderId.value,
+				limit: PAGE_SIZE,
+				cursor: cursor.value,
+				sortBy: sortBy.value,
+				sortOrder: sortOrder.value
+			},
+		});
+		
+		files.value = [...files.value, ...(data.files || [])];
+		cursor.value = data.nextCursor || null;
+		hasMore.value = data.hasMore || false;
+	} catch (e: unknown) {
+		toast.add({ 
+			title: "Fehler beim Laden weiterer Dateien", 
+			description: getFetchError(e), 
+			color: "error" 
+		});
+	} finally {
+		isLoadingMore.value = false;
+	}
+};
+
+let observer: IntersectionObserver | null = null;
+
+const setupObserver = () => {
+	if (observer) {
+		observer.disconnect();
+	}
+	
+	observer = new IntersectionObserver(
+		(entries) => {
+			if (entries[0].isIntersecting && hasMore.value && !isLoadingMore.value) {
+				loadMore();
+			}
+		},
+		{ rootMargin: "400px" }
+	);
+	
+	if (sentinelRef.value) {
+		observer.observe(sentinelRef.value);
+	}
+};
+
+watch(sentinelRef, (newRef) => {
+	if (newRef && observer) {
+		observer.observe(newRef);
+	}
+});
 
 const handleFileDrop = (e: DragEvent) => {
 	if (!$isAdmin.value) return;
@@ -770,6 +826,7 @@ const toggleSort = (column: "name" | "date" | "size") => {
 		sortBy.value = column;
 		sortOrder.value = "asc";
 	}
+	fetchData(currentFolderId.value);
 };
 
 const clearSelection = () => {
@@ -783,6 +840,13 @@ onMounted(async () => {
 		currentFolderId.value = folderFromUrl;
 	}
 	await fetchData(currentFolderId.value);
+	setupObserver();
+});
+
+onUnmounted(() => {
+	if (observer) {
+		observer.disconnect();
+	}
 });
 
 watch(() => route.query.folder, (newFolderId) => {
@@ -1050,7 +1114,7 @@ watch(() => route.query.folder, (newFolderId) => {
 								</UDropdownMenu>
 								<button class="w-full" @click="handleFileClick(file)">
 									<div v-if="file.type.startsWith('image/')" class="aspect-[4/3] rounded-xl overflow-hidden mb-2 md:mb-3 bg-stone-100 dark:bg-stone-700">
-										<img :src="file.thumbnailUrl || file.url" :alt="file.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+										<img :src="file.thumbnailUrl || file.url" :alt="file.name" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
 									</div>
 									<div v-else-if="file.type === 'video/mp4'" class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3 relative" :class="getFileIconBg(file.type)">
 										<UIcon :name="getFileIcon(file.type)" class="w-8 h-8 md:w-12 md:h-12" :class="getFileIconColor(file.type)" />
@@ -1066,6 +1130,13 @@ watch(() => route.query.folder, (newFolderId) => {
 									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ file.name }}</p>
 									<p class="text-[10px] md:text-xs text-stone-400 mt-0.5">{{ formatDate(file.uploadedAt) }}</p>
 								</button>
+							</div>
+							
+							<div ref="sentinelRef" class="col-span-full flex justify-center py-4">
+								<div v-if="isLoadingMore" class="flex items-center gap-2 text-stone-500">
+									<div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+									<span class="text-sm">Lade weitere...</span>
+								</div>
 							</div>
 						</div>
 
@@ -1162,7 +1233,7 @@ watch(() => route.query.folder, (newFolderId) => {
 											<td class="py-3 px-2">
 												<button class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="handleFileClick(file)">
 													<div v-if="file.type.startsWith('image/')" class="w-8 h-8 rounded overflow-hidden bg-stone-100 dark:bg-stone-700 shrink-0">
-														<img :src="file.thumbnailUrl || file.url" :alt="file.name" class="w-full h-full object-cover" />
+														<img :src="file.thumbnailUrl || file.url" :alt="file.name" loading="lazy" class="w-full h-full object-cover" />
 													</div>
 													<div v-else-if="file.type === 'video/mp4'" class="w-8 h-8 rounded flex items-center justify-center shrink-0 relative" :class="getFileIconBg(file.type)">
 														<UIcon :name="getFileIcon(file.type)" class="w-4 h-4" :class="getFileIconColor(file.type)" />
@@ -1188,6 +1259,13 @@ watch(() => route.query.folder, (newFolderId) => {
 										</tr>
 									</tbody>
 								</table>
+							</div>
+							
+							<div ref="sentinelRef" class="flex justify-center py-4">
+								<div v-if="isLoadingMore" class="flex items-center gap-2 text-stone-500">
+									<div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+									<span class="text-sm">Lade weitere...</span>
+								</div>
 							</div>
 						</div>
 					</div>

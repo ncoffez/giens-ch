@@ -1,0 +1,53 @@
+{
+	"indexes": [
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "name", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "name", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "uploadedAt", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "uploadedAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "size", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "globalFiles",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "folderId", "order": "ASCENDING" },
+				{ "fieldPath": "size", "order": "DESCENDING" }
+			]
+		}
+	],
+	"fieldOverrides": []
+}
