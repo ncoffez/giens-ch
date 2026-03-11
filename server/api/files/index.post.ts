@@ -2,6 +2,7 @@ import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
+const DEFAULT_LIMIT = 50;
 
 const generateSignedUrl = async (bucket: ReturnType<typeof storage.bucket>, path: string): Promise<string | null> => {
 	try {
@@ -24,6 +25,14 @@ const getResizedPath = (originalPath: string, size: string): string => {
 	return `${dirPath}/resized/${nameWithoutExt}_${size}.webp`;
 };
 
+interface FilesRequestBody {
+	folderId?: string | null;
+	limit?: number;
+	cursor?: string | null;
+	sortBy?: "name" | "date" | "size";
+	sortOrder?: "asc" | "desc";
+}
+
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
@@ -34,33 +43,52 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
-	const body = await readBody(event).catch(() => ({}));
-	const { folderId } = body;
+	const body = await readBody(event).catch(() => ({})) as FilesRequestBody | null;
+	const { 
+		folderId, 
+		limit = DEFAULT_LIMIT, 
+		cursor = null,
+		sortBy = "name",
+		sortOrder = "asc"
+	} = body || {};
 
-	let filesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFiles");
+	const effectiveFolderId = folderId === undefined ? null : (folderId || null);
 
-	if (folderId !== undefined) {
-		filesQuery = filesQuery.where("folderId", "==", folderId || null);
-	}
-
-	const [filesSnapshot, foldersSnapshot] = await Promise.all([
-		filesQuery.get(),
-		db.collection("globalFolders").get(),
-	]);
-
-	const bucket = storage.bucket();
-
-	const rawFiles = filesSnapshot.docs
-		.filter((doc) => !doc.data().deletedAt)
-		.map((doc) => doc.data());
-
+	const foldersSnapshot = await db.collection("globalFolders").get();
 	const rawFolders = foldersSnapshot.docs.map((doc) => doc.data());
 
+	let filesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFiles");
+	filesQuery = filesQuery.where("folderId", "==", effectiveFolderId);
+
+	const sortField = sortBy === "date" ? "uploadedAt" : sortBy;
+	filesQuery = filesQuery.orderBy(sortField, sortOrder);
+
+	if (cursor) {
+		const cursorDoc = await db.collection("globalFiles").doc(cursor).get();
+		if (cursorDoc.exists) {
+			filesQuery = filesQuery.startAfter(cursorDoc);
+		}
+	}
+
+	filesQuery = filesQuery.limit(limit + 1);
+
+	const filesSnapshot = await filesQuery.get();
+
+	const bucket = storage.bucket();
+	const rawFiles = filesSnapshot.docs
+		.map((doc) => ({ id: doc.id, ...doc.data() }))
+		.filter((doc: any) => !doc.deletedAt);
+
+	const hasMore = rawFiles.length > limit;
+	const filesToProcess = hasMore ? rawFiles.slice(0, limit) : rawFiles;
+	const lastFile = filesToProcess.length > 0 ? filesToProcess[filesToProcess.length - 1] : null;
+	const nextCursor = hasMore && lastFile ? (lastFile as any).id : null;
+
 	const userIds = new Set<string>();
-	rawFiles.forEach((f) => {
+	filesToProcess.forEach((f: any) => {
 		if (f.uploadedBy) userIds.add(f.uploadedBy);
 	});
-	rawFolders.forEach((f) => {
+	rawFolders.forEach((f: any) => {
 		if (f.createdBy) userIds.add(f.createdBy);
 	});
 
@@ -88,7 +116,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const files = await Promise.all(
-		rawFiles.map(async (data) => {
+		filesToProcess.map(async (data: any) => {
 			const url = data.storagePath ? await generateSignedUrl(bucket, data.storagePath) : null;
 
 			let thumbnailUrl: string | null = null;
@@ -127,10 +155,10 @@ export default defineEventHandler(async (event) => {
 		})
 	);
 
-	const folders = rawFolders.map((data) => ({
+	const folders = rawFolders.map((data: any) => ({
 		...data,
 		createdByName: data.createdBy ? userNames[data.createdBy] : undefined,
 	}));
 
-	return { files, folders };
+	return { files, folders, nextCursor, hasMore };
 });
