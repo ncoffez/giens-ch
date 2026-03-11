@@ -9,6 +9,26 @@
 			alt="Blick auf Hyères und das Meer"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
+		<!-- Lage Section -->
+		<section class="max-w-screen-lg mx-auto px-4">
+			<UiTitle subtitle="Ihr Ziel auf der Halbinsel" title="Lage" />
+			<div class="mt-8 prose dark:prose-invert max-w-none text-lg">
+				<p>
+					Unsere Ferienhäuser liegen idyllisch auf der Halbinsel von Giens an der Avenue des Arbanais 313, 
+					nur etwa 15 Gehminuten vom Strand und vom Dorfzentrum entfernt.
+				</p>
+				<p>
+					Die Halbinsel von Giens befindet sich bei etwa 43°2′ nördlicher Breite an der Côte d'Azur im Département Var 
+					und gehört zu den südlichen Regionen des französischen Festlands.
+				</p>
+				<p>
+					Ein großer Teil der Halbinsel ist als Naturschutzgebiet ausgewiesen und steht unter besonderem Schutz. 
+					Besonders die Salinen und Feuchtgebiete zwischen den beiden Sanddämmen (Tombolos) bilden ein wichtiges 
+					Rückzugsgebiet für Zug- und Brutvögel.
+				</p>
+			</div>
+		</section>
+
 		<!-- Quick Links -->
 		<section class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-screen-lg mx-auto px-4">
 			<UiTravelCard to="#mit-dem-auto" title="Mit dem Auto" icon="i-lucide-car" />

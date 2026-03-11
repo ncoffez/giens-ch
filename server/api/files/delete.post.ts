@@ -7,10 +7,6 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.admin) {
-		throw createError({ statusCode: 403, message: "Only admins can delete files" });
-	}
-
 	const body = await readBody(event);
 	const { fileId } = body;
 
@@ -29,6 +25,10 @@ export default defineEventHandler(async (event) => {
 
 	if (fileData.deletedAt) {
 		throw createError({ statusCode: 400, message: "File is already in trash" });
+	}
+
+	if (!claims.admin && fileData.uploadedBy !== claims.uid) {
+		throw createError({ statusCode: 403, message: "You can only delete your own files" });
 	}
 
 	await fileRef.update({

@@ -1,5 +1,6 @@
-import { getHomeById, isHomeOwner } from "../../utils/homes";
-import { getUserClaims } from "../../utils/auth";
+import { isHomeOwner } from "../../../../utils/homes";
+import { getShareLinksForHome } from "../../../../utils/homes";
+import { getUserClaims } from "../../../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
@@ -19,14 +20,17 @@ export default defineEventHandler(async (event) => {
 	if (!isAdmin && !isOwner) {
 		throw createError({
 			statusCode: 403,
-			message: "Forbidden: You don't have access to this home",
+			message: "Forbidden: You cannot view share links for this home",
 		});
 	}
 
-	const home = await getHomeById(homeId);
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
+	const shares = await getShareLinksForHome(homeId);
 
-	return home;
+	// Add share URLs
+	const sharesWithUrls = shares.map((share) => ({
+		...share,
+		shareUrl: `https://giens-ch.web.app/homes/share/${share.id}`,
+	}));
+
+	return sharesWithUrls;
 });

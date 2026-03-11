@@ -262,16 +262,13 @@ const userItems = computed(() => {
 			label: "Mein Profil",
 			to: "/profile",
 			icon: "i-lucide-user",
+		},
+		{
+			label: "Meine Häuser",
+			to: "/my-homes",
+			icon: "i-lucide-home",
 		}
 	];
-
-	if (import.meta.client && isOwner.value && canAccessHomes.value) {
-		items.push({
-			label: "Mein Haus",
-			to: "/homes",
-			icon: "i-lucide-building-2",
-		});
-	}
 
 	if (import.meta.client && isAdmin.value) {
 		items.push({

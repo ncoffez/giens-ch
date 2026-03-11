@@ -1,324 +1,271 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-owner", "homes-feature"] });
+definePageMeta({ middleware: ["home-owner"] });
 
-import BasicInfoEditor from "~/components/homes/BasicInfoEditor.vue";
-import PhotoGallery from "~/components/homes/PhotoGallery.vue";
-import InstructionsEditor from "~/components/homes/InstructionsEditor.vue";
-import RulesEditor from "~/components/homes/RulesEditor.vue";
-import SharingPanel from "~/components/homes/SharingPanel.vue";
-import FilesManager from "~/components/homes/FilesManager.vue";
+import type { Home, HomeShare } from "~/types";
+import HomeFiles from "~/components/homes/HomeFiles.vue";
+import HomePhotos from "~/components/homes/HomePhotos.vue";
+import HomeShareLinks from "~/components/homes/HomeShareLinks.vue";
 
-const { $currentUser, $isAdmin } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 
 const homeId = computed(() => route.params.id as string);
-const home = ref<any>(null);
-const owners = ref<any[]>([]);
+const home = ref<Home | null>(null);
+const shares = ref<HomeShare[]>([]);
 const loading = ref(true);
+const saving = ref(false);
 const error = ref<string | null>(null);
-const isReordering = ref(false);
 
-// Section definitions
-const allSections = {
-	basic: { id: "basic", label: "Grundinformationen", component: BasicInfoEditor, icon: "i-lucide-home" },
-	photos: { id: "photos", label: "Fotos", component: PhotoGallery, icon: "i-lucide-image" },
-	instructions: { id: "instructions", label: "An-/Abreise", component: InstructionsEditor, icon: "i-lucide-key" },
-	rules: { id: "rules", label: "Regeln & Info", component: RulesEditor, icon: "i-lucide-book-open" },
-	files: { id: "files", label: "Daten & Dateien", component: FilesManager, icon: "i-lucide-folder" },
-	sharing: { id: "sharing", label: "Freigabe", component: SharingPanel, icon: "i-lucide-share-2" },
-};
+// Form data
+const formName = ref("");
+const formWifiSSID = ref("");
+const formWifiPassword = ref("");
+const formInstructions = ref("");
+const showWifi = ref(false);
 
-const sectionOrder = ref<string[]>(["basic", "photos", "instructions", "rules", "files", "sharing"]);
+// Active section
+const activeSection = ref<"links" | "photos" | "wifi" | "instructions" | "files">("links");
 
-const orderedSections = computed(() => {
-	return sectionOrder.value.map(id => allSections[id as keyof typeof allSections]).filter(Boolean);
-});
-
-const ownerMap = computed(() => {
-	const map = new Map<string, any>();
-	owners.value.forEach((o) => map.set(o.uid, o));
-	return map;
-});
-
-const getOwners = (ownerIds: string[]) => {
-	return (ownerIds || []).map((uid) => ownerMap.value.get(uid)).filter(Boolean);
-};
-
-const getOwnerInitials = (displayName: string) => {
-	return displayName
-		?.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase()
-		.slice(0, 2) || "??";
-};
+// Preview
+const previewOpen = ref(false);
+const previewUrl = ref<string | null>(null);
 
 const fetchHome = async () => {
 	try {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
-		const [homeData, ownersData] = await Promise.all([
+		console.log("[edit-home] Fetching home:", homeId.value);
+
+		const [homeData, sharesData] = await Promise.all([
 			$fetch(`/api/homes/${homeId.value}`, {
 				headers: { Authorization: `Bearer ${token.value}` },
 			}),
-			$fetch("/api/users/owners", {
+			$fetch(`/api/homes/${homeId.value}/share/list`, {
 				headers: { Authorization: `Bearer ${token.value}` },
-			})
+			}),
 		]);
-		home.value = homeData;
-		owners.value = ownersData as any[];
-		
-		if (home.value?.sectionOrder && Array.isArray(home.value.sectionOrder)) {
-			// Ensure all existing sections are present, even if not in saved order
-			const savedOrder = home.value.sectionOrder.filter((id: string) => id in allSections);
-			const missingSections = Object.keys(allSections).filter(id => !savedOrder.includes(id));
-			sectionOrder.value = [...savedOrder, ...missingSections];
+
+		home.value = homeData as Home;
+		shares.value = sharesData as HomeShare[];
+
+		// Populate form
+		formName.value = home.value.name;
+		formWifiSSID.value = home.value.wifiSSID || "";
+		formWifiPassword.value = home.value.wifiPassword || "";
+		formInstructions.value = home.value.instructions || "";
+
+		// Get latest active share for preview
+		const activeShare = shares.value.find(s => !s.revoked && new Date(s.expiresAt) > new Date());
+		if (activeShare) {
+			previewUrl.value = (activeShare as any).shareUrl;
 		}
+
+		console.log("[edit-home] Home loaded:", home.value.name);
 	} catch (e: unknown) {
-		error.value = getFetchError(e) || "Fehler beim Laden des Hauses";
+		console.error("[edit-home] Error fetching home:", e);
+		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}
 };
 
-const saveOrder = async () => {
+const saveBasicInfo = async () => {
 	try {
+		saving.value = true;
 		await $fetch(`/api/homes/${homeId.value}`, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
-			body: { sectionOrder: sectionOrder.value },
+			body: {
+				name: formName.value,
+				wifiSSID: formWifiSSID.value,
+				wifiPassword: formWifiPassword.value,
+				instructions: formInstructions.value,
+			},
 		});
-		toast.add({ title: "Layout gespeichert", color: "success" });
-		isReordering.value = false;
+		toast.add({ title: "Gespeichert", color: "success" });
+		await fetchHome();
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Speichern des Layouts", color: "error" });
+		toast.add({ title: "Fehler beim Speichern", description: getFetchError(e), color: "error" });
+	} finally {
+		saving.value = false;
 	}
 };
 
-const moveSection = (index: number, direction: 'up' | 'down') => {
-	const newOrder = [...sectionOrder.value];
-	const newIndex = direction === 'up' ? index - 1 : index + 1;
-	if (newIndex >= 0 && newIndex < newOrder.length) {
-		[newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
-		sectionOrder.value = newOrder;
-	}
-};
-
-const deleteHome = async () => {
-	if (!confirm("Sind Sie sicher, dass Sie dieses Haus löschen möchten?")) return;
-
-	try {
-		await $fetch(`/api/homes/${homeId.value}`, {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
-		});
-
-		toast.add({ title: "Haus erfolgreich gelöscht", color: "success" });
-		navigateTo("/homes");
-	} catch (e: unknown) {
-		toast.add({ title: getFetchError(e) || "Fehler beim Löschen", color: "error" });
-	}
-};
-
-const canDelete = computed(() => {
-	return $isAdmin.value || ($currentUser.value && home.value?.ownerIds?.includes($currentUser.value.uid));
-});
-
-const scrollToSection = (id: string) => {
-	const el = document.getElementById(`section-${id}`);
-	if (el) {
-		window.scrollTo({
-			top: el.offsetTop - 100,
-			behavior: 'smooth'
-		});
+const openPreview = () => {
+	if (previewUrl.value) {
+		window.open(previewUrl.value, "_blank");
+	} else {
+		toast.add({ title: "Kein aktiver Link", description: "Erstellen Sie zuerst einen Link.", color: "warning" });
 	}
 };
 
 onMounted(fetchHome);
-watch(homeId, fetchHome);
 </script>
 
 <template>
-	<div class="min-h-screen bg-white dark:bg-gray-950">
-		<!-- Simple Header -->
-		<header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-stone-100 dark:border-stone-800">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900">
+		<!-- Header -->
+		<header class="sticky top-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border-b border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
 				<div class="flex items-center gap-4">
-					<NuxtLink to="/homes" class="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors">
-						<UIcon name="i-lucide-arrow-left" class="w-5 h-5" />
-					</NuxtLink>
-					<div v-if="home" class="hidden sm:block">
-						<h1 class="font-black text-lg">Haus {{ home.name }} bearbeiten</h1>
-					</div>
-				</div>
-
-				<div class="flex items-center gap-3">
-					<UButton 
-						v-if="home"
-						:to="`/homes/view/${homeId}`" 
-						variant="ghost" 
+					<UButton
+						variant="ghost"
 						color="neutral"
-						icon="i-lucide-external-link"
-						target="_blank"
+						icon="i-lucide-arrow-left"
+						@click="navigateTo('/my-homes')"
+					/>
+					<h1 v-if="home" class="font-black text-lg">{{ home.name }}</h1>
+				</div>
+				<div class="flex items-center gap-2">
+					<UButton
+						variant="soft"
+						color="neutral"
+						icon="i-lucide-eye"
+						@click="openPreview"
+						:disabled="!previewUrl"
 					>
 						Vorschau
-					</UButton>
-					<UButton 
-						v-if="isReordering"
-						color="primary" 
-						@click="saveOrder"
-						icon="i-lucide-check"
-					>
-						Layout speichern
-					</UButton>
-					<UButton 
-						v-else
-						variant="soft" 
-						color="neutral"
-						@click="isReordering = true"
-						icon="i-lucide-layers"
-					>
-						Layout
 					</UButton>
 				</div>
 			</div>
 		</header>
 
-		<div class="max-w-screen-xl mx-auto px-4 py-12 flex flex-col lg:flex-row gap-12">
-			<!-- Sidebar Nav (Desktop) -->
-			<aside class="hidden lg:block w-64 shrink-0">
-				<div class="sticky top-28 space-y-8">
-					<div>
-						<h2 class="text-xs font-black uppercase tracking-widest text-stone-400 mb-4 px-3">Navigation</h2>
-						<nav class="space-y-1">
-							<button 
-								v-for="section in orderedSections" 
-								:key="section.id"
-								@click="scrollToSection(section.id)"
-								class="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-stone-600 dark:text-stone-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 rounded-xl transition-all group"
-							>
-								<UIcon :name="section.icon" class="w-4 h-4 group-hover:scale-110 transition-transform" />
-								{{ section.label }}
-							</button>
-						</nav>
-					</div>
-
-					<div v-if="home" class="p-4 bg-stone-50 dark:bg-stone-900/50 rounded-2xl border border-stone-100 dark:border-stone-800">
-						<h3 class="text-xs font-black uppercase tracking-widest text-stone-400 mb-3">Eigentümer</h3>
-						<div class="flex -space-x-2 mb-3">
-							<UPopover
-								v-for="owner in getOwners(home.ownerIds)"
-								:key="owner.uid"
-								mode="hover"
-								:open-delay="200"
-							>
-								<UAvatar
-									size="md"
-									:src="owner.photoURL"
-									:text="getOwnerInitials(owner.displayName)"
-									class="ring-2 ring-white dark:ring-gray-900 shadow-sm cursor-pointer hover:z-10"
-								/>
-								<template #content>
-									<UCard class="w-64">
-										<UUser
-											:name="owner.displayName"
-											:description="owner.email"
-											:avatar="{ src: owner.photoURL, text: getOwnerInitials(owner.displayName) }"
-										/>
-									</UCard>
-								</template>
-							</UPopover>
-						</div>
-						<p class="text-[10px] text-stone-400 leading-tight">Diese Personen können alle Details dieses Hauses bearbeiten.</p>
-					</div>
-
-					<UButton 
-						v-if="canDelete" 
-						color="error" 
-						variant="ghost" 
-						size="sm" 
-						class="w-full justify-start px-3"
-						@click="deleteHome"
-						icon="i-lucide-trash-2"
-					>
-						Haus löschen
-					</UButton>
+		<div class="max-w-screen-xl mx-auto px-4 py-8">
+			<!-- Loading -->
+			<div v-if="loading" class="flex items-center justify-center py-20">
+				<div class="text-center space-y-4">
+					<div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+					<p class="text-stone-500">Laden...</p>
 				</div>
-			</aside>
+			</div>
+
+			<!-- Error -->
+			<div v-else-if="error" class="text-center py-20">
+				<div class="w-16 h-16 mx-auto rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+					<UIcon name="i-lucide-alert-circle" class="w-8 h-8 text-red-500" />
+				</div>
+				<p class="text-red-600 font-medium mb-4">{{ error }}</p>
+				<UButton color="neutral" variant="soft" @click="fetchHome">Erneut versuchen</UButton>
+			</div>
 
 			<!-- Main Content -->
-			<main class="flex-1 max-w-3xl">
-				<div v-if="loading" class="space-y-12">
-					<div v-for="i in 3" :key="i" class="space-y-4">
-						<div class="h-8 w-48 bg-stone-100 dark:bg-stone-800 rounded-lg animate-pulse" />
-						<div class="h-64 bg-stone-50 dark:bg-stone-900/50 rounded-3xl animate-pulse" />
-					</div>
-				</div>
+			<template v-else-if="home">
+				<div class="flex flex-col lg:flex-row gap-8">
+					<!-- Sidebar Navigation -->
+					<aside class="lg:w-64 shrink-0">
+						<nav class="lg:sticky lg:top-24 space-y-1">
+							<button
+								v-for="section in [
+									{ id: 'links', label: 'Links', icon: 'i-lucide-link' },
+									{ id: 'photos', label: 'Fotos', icon: 'i-lucide-image' },
+									{ id: 'wifi', label: 'WLAN', icon: 'i-lucide-wifi' },
+									{ id: 'instructions', label: 'Anleitung', icon: 'i-lucide-file-text' },
+									{ id: 'files', label: 'Dateien', icon: 'i-lucide-folder' },
+								]"
+								:key="section.id"
+								@click="activeSection = section.id as any"
+								class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
+								:class="activeSection === section.id
+									? 'bg-primary text-white'
+									: 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'"
+							>
+								<UIcon :name="section.icon" class="w-5 h-5" />
+								<span class="font-medium">{{ section.label }}</span>
+							</button>
+						</nav>
+					</aside>
 
-				<div v-else-if="error" class="text-center py-20 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/20">
-					<UIcon name="i-lucide-alert-circle" class="w-12 h-12 mx-auto text-red-500 mb-4" />
-					<p class="text-red-600 font-bold">{{ error }}</p>
-					<UButton color="neutral" variant="soft" class="mt-6" @click="fetchHome">Erneut versuchen</UButton>
-				</div>
-
-				<div v-else class="space-y-24 pb-32">
-					<section 
-						v-for="(section, index) in orderedSections" 
-						:key="section.id" 
-						:id="`section-${section.id}`"
-						class="group relative"
-					>
-						<!-- Reordering Controls -->
-						<div v-if="isReordering" class="absolute -left-12 top-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-							<UButton 
-								variant="ghost" 
-								color="neutral" 
-								icon="i-lucide-chevron-up" 
-								size="sm"
-								:disabled="index === 0"
-								@click="moveSection(index, 'up')"
-							/>
-							<UButton 
-								variant="ghost" 
-								color="neutral" 
-								icon="i-lucide-chevron-down" 
-								size="sm"
-								:disabled="index === orderedSections.length - 1"
-								@click="moveSection(index, 'down')"
-							/>
+					<!-- Content Area -->
+					<main class="flex-1">
+						<!-- Share Links Section -->
+						<div v-if="activeSection === 'links'" class="space-y-6">
+							<div>
+								<h2 class="text-2xl font-black mb-2">Links verwalten</h2>
+								<p class="text-stone-500">Erstellen Sie Links, die Sie mit Mietern teilen können.</p>
+							</div>
+							<HomeShareLinks :home-id="homeId" :shares="shares" @refresh="fetchHome" />
 						</div>
 
-						<div class="space-y-6">
-							<div class="flex items-center gap-4">
-								<div class="p-3 bg-primary-50 dark:bg-primary-900/10 text-primary rounded-2xl">
-									<UIcon :name="section.icon" class="w-6 h-6" />
-								</div>
-								<div>
-									<h2 class="text-3xl font-black tracking-tight">{{ section.label }}</h2>
-									<p class="text-sm text-stone-500 font-medium">Bearbeiten Sie die {{ section.label.toLowerCase() }} für Ihre Gäste.</p>
-								</div>
+						<!-- Photos Section -->
+						<div v-else-if="activeSection === 'photos'" class="space-y-6">
+							<div>
+								<h2 class="text-2xl font-black mb-2">Fotos</h2>
+								<p class="text-stone-500">Laden Sie Fotos hoch, die Mieter sehen können.</p>
 							</div>
+							<HomePhotos :home="home" @refresh="fetchHome" />
+						</div>
 
-							<div class="pt-2">
-								<component :is="section.component" :home="home" @refresh="fetchHome" />
+						<!-- WiFi Section -->
+						<div v-else-if="activeSection === 'wifi'" class="space-y-6">
+							<div>
+								<h2 class="text-2xl font-black mb-2">WLAN-Zugang</h2>
+								<p class="text-stone-500">Teilen Sie die WLAN-Daten mit Ihren Mietern.</p>
+							</div>
+							<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6 space-y-6">
+								<UFormField label="Netzwerkname (SSID)">
+									<UInput
+										v-model="formWifiSSID"
+										placeholder="z.B. MeinWLAN"
+										size="xl"
+									/>
+								</UFormField>
+
+								<UFormField label="Passwort">
+									<div class="flex gap-2">
+										<UInput
+											v-model="formWifiPassword"
+											:type="showWifi ? 'text' : 'password'"
+											placeholder="WLAN-Passwort"
+											size="xl"
+											class="flex-1"
+										/>
+										<UButton
+											:icon="showWifi ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+											color="neutral"
+											variant="soft"
+											size="xl"
+											@click="showWifi = !showWifi"
+										/>
+									</div>
+								</UFormField>
+
+								<div class="flex justify-end">
+									<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
+										Speichern
+									</UButton>
+								</div>
 							</div>
 						</div>
 
-						<!-- Visual Divider -->
-						<div v-if="index !== orderedSections.length - 1" class="mt-24 h-px bg-stone-100 dark:bg-stone-800" />
-					</section>
+						<!-- Instructions Section -->
+						<div v-else-if="activeSection === 'instructions'" class="space-y-6">
+							<div>
+								<h2 class="text-2xl font-black mb-2">Anleitung</h2>
+								<p class="text-stone-500">Schreiben Sie eine Anleitung für Ihre Mieter.</p>
+							</div>
+							<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6">
+								<TiptapEditor v-model="formInstructions" />
+								<div class="flex justify-end mt-6">
+									<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
+										Speichern
+									</UButton>
+								</div>
+							</div>
+						</div>
+
+						<!-- Files Section -->
+						<div v-else-if="activeSection === 'files'" class="space-y-6">
+							<div>
+								<h2 class="text-2xl font-black mb-2">Dateien</h2>
+								<p class="text-stone-500">Laden Sie Dokumente hoch, die Mieter herunterladen können.</p>
+							</div>
+							<HomeFiles :home="home" @refresh="fetchHome" />
+						</div>
+					</main>
 				</div>
-			</main>
+			</template>
 		</div>
 	</div>
 </template>
-
-<style scoped>
-/* Optional: Smooth fade for sections when reordering */
-.section-move {
-	transition: transform 0.5s ease;
-}
-</style>

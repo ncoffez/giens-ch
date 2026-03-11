@@ -1,9 +1,15 @@
 import { db } from "../useFirebaseAdmin";
-import type { Home, HomeShare, GlobalSettings } from "../../types";
+import type { Home, HomeShare } from "../../types";
 import crypto from "crypto";
 
-export async function getHomes(userId: string): Promise<Home[]> {
-	const snapshot = await db.collection("homes").where("ownerIds", "array-contains", userId).orderBy("name").get();
+export async function getHomesForUser(userId: string): Promise<Home[]> {
+	const snapshot = await db
+		.collection("homes")
+		.where("ownerIds", "array-contains", userId)
+		.where("enabled", "==", true)
+		.orderBy("name")
+		.get();
+
 	return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Home));
 }
 
@@ -13,43 +19,18 @@ export async function getHomeById(homeId: string): Promise<Home | null> {
 	return { id: doc.id, ...doc.data() } as Home;
 }
 
-export async function getHomeBySlug(slug: string): Promise<Home | null> {
-	const snapshot = await db.collection("homes").where("slug", "==", slug).limit(1).get();
-	if (snapshot.empty) return null;
-	const doc = snapshot.docs[0];
-	if (!doc) return null;
-	return { id: doc.id, ...doc.data() } as Home;
-}
-
-export async function createHome(userId: string, homeData: Partial<Home>): Promise<Home> {
+export async function createHome(name: string, ownerId: string): Promise<Home> {
 	const homeId = crypto.randomUUID();
-	const slug = crypto.randomUUID();
 	const now = new Date().toISOString();
-
-	const houseNumber = homeData.houseNumber || parseInt(homeData.name as any) || 1;
-	const name = `Haus ${houseNumber}`;
 
 	const home: Home = {
 		id: homeId,
 		name,
-		houseNumber,
-		slug,
-		ownerIds: [userId],
-		editors: [],
+		ownerIds: [ownerId],
 		photos: [],
 		files: [],
 		folders: [],
-		enabled: homeData.enabled ?? false,
-		contact: homeData.contact || {},
-		wifiPassword: homeData.wifiPassword || "",
-		checkInInfo: homeData.checkInInfo || "",
-		checkOutInfo: homeData.checkOutInfo || "",
-		mustKnows: homeData.mustKnows || [],
-		houseRules: homeData.houseRules || "",
-		blanketsInfo: homeData.blanketsInfo || "",
-		cleaningInfo: homeData.cleaningInfo || [],
-		parkingNumber: homeData.parkingNumber || "",
-		washingMachineOverride: homeData.washingMachineOverride || "",
+		enabled: true,
 		createdAt: now,
 		updatedAt: now,
 	};
@@ -58,13 +39,13 @@ export async function createHome(userId: string, homeData: Partial<Home>): Promi
 	return home;
 }
 
-export async function updateHome(homeId: string, homeData: Partial<Home>): Promise<Home> {
-	const updatedHome = {
-		...homeData,
+export async function updateHome(homeId: string, data: Partial<Home>): Promise<Home> {
+	const updateData = {
+		...data,
 		updatedAt: new Date().toISOString(),
 	};
 
-	await db.collection("homes").doc(homeId).update(updatedHome);
+	await db.collection("homes").doc(homeId).update(updateData);
 	const updated = await db.collection("homes").doc(homeId).get();
 	return { id: updated.id, ...updated.data() } as Home;
 }
@@ -73,21 +54,18 @@ export async function deleteHome(homeId: string): Promise<void> {
 	await db.collection("homes").doc(homeId).delete();
 }
 
-export async function canEditHome(homeId: string, userId: string, isAdmin: boolean): Promise<boolean> {
-	if (isAdmin) return true;
-
+export async function isHomeOwner(homeId: string, userId: string): Promise<boolean> {
 	const home = await getHomeById(homeId);
 	if (!home) return false;
-
-	return home.ownerIds.includes(userId) || home.editors.includes(userId);
+	return home.ownerIds.includes(userId);
 }
 
-export function generateShareToken(): string {
-	return crypto.randomUUID();
-}
-
-export async function createShareLink(homeId: string, userId: string, daysToExpire: number = 7): Promise<HomeShare> {
-	const shareId = generateShareToken();
+export async function createShareLink(
+	homeId: string,
+	userId: string,
+	daysToExpire: number = 7
+): Promise<HomeShare> {
+	const shareId = crypto.randomUUID();
 	const now = new Date();
 	const expiresAt = new Date(now);
 	expiresAt.setDate(expiresAt.getDate() + Math.min(daysToExpire, 30));
@@ -97,6 +75,7 @@ export async function createShareLink(homeId: string, userId: string, daysToExpi
 		homeId,
 		createdBy: userId,
 		expiresAt: expiresAt.toISOString(),
+		revoked: false,
 		accessCount: 0,
 		createdAt: now.toISOString(),
 	};
@@ -111,41 +90,69 @@ export async function getShareLink(shareId: string): Promise<HomeShare | null> {
 
 	const share = { id: doc.id, ...doc.data() } as HomeShare;
 
-	if (new Date(share.expiresAt) < new Date()) {
-		return null;
-	}
+	if (share.revoked) return null;
+	if (new Date(share.expiresAt) < new Date()) return null;
 
 	return share;
 }
 
+export async function getShareLinksForHome(homeId: string): Promise<HomeShare[]> {
+	const snapshot = await db
+		.collection("homeShares")
+		.where("homeId", "==", homeId)
+		.orderBy("createdAt", "desc")
+		.get();
+
+	return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as HomeShare));
+}
+
+export async function revokeShareLink(shareId: string): Promise<void> {
+	await db.collection("homeShares").doc(shareId).update({ revoked: true });
+}
+
 export async function incrementShareAccess(shareId: string): Promise<void> {
 	const docRef = db.collection("homeShares").doc(shareId);
-	const doc = await docRef.get();
 	await docRef.update({
-		accessCount: (doc.data() as HomeShare).accessCount + 1,
+		accessCount: (await docRef.get()).data()?.accessCount + 1 || 1,
 	});
 }
 
-export async function getGlobalSettings(): Promise<GlobalSettings> {
+export async function getGlobalSettings(): Promise<{
+	id: string;
+	maxHomeNumber: number;
+	washingMachineUse: string;
+	homesFeatureGloballyEnabled: boolean;
+	updatedAt: string;
+}> {
 	const doc = await db.collection("settings").doc("global").get();
 
 	if (doc.exists) {
-		return { id: doc.id, ...doc.data() } as GlobalSettings;
+		return { id: doc.id, ...doc.data() } as any;
 	}
 
-const defaultSettings: GlobalSettings = {
-			id: "global",
-			maxHomeNumber: 20,
-			washingMachineUse: "",
-			homesFeatureGloballyEnabled: false,
-			updatedAt: new Date().toISOString(),
-		};
+	const defaultSettings = {
+		id: "global",
+		maxHomeNumber: 20,
+		washingMachineUse: "",
+		homesFeatureGloballyEnabled: false,
+		updatedAt: new Date().toISOString(),
+	};
 
 	await db.collection("settings").doc("global").set(defaultSettings);
 	return defaultSettings;
 }
 
-export async function updateGlobalSettings(settings: Partial<GlobalSettings>): Promise<GlobalSettings> {
+export async function updateGlobalSettings(settings: Partial<{
+	maxHomeNumber: number;
+	washingMachineUse: string;
+	homesFeatureGloballyEnabled: boolean;
+}>): Promise<{
+	id: string;
+	maxHomeNumber: number;
+	washingMachineUse: string;
+	homesFeatureGloballyEnabled: boolean;
+	updatedAt: string;
+}> {
 	const updated = {
 		...settings,
 		updatedAt: new Date().toISOString(),
@@ -153,7 +160,5 @@ export async function updateGlobalSettings(settings: Partial<GlobalSettings>): P
 
 	await db.collection("settings").doc("global").update(updated);
 	const updatedDoc = await db.collection("settings").doc("global").get();
-	return { id: updatedDoc.id, ...updatedDoc.data() } as GlobalSettings;
+	return { id: updatedDoc.id, ...updatedDoc.data() } as any;
 }
-
-export const MAX_PHOTOS_PER_HOME = 20;

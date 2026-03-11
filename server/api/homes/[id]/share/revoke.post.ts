@@ -1,11 +1,17 @@
-import { getHomeById, isHomeOwner } from "../../utils/homes";
-import { getUserClaims } from "../../utils/auth";
+import { isHomeOwner } from "../../../../utils/homes";
+import { revokeShareLink } from "../../../../utils/homes";
+import { getUserClaims } from "../../../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
+	const body = await readBody(event);
 
 	if (!homeId) {
 		throw createError({ statusCode: 400, message: "Home ID is required" });
+	}
+
+	if (!body.shareId) {
+		throw createError({ statusCode: 400, message: "Share ID is required" });
 	}
 
 	const claims = await getUserClaims(event);
@@ -19,14 +25,10 @@ export default defineEventHandler(async (event) => {
 	if (!isAdmin && !isOwner) {
 		throw createError({
 			statusCode: 403,
-			message: "Forbidden: You don't have access to this home",
+			message: "Forbidden: You cannot revoke share links for this home",
 		});
 	}
 
-	const home = await getHomeById(homeId);
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
-
-	return home;
+	await revokeShareLink(body.shareId);
+	return { success: true };
 });

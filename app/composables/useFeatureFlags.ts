@@ -55,7 +55,7 @@ export function useFeatureFlags() {
 	});
 
 	const canAccessHomes = computed(() => {
-		if (!isAdmin.value) return false;
+		if (isAdmin.value) return true;
 		if (isHomesFeatureEnabledForUser.value) return true;
 		if (isHomesFeatureGloballyEnabled.value) return true;
 		return false;
