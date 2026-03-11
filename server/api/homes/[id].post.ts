@@ -1,35 +1,38 @@
-import { auth } from "../../useFirebaseAdmin";
-import { updateHome, canEditHome } from "../../utils/homes";
+import { getHomeById, updateHome, isHomeOwner } from "../../utils/homes";
+import { getUserClaims } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
-	try {
-		const homeId = getRouterParam(event, "id");
-		const body = await readBody(event);
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
+	const homeId = getRouterParam(event, "id");
+	const body = await readBody(event);
 
-		if (!homeId) {
-			throw createError({ statusCode: 400, message: "Home ID is required" });
-		}
+	if (!homeId) {
+		throw createError({ statusCode: 400, message: "Home ID is required" });
+	}
 
-		if (!idToken) {
-			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
+	const claims = await getUserClaims(event);
+	if (!claims) {
+		throw createError({ statusCode: 401, message: "Unauthorized" });
+	}
 
-		const decodedToken = await auth.verifyIdToken(idToken);
+	const isAdmin = !!claims.admin;
+	const isOwner = await isHomeOwner(homeId, claims.uid);
 
-		const isOwner = !!decodedToken.owner || !!decodedToken.admin;
-		const canEdit = await canEditHome(homeId, decodedToken.uid, !!decodedToken.admin);
-
-		if (!canEdit) {
-			throw createError({ statusCode: 403, message: "Forbidden: You cannot edit this home" });
-		}
-
-		const updatedHome = await updateHome(homeId, body);
-		return updatedHome;
-	} catch (e: unknown) {
+	if (!isAdmin && !isOwner) {
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error",
+			statusCode: 403,
+			message: "Forbidden: You cannot edit this home",
 		});
 	}
+
+	// Filter allowed fields
+	const allowedFields = ["name", "photos", "wifiSSID", "wifiPassword", "instructions", "files", "folders"];
+	const filteredBody: Record<string, unknown> = {};
+	for (const key of allowedFields) {
+		if (body[key] !== undefined) {
+			filteredBody[key] = body[key];
+		}
+	}
+
+	const updated = await updateHome(homeId, filteredBody);
+	return updated;
 });

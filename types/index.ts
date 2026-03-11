@@ -59,12 +59,6 @@ export interface Author {
 	name: string;
 }
 
-export interface HomeContact {
-	phone?: string;
-	email?: string;
-	name?: string;
-}
-
 export interface HomeFile {
 	id: string;
 	name: string;
@@ -74,6 +68,7 @@ export interface HomeFile {
 	folderId: string | null;
 	uploadedAt: string;
 	uploadedBy: string;
+	storagePath?: string;
 }
 
 export interface HomeFolder {
@@ -86,25 +81,14 @@ export interface HomeFolder {
 export interface Home {
 	id: string;
 	name: string;
-	houseNumber?: number;
-	slug: string;
 	ownerIds: string[];
-	editors: string[];
 	photos: string[];
-	files?: HomeFile[];
-	folders?: HomeFolder[];
-	enabled: boolean;
-	contact: HomeContact;
+	files: HomeFile[];
+	folders: HomeFolder[];
+	wifiSSID?: string;
 	wifiPassword?: string;
-	checkInInfo: string;
-	checkOutInfo: string;
-	mustKnows: string[];
-	houseRules: string;
-	blanketsInfo: string;
-	cleaningInfo: string[];
-	parkingNumber?: string;
-	washingMachineOverride?: string;
-	sectionOrder?: string[];
+	instructions?: string;
+	enabled: boolean;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -114,6 +98,7 @@ export interface HomeShare {
 	homeId: string;
 	createdBy: string;
 	expiresAt: string;
+	revoked: boolean;
 	accessCount: number;
 	createdAt: string;
 }
