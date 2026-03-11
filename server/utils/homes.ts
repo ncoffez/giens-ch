@@ -68,7 +68,7 @@ export async function createShareLink(
 	const shareId = crypto.randomUUID();
 	const now = new Date();
 	const expiresAt = new Date(now);
-	expiresAt.setDate(expiresAt.getDate() + Math.min(daysToExpire, 30));
+	expiresAt.setDate(expiresAt.getDate() + Math.min(daysToExpire, 3650));
 
 	const share: HomeShare = {
 		id: shareId,

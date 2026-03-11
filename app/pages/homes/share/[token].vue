@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import type { Home, HomeShare } from "~/types";
+import type { Home, HomeShare, HomeContact } from "~/types";
+import ContactCard from "~/components/homes/ContactCard.vue";
+import { getFileIcon } from "~/utils/fileTypes";
 
 const route = useRoute();
 const token = computed(() => route.params.token as string);
 
 const home = ref<Home | null>(null);
 const share = ref<HomeShare | null>(null);
+const contacts = ref<HomeContact[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const activePhoto = ref(0);
+const showWifiPassword = ref(false);
 const ssidCopied = ref(false);
 const passwordCopied = ref(false);
 
@@ -17,9 +21,10 @@ const fetchHome = async () => {
 		loading.value = true;
 		error.value = null;
 
-		const result = await $fetch<{ home: Home; share: HomeShare }>(`/api/homes/share/${token.value}`);
+		const result = await $fetch<{ home: Home; share: HomeShare; contacts: HomeContact[] }>(`/api/homes/share/${token.value}`);
 		home.value = result.home;
 		share.value = result.share;
+		contacts.value = result.contacts || [];
 	} catch (e: unknown) {
 		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
@@ -43,14 +48,6 @@ const copyPassword = async () => {
 
 const downloadFile = (url: string) => {
 	window.open(url, "_blank");
-};
-
-const getFileIcon = (type: string) => {
-	if (type.startsWith("image/")) return "i-lucide-image";
-	if (type === "application/pdf") return "i-lucide-file-text";
-	if (type.includes("word") || type.includes("document")) return "i-lucide-file-text";
-	if (type.includes("sheet") || type.includes("excel")) return "i-lucide-spreadsheet";
-	return "i-lucide-file";
 };
 
 const formatFileSize = (bytes: number) => {
@@ -119,6 +116,21 @@ onMounted(fetchHome);
 					</div>
 				</section>
 
+				<!-- Contacts -->
+				<section v-if="contacts.length > 0" class="space-y-4">
+					<h2 class="text-lg font-bold flex items-center gap-2">
+						<UIcon name="i-lucide-users" class="w-5 h-5" />
+						Kontaktpersonen
+					</h2>
+					<div class="grid gap-4 md:grid-cols-2">
+						<ContactCard
+							v-for="contact in contacts"
+							:key="contact.id"
+							:contact="contact"
+						/>
+					</div>
+				</section>
+
 				<!-- WiFi -->
 				<section v-if="home.wifiSSID || home.wifiPassword" class="bg-white dark:bg-stone-800 rounded-2xl p-6 border border-stone-100 dark:border-stone-700">
 					<div class="flex items-center gap-3 mb-4">
@@ -150,8 +162,19 @@ onMounted(fetchHome);
 						<div v-if="home.wifiPassword" class="flex items-center gap-3 p-4 bg-stone-50 dark:bg-stone-900 rounded-xl">
 							<div class="flex-1">
 								<p class="text-xs text-stone-500 mb-1">Passwort</p>
-								<code class="text-lg font-mono">{{ home.wifiPassword }}</code>
+								<div class="flex items-center gap-2">
+									<code class="text-lg font-mono">
+										{{ showWifiPassword ? home.wifiPassword : "••••••••••" }}
+									</code>
+								</div>
 							</div>
+							<UButton
+								:icon="showWifiPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+								color="neutral"
+								variant="soft"
+								size="sm"
+								@click="showWifiPassword = !showWifiPassword"
+							/>
 							<UButton
 								:icon="passwordCopied ? 'i-lucide-check' : 'i-lucide-copy'"
 								:color="passwordCopied ? 'success' : 'neutral'"

@@ -78,6 +78,17 @@ export interface HomeFolder {
 	createdAt: string;
 }
 
+export interface HomeContact {
+	id: string;
+	name: string;
+	email?: string;
+	phone?: string;
+	notes?: string;
+	hidden: boolean;
+	isOwner: boolean;
+	avatar?: string;
+}
+
 export interface Home {
 	id: string;
 	name: string;
@@ -91,6 +102,9 @@ export interface Home {
 	enabled: boolean;
 	createdAt: string;
 	updatedAt: string;
+	contacts?: HomeContact[];
+	ownerEmail?: string;
+	ownerPhone?: string;
 }
 
 export interface HomeShare {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Home, HomeFile } from "~/types";
+import { getFileIcon, getFileIconColor } from "~/utils/fileTypes";
 
 const props = defineProps<{
 	home: Home;
@@ -16,24 +17,6 @@ const uploading = ref(false);
 const uploadProgress = ref(0);
 const uploadTotal = ref(0);
 const uploadCurrent = ref(0);
-
-const getFileIcon = (type: string) => {
-	if (type.startsWith("image/")) return "i-lucide-image";
-	if (type === "application/pdf") return "i-lucide-file-text";
-	if (type.includes("word") || type.includes("document")) return "i-lucide-file-text";
-	if (type.includes("sheet") || type.includes("excel")) return "i-lucide-spreadsheet";
-	if (type.includes("presentation") || type.includes("powerpoint")) return "i-lucide-presentation";
-	if (type.includes("zip") || type.includes("rar")) return "i-lucide-archive";
-	return "i-lucide-file";
-};
-
-const getFileIconColor = (type: string) => {
-	if (type.startsWith("image/")) return "text-purple-500";
-	if (type === "application/pdf") return "text-red-500";
-	if (type.includes("word") || type.includes("document")) return "text-blue-500";
-	if (type.includes("sheet") || type.includes("excel")) return "text-green-500";
-	return "text-stone-400";
-};
 
 const formatFileSize = (bytes: number) => {
 	if (bytes < 1024) return `${bytes} B`;

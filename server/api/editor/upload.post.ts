@@ -68,15 +68,17 @@ export default defineEventHandler(async (event) => {
 				}
 			});
 		} catch (e: unknown) {
-			console.error("[Editor Upload] Save failed:", e.message);
-			throw createError({ statusCode: 503, message: `Speichern fehlgeschlagen: ${e.message}` });
+			const message = e instanceof Error ? e.message : "Unknown error";
+			console.error("[Editor Upload] Save failed:", message);
+			throw createError({ statusCode: 503, message: `Speichern fehlgeschlagen: ${message}` });
 		}
 
 		// Try to make public, but don't fail if it's already handled by bucket policies
 		try {
 			await fileRef.makePublic();
 		} catch (e: unknown) {
-			console.warn("[Editor Upload] Could not make public (this is often okay if bucket-level access is enabled):", e.message);
+			const message = e instanceof Error ? e.message : "Unknown error";
+			console.warn("[Editor Upload] Could not make public (this is often okay if bucket-level access is enabled):", message);
 		}
 
 		// Map type to icon
@@ -97,9 +99,11 @@ export default defineEventHandler(async (event) => {
 		};
 	} catch (error: unknown) {
 		console.error("[Editor Upload API Error]:", error);
+		const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500;
+		const message = error instanceof Error ? error.message : "Upload failed";
 		throw createError({
-			statusCode: error.statusCode || 500,
-			message: error.message || "Upload failed"
+			statusCode,
+			message
 		});
 	}
 });
