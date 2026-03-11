@@ -13,6 +13,9 @@ const { token } = useAuthReady();
 const toast = useToast();
 
 const uploading = ref(false);
+const uploadProgress = ref(0);
+const uploadTotal = ref(0);
+const uploadCurrent = ref(0);
 
 const getFileIcon = (type: string) => {
 	if (type.startsWith("image/")) return "i-lucide-image";
@@ -38,21 +41,40 @@ const formatFileSize = (bytes: number) => {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const uploadFile = async (event: Event) => {
+const uploadFiles = async (event: Event) => {
 	const target = event.target as HTMLInputElement;
-	const file = target.files?.[0];
-	if (!file) return;
+	const files = target.files;
+	if (!files || files.length === 0) return;
 
-	if (file.size > 50 * 1024 * 1024) {
+	const fileArray = Array.from(files);
+
+	const oversizedFiles = fileArray.filter(f => f.size > 50 * 1024 * 1024);
+	if (oversizedFiles.length > 0) {
 		toast.add({ title: "Datei zu gross (max. 50MB)", color: "error" });
 		return;
 	}
 
-	try {
-		uploading.value = true;
-		const reader = new FileReader();
-		reader.onload = async (e) => {
-			const base64 = e.target?.result as string;
+	uploading.value = true;
+	uploadTotal.value = fileArray.length;
+	uploadCurrent.value = 0;
+	uploadProgress.value = 0;
+
+	let successCount = 0;
+	let errorCount = 0;
+
+	for (let i = 0; i < fileArray.length; i++) {
+		const file = fileArray[i];
+		uploadCurrent.value = i + 1;
+		uploadProgress.value = Math.round(((i + 1) / fileArray.length) * 100);
+
+		try {
+			const base64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = (e) => resolve(e.target?.result as string);
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
+
 			await $fetch(`/api/homes/${props.home.id}/files/upload`, {
 				method: "POST",
 				headers: { Authorization: `Bearer ${token.value}` },
@@ -63,17 +85,30 @@ const uploadFile = async (event: Event) => {
 					size: file.size,
 				},
 			});
-			toast.add({ title: "Datei hochgeladen", color: "success" });
-			emit("refresh");
-			uploading.value = false;
-		};
-		reader.readAsDataURL(file);
-	} catch (e: unknown) {
-		toast.add({ title: "Upload fehlgeschlagen", description: getFetchError(e), color: "error" });
-		uploading.value = false;
+			successCount++;
+		} catch (e: unknown) {
+			errorCount++;
+			console.error(`Failed to upload ${file.name}:`, e);
+		}
 	}
 
+	uploading.value = false;
 	target.value = "";
+
+	if (successCount > 0) {
+		toast.add({
+			title: `${successCount} Datei${successCount > 1 ? "en" : ""} hochgeladen`,
+			color: "success",
+		});
+		emit("refresh");
+	}
+
+	if (errorCount > 0) {
+		toast.add({
+			title: `${errorCount} Upload${errorCount > 1 ? "s" : ""} fehlgeschlagen`,
+			color: "error",
+		});
+	}
 };
 
 const deleteFile = async (file: HomeFile) => {
@@ -109,15 +144,21 @@ const downloadFile = (file: HomeFile) => {
 			>
 				<div v-if="uploading" class="space-y-3">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-					<p class="text-stone-600 dark:text-stone-400">Hochladen...</p>
+					<p class="text-stone-600 dark:text-stone-400">
+						Hochladen... {{ uploadCurrent }}/{{ uploadTotal }}
+					</p>
+					<div class="w-full max-w-xs mx-auto">
+						<UProgress :value="uploadProgress" color="primary" size="sm" />
+					</div>
 				</div>
 				<div v-else class="space-y-3">
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
 					<p class="text-stone-600 dark:text-stone-400 font-medium">Klicken zum Hochladen</p>
 					<p class="text-sm text-stone-400">PDF, DOC, XLS und mehr (max. 50MB)</p>
+					<p class="text-xs text-stone-400">Mehrere Dateien möglich</p>
 				</div>
 			</div>
-			<input type="file" class="hidden" :disabled="uploading" @change="uploadFile" />
+			<input type="file" multiple class="hidden" :disabled="uploading" @change="uploadFiles" />
 		</label>
 
 		<!-- File list -->

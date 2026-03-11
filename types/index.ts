@@ -154,3 +154,10 @@ export interface UnsplashSearchResult {
 	totalPages: number;
 	currentPage: number;
 }
+
+export interface OrganisatorischesContent {
+	id: string;
+	content: string;
+	updatedAt: string;
+	updatedBy: string;
+}
