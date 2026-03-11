@@ -7,28 +7,12 @@ const route = useRoute();
 const router = useRouter();
 const nuxtApp = useNuxtApp();
 const { canAccessHomes } = useFeatureFlags();
-const { loadArticles, searchArticles, searchOrganisatorisches, isLoading, hasLoaded } = useSearchData();
+const { loadArticles, searchArticles, searchOrganisatorischesHeadings, isLoading } = useSearchData();
 
 const searchQuery = ref("");
 
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
-const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
-
-const navigateToAnchor = (anchor: string) => {
-	if (route.path === "/") {
-		const element = document.querySelector(anchor);
-		if (element) {
-			element.scrollIntoView({ behavior: "smooth" });
-		} else {
-			window.location.hash = anchor;
-		}
-	} else {
-		router.push("/" + anchor);
-	}
-	open.value = false;
-	searchQuery.value = "";
-};
 
 const staticPageItems = computed(() => {
 	const items: CommandPaletteItem[] = [
@@ -73,19 +57,18 @@ const staticPageItems = computed(() => {
 	return items;
 });
 
-const organisatorischesItem = computed(() => {
+const organisatorischesItems = computed(() => {
 	const query = searchQuery.value.trim();
-	if (!query) return null;
+	if (!query) return [];
 
-	const result = searchOrganisatorisches(query);
-	if (!result) return null;
-
-	return {
-		label: result.label,
+	const results = searchOrganisatorischesHeadings(query).slice(0, 5);
+	
+	return results.map(result => ({
+		label: result.heading,
 		icon: "i-lucide-clipboard-list",
-		to: "/organisatorisches",
-		suffix: result.description.substring(0, 30) + "...",
-	};
+		to: `/organisatorisches#${result.id}`,
+		suffix: result.context + "...",
+	}));
 });
 
 const articleItems = computed(() => {
@@ -94,17 +77,13 @@ const articleItems = computed(() => {
 
 	const results = searchArticles(query).slice(0, 8);
 	
-	return results.map(article => {
-		const item: CommandPaletteItem = {
-			label: article.title,
-			icon: "i-lucide-file-text",
-			to: `/article/${article.id}`,
-		};
-		if (article.tags?.[0]) {
-			item.suffix = article.tags[0];
-		}
-		return item;
-	});
+	return results.map(article => ({
+		label: article.title,
+		icon: article.image ? undefined : "i-lucide-newspaper",
+		to: `/article/${article.id}`,
+		avatar: article.image ? { src: article.image, alt: article.title } : undefined,
+		suffix: article.intro?.substring(0, 50) + "...",
+	}));
 });
 
 const groups = computed(() => {
@@ -118,11 +97,11 @@ const groups = computed(() => {
 		});
 	}
 
-	if (organisatorischesItem.value) {
+	if (organisatorischesItems.value.length > 0) {
 		result.push({
 			id: "organisatorisches",
 			label: "Informationen",
-			items: [organisatorischesItem.value],
+			items: organisatorischesItems.value,
 		});
 	}
 
@@ -143,7 +122,7 @@ function onSelect() {
 }
 
 watch(open, (isOpen) => {
-	if (isOpen && !hasLoaded.value) {
+	if (isOpen) {
 		loadArticles();
 	}
 });

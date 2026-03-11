@@ -14,6 +14,7 @@ const isEditing = ref(false);
 const isSaving = ref(false);
 const content = ref("");
 const originalContent = ref("");
+const contentRef = ref<HTMLElement | null>(null);
 
 const { data, status, refresh } = await useFetch<OrganisatorischesContent>("/api/organisatorisches");
 
@@ -23,6 +24,49 @@ watch(data, (newData) => {
 		originalContent.value = newData.content;
 	}
 }, { immediate: true });
+
+function slugify(text: string): string {
+	return text
+		.toLowerCase()
+		.replace(/ä/g, "ae")
+		.replace(/ö/g, "oe")
+		.replace(/ü/g, "ue")
+		.replace(/ß/g, "ss")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
+function addHeadingIds() {
+	if (!contentRef.value) return;
+	
+	const headings = contentRef.value.querySelectorAll("h1, h2, h3, h4");
+	headings.forEach((heading) => {
+		const text = heading.textContent || "";
+		if (text && !heading.id) {
+			heading.id = slugify(text);
+		}
+	});
+}
+
+watch([content, isEditing], () => {
+	if (!isEditing.value && content.value) {
+		nextTick(() => {
+			addHeadingIds();
+			if (window.location.hash) {
+				const element = document.querySelector(window.location.hash);
+				if (element) {
+					element.scrollIntoView({ behavior: "smooth" });
+				}
+			}
+		});
+	}
+});
+
+onMounted(() => {
+	if (!isEditing.value && content.value) {
+		nextTick(addHeadingIds);
+	}
+});
 
 const startEditing = () => {
 	originalContent.value = content.value;
@@ -110,6 +154,7 @@ useHead({
 					<div v-else>
 						<div
 							v-if="content"
+							ref="contentRef"
 							class="prose dark:prose-invert max-w-none"
 							v-html="content"
 						/>
