@@ -3,8 +3,8 @@
 		<UiHero
 			title="Willkommen im Beausoleil"
 			subtitle="Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
-			src="/giens/hauseingang_cropped.jpg"
-			alt="Einfahrt"
+			src="/giens/giens-hauser.jpeg"
+			alt="Giens Häuser"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 <section class="max-w-screen-xl mx-auto w-full px-4">
@@ -296,7 +296,7 @@ useHead({
 		{
 			rel: "preload",
 			as: "image",
-			href: "/giens/hauseingang_cropped-1920w.webp",
+			href: "/giens/giens-hauser-1920w.webp",
 			fetchpriority: "high",
 		},
 	],
