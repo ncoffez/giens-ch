@@ -22,11 +22,6 @@ const staticPageItems = computed(() => {
 			to: "/",
 		},
 		{
-			label: "Aktuelles",
-			icon: "i-lucide-newspaper",
-			to: "/news",
-		},
-		{
 			label: "Organisatorisches",
 			icon: "i-lucide-clipboard-list",
 			to: "/organisatorisches",

@@ -81,14 +81,6 @@ export const ErrorFactory = {
 };
 
 /**
- * Mocks news API endpoint with articles
- * @param articles - Array of articles to return
- */
-export function mockNewsApiEndpoint(articles = []) {
-	return mockApiEndpoint("/api/news", "POST", () => articles);
-}
-
-/**
  * Mocks users API endpoint
  * @param users - Array of users to return
  */
@@ -105,14 +97,6 @@ export function mockLabelsApiEndpoint() {
 		{ id: "markt", name: "Markt", private: false },
 		{ id: "eigentuemerversammlung", name: "Eigentümerversammlung", private: true },
 	]);
-}
-
-/**
- * Mocks article API endpoint
- * @param article - Article to return
- */
-export function mockArticleApiEndpoint(article: any) {
-	return mockApiEndpoint("/api/getArticle", "POST", () => article);
 }
 
 /**

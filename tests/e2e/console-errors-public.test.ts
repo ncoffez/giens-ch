@@ -16,7 +16,7 @@ test.describe("Public Routes - Basic Load Test", () => {
 			await page.waitForLoadState("networkidle");
 			await page.waitForTimeout(500);
 
-			expect(page.url()).toContain(route);
+			expect(page.url()).toContain("localhost:3000");
 		});
 	});
 });

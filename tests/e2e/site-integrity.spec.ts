@@ -37,16 +37,8 @@ test.describe("Site Integrity", () => {
 		await expect(mobileNav).toBeVisible();
 	});
 
-	test("should navigate to travel page and show Google Maps button", async ({ page, isMobile }) => {
-		await page.goto("/");
-		
-		if (isMobile) {
-			// Use the bottom nav specifically
-			await page.locator("nav.fixed.bottom-0").getByRole("link", { name: "News", exact: true }).click();
-			await page.goto("/travel");
-		} else {
-			await page.goto("/travel");
-		}
+	test("should navigate to travel page and show Google Maps button", async ({ page }) => {
+		await page.goto("/travel");
 		
 		const mapsButton = page.getByRole("link", { name: "Route planen" });
 		await expect(mapsButton).toBeVisible();

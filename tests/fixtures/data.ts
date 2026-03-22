@@ -101,58 +101,6 @@ export const testUsers = {
 	},
 };
 
-export const mockArticles = {
-	public: [
-		{
-			id: "article-1",
-			title: "Sommerfest 2025",
-			intro: "Wir feiern in der Siedlung",
-			published: new Date().toISOString(),
-			tags: ["events"],
-			author: "Nicolas Coffez",
-			authorUid: "admin-test-uid-123",
-			image: "/giens/garten.webp",
-			body: "<p>Detaillierte Beschreibung des Sommerfests...</p>",
-		},
-		{
-			id: "article-2",
-			title: "Marktbericht",
-			intro: "Frisches Gemüse am Hafen",
-			published: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-			tags: ["markt"],
-			author: "Tom Bombadil",
-			authorUid: "publisher-test-uid-456",
-			image: "/giens/markt.jpg",
-			body: "<p>Marktbericht und Zeiten...</p>",
-		},
-		{
-			id: "article-3",
-			title: "Protokoll EV",
-			intro: "Ergebnisse der Versammlung",
-			published: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365).toISOString(),
-			tags: ["eigentuemerversammlung"],
-			author: "Nicolas Coffez",
-			authorUid: "admin-test-uid-123",
-			image: "/placeholder/beaufs-documents.jpg",
-			body: "<p>Protokoll Inhalte...</p>",
-		},
-	],
-	private: [
-		{
-			id: "article-4",
-			title: "Nur für Bewohner",
-			intro: "Interne Informationen",
-			published: new Date().toISOString(),
-			tags: ["internal"],
-			author: "Admin User",
-			authorUid: "admin-test-uid-123",
-			image: "/giens/garten.webp",
-			body: "<p>Interne Inhalte...</p>",
-		},
-	],
-	empty: [],
-};
-
 export const mockLabels = [
 	{
 		id: "events",
@@ -177,58 +125,7 @@ export const mockLabels = [
 ];
 
 export const mockApiResponses = {
-	news: {
-		success: [
-			{
-				id: "1",
-				title: "News 1",
-				intro: "Intro 1",
-				published: new Date().toISOString(),
-				tags: ["events"],
-				author: "User 1",
-				authorUid: "uid-1",
-				image: "/img1.jpg",
-				body: "<p>Body 1</p>",
-			},
-			{
-				id: "2",
-				title: "News 2",
-				intro: "Intro 2",
-				published: new Date().toISOString(),
-				tags: ["markt"],
-				author: "User 2",
-				authorUid: "uid-2",
-				image: "/img2.jpg",
-				body: "<p>Body 2</p>",
-			},
-			{
-				id: "3",
-				title: "News 3",
-				intro: "Intro 3",
-				published: new Date().toISOString(),
-				tags: ["events"],
-				author: "User 1",
-				authorUid: "uid-1",
-				image: "/img3.jpg",
-				body: "<p>Body 3</p>",
-			},
-		],
-		empty: [],
-	},
 	labels: mockLabels,
-	article: {
-		success: {
-			id: "article-1",
-			title: "Test Article",
-			intro: "Test article introduction",
-			published: new Date().toISOString(),
-			tags: ["events"],
-			author: "Test Author",
-			authorUid: "admin-test-uid-123",
-			image: "/test.jpg",
-			body: "<p>Article body content</p>",
-		},
-	},
 };
 
 export const mockErrors = {

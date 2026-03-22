@@ -1,4 +1,17 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const defaultLage = `<p>Unsere Ferienhäuser liegen idyllisch auf der Halbinsel von Giens an der Avenue des Arbanais 313, nur etwa 15 Gehminuten vom Strand und vom Dorfzentrum entfernt.</p><p>Die Halbinsel von Giens befindet sich bei etwa 43°2′ nördlicher Breite an der Côte d'Azur im Département Var und gehört zu den südlichen Regionen des französischen Festlands.</p><p>Ein großer Teil der Halbinsel ist als Naturschutzgebiet ausgewiesen und steht unter besonderem Schutz. Besonders die Salinen und Feuchtgebiete zwischen den beiden Sanddämmen (Tombolos) bilden ein wichtiges Rückzugsgebiet für Zug- und Brutvögel.</p>`;
+
+const defaultAuto = `<p>Die Anreise mit dem Auto ab Bern ist für viele Bewohner des Lotissement Beausoleil eine bevorzugte Option. Die Strecke führt hauptsächlich über Autobahnen und beträgt etwa 700 km. Die Fahrtzeit beträgt je nach Verkehr und Pausen etwa 7 bis 8 Stunden.</p>`;
+
+const defaultZug = `<p>Die Anreise mit dem Zug ist eine bequeme Alternative. SNCF bietet hervorragende Verbindungen mit dem TGV an, oft mit nur zwei Umstiegen ab der Schweiz.</p>`;
+
+const defaultFlugzeug = `<p>Der Flughafen <strong>Toulon-Hyères (TLN)</strong> liegt nur 15 Minuten von Giens entfernt und ist ideal für Kurztrips.</p><p>Alternativ bietet sich der Flughafen <strong>Marseille (MRS)</strong> an, der von Zürich oder Genf oft mehrmals täglich direkt angeflogen wird. Die Weiterreise nach Giens dauert von dort etwa 1h 15min mit dem Auto.</p>`;
+
+const lageContent = await usePageContent("travel-lage");
+const autoContent = await usePageContent("travel-auto");
+const zugContent = await usePageContent("travel-zug");
+const flugzeugContent = await usePageContent("travel-flugzeug");
+</script>
 
 <template>
 	<div class="space-y-24 mb-20">
@@ -12,21 +25,52 @@
 		<!-- Lage Section -->
 		<section class="max-w-screen-lg mx-auto px-4">
 			<UiTitle subtitle="Ihr Ziel auf der Halbinsel" title="Lage" />
-			<div class="mt-8 prose dark:prose-invert max-w-none text-lg">
-				<p>
-					Unsere Ferienhäuser liegen idyllisch auf der Halbinsel von Giens an der Avenue des Arbanais 313, 
-					nur etwa 15 Gehminuten vom Strand und vom Dorfzentrum entfernt.
-				</p>
-				<p>
-					Die Halbinsel von Giens befindet sich bei etwa 43°2′ nördlicher Breite an der Côte d'Azur im Département Var 
-					und gehört zu den südlichen Regionen des französischen Festlands.
-				</p>
-				<p>
-					Ein großer Teil der Halbinsel ist als Naturschutzgebiet ausgewiesen und steht unter besonderem Schutz. 
-					Besonders die Salinen und Feuchtgebiete zwischen den beiden Sanddämmen (Tombolos) bilden ein wichtiges 
-					Rückzugsgebiet für Zug- und Brutvögel.
-				</p>
+
+			<div class="flex items-center justify-end gap-2 mt-4">
+				<template v-if="lageContent.isAdmin.value && !lageContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="outline"
+						icon="i-lucide-edit"
+						size="sm"
+						@click="lageContent.startEditing()"
+					>
+						Bearbeiten
+					</UButton>
+				</template>
+				<template v-else-if="lageContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						size="sm"
+						@click="lageContent.cancelEditing()"
+						:disabled="lageContent.isSaving.value"
+					>
+						Abbrechen
+					</UButton>
+					<UButton
+						color="primary"
+						icon="i-lucide-save"
+						size="sm"
+						:loading="lageContent.isSaving.value"
+						@click="lageContent.save()"
+					>
+						Speichern
+					</UButton>
+				</template>
 			</div>
+
+			<div v-if="lageContent.status.value === 'pending'" class="flex justify-center py-8">
+				<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+			</div>
+			<ClientOnly v-else>
+				<TiptapEditor v-if="lageContent.isEditing.value" v-model="lageContent.content.value" />
+				<div
+					v-else
+					class="mt-8 prose dark:prose-invert max-w-none text-lg"
+					v-html="lageContent.content.value || defaultLage"
+				/>
+			</ClientOnly>
 		</section>
 
 		<!-- Quick Links -->
@@ -39,15 +83,57 @@
 		<!-- Details: Auto -->
 		<section id="mit-dem-auto" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Ab Bern via Autobahn" title="Mit dem Auto" />
+
+			<div class="flex items-center justify-end gap-2 mt-4">
+				<template v-if="autoContent.isAdmin.value && !autoContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="outline"
+						icon="i-lucide-edit"
+						size="sm"
+						@click="autoContent.startEditing()"
+					>
+						Bearbeiten
+					</UButton>
+				</template>
+				<template v-else-if="autoContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						size="sm"
+						@click="autoContent.cancelEditing()"
+						:disabled="autoContent.isSaving.value"
+					>
+						Abbrechen
+					</UButton>
+					<UButton
+						color="primary"
+						icon="i-lucide-save"
+						size="sm"
+						:loading="autoContent.isSaving.value"
+						@click="autoContent.save()"
+					>
+						Speichern
+					</UButton>
+				</template>
+			</div>
+
 			<div class="grid md:grid-cols-2 gap-12 items-start mt-12">
-				<div class="space-y-8 text-lg text-stone-700 dark:text-stone-300">
-					<p>
-						Die Anreise mit dem Auto ab Bern ist für viele Bewohner des Lotissement Beausoleil eine bevorzugte Option. Die
-						Strecke führt hauptsächlich über Autobahnen und beträgt etwa 700 km. Die Fahrtzeit beträgt je nach Verkehr und
-						Pausen etwa 7 bis 8 Stunden.
-					</p>
+				<div class="space-y-8">
+					<div v-if="autoContent.status.value === 'pending'" class="flex justify-center py-8">
+						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+					</div>
+					<ClientOnly v-else>
+						<TiptapEditor v-if="autoContent.isEditing.value" v-model="autoContent.content.value" />
+						<div
+							v-else
+							class="text-lg text-stone-700 dark:text-stone-300 prose dark:prose-invert max-w-none"
+							v-html="autoContent.content.value || defaultAuto"
+						/>
+					</ClientOnly>
 
 					<UButton
+						v-if="!autoContent.isEditing.value"
 						to="https://www.google.com/maps/dir/?api=1&destination=Lotissement+Beausoleil,+Hyeres"
 						target="_blank"
 						size="xl"
@@ -58,6 +144,7 @@
 					</UButton>
 
 					<div
+						v-if="!autoContent.isEditing.value"
 						class="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-2xl border-l-8 border-primary shadow-sm flex gap-4">
 						<UIcon name="i-lucide-info" class="w-8 h-8 text-primary shrink-0" />
 						<p class="italic text-base">
@@ -126,32 +213,73 @@
 		<!-- Details: Zug -->
 		<section id="mit-dem-zug" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Umweltfreundlich & entspannt" title="Mit dem Zug" />
+
+			<div class="flex items-center justify-end gap-2 mt-4">
+				<template v-if="zugContent.isAdmin.value && !zugContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="outline"
+						icon="i-lucide-edit"
+						size="sm"
+						@click="zugContent.startEditing()"
+					>
+						Bearbeiten
+					</UButton>
+				</template>
+				<template v-else-if="zugContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						size="sm"
+						@click="zugContent.cancelEditing()"
+						:disabled="zugContent.isSaving.value"
+					>
+						Abbrechen
+					</UButton>
+					<UButton
+						color="primary"
+						icon="i-lucide-save"
+						size="sm"
+						:loading="zugContent.isSaving.value"
+						@click="zugContent.save()"
+					>
+						Speichern
+					</UButton>
+				</template>
+			</div>
+
 			<div
 				class="mt-12 bg-white dark:bg-gray-950 rounded-3xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-xl">
 				<div class="p-8 md:p-12">
-					<p class="text-xl mb-12 text-stone-700 dark:text-stone-300">
-						Die Anreise mit dem Zug ist eine bequeme Alternative. SNCF bietet hervorragende Verbindungen mit dem TGV
-						an, oft mit nur zwei Umstiegen ab der Schweiz.
-					</p>
-					<div class="grid md:grid-cols-3 gap-8 relative">
-						<div class="space-y-2 relative">
-							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 1</div>
-							<div class="font-bold text-xl">Bern – Genève</div>
-							<p class="text-sm text-stone-500">InterCity, ca. 1h 45min</p>
-						</div>
-						<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
-							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 2</div>
-							<div class="font-bold text-xl">Genève – Marseille</div>
-							<p class="text-sm text-stone-500">TGV Lyria, ca. 4h 30min</p>
-						</div>
-						<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
-							<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 3</div>
-							<div class="font-bold text-xl">Marseille – Hyères</div>
-							<p class="text-sm text-stone-500">Regionalzug TER, ca. 1h</p>
-						</div>
+					<div v-if="zugContent.status.value === 'pending'" class="flex justify-center py-8">
+						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 					</div>
+					<ClientOnly v-else>
+						<TiptapEditor v-if="zugContent.isEditing.value" v-model="zugContent.content.value" />
+						<div v-else>
+							<p class="text-xl mb-12 text-stone-700 dark:text-stone-300" v-html="zugContent.content.value || defaultZug" />
+							<div class="grid md:grid-cols-3 gap-8 relative">
+								<div class="space-y-2 relative">
+									<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 1</div>
+									<div class="font-bold text-xl">Bern – Genève</div>
+									<p class="text-sm text-stone-500">InterCity, ca. 1h 45min</p>
+								</div>
+								<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
+									<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 2</div>
+									<div class="font-bold text-xl">Genève – Marseille</div>
+									<p class="text-sm text-stone-500">TGV Lyria, ca. 4h 30min</p>
+								</div>
+								<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
+									<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 3</div>
+									<div class="font-bold text-xl">Marseille – Hyères</div>
+									<p class="text-sm text-stone-500">Regionalzug TER, ca. 1h</p>
+								</div>
+							</div>
+						</div>
+					</ClientOnly>
 				</div>
 				<div
+					v-if="!zugContent.isEditing.value"
 					class="bg-neutral-900 dark:bg-black p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
 					<div class="flex items-center gap-4">
 						<div class="p-3 bg-white/10 rounded-xl">
@@ -181,19 +309,54 @@
 		<!-- Details: Flugzeug -->
 		<section id="mit-dem-flugzeug" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
 			<UiTitle subtitle="Am schnellsten ans Ziel" title="Mit dem Flugzeug" />
+
+			<div class="flex items-center justify-end gap-2 mt-4">
+				<template v-if="flugzeugContent.isAdmin.value && !flugzeugContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="outline"
+						icon="i-lucide-edit"
+						size="sm"
+						@click="flugzeugContent.startEditing()"
+					>
+						Bearbeiten
+					</UButton>
+				</template>
+				<template v-else-if="flugzeugContent.isEditing.value">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						size="sm"
+						@click="flugzeugContent.cancelEditing()"
+						:disabled="flugzeugContent.isSaving.value"
+					>
+						Abbrechen
+					</UButton>
+					<UButton
+						color="primary"
+						icon="i-lucide-save"
+						size="sm"
+						:loading="flugzeugContent.isSaving.value"
+						@click="flugzeugContent.save()"
+					>
+						Speichern
+					</UButton>
+				</template>
+			</div>
+
 			<div class="grid md:grid-cols-2 gap-12 mt-12 items-center">
-				<div class="prose dark:prose-invert max-w-none text-lg">
-					<p>
-						Der Flughafen <strong>Toulon-Hyères (TLN)</strong> liegt nur 15 Minuten von Giens entfernt und ist ideal für
-						Kurztrips.
-					</p>
-					<p>
-						Alternativ bietet sich der Flughafen <strong>Marseille (MRS)</strong> an, der von Zürich oder Genf oft
-						mehrmals täglich direkt angeflogen wird. Die Weiterreise nach Giens dauert von dort etwa 1h 15min mit dem
-						Auto.
-					</p>
+				<div v-if="flugzeugContent.status.value === 'pending'" class="flex justify-center py-8">
+					<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 				</div>
-				<div class="grid grid-cols-1 gap-4">
+				<ClientOnly v-else>
+					<TiptapEditor v-if="flugzeugContent.isEditing.value" v-model="flugzeugContent.content.value" />
+					<div
+						v-else
+						class="prose dark:prose-invert max-w-none text-lg"
+						v-html="flugzeugContent.content.value || defaultFlugzeug"
+					/>
+				</ClientOnly>
+				<div v-if="!flugzeugContent.isEditing.value" class="grid grid-cols-1 gap-4">
 					<div
 						class="p-6 rounded-2xl bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm flex items-center gap-6">
 						<div class="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-primary">
@@ -219,7 +382,6 @@
 		</section>
 	</div>
 </template>
-
 
 <style scoped>
 .scroll-mt-32 {

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import ArticleList from '~/components/ui/ArticleList.vue';
-
 const route = useRoute();
 const uid = route.params.uid as string;
 
@@ -27,7 +25,7 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 			<UIcon name="i-lucide-user-x" class="w-16 h-16 text-stone-300 mx-auto mb-4" />
 			<h1 class="text-2xl font-bold mb-2">Benutzer nicht gefunden</h1>
 			<p class="text-stone-500 mb-6 max-w-sm mx-auto">{{ error.message || 'Das angeforderte Profil existiert nicht oder ist nicht öffentlich zugänglich.' }}</p>
-			<UButton to="/news" color="neutral" variant="ghost" icon="i-lucide-arrow-left">Zurück zur Übersicht</UButton>
+			<UButton to="/" color="neutral" variant="ghost" icon="i-lucide-arrow-left">Zurück zur Startseite</UButton>
 		</div>
 
 		<div v-else-if="profile" class="space-y-16">
@@ -49,18 +47,6 @@ console.log('[Public Profile] Full profile object:', JSON.stringify(profile.valu
 				</div>
 			</div>
 
-			<!-- Articles -->
-			<section class="max-w-screen-md mx-auto">
-				<div class="flex items-center gap-4 mb-8">
-					<h2 class="text-2xl font-bold">Beiträge von {{ profile.displayName }}</h2>
-					<div class="flex-1 h-px bg-stone-100 dark:bg-stone-800"></div>
-				</div>
-
-				<UiArticleList v-if="profile.articles && profile.articles.length > 0" :articles="profile.articles" />
-				<p v-else class="text-center py-12 text-stone-500 italic">
-					Noch keine Beiträge veröffentlicht.
-				</p>
-			</section>
 		</div>
 		</ClientOnly>
 	</div>

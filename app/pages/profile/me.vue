@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import ArticleList from "~/components/ui/ArticleList.vue";
 import ProfilePictureModal from "~/components/ui/ProfilePictureModal.vue";
 import PasswordChangeModal from "~/components/ui/PasswordChangeModal.vue";
 
@@ -65,20 +64,6 @@ const isPasswordModalOpen = ref(false);
 				<ProfilePictureModal v-model="isPictureModalOpen" @updated="refresh" />
 				<PasswordChangeModal v-model="isPasswordModalOpen" />
 			</ClientOnly>
-
-			<section class="max-w-screen-md mx-auto">
-				<div class="flex items-center gap-4 mb-8">
-					<h2 class="text-2xl font-bold">Meine Beiträge</h2>
-					<div class="flex-1 h-px bg-stone-100 dark:bg-stone-800"></div>
-				</div>
-
-				<div v-if="profile.articles && profile.articles.length > 0" class="space-y-8">
-					<ArticleList :articles="profile.articles" />
-				</div>
-				<p v-else class="text-center py-12 text-stone-500 italic">
-					Noch keine Beiträge veröffentlicht.
-				</p>
-			</section>
 
 			<section class="max-w-screen-md mx-auto border-t pt-12">
 				<h2 class="text-xl font-bold mb-6">Konto-Einstellungen</h2>
