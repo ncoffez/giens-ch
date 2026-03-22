@@ -168,31 +168,6 @@ const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 		active: route.path === "/",
 	},
 	{
-		label: "Aktuelles",
-		icon: "i-lucide-newspaper",
-		active: route.path.startsWith("/news"),
-		children: [
-			{
-				label: "News Feed",
-				to: "/news",
-				icon: "i-lucide-layout-list",
-				description: "Alle Neuigkeiten und Updates der Siedlung.",
-			},
-			{
-				label: "Veranstaltungen",
-				to: "/news/events",
-				icon: "i-lucide-party-popper",
-				description: "Was läuft in Giens und Umgebung?",
-			},
-			{
-				label: "Markt",
-				to: "/news/markt",
-				icon: "i-lucide-store",
-				description: "Wann und wo sind die besten Märkte?",
-			},
-		],
-	},
-	{
 		label: "Anreise",
 		to: "/travel",
 		icon: "i-lucide-car",
@@ -213,12 +188,6 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			icon: "i-lucide-house",
 			to: "/",
 			active: route.path === "/",
-		},
-		{
-			label: "News",
-			icon: "i-lucide-newspaper",
-			to: "/news",
-			active: route.path.startsWith("/news"),
 		},
 		{
 			label: "Organisatorisches",

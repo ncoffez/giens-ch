@@ -1,27 +1,24 @@
 import { test, expect } from '@playwright/test';
 
 test.describe("Critical User Flows", () => {
-	test("news page loads and filters work", async ({ page }) => {
-		await page.goto("/news");
-		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
-	});
-
-	test("home page navigation works", async ({ page }) => {
+	test("home page loads correctly", async ({ page }) => {
 		await page.goto("/");
 		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 
-	test("article page loads", async ({ page }) => {
-		await page.goto("/news");
-		await page.waitForLoadState("networkidle");
-		const firstArticle = page.locator("article, [class*='card']").first();
-		const count = await firstArticle.count();
+	test("about page loads correctly", async ({ page }) => {
+		await page.goto("/about");
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
+	});
 
-		if (count > 0) {
-			await firstArticle.click();
-			await page.waitForLoadState("networkidle");
-			await expect(page.locator("h1, h2")).toBeVisible();
-		}
+	test("travel page loads correctly", async ({ page }) => {
+		await page.goto("/travel");
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
+	});
+
+	test("organisatorisches page loads correctly", async ({ page }) => {
+		await page.goto("/organisatorisches");
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 
 	test("mobile navigation works on small screen", async ({ page }) => {
@@ -32,16 +29,6 @@ test.describe("Critical User Flows", () => {
 
 		if (hasMobileNav) {
 			await expect(mobileNav).toBeVisible();
-		}
-	});
-
-	test("language switcher works", async ({ page }) => {
-		await page.goto("/");
-		const langSwitcher = page.locator('button:has-text("DE"), button:has-text("EN")');
-		const count = await langSwitcher.count();
-
-		if (count > 0) {
-			await expect(langSwitcher.first()).toBeVisible();
 		}
 	});
 

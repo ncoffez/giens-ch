@@ -21,7 +21,6 @@
 	const navItems = computed(() => {
 		const items = [
 			{ label: "Home", icon: "i-lucide-house", to: "/" },
-			{ label: "News", icon: "i-lucide-newspaper", to: "/news" },
 			{ label: "Org", icon: "i-lucide-clipboard-list", to: "/organisatorisches" },
 		];
 

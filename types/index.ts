@@ -1,28 +1,3 @@
-export interface Article {
-	id: string;
-	title: string;
-	intro: string;
-	published: string;
-	tags: string[];
-	image: string;
-	body: string;
-	author?: string;
-	authorUid?: string;
-	hasAttachments?: boolean;
-}
-
-export interface ArticleMetadata {
-	id: string;
-	title: string;
-	intro: string;
-	image: string;
-	published: string;
-	tags: string[];
-	author: string | null;
-	authorUid: string | null;
-	hasAttachments: boolean;
-}
-
 export interface User {
 	id?: string;
 	email?: string;
@@ -174,4 +149,31 @@ export interface OrganisatorischesContent {
 	content: string;
 	updatedAt: string;
 	updatedBy: string;
+}
+
+export interface PageContent {
+	id: string;
+	content: string;
+	updatedAt: string;
+	updatedBy: string;
+}
+
+export interface FeatureCard {
+	icon: string;
+	title: string;
+	description: string;
+	bgColor: string;
+	iconColor: string;
+}
+
+export interface StatItem {
+	value: string;
+	label: string;
+}
+
+export interface TimelineItem {
+	date: string;
+	title: string;
+	description: string;
+	icon: string;
 }

@@ -1,19 +1,3 @@
-interface ArticleMetadata {
-	id: string;
-	title: string;
-	intro: string;
-	image: string;
-	published: string;
-	tags: string[];
-	author: string | null;
-	authorUid: string | null;
-	hasAttachments: boolean;
-}
-
-interface SearchArticle extends ArticleMetadata {
-	searchText: string;
-}
-
 interface OrganisatorischesContent {
 	id: string;
 	content: string;
@@ -34,7 +18,6 @@ interface StoredHeading {
 	context: string;
 }
 
-const articlesCache = ref<SearchArticle[] | null>(null);
 const organisatorischesHeadingsCache = ref<StoredHeading[]>([]);
 const isLoading = ref(false);
 
@@ -81,34 +64,12 @@ function extractHeadings(html: string): StoredHeading[] {
 }
 
 export function useSearchData() {
-	const nuxtApp = useNuxtApp();
-	const token = computed(() => import.meta.client ? nuxtApp.$token?.value : null);
-
-	const loadArticles = async () => {
+	const loadOrganisatorisches = async () => {
 		if (isLoading.value) return;
 
 		isLoading.value = true;
 		try {
-			const headers: Record<string, string> = {};
-			if (token.value) {
-				headers.Authorization = `Bearer ${token.value}`;
-			}
-
-			const [articlesData, orgData] = await Promise.all([
-				$fetch<ArticleMetadata[]>("/api/news", {
-					method: "POST",
-					body: { all: true },
-					headers,
-				}),
-				$fetch<OrganisatorischesContent>("/api/organisatorisches"),
-			]);
-
-			if (Array.isArray(articlesData)) {
-				articlesCache.value = articlesData.map(article => ({
-					...article,
-					searchText: `${article.title} ${article.intro} ${article.author || ""} ${(article.tags || []).join(" ")}`.toLowerCase(),
-				}));
-			}
+			const orgData = await $fetch<OrganisatorischesContent>("/api/organisatorisches");
 
 			if (orgData?.content) {
 				organisatorischesHeadingsCache.value = extractHeadings(orgData.content);
@@ -118,16 +79,6 @@ export function useSearchData() {
 		} finally {
 			isLoading.value = false;
 		}
-	};
-
-	const searchArticles = (query: string): SearchArticle[] => {
-		if (!articlesCache.value || !query.trim()) return [];
-
-		const searchTerms = query.toLowerCase().trim().split(/\s+/);
-		
-		return articlesCache.value.filter(article => 
-			searchTerms.every(term => article.searchText.includes(term))
-		);
 	};
 
 	const searchOrganisatorischesHeadings = (query: string): SearchOrganisatorischesHeading[] => {
@@ -145,13 +96,9 @@ export function useSearchData() {
 			}));
 	};
 
-	const articles = computed(() => articlesCache.value || []);
-
 	return {
-		articles,
 		isLoading: readonly(isLoading),
-		loadArticles,
-		searchArticles,
+		loadOrganisatorisches,
 		searchOrganisatorischesHeadings,
 	};
 }
