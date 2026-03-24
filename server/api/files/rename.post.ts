@@ -40,9 +40,10 @@ export default defineEventHandler(async (event) => {
 
 		return { success: true, id: fileId, name: trimmedName };
 	} catch (e: unknown) {
+		const error = e as { statusCode?: number; message?: string };
 		throw createError({
-			statusCode: e.statusCode || 500,
-			message: e.message || "Internal Server Error"
+			statusCode: error.statusCode || 500,
+			message: error.message || "Internal Server Error"
 		});
 	}
 });

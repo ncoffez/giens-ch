@@ -1,5 +1,13 @@
 <template>
 	<div class="mx-auto md:px-8 px-4 min-h-screen flex flex-col">
+		<!-- Skip to content link for accessibility -->
+		<a
+			href="#main-content"
+			class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:outline-none"
+		>
+			Zum Inhalt springen
+		</a>
+
 		<!-- Navigation Header -->
 		<header class="flex items-center justify-between py-4 md:py-6 max-w-screen-xl mx-auto w-full">
 			<div class="flex items-center gap-8">
@@ -19,7 +27,13 @@
 			<ClientOnly>
 				<div class="flex items-center gap-2 md:gap-3">
 					<div class="hidden lg:block">
-						<UiSearchModal />
+						<UButton
+							icon="i-lucide-search"
+							color="neutral"
+							variant="ghost"
+							class="rounded-full"
+							aria-label="Suchen"
+							@click="openSearch" />
 					</div>
 
 					<UiLanguageSwitcher />
@@ -58,8 +72,13 @@
 			</ClientOnly>
 		</header>
 
+		<!-- Search Modal (accessible from mobile) -->
+		<ClientOnly>
+			<UiSearchModal />
+		</ClientOnly>
+
 		<!-- Main Content -->
-		<main class="flex-1 my-4 md:my-6 mb-24 md:mb-20 mx-auto w-full max-w-screen-xl">
+		<main id="main-content" class="flex-1 my-4 md:my-6 mb-24 md:mb-20 mx-auto w-full max-w-screen-xl">
 			<slot />
 		</main>
 
@@ -86,6 +105,7 @@ const route = useRoute();
 const nuxtApp = useNuxtApp();
 const colorMode = useColorMode();
 const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
+const { openSearch } = useSearchModal();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
@@ -164,6 +184,18 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			to: localePath("/organisatorisches"),
 			active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
 		},
+		{
+			label: t("nav.travel"),
+			to: localePath("/travel"),
+			icon: "i-lucide-car",
+			active: route.path === "/travel" || route.path === "/fr/travel",
+		},
+		{
+			label: t("nav.about"),
+			to: localePath("/about"),
+			icon: "i-lucide-info",
+			active: route.path === "/about" || route.path === "/fr/about",
+		},
 	];
 
 	if (import.meta.client && (isOwner.value || isReader.value)) {
@@ -174,13 +206,6 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			active: route.path.startsWith("/documents") || route.path.startsWith("/fr/documents"),
 		});
 	}
-
-	items.push({
-		label: t("nav.travel"),
-		to: localePath("/travel"),
-		icon: "i-lucide-car",
-		active: route.path === "/travel" || route.path === "/fr/travel",
-	});
 
 	return items;
 });

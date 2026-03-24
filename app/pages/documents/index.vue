@@ -446,28 +446,41 @@ const createFolderInline = () => {
 	});
 };
 
-const saveFolderName = async (tempId: string) => {
+const saveFolderName = async (folderId: string) => {
 	if (!editingFolderName.value.trim()) {
 		return;
 	}
 	
+	const isNewFolder = tempFolders.value.some(f => f.id === folderId);
+	
 	try {
-		await $fetch("/api/folders/create", {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
-			body: {
-				name: editingFolderName.value.trim(),
-				parentId: currentFolderId.value,
-			},
-		});
+		if (isNewFolder) {
+			await $fetch("/api/folders/create", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: {
+					name: editingFolderName.value.trim(),
+					parentId: currentFolderId.value,
+				},
+			});
+			tempFolders.value = tempFolders.value.filter(f => f.id !== folderId);
+			toast.add({ title: "Ordner erstellt", color: "success" });
+		} else {
+			await $fetch("/api/folders/rename", {
+				method: "POST",
+				headers: { Authorization: `Bearer ${token.value}` },
+				body: {
+					folderId: folderId,
+					newName: editingFolderName.value.trim(),
+				},
+			});
+			toast.add({ title: "Ordner umbenannt", color: "success" });
+		}
 		
-		tempFolders.value = tempFolders.value.filter(f => f.id !== tempId);
 		editingFolderId.value = null;
-		
 		await fetchData(currentFolderId.value);
-		toast.add({ title: "Ordner erstellt", color: "success" });
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Erstellen", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: "Fehler beim Speichern", description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -480,7 +493,10 @@ const handleFolderKeydown = (e: KeyboardEvent, folderId: string) => {
 	if (e.key === "Enter") {
 		saveFolderName(folderId);
 	} else if (e.key === "Escape") {
-		tempFolders.value = tempFolders.value.filter(f => f.id !== folderId);
+		const isNewFolder = tempFolders.value.some(f => f.id === folderId);
+		if (isNewFolder) {
+			tempFolders.value = tempFolders.value.filter(f => f.id !== folderId);
+		}
 		editingFolderId.value = null;
 	}
 };
@@ -542,9 +558,20 @@ const downloadFile = async (file: GlobalFile) => {
 		const response = await $fetch<{ url: string }>(`/api/files/download?fileId=${file.id}`, {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
-		window.open(response.url, "_blank");
+		
+		const a = document.createElement("a");
+		a.href = response.url;
+		a.target = "_blank";
+		a.rel = "noopener noreferrer";
+		a.style.display = "none";
+		document.body.appendChild(a);
+		a.click();
+		
+		setTimeout(() => {
+			document.body.removeChild(a);
+		}, 100);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: "Fehler beim Öffnen", description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -560,10 +587,13 @@ const downloadFileToDisk = async (file: GlobalFile) => {
 		const a = document.createElement("a");
 		a.href = response.url;
 		a.download = file.name;
-		a.target = "_blank";
+		a.style.display = "none";
 		document.body.appendChild(a);
 		a.click();
-		document.body.removeChild(a);
+		
+		setTimeout(() => {
+			document.body.removeChild(a);
+		}, 100);
 	} catch (e: unknown) {
 		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
 	} finally {
@@ -670,6 +700,18 @@ const deleteFolder = async (folder: GlobalFolder) => {
 
 const getFolderMenuItems = (folder: GlobalFolder) => [
 	[{
+		label: "Umbenennen",
+		icon: "i-lucide-pencil",
+		onSelect: () => {
+			editingFolderId.value = folder.id;
+			editingFolderName.value = folder.name;
+			nextTick(() => {
+				const input = document.querySelector('.folder-name-input') as HTMLInputElement;
+				input?.focus();
+				input?.select();
+			});
+		},
+	}, {
 		label: "Verschieben",
 		icon: "i-lucide-folder-input",
 		onSelect: () => {
@@ -886,6 +928,7 @@ watch(() => route.query.folder, (newFolderId) => {
 						</UButton>
 						<input type="file" multiple accept="image/*,video/mp4,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar" class="hidden" @change="handleFileSelect" />
 					</label>
+					<span class="text-xs text-stone-400 hidden sm:inline">max. 50MB</span>
 				</div>
 			</div>
 
@@ -1013,19 +1056,19 @@ watch(() => route.query.folder, (newFolderId) => {
 						</span>
 						<div class="flex-1" />
 						<div class="flex items-center gap-1">
-							<UButton v-if="selectedFiles.length > 0" size="xs" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
+							<UButton v-if="selectedFiles.length > 0" size="sm" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
 								<span class="hidden md:inline">Download</span>
 							</UButton>
-							<UButton v-if="selectedFiles.length === 1 && selectedFolders.length === 0" size="xs" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
+							<UButton v-if="selectedFiles.length === 1 && selectedFolders.length === 0" size="sm" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
 								<span class="hidden md:inline">Umbenennen</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
+							<UButton size="sm" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
 								<span class="hidden md:inline">Verschieben</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="error" @click="deleteSelectedItems" icon="i-lucide-trash-2">
+							<UButton size="sm" variant="ghost" color="error" @click="deleteSelectedItems" icon="i-lucide-trash-2">
 								<span class="hidden md:inline">Löschen</span>
 							</UButton>
-							<UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearSelection" />
+							<UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearSelection" />
 						</div>
 					</div>
 
@@ -1039,7 +1082,7 @@ watch(() => route.query.folder, (newFolderId) => {
 						<div v-if="sortedSubfolders.length === 0 && sortedFiles.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-stone-400">
 							<UIcon name="i-lucide-folder-open" class="w-12 h-12 md:w-16 md:h-16 mb-4" />
 							<p class="font-medium text-base md:text-lg">Keine Dateien</p>
-							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">Ziehen Sie Dateien hierher oder klicken Sie auf "Hochladen"</p>
+							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">Ziehen Sie Dateien hierher oder klicken Sie auf "Hochladen" (max. 50MB)</p>
 						</div>
 
 						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
@@ -1051,18 +1094,24 @@ watch(() => route.query.folder, (newFolderId) => {
 							>
 								<button
 									v-if="!editingFolderId || editingFolderId !== folder.id"
-									class="absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors z-10"
-									:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									class="absolute top-2 left-2 w-10 h-10 flex items-center justify-center z-10"
 									@click.stop="toggleFolderSelection(folder)"
 								>
-									<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-3 h-3 text-white" />
+									<div
+										class="w-6 h-6 rounded border-2 flex items-center justify-center transition-colors"
+										:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									>
+										<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-4 h-4 text-white" />
+									</div>
 								</button>
 								<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
 									<button
-										class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all z-10 flex items-center justify-center"
+										class="absolute top-2 right-2 w-10 h-10 flex items-center justify-center z-10"
 										@click.stop
 									>
-										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+										<div class="w-8 h-8 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all flex items-center justify-center">
+											<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+										</div>
 									</button>
 								</UDropdownMenu>
 								
@@ -1098,18 +1147,24 @@ watch(() => route.query.folder, (newFolderId) => {
 								:class="isFileSelected(file) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
 							>
 								<button
-									class="absolute top-2 left-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors z-10"
-									:class="isFileSelected(file) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									class="absolute top-2 left-2 w-10 h-10 flex items-center justify-center z-10"
 									@click.stop="toggleFileSelection(file)"
 								>
-									<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-3 h-3 text-white" />
+									<div
+										class="w-6 h-6 rounded border-2 flex items-center justify-center transition-colors"
+										:class="isFileSelected(file) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-500 bg-white dark:bg-stone-800 hover:border-primary'"
+									>
+										<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-4 h-4 text-white" />
+									</div>
 								</button>
 								<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
 									<button
-										class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all z-10 flex items-center justify-center"
+										class="absolute top-2 right-2 w-10 h-10 flex items-center justify-center z-10"
 										@click.stop
 									>
-										<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+										<div class="w-8 h-8 rounded-full bg-white dark:bg-stone-800 shadow-md hover:bg-stone-100 dark:hover:bg-stone-700 transition-all flex items-center justify-center">
+											<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
+										</div>
 									</button>
 								</UDropdownMenu>
 								<button class="w-full" @click="handleFileClick(file)">
@@ -1124,8 +1179,11 @@ watch(() => route.query.folder, (newFolderId) => {
 											</div>
 										</div>
 									</div>
-									<div v-else class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3" :class="getFileIconBg(file.type)">
+									<div v-else class="aspect-[4/3] rounded-xl flex items-center justify-center mb-2 md:mb-3 relative" :class="getFileIconBg(file.type)">
 										<UIcon :name="getFileIcon(file.type)" class="w-8 h-8 md:w-12 md:h-12" :class="getFileIconColor(file.type)" />
+										<div class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+											<span class="px-2 py-1 text-xs font-medium bg-white/90 rounded-lg text-stone-700">{{ getFileTypeName(file.type) }}</span>
+										</div>
 									</div>
 									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ file.name }}</p>
 									<p class="text-[10px] md:text-xs text-stone-400 mt-0.5">{{ formatDate(file.uploadedAt) }}</p>
@@ -1145,14 +1203,14 @@ watch(() => route.query.folder, (newFolderId) => {
 								<table class="w-full text-sm">
 									<thead>
 										<tr class="border-b border-stone-200 dark:border-stone-700 text-left">
-											<th class="py-3 px-2 w-8">
+											<th class="py-3 px-2 w-12">
 												<button 
-													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													class="w-6 h-6 rounded border flex items-center justify-center transition-colors"
 													:class="isAllSelected ? 'bg-primary border-primary' : isSomeSelected ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
 													@click="toggleSelectAll"
 												>
-													<UIcon v-if="isAllSelected" name="i-lucide-check" class="w-3 h-3 text-white" />
-													<UIcon v-else-if="isSomeSelected" name="i-lucide-minus" class="w-3 h-3 text-white" />
+													<UIcon v-if="isAllSelected" name="i-lucide-check" class="w-4 h-4 text-white" />
+													<UIcon v-else-if="isSomeSelected" name="i-lucide-minus" class="w-4 h-4 text-white" />
 												</button>
 											</th>
 											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400">Name</th>
@@ -1174,11 +1232,11 @@ watch(() => route.query.folder, (newFolderId) => {
 											<td class="py-3 px-2">
 												<button 
 													v-if="!editingFolderId || editingFolderId !== folder.id"
-													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													class="w-6 h-6 rounded border flex items-center justify-center transition-colors"
 													:class="isFolderSelected(folder) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
 													@click.stop="toggleFolderSelection(folder)"
 												>
-													<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-3 h-3 text-white" />
+													<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-4 h-4 text-white" />
 												</button>
 											</td>
 											<td class="py-3 px-2">
@@ -1209,7 +1267,7 @@ watch(() => route.query.folder, (newFolderId) => {
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ folder.createdByName || "—" }}</td>
 											<td class="py-3 px-2">
 												<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
-													<button class="w-6 h-6 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
+													<button class="w-8 h-8 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
 														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 													</button>
 												</UDropdownMenu>
@@ -1223,11 +1281,11 @@ watch(() => route.query.folder, (newFolderId) => {
 										>
 											<td class="py-3 px-2">
 												<button 
-													class="w-4 h-4 rounded border flex items-center justify-center transition-colors"
+													class="w-6 h-6 rounded border flex items-center justify-center transition-colors"
 													:class="isFileSelected(file) ? 'bg-primary border-primary' : 'border-stone-300 dark:border-stone-600 hover:border-primary'"
 													@click.stop="toggleFileSelection(file)"
 												>
-													<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-3 h-3 text-white" />
+													<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-4 h-4 text-white" />
 												</button>
 											</td>
 											<td class="py-3 px-2">
@@ -1251,7 +1309,7 @@ watch(() => route.query.folder, (newFolderId) => {
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ file.uploadedByName || "—" }}</td>
 											<td class="py-3 px-2">
 												<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
-													<button class="w-6 h-6 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
+													<button class="w-8 h-8 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
 														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 													</button>
 												</UDropdownMenu>

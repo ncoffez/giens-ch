@@ -1,15 +1,23 @@
 <template>
-	<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-stone-100 dark:border-stone-800 pb-safe">
-		<div class="flex items-center justify-around h-16 px-4">
+	<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-stone-100 dark:border-stone-800 pb-safe">
+		<div class="flex items-center justify-around h-18 px-2 py-1">
 			<NuxtLink
 				v-for="item in navItems"
 				:key="item.to"
 				:to="item.to"
-				class="flex flex-col items-center justify-center flex-1 gap-1 text-stone-500 dark:text-stone-400 transition-colors duration-200"
+				class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-stone-500 dark:text-stone-400 transition-all duration-200 rounded-lg"
 				:class="{ 'text-primary-600 dark:text-primary-400': isActive(item.to.toString()) }">
-				<UIcon :name="item.icon" class="w-6 h-6" />
-				<span class="text-[10px] font-bold uppercase tracking-wider">{{ item.label }}</span>
+				<UIcon :name="item.icon" class="w-7 h-7" />
+				<span class="text-[11px] font-semibold uppercase tracking-wide">{{ item.label }}</span>
 			</NuxtLink>
+			<button
+				class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-stone-500 dark:text-stone-400 transition-all duration-200 rounded-lg active:scale-95"
+				aria-label="Suchen"
+				@click="openSearch"
+			>
+				<UIcon name="i-lucide-search" class="w-7 h-7" />
+				<span class="text-[11px] font-semibold uppercase tracking-wide">{{ t("nav.search") }}</span>
+			</button>
 		</div>
 	</nav>
 </template>
@@ -20,6 +28,7 @@
 	const route = useRoute();
 	const nuxtApp = useNuxtApp() as any;
 	const { canAccessHomes } = useFeatureFlags();
+	const { openSearch } = useSearchModal();
 
 	function isActive(path: string): boolean {
 		const currentPath = route.path;
@@ -38,6 +47,7 @@
 		const items = [
 			{ label: t("nav.home"), icon: "i-lucide-house", to: localePath("/") },
 			{ label: t("nav.organisatorisches"), icon: "i-lucide-clipboard-list", to: localePath("/organisatorisches") },
+			{ label: t("nav.travel"), icon: "i-lucide-car", to: localePath("/travel") },
 		];
 
 		if (import.meta.client && (nuxtApp.$isReader?.value || nuxtApp.$isOwner?.value)) {

@@ -16,10 +16,18 @@
 		</UForm>
 		<div id="login-social" class="text-sm mt-4 text-stone-500 dark:text-stone-400">{{ t("auth.socialLogin") }}</div>
 		<div class="flex gap-4 my-6">
-			<button @click.prevent="loginToFirebase('google')" :aria-label="t('auth.login') + ' Google'" class="hover:scale-110 transition-transform">
+			<button 
+				@click.prevent="loginToFirebase('google')" 
+				:aria-label="t('auth.login') + ' Google'" 
+				class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+			>
 				<UIcon name="fa-brands:google" class="size-6" />
 			</button>
-			<button @click.prevent="loginWithApple" :aria-label="t('auth.login') + ' Apple'" class="hover:scale-110 transition-transform">
+			<button 
+				@click.prevent="loginWithApple" 
+				:aria-label="t('auth.login') + ' Apple'" 
+				class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+			>
 				<UIcon name="fa-brands:apple" class="size-6" />
 			</button>
 		</div>
