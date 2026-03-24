@@ -144,16 +144,15 @@ export interface UnsplashSearchResult {
 	currentPage: number;
 }
 
-export interface OrganisatorischesContent {
-	id: string;
-	content: string;
-	updatedAt: string;
-	updatedBy: string;
+export interface LocalizedContent {
+	de: string;
+	fr: string;
 }
 
 export interface PageContent {
 	id: string;
-	content: string;
+	content: string | LocalizedContent;
+	translated?: { fr?: string };
 	updatedAt: string;
 	updatedBy: string;
 }

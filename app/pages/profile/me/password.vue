@@ -1,6 +1,8 @@
 <script setup lang="ts">
+const localePath = useLocalePath();
+
 onMounted(() => {
-	navigateTo("/profile/me");
+	navigateTo(localePath("/profile/me"));
 });
 </script>
 <template>

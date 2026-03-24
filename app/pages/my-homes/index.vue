@@ -5,6 +5,7 @@ import type { Home } from "~/types";
 
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
+const localePath = useLocalePath();
 
 const homes = ref<Home[]>([]);
 const loading = ref(true);
@@ -41,7 +42,7 @@ onMounted(fetchHomes);
 					variant="ghost"
 					color="neutral"
 					icon="i-lucide-arrow-left"
-					@click="navigateTo('/')"
+					@click="navigateTo(localePath('/'))"
 				/>
 				<div>
 					<h1 class="text-2xl md:text-3xl font-black">Meine Häuser</h1>

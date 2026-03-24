@@ -3,7 +3,7 @@
 		<!-- Navigation Header -->
 		<header class="flex items-center justify-between py-4 md:py-6 max-w-screen-xl mx-auto w-full">
 			<div class="flex items-center gap-8">
-				<NuxtLink to="/">
+				<NuxtLink :to="localePath('/')">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
 				<div class="hidden lg:block">
@@ -22,16 +22,7 @@
 						<UiSearchModal />
 					</div>
 
-					<UDropdownMenu
-						:items="languageItems"
-						:ui="{ content: 'w-24' }">
-						<UButton
-							color="neutral"
-							variant="ghost"
-							class="rounded-full font-bold px-2 md:px-3">
-							DE
-						</UButton>
-					</UDropdownMenu>
+					<UiLanguageSwitcher />
 
 					<UDropdownMenu
 						:items="themeItems"
@@ -46,8 +37,8 @@
 					<div class="hidden lg:block">
 						<template v-if="!currentUser.value">
 							<UButton
-								to="/login"
-								label="Anmelden"
+								:to="localePath('/login')"
+								:label="t('nav.login')"
 								icon="i-lucide-circle-user"
 								color="neutral"
 								variant="ghost" />
@@ -80,7 +71,7 @@
 		<!-- Footer -->
 		<footer class="py-12 border-t border-stone-100 dark:border-stone-800">
 			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-stone-500">
-				<p>© {{ new Date().getFullYear() }} Lotissement Beausoleil, Giens</p>
+				<p>{{ t("footer.copyright", { year: new Date().getFullYear() }) }}</p>
 			</div>
 		</footer>
 	</div>
@@ -89,9 +80,11 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const { t } = useI18n();
+const localePath = useLocalePath();
 const route = useRoute();
 const nuxtApp = useNuxtApp();
-	const colorMode = useColorMode();
+const colorMode = useColorMode();
 const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
@@ -103,15 +96,6 @@ const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
 onMounted(async () => {
 	await fetchSettings();
 	await fetchUserPreference();
-});
-
-const isDark = computed({
-	get() {
-		return colorMode.value === "dark";
-	},
-	set() {
-		colorMode.preference = colorMode.value === "dark" ? "light" : "dark";
-	},
 });
 
 const currentThemeIcon = computed(() => {
@@ -145,72 +129,57 @@ const themeItems = [
 	],
 ];
 
-const languageItems = [
-	[
-		{
-			label: "Deutsch",
-			slot: "de",
-			disabled: false,
-		},
-		{
-			label: "Français",
-			slot: "fr",
-			disabled: true,
-		},
-	],
-];
-
 const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 	{
-		label: "Home",
+		label: t("nav.home"),
 		icon: "i-lucide-house",
-		to: "/",
-		active: route.path === "/",
+		to: localePath("/"),
+		active: route.path === "/" || route.path === "/fr",
 	},
 	{
-		label: "Anreise",
-		to: "/travel",
+		label: t("nav.travel"),
+		to: localePath("/travel"),
 		icon: "i-lucide-car",
-		active: route.path === "/travel",
+		active: route.path === "/travel" || route.path === "/fr/travel",
 	},
 	{
-		label: "Über uns",
-		to: "/about",
+		label: t("nav.about"),
+		to: localePath("/about"),
 		icon: "i-lucide-info",
-		active: route.path === "/about",
+		active: route.path === "/about" || route.path === "/fr/about",
 	},
 ]);
 
 const navigationItems = computed<NavigationMenuItem[]>(() => {
 	const items: NavigationMenuItem[] = [
 		{
-			label: "Home",
+			label: t("nav.home"),
 			icon: "i-lucide-house",
-			to: "/",
-			active: route.path === "/",
+			to: localePath("/"),
+			active: route.path === "/" || route.path === "/fr",
 		},
 		{
-			label: "Organisatorisches",
+			label: t("nav.organisatorisches"),
 			icon: "i-lucide-clipboard-list",
-			to: "/organisatorisches",
-			active: route.path === "/organisatorisches",
+			to: localePath("/organisatorisches"),
+			active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
 		},
 	];
 
 	if (import.meta.client && (isOwner.value || isReader.value)) {
 		items.push({
-			label: "Dokumente",
+			label: t("nav.documents"),
 			icon: "i-lucide-folder",
-			to: "/documents",
-			active: route.path.startsWith("/documents"),
+			to: localePath("/documents"),
+			active: route.path.startsWith("/documents") || route.path.startsWith("/fr/documents"),
 		});
 	}
 
 	items.push({
-		label: "Anreise",
-		to: "/travel",
+		label: t("nav.travel"),
+		to: localePath("/travel"),
 		icon: "i-lucide-car",
-		active: route.path === "/travel",
+		active: route.path === "/travel" || route.path === "/fr/travel",
 	});
 
 	return items;
@@ -220,30 +189,30 @@ const userItems = computed(() => {
 	if (!currentUser.value) {
 		return [
 			{
-				label: "Anmelden",
+				label: t("nav.login"),
 				icon: "i-lucide-circle-user",
-				to: "/login",
+				to: localePath("/login"),
 			},
 		];
 	}
 
 	const items = [
 		{
-			label: "Mein Profil",
-			to: "/profile",
+			label: t("nav.profile"),
+			to: localePath("/profile"),
 			icon: "i-lucide-user",
 		},
 		{
-			label: "Meine Häuser",
-			to: "/my-homes",
+			label: t("nav.myHomes"),
+			to: localePath("/my-homes"),
 			icon: "i-lucide-home",
 		}
 	];
 
 	if (import.meta.client && isAdmin.value) {
 		items.push({
-			label: "Verwaltung",
-			to: "/admin",
+			label: t("nav.admin"),
+			to: localePath("/admin"),
 			icon: "i-lucide-settings",
 		});
 	}
@@ -253,8 +222,8 @@ const userItems = computed(() => {
 			type: "separator" as const,
 		},
 		{
-			label: "Abmelden",
-			to: "/logout",
+			label: t("nav.logout"),
+			to: localePath("/logout"),
 			icon: "i-lucide-log-out",
 		}
 	);

@@ -1,0 +1,263 @@
+{
+  "site": {
+    "title": "Résidence Beausoleil",
+    "description": "Ihre Oase auf der Halbinsel Giens",
+    "pageTitles": {
+      "organisatorisches": "Organisatorisches"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "about": "Über uns",
+    "travel": "Anreise",
+    "organisatorisches": "Organisatorisches",
+    "documents": "Dokumente",
+    "profile": "Profil",
+    "myHomes": "Meine Häuser",
+    "admin": "Verwaltung",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "hero": {
+    "welcome": {
+      "title": "Willkommen im Beausoleil",
+      "subtitle": "Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
+    },
+    "about": {
+      "title": "Über uns",
+      "subtitle": "Eine Gemeinschaft von 20 Eigentümern auf der Halbinsel Giens."
+    },
+    "travel": {
+      "title": "Anreise nach Giens",
+      "subtitle": "Tipps für eine entspannte Reise in den Süden."
+    },
+    "organisatorisches": {
+      "title": "Organisatorisches",
+      "subtitle": "Wichtige Informationen zur Résidence Beausoleil"
+    }
+  },
+  "home": {
+    "features": {
+      "subtitle": "Was uns auszeichnet",
+      "title": "Wohlfühlen und Erleben"
+    },
+    "miteinander": {
+      "title": "Miteinander Gestalten",
+      "button": "Mehr erfahren"
+    },
+    "timeline": {
+      "title": "Unsere Geschichte"
+    },
+    "impressions": {
+      "subtitle": "Impressionen",
+      "title": "Die Schönheit von Giens"
+    },
+    "organisatorisches": {
+      "title": "Organisatorisches",
+      "subtitle": "Wichtige Informationen zur Résidence"
+    }
+  },
+  "about": {
+    "philosophy": {
+      "subtitle": "Unsere Philosophie",
+      "title": "Miteinander Gestalten"
+    },
+    "timeline": {
+      "title": "Unsere Geschichte"
+    },
+    "community": {
+      "subtitle": "Gemeinschaft",
+      "title": "Das Leben im Lotissement"
+    },
+    "impressions": {
+      "subtitle": "Impressionen",
+      "title": "Wohlfühlmomente"
+    }
+  },
+  "travel": {
+    "lage": {
+      "subtitle": "Ihr Ziel auf der Halbinsel",
+      "title": "Lage"
+    },
+    "auto": {
+      "subtitle": "Ab Bern via Autobahn",
+      "title": "Mit dem Auto",
+      "routeButton": "Route planen & Verkehrslage",
+      "tip": "Tipp:",
+      "tipText": "Während der Sommerferien (Juli/August) ist die Strecke zwischen Valence und Orange oft stark befahren. Samstage sind dann besonders staubelastet.",
+      "routeTitle": "Route auf einen Blick",
+      "toll": "Autobahngebühren (Péage)",
+      "tollPrice": "ca. 60 €"
+    },
+    "zug": {
+      "subtitle": "Umweltfreundlich & entspannt",
+      "title": "Mit dem Zug",
+      "transfer": "Transfer ab Hyères",
+      "transferText": "Bus Linie 67 (Richtung Giens) oder Taxi.",
+      "busButton": "Bus Linie 67"
+    },
+    "flugzeug": {
+      "subtitle": "Am schnellsten ans Ziel",
+      "title": "Mit dem Flugzeug",
+      "directFlights": "Direktflüge",
+      "directFlightsText": "Ab Genf / Zürich nach Marseille oder Toulon.",
+      "rentalCar": "Mietwagen",
+      "rentalCarText": "Direkt an allen Flughäfen verfügbar."
+    },
+    "quickLinks": {
+      "auto": "Mit dem Auto",
+      "zug": "Mit dem Zug",
+      "flugzeug": "Mit dem Flugzeug"
+    },
+    "freizeit": {
+      "subtitle": "Aktivitäten auf der Halbinsel",
+      "title": "Freizeit & Sport",
+      "wassersport": {
+        "title": "Wassersport",
+        "description": "Windsurfen, Kitesurfen und Segeln – am Strand de l'Almanarre sorgen starke Winde wie der Mistral für ideale Bedingungen."
+      },
+      "wandern": {
+        "title": "Wandern & Radfahren",
+        "description": "Der Sentier du Littoral bietet spektakuläre Ausblicke auf das Mittelmeer und die umliegenden Buchten."
+      },
+      "tauchen": {
+        "title": "Tauchen & Schnorcheln",
+        "description": "Klare Gewässer, Felsriffe und Seegraswiesen laden zum Entdecken der Unterwasserwelt ein."
+      }
+    },
+    "maerkte": {
+      "subtitle": "Frische Produkte vor Ort",
+      "title": "Wochenmärkte",
+      "fleaMarket": "Jeden Sonntag: Flohmarkt (Marché aux Puces) in La Capte",
+      "days": {
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      }
+    },
+    "einkauf": {
+      "subtitle": "Alles für den täglichen Bedarf",
+      "title": "Einkaufsmöglichkeiten",
+      "giens": {
+        "title": "Im Dorf Giens",
+        "description": "Apotheke und mehrere kleinere Geschäfte"
+      },
+      "bakery": {
+        "title": "Camping La Presqu'île de Giens",
+        "description": "Bäckerei Maison David (beim zweiten Kreisverkehr)"
+      },
+      "hyeres": {
+        "title": "In Hyères",
+        "description": "Intermarché, Auchan, Leclerc"
+      },
+      "laundry": {
+        "title": "Waschsalon / Laverie",
+        "description": "In Richtung Hyères: An der ersten Ampel links (Av. de l'Aéroport / Chemin du Palyvestre), vor dem Restaurant Plan B. Alternativ zwischen dem ersten und zweiten Kreisverkehr auf der rechten Straßenseite."
+      }
+    },
+    "ausfluege": {
+      "subtitle": "Inseln & Umgebung",
+      "title": "Ausflüge",
+      "porquerolles": {
+        "title": "Porquerolles",
+        "description": "Die größte der drei Inseln mit traumhaften Stränden und Wanderwegen. Fähre ab La Tour de Fondue."
+      },
+      "portCros": {
+        "title": "Port-Cros",
+        "description": "Nationalpark mit unberührter Natur und artenreichem Meeresgebiet. Ideal für Taucher und Naturliebhaber."
+      },
+      "levant": {
+        "title": "Le Levant",
+        "description": "Die östlichste Insel mit charmantem Dorf und Naturstränden. Bekannt für das Iles du Levant."
+      }
+    }
+  },
+  "editor": {
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "saving": "Speichern...",
+    "saved": "Gespeichert",
+    "saveSuccess": "Inhalt wurde erfolgreich gespeichert",
+    "saveError": "Speichern fehlgeschlagen",
+    "addError": "Fehler",
+    "noContent": "Kein Inhalt vorhanden",
+    "addContentHint": "Klicken Sie auf \"Bearbeiten\" um Inhalt hinzuzufügen"
+  },
+  "timeline": {
+    "entry": "Eintrag",
+    "addEntry": "Eintrag hinzufügen",
+    "date": "Datum",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "icon": "Icon"
+  },
+  "featureCards": {
+    "card": "Karte",
+    "addCard": "Karte hinzufügen",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "icon": "Icon",
+    "background": "Hintergrund",
+    "iconColor": "Icon-Farbe",
+    "preview": "Vorschau"
+  },
+  "stats": {
+    "stat": "Statistik",
+    "addStat": "Statistik hinzufügen",
+    "value": "Wert",
+    "label": "Label",
+    "editStats": "Statistiken bearbeiten"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "loginTitle": "Anmelden",
+    "loginSubtitle": "Melden Sie sich mit Ihrem Konto an",
+    "registerTitle": "Registrieren",
+    "registerSubtitle": "Erstellen Sie ein Konto, um auf alle Funktionen zuzugreifen.",
+    "resetTitle": "Passwort zurücksetzen",
+    "resetSubtitle": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.",
+    "loginButton": "Anmelden",
+    "registerButton": "Registrieren",
+    "resetButton": "Link senden",
+    "socialLogin": "Oder mit Social-Media anmelden",
+    "passwordConfirm": "Passwort bestätigen",
+    "name": "Name",
+    "backToLogin": "Zurück zum Login",
+    "memberText": "Mitglied des Lotissement Beausoleil",
+    "accountSettings": "Konto-Einstellungen",
+    "changePassword": "Passwort ändern",
+    "changePicture": "Ändern",
+    "success": {
+      "login": "Sie haben sich erfolgreich angemeldet.",
+      "register": "Konto erfolgreich erstellt.",
+      "reset": "Prüfe deinen Posteingang für den Link zum Zurücksetzen deines Passworts."
+    },
+    "errors": {
+      "emailRequired": "E-Mail und Passwort sind erforderlich.",
+      "fieldsRequired": "Bitte alle Felder ausfüllen.",
+      "nameMinLength": "Der Name muss mindestens 2 Zeichen lang sein.",
+      "passwordMinLength": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+      "emailNotVerified": "Bitte verifizieren Sie Ihre E-Mail-Adresse.",
+      "emailRequiredReset": "Bitte gib deine E-Mail-Adresse ein.",
+      "generic": "Ein Fehler ist aufgetreten."
+    },
+    "warnings": {
+      "emailNotVerified": "Bitte verifizieren Sie Ihre E-Mail-Adresse."
+    }
+  },
+  "footer": {
+    "copyright": "© {year} Lotissement Beausoleil, Giens"
+  }
+}

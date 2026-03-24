@@ -10,6 +10,7 @@ import ContactCard from "~/components/homes/ContactCard.vue";
 const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
+const localePath = useLocalePath();
 
 const homeId = computed(() => route.params.id as string);
 const home = ref<Home | null>(null);
@@ -228,7 +229,7 @@ onMounted(fetchHome);
 						variant="ghost"
 						color="neutral"
 						icon="i-lucide-arrow-left"
-						@click="navigateTo('/my-homes')"
+						@click="navigateTo(localePath('/my-homes'))"
 					/>
 					<h1 v-if="home" class="font-black text-lg">{{ home.name }}</h1>
 				</div>

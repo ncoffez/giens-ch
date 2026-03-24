@@ -44,3 +44,42 @@ body {
 [data-slot="progress"] {
 	transform: scaleX(-1);
 }
+
+/* Search result highlight animation */
+.search-highlight {
+	animation: highlight-pulse 2.5s ease-out;
+	border-radius: 0.375rem;
+}
+
+@keyframes highlight-pulse {
+	0%, 100% {
+		background-color: transparent;
+		box-shadow: none;
+	}
+	15%, 50% {
+		background-color: rgba(59, 130, 246, 0.2);
+		box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+	}
+}
+
+.dark .search-highlight {
+	@keyframes highlight-pulse-dark {
+		0%, 100% {
+			background-color: transparent;
+			box-shadow: none;
+		}
+		15%, 50% {
+			background-color: rgba(96, 165, 250, 0.25);
+			box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
+		}
+	}
+	animation: highlight-pulse-dark 2.5s ease-out;
+}
+
+/* Scroll margin for prose headings (fixed header offset) */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+	scroll-margin-top: 6rem;
+}

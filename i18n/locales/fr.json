@@ -1,0 +1,263 @@
+{
+  "site": {
+    "title": "Résidence Beausoleil",
+    "description": "Votre oasis sur la presqu'île de Giens",
+    "pageTitles": {
+      "organisatorisches": "Organisation"
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "travel": "Comment venir",
+    "organisatorisches": "Organisation",
+    "documents": "Documents",
+    "profile": "Profil",
+    "myHomes": "Mes maisons",
+    "admin": "Administration",
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  },
+  "hero": {
+    "welcome": {
+      "title": "Bienvenue au Beausoleil",
+      "subtitle": "Votre oasis sur la presqu'île de Giens – depuis plus de 30 ans."
+    },
+    "about": {
+      "title": "À propos",
+      "subtitle": "Une communauté de 20 propriétaires sur la presqu'île de Giens."
+    },
+    "travel": {
+      "title": "Comment venir à Giens",
+      "subtitle": "Conseils pour un voyage détendu dans le Sud."
+    },
+    "organisatorisches": {
+      "title": "Organisation",
+      "subtitle": "Informations importantes sur la Résidence Beausoleil"
+    }
+  },
+  "home": {
+    "features": {
+      "subtitle": "Ce qui nous distingue",
+      "title": "Se sentir bien et vivre"
+    },
+    "miteinander": {
+      "title": "Créer ensemble",
+      "button": "En savoir plus"
+    },
+    "timeline": {
+      "title": "Notre histoire"
+    },
+    "impressions": {
+      "subtitle": "Impressions",
+      "title": "La beauté de Giens"
+    },
+    "organisatorisches": {
+      "title": "Organisation",
+      "subtitle": "Informations importantes sur la Résidence"
+    }
+  },
+  "about": {
+    "philosophy": {
+      "subtitle": "Notre philosophie",
+      "title": "Créer ensemble"
+    },
+    "timeline": {
+      "title": "Notre histoire"
+    },
+    "community": {
+      "subtitle": "Communauté",
+      "title": "La vie dans le lotissement"
+    },
+    "impressions": {
+      "subtitle": "Impressions",
+      "title": "Moments de bien-être"
+    }
+  },
+  "travel": {
+    "lage": {
+      "subtitle": "Votre destination sur la presqu'île",
+      "title": "Situation"
+    },
+    "auto": {
+      "subtitle": "Depuis Berne via autoroute",
+      "title": "En voiture",
+      "routeButton": "Planifier l'itinéraire & trafic",
+      "tip": "Conseil :",
+      "tipText": "Pendant les vacances d'été (juillet/août), la route entre Valence et Orange est souvent très fréquentée. Les samedis sont particulièrement chargés.",
+      "routeTitle": "Itinéraire en bref",
+      "toll": "Péages autoroutiers",
+      "tollPrice": "env. 60 €"
+    },
+    "zug": {
+      "subtitle": "Écologique et détendu",
+      "title": "En train",
+      "transfer": "Transfert depuis Hyères",
+      "transferText": "Bus Ligne 67 (direction Giens) ou taxi.",
+      "busButton": "Bus Ligne 67"
+    },
+    "flugzeug": {
+      "subtitle": "Le plus rapide",
+      "title": "En avion",
+      "directFlights": "Vols directs",
+      "directFlightsText": "Depuis Genève / Zürich vers Marseille ou Toulon.",
+      "rentalCar": "Voiture de location",
+      "rentalCarText": "Disponible directement dans tous les aéroports."
+    },
+    "quickLinks": {
+      "auto": "En voiture",
+      "zug": "En train",
+      "flugzeug": "En avion"
+    },
+    "freizeit": {
+      "subtitle": "Activités sur la presqu'île",
+      "title": "Loisirs & Sport",
+      "wassersport": {
+        "title": "Sports nautiques",
+        "description": "Windsurf, kitesurf et voile – à la plage de l'Almanarre, des vents forts comme le Mistral créent des conditions idéales."
+      },
+      "wandern": {
+        "title": "Randonnée & Vélo",
+        "description": "Le Sentier du Littoral offre des vues spectaculaires sur la Méditerranée et les criques environnantes."
+      },
+      "tauchen": {
+        "title": "Plongée & Snorkeling",
+        "description": "Des eaux claires, des récifs rocheux et des herbiers marins invitent à découvrir le monde sous-marin."
+      }
+    },
+    "maerkte": {
+      "subtitle": "Produits frais sur place",
+      "title": "Marchés hebdomadaires",
+      "fleaMarket": "Chaque dimanche : Marché aux puces à La Capte",
+      "days": {
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
+    },
+    "einkauf": {
+      "subtitle": "Tout pour les besoins quotidiens",
+      "title": "Commerces",
+      "giens": {
+        "title": "Au village de Giens",
+        "description": "Pharmacie et plusieurs petits commerces"
+      },
+      "bakery": {
+        "title": "Camping La Presqu'île de Giens",
+        "description": "Boulangerie Maison David (au deuxième rond-point)"
+      },
+      "hyeres": {
+        "title": "À Hyères",
+        "description": "Intermarché, Auchan, Leclerc"
+      },
+      "laundry": {
+        "title": "Laverie",
+        "description": "En direction d'Hyères : au premier feu tournez à gauche (Av. de l'Aéroport / Chemin du Palyvestre), avant le restaurant Plan B. Alternative entre le premier et le deuxième rond-point sur le côté droit de la route."
+      }
+    },
+    "ausfluege": {
+      "subtitle": "Îles & Environs",
+      "title": "Excursions",
+      "porquerolles": {
+        "title": "Porquerolles",
+        "description": "La plus grande des trois îles avec des plages magnifiques et des sentiers de randonnée. Ferry depuis La Tour de Fondue."
+      },
+      "portCros": {
+        "title": "Port-Cros",
+        "description": "Parc national avec une nature préservée et une zone marine riche en espèces. Idéal pour les plongeurs et les amoureux de la nature."
+      },
+      "levant": {
+        "title": "Le Levant",
+        "description": "L'île la plus orientale avec un charmant village et des plages naturelles. Connue pour les Îles du Levant."
+      }
+    }
+  },
+  "editor": {
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré",
+    "saveSuccess": "Le contenu a été enregistré avec succès",
+    "saveError": "Échec de l'enregistrement",
+    "addError": "Erreur",
+    "noContent": "Aucun contenu",
+    "addContentHint": "Cliquez sur \"Modifier\" pour ajouter du contenu"
+  },
+  "timeline": {
+    "entry": "Entrée",
+    "addEntry": "Ajouter une entrée",
+    "date": "Date",
+    "title": "Titre",
+    "description": "Description",
+    "icon": "Icône"
+  },
+  "featureCards": {
+    "card": "Carte",
+    "addCard": "Ajouter une carte",
+    "title": "Titre",
+    "description": "Description",
+    "icon": "Icône",
+    "background": "Fond",
+    "iconColor": "Couleur de l'icône",
+    "preview": "Aperçu"
+  },
+  "stats": {
+    "stat": "Statistique",
+    "addStat": "Ajouter une statistique",
+    "value": "Valeur",
+    "label": "Libellé",
+    "editStats": "Modifier les statistiques"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "register": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "loginTitle": "Se connecter",
+    "loginSubtitle": "Connectez-vous à votre compte",
+    "registerTitle": "S'inscrire",
+    "registerSubtitle": "Créez un compte pour accéder à toutes les fonctionnalités.",
+    "resetTitle": "Réinitialiser le mot de passe",
+    "resetSubtitle": "Entrez votre adresse e-mail pour recevoir un lien de réinitialisation.",
+    "loginButton": "Se connecter",
+    "registerButton": "S'inscrire",
+    "resetButton": "Envoyer le lien",
+    "socialLogin": "Ou connectez-vous avec les réseaux sociaux",
+    "passwordConfirm": "Confirmer le mot de passe",
+    "name": "Nom",
+    "backToLogin": "Retour à la connexion",
+    "memberText": "Membre du Lotissement Beausoleil",
+    "accountSettings": "Paramètres du compte",
+    "changePassword": "Changer le mot de passe",
+    "changePicture": "Modifier",
+    "success": {
+      "login": "Vous vous êtes connecté avec succès.",
+      "register": "Compte créé avec succès.",
+      "reset": "Vérifiez votre boîte de réception pour le lien de réinitialisation de votre mot de passe."
+    },
+    "errors": {
+      "emailRequired": "L'e-mail et le mot de passe sont requis.",
+      "fieldsRequired": "Veuillez remplir tous les champs.",
+      "nameMinLength": "Le nom doit comporter au moins 2 caractères.",
+      "passwordMinLength": "Le mot de passe doit comporter au moins 6 caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "emailNotVerified": "Veuillez vérifier votre adresse e-mail.",
+      "emailRequiredReset": "Veuillez entrer votre adresse e-mail.",
+      "generic": "Une erreur s'est produite."
+    },
+    "warnings": {
+      "emailNotVerified": "Veuillez vérifier votre adresse e-mail."
+    }
+  },
+  "footer": {
+    "copyright": "© {year} Lotissement Beausoleil, Giens"
+  }
+}
