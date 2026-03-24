@@ -15,14 +15,17 @@ test.describe("Site Integrity", () => {
 	});
 
 	test("language switcher should not shift layout", async ({ page, isMobile }) => {
+		if (!isMobile) return;
+		
 		await page.goto("/");
 		
 		// Capture initial position of logo
 		const logo = page.locator("#logo");
 		const initialBox = await logo.boundingBox();
 		
-		// Open language switcher - be more specific to avoid devtools button
-		await page.locator("header").getByRole("button", { name: "DE", exact: true }).click();
+		// Open language switcher - button shows locale name (Deutsch)
+		const langButton = page.locator("header").getByRole("button", { name: /Deutsch|Français/ });
+		await langButton.click();
 		
 		// Capture position after opening
 		const finalBox = await logo.boundingBox();

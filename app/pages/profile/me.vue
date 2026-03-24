@@ -2,10 +2,12 @@
 import ProfilePictureModal from "~/components/ui/ProfilePictureModal.vue";
 import PasswordChangeModal from "~/components/ui/PasswordChangeModal.vue";
 
+const { t } = useI18n();
 const { $currentUser } = useNuxtApp();
+const localePath = useLocalePath();
 
 if (!$currentUser || !$currentUser.value) {
-	navigateTo("/login");
+	navigateTo(localePath("/login"));
 }
 
 const uid = $currentUser?.value?.uid || "";
@@ -49,14 +51,14 @@ const isPasswordModalOpen = ref(false);
 							variant="soft"
 							class="absolute bottom-0 right-0"
 							@click="isPictureModalOpen = true">
-							Ändern
+							{{ t("auth.changePicture") }}
 						</UButton>
 					</ClientOnly>
 				</div>
 				<div>
 					<h1 class="text-4xl font-black tracking-tight">{{ profile.displayName }}</h1>
 					<p v-if="profile.email" class="text-stone-500 mt-2">{{ profile.email }}</p>
-					<p class="text-stone-400 text-sm mt-1">Mitglied des Lotissement Beausoleil</p>
+					<p class="text-stone-400 text-sm mt-1">{{ t("auth.memberText") }}</p>
 				</div>
 			</div>
 
@@ -66,7 +68,7 @@ const isPasswordModalOpen = ref(false);
 			</ClientOnly>
 
 			<section class="max-w-screen-md mx-auto border-t pt-12">
-				<h2 class="text-xl font-bold mb-6">Konto-Einstellungen</h2>
+				<h2 class="text-xl font-bold mb-6">{{ t("auth.accountSettings") }}</h2>
 				<div class="space-y-4">
 					<ClientOnly>
 						<UButton
@@ -74,7 +76,7 @@ const isPasswordModalOpen = ref(false);
 							variant="soft"
 							icon="i-lucide-lock"
 							@click="isPasswordModalOpen = true">
-							Passwort ändern
+							{{ t("auth.changePassword") }}
 						</UButton>
 					</ClientOnly>
 				</div>

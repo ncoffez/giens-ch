@@ -68,6 +68,8 @@
 <script lang="ts" setup>
 import { getArticlePlaceholder } from "~/utils/placeholders";
 
+const localePath = useLocalePath();
+
 const props = defineProps<{
   link: string;
   id: string;
@@ -84,7 +86,7 @@ const props = defineProps<{
 
 const navigateToProfile = () => {
   if (props.authorUid) {
-    navigateTo(`/profile/${props.authorUid}`);
+    navigateTo(localePath(`/profile/${props.authorUid}`));
   }
 };
 </script>

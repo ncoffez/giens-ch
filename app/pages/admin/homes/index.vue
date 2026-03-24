@@ -6,6 +6,7 @@ definePageMeta({
 
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
+const localePath = useLocalePath();
 
 const allHomes = ref<any[]>([]);
 const homes = ref<any[]>([]);
@@ -96,7 +97,7 @@ const getHomeItems = (home: any) => [
 		{
 			label: "Bearbeiten",
 			icon: "i-lucide-pencil",
-			onSelect: () => navigateTo(`/admin/homes/${home.id}/edit`),
+			onSelect: () => navigateTo(localePath(`/admin/homes/${home.id}/edit`)),
 		},
 		{
 			label: home.enabled ? "Deaktivieren" : "Aktivieren",

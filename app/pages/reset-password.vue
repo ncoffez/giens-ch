@@ -6,16 +6,16 @@
 					<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
 						<UIcon name="i-lucide-key-round" class="w-8 h-8 text-primary" />
 					</div>
-					<h1 class="text-2xl font-black">Passwort zurücksetzen</h1>
+					<h1 class="text-2xl font-black">{{ t("auth.resetTitle") }}</h1>
 					<p class="text-stone-500 dark:text-stone-400 mt-2 text-sm">
-						Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.
+						{{ t("auth.resetSubtitle") }}
 					</p>
 				</div>
 
 				<form @submit.prevent="resetPassword" class="p-8 space-y-6">
 					<div>
 						<label class="block text-sm font-bold text-stone-700 dark:text-stone-300 mb-2">
-							E-Mail
+							{{ t("auth.email") }}
 						</label>
 						<input
 							v-model="state.email"
@@ -32,24 +32,24 @@
 						:loading="loading"
 						class="w-full rounded-full"
 					>
-						Link senden
+						{{ t("auth.resetButton") }}
 					</UButton>
 				</form>
 
 				<div class="px-8 pb-8 text-center">
 					<NuxtLink
-						to="/login"
+						:to="localePath('/login')"
 						class="text-sm text-stone-500 dark:text-stone-400 hover:text-primary dark:hover:text-primary-400 inline-flex items-center gap-2"
 					>
 						<UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
-						Zurück zum Login
+						{{ t("auth.backToLogin") }}
 					</NuxtLink>
 				</div>
 			</div>
 
 			<p class="text-center text-xs text-stone-400 mt-6">
-				Du hast noch kein Konto?
-				<NuxtLink to="/register" class="text-primary hover:underline">Registrieren</NuxtLink>
+				{{ t("auth.noAccount") }}
+				<NuxtLink :to="localePath('/register')" class="text-primary hover:underline">{{ t("auth.register") }}</NuxtLink>
 			</p>
 		</div>
 	</div>
@@ -58,10 +58,12 @@
 <script lang="ts" setup>
 import { sendPasswordResetEmail } from "firebase/auth";
 
+const { t } = useI18n();
 const state = reactive({
 	email: "",
 });
 const router = useRouter();
+const localePath = useLocalePath();
 const { $auth } = useNuxtApp();
 const toast = useToast();
 const loading = ref(false);
@@ -70,8 +72,8 @@ async function resetPassword() {
 	if (!state.email) {
 		toast.add({
 			color: "error",
-			title: "Fehler",
-			description: "Bitte gib deine E-Mail-Adresse ein.",
+			title: t("auth.errors.generic"),
+			description: t("auth.errors.emailRequiredReset"),
 		});
 		return;
 	}
@@ -81,15 +83,15 @@ async function resetPassword() {
 		await sendPasswordResetEmail($auth, state.email);
 		toast.add({
 			color: "success",
-			title: "E-Mail gesendet",
-			description: "Prüfe deinen Posteingang für den Link zum Zurücksetzen deines Passworts.",
+			title: t("auth.success.reset"),
+			description: t("auth.success.reset"),
 		});
-		router.push("/login");
+		router.push(localePath("/login"));
 	} catch (error: unknown) {
 		toast.add({
 			color: "error",
-			title: "Fehler",
-			description: error.message || "Etwas ist schiefgelaufen.",
+			title: t("auth.errors.generic"),
+			description: error.message || t("auth.errors.generic"),
 		});
 	} finally {
 		loading.value = false;

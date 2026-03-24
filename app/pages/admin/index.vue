@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // Stable redirect for nested parent
+const localePath = useLocalePath();
+
 definePageMeta({
 	middleware: [
 		function (to) {
-			if (to.path === '/admin') {
-				return navigateTo('/admin/users')
+			if (to.path === '/admin' || to.path === '/fr/admin') {
+				return navigateTo(useLocalePath()('/admin/users'));
 			}
 		},
 	],

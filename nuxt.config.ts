@@ -2,10 +2,7 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
-	modules: ["@nuxt/ui"],
-	routeRules: {
-		"/about": { redirect: "/#geschichte" },
-	},
+	modules: ["@nuxt/ui", "@nuxtjs/i18n"],
 	icon: process.env.NODE_ENV !== 'test'
 		? {
 			provider: 'server',
@@ -21,7 +18,6 @@ export default defineNuxtConfig({
 			},
 		}
 		: {
-			// Test-only configuration to avoid icon loading errors
 			provider: 'none',
 			clientBundle: {
 				scan: {
@@ -35,6 +31,21 @@ export default defineNuxtConfig({
 			},
 		},
 	css: ["@/assets/main.css", "@/assets/prose.css"],
+	i18n: {
+		locales: [
+			{ code: 'de', language: 'de-CH', name: 'Deutsch', file: 'de.json' },
+			{ code: 'fr', language: 'fr-CH', name: 'Français', file: 'fr.json' },
+		],
+		defaultLocale: 'de',
+		strategy: 'prefix_except_default',
+		lazy: true,
+		langDir: 'locales',
+		detectBrowserLanguage: {
+			useCookie: true,
+			cookieKey: 'i18n_locale',
+			fallbackLocale: 'de',
+		},
+	},
 	runtimeConfig: {
 		public: {
 			FIREBASE_FRONTEND_KEY: process.env.FIREBASE_FRONTEND_KEY,
@@ -43,6 +54,7 @@ export default defineNuxtConfig({
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
 		TEST_SECRET: process.env.TEST_SECRET,
 		UNSPLASH_API_KEY: process.env.UNSPLASH_API_KEY,
+		GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 	},
 	nitro: {
 		preset: "firebase",
@@ -55,7 +67,6 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-	// Global body limit for H3
 	hooks: {
 		'nitro:config': (config) => {
 			// @ts-ignore

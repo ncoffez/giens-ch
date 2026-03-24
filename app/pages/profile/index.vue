@@ -1,12 +1,13 @@
 <script setup lang="ts">
 const { $currentUser } = useNuxtApp();
+const localePath = useLocalePath();
 
 await new Promise(resolve => setTimeout(resolve, 100));
 
 if ($currentUser?.value) {
-	navigateTo('/profile/me');
+	navigateTo(localePath('/profile/me'));
 } else {
-	navigateTo('/login');
+	navigateTo(localePath('/login'));
 }
 </script>
 

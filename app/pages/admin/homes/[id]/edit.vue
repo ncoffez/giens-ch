@@ -4,6 +4,7 @@ definePageMeta({ middleware: ["is-admin"] });
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 const route = useRoute();
+const localePath = useLocalePath();
 
 const homeId = computed(() => route.params.id as string);
 const home = ref<any>(null);
@@ -54,7 +55,7 @@ const save = async () => {
 			body: home.value,
 		});
 		toast.add({ title: "Haus erfolgreich gespeichert", color: "success" });
-		navigateTo("/admin/homes");
+		navigateTo(localePath("/admin/homes"));
 	} catch (e: unknown) {
 		toast.add({ title: getFetchError(e) || "Fehler beim Speichern", color: "error" });
 	} finally {

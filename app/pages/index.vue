@@ -2,6 +2,9 @@
 import type { TimelineItem } from "@nuxt/ui";
 import type { FeatureCard, StatItem, TimelineItem as AppTimelineItem } from "../../types";
 
+const { t } = useI18n();
+const localePath = useLocalePath();
+
 const defaultFeatureCards: FeatureCard[] = [
 	{
 		icon: "i-lucide-home",
@@ -97,15 +100,15 @@ useHead({
 <template>
 	<div class="gap-24 flex flex-col mb-20">
 		<UiHero
-			title="Willkommen im Beausoleil"
-			subtitle="Ihre Oase auf der Halbinsel Giens – seit über 30 Jahren."
+			:title="t('hero.welcome.title')"
+			:subtitle="t('hero.welcome.subtitle')"
 			src="/giens/giens-hauser.jpeg"
 			alt="Giens Häuser"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<!-- Feature Cards Section -->
 		<section class="max-w-screen-xl mx-auto w-full px-4">
-			<UiTitle subtitle="Was uns auszeichnet" title="Wohlfühlen und Erleben" />
+			<UiTitle :subtitle="t('home.features.subtitle')" :title="t('home.features.title')" />
 			
 			<div class="flex items-center justify-end mb-4 gap-2">
 				<template v-if="featureCards.isAdmin.value && !featureCards.isEditing.value">
@@ -115,7 +118,7 @@ useHead({
 						icon="i-lucide-edit"
 						@click="featureCards.startEditing()"
 					>
-						Bearbeiten
+						{{ t("editor.edit") }}
 					</UButton>
 				</template>
 				<template v-else-if="featureCards.isEditing.value">
@@ -125,7 +128,7 @@ useHead({
 						@click="featureCards.cancelEditing()"
 						:disabled="featureCards.isSaving.value"
 					>
-						Abbrechen
+						{{ t("editor.cancel") }}
 					</UButton>
 					<UButton
 						color="primary"
@@ -133,7 +136,7 @@ useHead({
 						:loading="featureCards.isSaving.value"
 						@click="featureCards.save()"
 					>
-						Speichern
+						{{ t("editor.save") }}
 					</UButton>
 				</template>
 			</div>
@@ -155,7 +158,7 @@ useHead({
 			<div class="max-w-screen-xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
 				<div class="space-y-6 md:space-y-8 text-center md:text-left">
 					<h2 class="text-3xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
-						Miteinander Gestalten
+						{{ t("home.miteinander.title") }}
 					</h2>
 					
 					<div class="flex items-center justify-end gap-2">
@@ -167,7 +170,7 @@ useHead({
 								size="sm"
 								@click="miteinanderContent.startEditing()"
 							>
-								Bearbeiten
+								{{ t("editor.edit") }}
 							</UButton>
 						</template>
 						<template v-else-if="miteinanderContent.isEditing.value">
@@ -178,7 +181,7 @@ useHead({
 								@click="miteinanderContent.cancelEditing()"
 								:disabled="miteinanderContent.isSaving.value"
 							>
-								Abbrechen
+								{{ t("editor.cancel") }}
 							</UButton>
 							<UButton
 								color="primary"
@@ -187,7 +190,7 @@ useHead({
 								:loading="miteinanderContent.isSaving.value"
 								@click="miteinanderContent.save()"
 							>
-								Speichern
+								{{ t("editor.save") }}
 							</UButton>
 						</template>
 					</div>
@@ -206,12 +209,12 @@ useHead({
 
 					<div class="flex justify-center md:justify-start gap-4">
 						<UButton
-							to="/about"
+							:to="localePath('/about')"
 							size="xl"
 							color="neutral"
 							variant="outline"
 							class="rounded-full px-8">
-							Mehr erfahren
+							{{ t("home.miteinander.button") }}
 						</UButton>
 					</div>
 				</div>
@@ -245,7 +248,7 @@ useHead({
 						size="sm"
 						@click="stats.startEditing()"
 					>
-						Bearbeiten
+						{{ t("editor.edit") }}
 					</UButton>
 				</template>
 				<template v-else-if="stats.isEditing.value">
@@ -256,7 +259,7 @@ useHead({
 						@click="stats.cancelEditing()"
 						:disabled="stats.isSaving.value"
 					>
-						Abbrechen
+						{{ t("editor.cancel") }}
 					</UButton>
 					<UButton
 						color="primary"
@@ -265,7 +268,7 @@ useHead({
 						:loading="stats.isSaving.value"
 						@click="stats.save()"
 					>
-						Speichern
+						{{ t("editor.save") }}
 					</UButton>
 				</template>
 			</div>
@@ -286,7 +289,7 @@ useHead({
 			<div class="max-w-screen-lg mx-auto px-4">
 				<div class="text-center mb-10 md:mb-16">
 					<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-						Unsere Geschichte
+						{{ t("home.timeline.title") }}
 					</h2>
 					<div class="w-16 md:w-20 h-1 bg-primary mx-auto mt-3 md:mt-4 rounded-full"></div>
 				</div>
@@ -300,7 +303,7 @@ useHead({
 							size="sm"
 							@click="timeline.startEditing()"
 						>
-							Bearbeiten
+							{{ t("editor.edit") }}
 						</UButton>
 					</template>
 					<template v-else-if="timeline.isEditing.value">
@@ -311,7 +314,7 @@ useHead({
 							@click="timeline.cancelEditing()"
 							:disabled="timeline.isSaving.value"
 						>
-							Abbrechen
+							{{ t("editor.cancel") }}
 						</UButton>
 						<UButton
 							color="primary"
@@ -320,7 +323,7 @@ useHead({
 							:loading="timeline.isSaving.value"
 							@click="timeline.save()"
 						>
-							Speichern
+							{{ t("editor.save") }}
 						</UButton>
 					</template>
 				</div>
@@ -337,7 +340,7 @@ useHead({
 
 		<section class="space-y-8 md:space-y-12">
 			<div class="max-w-screen-xl mx-auto px-4">
-				<UiTitle subtitle="Impressionen" title="Die Schönheit von Giens" />
+				<UiTitle :subtitle="t('home.impressions.subtitle')" :title="t('home.impressions.title')" />
 			</div>
 			<UiSlides class="mb-8" />
 		</section>
@@ -345,7 +348,7 @@ useHead({
 		<!-- Organisatorisches Link Section -->
 		<section class="max-w-screen-xl mx-auto px-4 w-full">
 			<NuxtLink
-				to="/organisatorisches"
+				:to="localePath('/organisatorisches')"
 				class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 border border-primary/20 hover:border-primary/40 transition-all group"
 			>
 				<div class="flex items-center justify-between">
@@ -354,8 +357,8 @@ useHead({
 							<UIcon name="i-lucide-clipboard-list" class="w-6 h-6 text-primary" />
 						</div>
 						<div>
-							<h3 class="font-bold text-lg">Organisatorisches</h3>
-							<p class="text-stone-500 text-sm">Wichtige Informationen zur Résidence</p>
+							<h3 class="font-bold text-lg">{{ t("home.organisatorisches.title") }}</h3>
+							<p class="text-stone-500 text-sm">{{ t("home.organisatorisches.subtitle") }}</p>
 						</div>
 					</div>
 					<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />

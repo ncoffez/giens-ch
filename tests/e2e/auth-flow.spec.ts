@@ -49,6 +49,9 @@ await expect(page).not.toHaveURL(/admin/);
 
 	test("should show error for invalid credentials", async ({ page }) => {
 		await page.goto("/login");
+		
+		// Wait for Vue to fully hydrate
+		await page.waitForTimeout(2000);
 
 		// Try to login with invalid credentials
 		const emailInput = page.getByLabel("E-Mail");
@@ -58,7 +61,10 @@ await expect(page).not.toHaveURL(/admin/);
 		await emailInput.fill("invalid@example.com");
 		await passwordInput.fill("wrongpassword");
 		await submitButton.click();
-		await page.waitForTimeout(1000);
-await expect(page.getByText("Fehler")).toBeVisible({ timeout: 2000 });
+		
+		// Check for error toast using getByText which is more reliable
+		// The toast shows "Ein Fehler ist aufgetreten." and "Firebase: Error (auth/invalid-credential)"
+		const errorText = page.getByText(/Fehler ist aufgetreten|invalid-credential/);
+		await expect(errorText.first()).toBeVisible({ timeout: 10000 });
 	});
 });

@@ -3,6 +3,7 @@ import { watch } from 'vue';
 import type { AdminUser } from '../../../types';
 
 const toast = useToast();
+const localePath = useLocalePath();
 const { checkAdminAccess, getAuthHeaders, isCheckingAuth, authError } = useAdminAuth();
 
 const { data: users, status, refresh } = useAsyncData("admin-users-list", async () => {
@@ -166,7 +167,7 @@ const getItems = (row: AdminUser) => [
 		{
 			label: "Öffentliches Profil",
 			icon: "i-lucide-user-circle",
-			onSelect: () => navigateTo(`/profile/${row.uid}`)
+			onSelect: () => navigateTo(localePath(`/profile/${row.uid}`))
 		},
 		{
 			label: row.disabled ? "Konto aktivieren" : "Konto deaktivieren",

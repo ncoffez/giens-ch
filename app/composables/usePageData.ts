@@ -1,9 +1,10 @@
-import type { PageContent } from "../../types";
+import type { PageContent, LocalizedContent } from "../../types";
 
 export async function usePageData<T>(contentId: string, defaultData: T) {
 	const nuxtApp = useNuxtApp();
 	const { token } = useAuthReady();
 	const toast = useAppToast();
+	const { locale } = useI18n();
 
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
 	const isEditing = ref(false);
@@ -14,24 +15,48 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 	const { data: responseData, status, refresh, error } = await useFetch<PageContent>(`/api/content/${contentId}`, {
 		server: false,
 		lazy: true,
+		query: { locale },
 	});
+
+	function parseContent(content: string | LocalizedContent, translated?: { fr?: string }): T {
+		let contentStr: string;
+		
+		if (typeof content === "string") {
+			contentStr = locale.value === "fr" && translated?.fr 
+				? translated.fr 
+				: content;
+		} else if (typeof content === "object" && content !== null) {
+			contentStr = content[locale.value as "de" | "fr"] || content.de || "";
+		} else {
+			return JSON.parse(JSON.stringify(defaultData));
+		}
+		
+		try {
+			return JSON.parse(contentStr);
+		} catch {
+			return JSON.parse(JSON.stringify(defaultData));
+		}
+	}
 
 	watch(
 		responseData,
 		(newData) => {
-			if (newData?.content) {
-				try {
-					const parsed = JSON.parse(newData.content);
-					data.value = parsed;
-					originalData.value = JSON.parse(JSON.stringify(parsed));
-				} catch {
-					data.value = JSON.parse(JSON.stringify(defaultData));
-					originalData.value = JSON.parse(JSON.stringify(defaultData));
-				}
+			if (newData?.content !== undefined) {
+				const parsed = parseContent(newData.content, newData.translated);
+				data.value = parsed;
+				originalData.value = JSON.parse(JSON.stringify(parsed));
 			}
 		},
 		{ immediate: true },
 	);
+
+	watch(locale, () => {
+		if (responseData.value?.content !== undefined) {
+			const parsed = parseContent(responseData.value.content, responseData.value.translated);
+			data.value = parsed;
+			originalData.value = JSON.parse(JSON.stringify(parsed));
+		}
+	});
 
 	const startEditing = () => {
 		originalData.value = JSON.parse(JSON.stringify(data.value));

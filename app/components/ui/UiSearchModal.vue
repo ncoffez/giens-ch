@@ -3,13 +3,13 @@ import type { CommandPaletteItem } from "@nuxt/ui";
 
 const open = defineModel<boolean>({ default: false });
 
-const route = useRoute();
-const router = useRouter();
+const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
 const { canAccessHomes } = useFeatureFlags();
-const { loadArticles, searchArticles, searchOrganisatorischesHeadings, isLoading } = useSearchData();
+const { loadAllData, loadDocuments, searchAll, isLoading, canAccessDocuments } = useSearchData();
 
 const searchQuery = ref("");
+const hasLoaded = ref(false);
 
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
@@ -19,17 +19,22 @@ const staticPageItems = computed(() => {
 		{
 			label: "Home",
 			icon: "i-lucide-house",
-			to: "/",
+			to: localePath("/"),
 		},
 		{
 			label: "Organisatorisches",
 			icon: "i-lucide-clipboard-list",
-			to: "/organisatorisches",
+			to: localePath("/organisatorisches"),
 		},
 		{
 			label: "Anreise",
 			icon: "i-lucide-car",
-			to: "/travel",
+			to: localePath("/travel"),
+		},
+		{
+			label: "Über uns",
+			icon: "i-lucide-info",
+			to: localePath("/about"),
 		},
 	];
 
@@ -37,7 +42,7 @@ const staticPageItems = computed(() => {
 		items.push({
 			label: "Mein Haus",
 			icon: "i-lucide-building-2",
-			to: "/my-homes",
+			to: localePath("/my-homes"),
 		});
 	}
 
@@ -45,40 +50,55 @@ const staticPageItems = computed(() => {
 		items.push({
 			label: "Dokumente",
 			icon: "i-lucide-folder",
-			to: "/documents",
+			to: localePath("/documents"),
 		});
 	}
 
 	return items;
 });
 
-const organisatorischesItems = computed(() => {
+const searchResults = computed(() => {
 	const query = searchQuery.value.trim();
 	if (!query) return [];
-
-	const results = searchOrganisatorischesHeadings(query).slice(0, 5);
-	
-	return results.map(result => ({
-		label: result.heading,
-		icon: "i-lucide-clipboard-list",
-		to: `/organisatorisches#${result.id}`,
-		suffix: result.context + "...",
-	}));
+	return searchAll(query);
 });
 
-const articleItems = computed(() => {
-	const query = searchQuery.value.trim();
-	if (!query) return [];
+const headingItems = computed(() => {
+	return searchResults.value
+		.filter(r => r.type === "heading")
+		.slice(0, 5)
+		.map(result => ({
+			label: result.label,
+			icon: result.icon,
+			to: localePath(result.to),
+			suffix: result.context ? result.context + "..." : undefined,
+		}));
+});
 
-	const results = searchArticles(query).slice(0, 8);
+const featureItems = computed(() => {
+	return searchResults.value
+		.filter(r => r.type === "feature" || r.type === "timeline")
+		.slice(0, 5)
+		.map(result => ({
+			label: result.label,
+			icon: result.icon,
+			to: localePath(result.to),
+			suffix: result.context ? result.context + "..." : undefined,
+		}));
+});
+
+const documentItems = computed(() => {
+	if (!canAccessDocuments.value) return [];
 	
-	return results.map(article => ({
-		label: article.title,
-		icon: article.image ? undefined : "i-lucide-newspaper",
-		to: `/article/${article.id}`,
-		avatar: article.image ? { src: article.image, alt: article.title } : undefined,
-		suffix: article.intro?.substring(0, 50) + "...",
-	}));
+	return searchResults.value
+		.filter(r => r.type === "document")
+		.slice(0, 5)
+		.map(result => ({
+			label: result.label,
+			icon: result.icon,
+			to: localePath(result.to),
+			suffix: result.context,
+		}));
 });
 
 const groups = computed(() => {
@@ -92,19 +112,27 @@ const groups = computed(() => {
 		});
 	}
 
-	if (organisatorischesItems.value.length > 0) {
+	if (headingItems.value.length > 0) {
 		result.push({
-			id: "organisatorisches",
-			label: "Informationen",
-			items: organisatorischesItems.value,
+			id: "headings",
+			label: "Überschriften",
+			items: headingItems.value,
 		});
 	}
 
-	if (articleItems.value.length > 0) {
+	if (featureItems.value.length > 0) {
 		result.push({
-			id: "articles",
-			label: "Artikel",
-			items: articleItems.value,
+			id: "features",
+			label: "Informationen",
+			items: featureItems.value,
+		});
+	}
+
+	if (documentItems.value.length > 0) {
+		result.push({
+			id: "documents",
+			label: "Dokumente",
+			items: documentItems.value,
 		});
 	}
 
@@ -116,11 +144,17 @@ function onSelect() {
 	searchQuery.value = "";
 }
 
-watch(open, (isOpen) => {
-	if (isOpen) {
-		loadArticles();
+async function handleOpen(isOpen: boolean) {
+	if (isOpen && !hasLoaded.value) {
+		hasLoaded.value = true;
+		await loadAllData();
+		if (canAccessDocuments.value) {
+			await loadDocuments();
+		}
 	}
-});
+}
+
+watch(open, handleOpen);
 
 onMounted(() => {
 	const handleKeyDown = (e: KeyboardEvent) => {
@@ -151,7 +185,7 @@ onMounted(() => {
 			<UCommandPalette
 				v-model:search-term="searchQuery"
 				:groups="groups"
-				placeholder="Seiten, Artikel und Informationen durchsuchen..."
+				placeholder="Seiten, Überschriften und Dokumente durchsuchen..."
 				class="h-80"
 				close
 				:loading="isLoading"

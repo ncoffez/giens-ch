@@ -2,6 +2,8 @@
 import type { TimelineItem } from "@nuxt/ui";
 import type { StatItem, TimelineItem as AppTimelineItem } from "../../types";
 
+const { t } = useI18n();
+
 const defaultIntro = `<p>Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement für eine gepflegte und nachhaltige Siedlung. Jede und jeder bringt sich im Rahmen seiner Möglichkeiten ein und trägt so zum Wohl unserer Siedlung bei.</p>`;
 
 const defaultCommunity = `<p>Neben der jährlichen Eigentümerversammlung finden im Frühling und Herbst Arbeitswochen statt. Während dieser gemeinsamen Einsätze werden anfallende Arbeiten erledigt und Projekte zur kontinuierlichen Verschönerung der Siedlung umgesetzt.</p><p>Gleichzeitig bieten sie die Gelegenheit, den persönlichen Austausch zu fördern und den Zusammenhalt innerhalb der Gemeinschaft zu stärken. Es steht selbstverständlich jedem Eigentümer frei, zu entscheiden, ob er sein Haus vermieten möchte oder nicht.</p><p>In unserem gemeinschaftlichen Depot finden sich Fahrräder, Strandspielzeug und Kinderwagen, die von allen genutzt werden können. Für gemütliche Stunden steht eine umfangreiche Bibliothek mit Büchern auf Deutsch und Französisch bereit.</p>`;
@@ -57,15 +59,15 @@ const timelineItems = computed<TimelineItem[]>(() =>
 <template>
 	<div class="space-y-24 mb-20">
 		<UiHero
-			title="Über uns"
-			subtitle="Eine Gemeinschaft von 20 Eigentümern auf der Halbinsel Giens."
+			:title="t('hero.about.title')"
+			:subtitle="t('hero.about.subtitle')"
 			src="/giens/giens-aerial.webp"
 			alt="Luftaufnahme von Giens"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<!-- Introduction -->
 		<section class="max-w-screen-md mx-auto px-4 text-center">
-			<UiTitle subtitle="Unsere Philosophie" title="Miteinander Gestalten" />
+			<UiTitle :subtitle="t('about.philosophy.subtitle')" :title="t('about.philosophy.title')" />
 			
 			<div class="flex items-center justify-end gap-2 mt-4">
 				<template v-if="introContent.isAdmin.value && !introContent.isEditing.value">
@@ -76,7 +78,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						size="sm"
 						@click="introContent.startEditing()"
 					>
-						Bearbeiten
+						{{ t("editor.edit") }}
 					</UButton>
 				</template>
 				<template v-else-if="introContent.isEditing.value">
@@ -87,7 +89,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						@click="introContent.cancelEditing()"
 						:disabled="introContent.isSaving.value"
 					>
-						Abbrechen
+						{{ t("editor.cancel") }}
 					</UButton>
 					<UButton
 						color="primary"
@@ -96,7 +98,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						:loading="introContent.isSaving.value"
 						@click="introContent.save()"
 					>
-						Speichern
+						{{ t("editor.save") }}
 					</UButton>
 				</template>
 			</div>
@@ -118,7 +120,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 		<section
 			class="max-w-screen-lg mx-auto px-4 py-12 md:py-16 bg-stone-50 dark:bg-stone-900/50 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 shadow-sm">
 			<div class="text-center mb-10 md:mb-16">
-				<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Unsere Geschichte</h2>
+				<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{{ t("about.timeline.title") }}</h2>
 				<div class="w-16 md:w-20 h-1 bg-primary mx-auto mt-3 md:mt-4 rounded-full"></div>
 			</div>
 
@@ -131,7 +133,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						size="sm"
 						@click="timeline.startEditing()"
 					>
-						Bearbeiten
+						{{ t("editor.edit") }}
 					</UButton>
 				</template>
 				<template v-else-if="timeline.isEditing.value">
@@ -142,7 +144,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						@click="timeline.cancelEditing()"
 						:disabled="timeline.isSaving.value"
 					>
-						Abbrechen
+						{{ t("editor.cancel") }}
 					</UButton>
 					<UButton
 						color="primary"
@@ -151,7 +153,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 						:loading="timeline.isSaving.value"
 						@click="timeline.save()"
 					>
-						Speichern
+						{{ t("editor.save") }}
 					</UButton>
 				</template>
 			</div>
@@ -172,7 +174,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 				<img src="/giens/giensschaukeln.webp" alt="Schaukeln im Lotissement" class="w-full h-full object-cover" />
 			</div>
 			<div class="order-1 md:order-2 space-y-4 md:space-y-6">
-				<UiTitle subtitle="Gemeinschaft" title="Das Leben im Lotissement" />
+				<UiTitle :subtitle="t('about.community.subtitle')" :title="t('about.community.title')" />
 
 				<div class="flex items-center justify-end gap-2">
 					<template v-if="communityContent.isAdmin.value && !communityContent.isEditing.value">
@@ -183,7 +185,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							size="sm"
 							@click="communityContent.startEditing()"
 						>
-							Bearbeiten
+							{{ t("editor.edit") }}
 						</UButton>
 					</template>
 					<template v-else-if="communityContent.isEditing.value">
@@ -194,7 +196,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							@click="communityContent.cancelEditing()"
 							:disabled="communityContent.isSaving.value"
 						>
-							Abbrechen
+							{{ t("editor.cancel") }}
 						</UButton>
 						<UButton
 							color="primary"
@@ -203,7 +205,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							:loading="communityContent.isSaving.value"
 							@click="communityContent.save()"
 						>
-							Speichern
+							{{ t("editor.save") }}
 						</UButton>
 					</template>
 				</div>
@@ -229,7 +231,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							size="sm"
 							@click="stats.startEditing()"
 						>
-							Statistiken bearbeiten
+							{{ t("stats.editStats") }}
 						</UButton>
 					</template>
 					<template v-else-if="stats.isEditing.value">
@@ -240,7 +242,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							@click="stats.cancelEditing()"
 							:disabled="stats.isSaving.value"
 						>
-							Abbrechen
+							{{ t("editor.cancel") }}
 						</UButton>
 						<UButton
 							color="primary"
@@ -249,7 +251,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 							:loading="stats.isSaving.value"
 							@click="stats.save()"
 						>
-							Speichern
+							{{ t("editor.save") }}
 						</UButton>
 					</template>
 				</div>
@@ -275,7 +277,7 @@ const timelineItems = computed<TimelineItem[]>(() =>
 		<!-- Slides -->
 		<section class="py-12 overflow-hidden">
 			<div class="max-w-screen-xl mx-auto px-4 mb-4">
-				<UiTitle subtitle="Impressionen" title="Wohlfühlmomente" />
+				<UiTitle :subtitle="t('about.impressions.subtitle')" :title="t('about.impressions.title')" />
 			</div>
 			<UiSlides />
 		</section>

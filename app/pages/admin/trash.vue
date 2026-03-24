@@ -5,6 +5,7 @@ definePageMeta({ middleware: ["is-admin"] });
 
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
+const localePath = useLocalePath();
 
 const files = ref<GlobalFile[]>([]);
 const loading = ref(true);
@@ -103,7 +104,7 @@ onMounted(fetchData);
 					variant="soft"
 					color="neutral"
 					icon="i-lucide-arrow-left"
-					@click="navigateTo('/admin')"
+					@click="navigateTo(localePath('/admin'))"
 				>
 					Zurück zum Admin
 				</UButton>
