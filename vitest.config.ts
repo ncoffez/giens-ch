@@ -1,8 +1,19 @@
+import { fileURLToPath } from "node:url";
 import { defineVitestConfig } from "@nuxt/test-utils/config";
 
 process.env.FIREBASE_FRONTEND_KEY = JSON.stringify({ apiKey: "test" });
+process.env.FIREBASE_ADMIN_KEY = JSON.stringify({
+	project_id: "test-project",
+	client_email: "test@example.com",
+	private_key: "-----BEGIN PRIVATE KEY-----\\nTEST\\n-----END PRIVATE KEY-----\\n",
+});
 
 export default defineVitestConfig({
+	resolve: {
+		alias: {
+			"#app-manifest": fileURLToPath(new URL("./tests/mocks/app-manifest.ts", import.meta.url)),
+		},
+	},
 	define: {
 		"process.server": "false",
 		"process.client": "true",

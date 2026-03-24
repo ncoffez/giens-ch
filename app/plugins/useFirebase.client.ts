@@ -1,19 +1,16 @@
-import { getAuth, getIdTokenResult } from "firebase/auth";
-import { initializeApp } from "firebase/app";
+import { getAuth, getIdTokenResult, onAuthStateChanged } from "firebase/auth";
+import { getApps, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
-import { onAuthStateChanged } from "firebase/auth";
 import { useLocalStorage } from "@vueuse/core";
 
 export default defineNuxtPlugin((_nuxtApp) => {
 	const config = useRuntimeConfig();
-	let firebaseConfig = {};
-
-	firebaseConfig = JSON.parse(config.public.FIREBASE_FRONTEND_KEY);
-	const app = initializeApp(firebaseConfig);
+	const firebaseConfig = JSON.parse(config.public.FIREBASE_FRONTEND_KEY || "{}");
+	const app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
 
 	const db = getFirestore(app);
-	const auth = getAuth();
+	const auth = getAuth(app);
 	const functions = getFunctions(app, "europe-west6");
 
 	const user = useLocalStorage("user", null, {

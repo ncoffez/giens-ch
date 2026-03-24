@@ -4,6 +4,7 @@ import ContactCard from "~/components/homes/ContactCard.vue";
 import { getFileIcon } from "~/utils/fileTypes";
 
 const route = useRoute();
+const { t } = useI18n();
 const token = computed(() => route.params.token as string);
 
 const home = ref<Home | null>(null);
@@ -46,8 +47,12 @@ const copyPassword = async () => {
 	setTimeout(() => (passwordCopied.value = false), 2000);
 };
 
-const downloadFile = (url: string) => {
-	window.open(url, "_blank");
+const downloadFile = async (fileId: string) => {
+	const response = await $fetch<{ url: string }>(`/api/homes/share/${token.value}/files/download`, {
+		query: { fileId },
+	});
+
+	window.open(response.url, "_blank", "noopener,noreferrer");
 };
 
 const formatFileSize = (bytes: number) => {
@@ -91,7 +96,7 @@ onMounted(fetchHome);
 				<!-- Header -->
 				<div class="text-center">
 					<h1 class="text-3xl md:text-4xl font-black mb-2">{{ home.name }}</h1>
-					<p class="text-stone-500">Willkommen!</p>
+					<p class="text-stone-500">{{ t("share.welcome") }}</p>
 				</div>
 
 				<!-- Photos -->
@@ -211,7 +216,7 @@ onMounted(fetchHome);
 						<button
 							v-for="file in home.files"
 							:key="file.id"
-							@click="downloadFile(file.url)"
+							@click="downloadFile(file.id)"
 							class="w-full flex items-center gap-4 p-4 rounded-xl border border-stone-100 dark:border-stone-700 hover:border-primary hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all text-left"
 						>
 							<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg">

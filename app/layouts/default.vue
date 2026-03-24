@@ -198,7 +198,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 		},
 	];
 
-	if (import.meta.client && (isOwner.value || isReader.value)) {
+	if (import.meta.client && (isOwner.value || isReader.value || isPublisher.value)) {
 		items.push({
 			label: t("nav.documents"),
 			icon: "i-lucide-folder",
@@ -227,12 +227,15 @@ const userItems = computed(() => {
 			to: localePath("/profile"),
 			icon: "i-lucide-user",
 		},
-		{
+	];
+
+	if (import.meta.client && canAccessHomes.value) {
+		items.push({
 			label: t("nav.myHomes"),
 			to: localePath("/my-homes"),
 			icon: "i-lucide-home",
-		}
-	];
+		});
+	}
 
 	if (import.meta.client && isAdmin.value) {
 		items.push({

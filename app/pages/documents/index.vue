@@ -57,6 +57,10 @@ const galleryOpen = ref(false);
 const galleryIndex = ref(0);
 const videoOpen = ref(false);
 const currentVideo = ref<GlobalFile | null>(null);
+const highlightedFileId = computed(() => {
+	const fileId = route.query.fileId;
+	return typeof fileId === "string" ? fileId : "";
+});
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -1144,7 +1148,12 @@ watch(() => route.query.folder, (newFolderId) => {
 								v-for="file in sortedFiles"
 								:key="file.id"
 								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
-								:class="isFileSelected(file) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
+								:class="[
+									isFileSelected(file)
+										? 'border-primary ring-2 ring-primary/20'
+										: 'border-stone-200 dark:border-stone-700 hover:border-primary',
+									highlightedFileId === file.id ? 'ring-2 ring-primary border-primary' : ''
+								]"
 							>
 								<button
 									class="absolute top-2 left-2 w-10 h-10 flex items-center justify-center z-10"
@@ -1277,7 +1286,9 @@ watch(() => route.query.folder, (newFolderId) => {
 											v-for="file in sortedFiles"
 											:key="file.id"
 											class="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
-											:class="{ 'bg-primary-50 dark:bg-primary-900/20': isFileSelected(file) }"
+											:class="{
+												'bg-primary-50 dark:bg-primary-900/20': isFileSelected(file) || highlightedFileId === file.id
+											}"
 										>
 											<td class="py-3 px-2">
 												<button 

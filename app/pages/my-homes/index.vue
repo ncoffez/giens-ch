@@ -4,7 +4,6 @@ definePageMeta({ middleware: ["is-logged-in"] });
 import type { Home } from "~/types";
 
 const { waitForAuth, token } = useAuthReady();
-const toast = useToast();
 const localePath = useLocalePath();
 
 const homes = ref<Home[]>([]);
@@ -16,20 +15,18 @@ const fetchHomes = async () => {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
-		console.log("[my-homes] Fetching homes...");
 
 		homes.value = await $fetch("/api/my-homes", {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
-
-		console.log("[my-homes] Fetched", homes.value.length, "homes");
 	} catch (e: unknown) {
-		console.error("[my-homes] Error fetching homes:", e);
 		error.value = getFetchError(e) || "Fehler beim Laden";
 	} finally {
 		loading.value = false;
 	}
 };
+
+const getHomeEditPath = (homeId: string) => localePath(`/homes/${homeId}/edit`);
 
 onMounted(fetchHomes);
 </script>
@@ -74,12 +71,12 @@ onMounted(fetchHomes);
 			</div>
 
 			<div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-				<NuxtLink
-					v-for="home in homes"
-					:key="home.id"
-					:to="`/homes/${home.id}/edit`"
-					class="group bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6 hover:border-primary hover:shadow-lg transition-all"
-				>
+					<NuxtLink
+						v-for="home in homes"
+						:key="home.id"
+						:to="getHomeEditPath(home.id)"
+						class="group bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6 hover:border-primary hover:shadow-lg transition-all"
+					>
 					<div class="flex items-start justify-between mb-4">
 						<div class="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
 							<UIcon name="i-lucide-home" class="w-6 h-6 text-primary" />

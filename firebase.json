@@ -62,7 +62,6 @@
   },
   "extensions": {
     "storage-resize-images": "firebase/storage-resize-images@0.3.1",
-    "firestore-translate-text": "firebase/firestore-translate-text@0.1.27",
-    "firestore-translate-text-5e1c": "firebase/firestore-translate-text@0.1.27"
+    "firestore-translate-text": "firebase/firestore-translate-text@0.1.27"
   }
 }

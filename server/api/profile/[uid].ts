@@ -25,16 +25,9 @@ export default defineEventHandler(async (event) => {
 		// Priority 1: Check Firestore 'users' collection for persistent profile data
 		const userDoc = await db.collection("users").doc(uid).get();
 		const firestoreData = userDoc.exists ? userDoc.data() : null;
-		
-		if (firestoreData) {
-			console.log(`[Profile API] Firestore data found for ${uid}:`, JSON.stringify(firestoreData));
-		} else {
-			console.log(`[Profile API] No Firestore document for ${uid}`);
-		}
 
 		// photoURL logic: Firestore > Auth
 		const finalPhotoURL = firestoreData?.photoURL || user.photoURL;
-		console.log(`[Profile API] Final photoURL for ${uid}: ${finalPhotoURL}`);
 
 		userData = {
 			displayName: firestoreData?.displayName || user.displayName || "Unbekannter Bewohner",
@@ -78,7 +71,6 @@ export default defineEventHandler(async (event) => {
 	}
 
 	try {
-		console.log(`[Profile API] Fetching articles for UID: ${uid} (Private: ${canAccessPrivate})`);
 		const articlesSnapshot = await db.collection("articles")
 			.where("authorUid", "==", uid)
 			.limit(100)
@@ -121,8 +113,6 @@ export default defineEventHandler(async (event) => {
 			return dateB - dateA;
 		});
 
-		console.log(`[Profile API] Returning ${articles.length} articles for: ${userData.displayName}`);
-
 		return {
 			...userData,
 			articles: articles.slice(0, 20),
@@ -130,7 +120,6 @@ export default defineEventHandler(async (event) => {
 			isAdmin
 		};
 	} catch (e: unknown) {
-		console.error("Profile API Error:", e);
 		const errorMessage = e instanceof Error ? e.message : "Unknown error";
 		throw createError({ statusCode: 500, message: "Error fetching user articles: " + errorMessage });
 	}

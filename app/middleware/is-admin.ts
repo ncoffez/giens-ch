@@ -1,4 +1,5 @@
 import type { MiddlewareNuxtApp } from "../../types/nuxt";
+import { waitForAuthInitialization } from "../composables/useAuthReady";
 
 export const isAdminLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $isAdmin } = nuxtApp;
@@ -11,18 +12,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	if (import.meta.server) return;
 
 	const nuxtApp = useNuxtApp();
-
-	// Wait for auth to initialize
-	if (!nuxtApp.$authInitialized.value) {
-		await new Promise((resolve) => {
-			const unwatch = watch(nuxtApp.$authInitialized, (val) => {
-				if (val) {
-					unwatch();
-					resolve(true);
-				}
-			});
-		});
-	}
+	await waitForAuthInitialization(nuxtApp.$authInitialized);
 
 	return isAdminLogic(nuxtApp);
 });

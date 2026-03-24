@@ -1,3 +1,5 @@
+import { useLocalStorage } from "@vueuse/core";
+
 interface SearchResult {
 	id: string;
 	label: string;
@@ -5,6 +7,9 @@ interface SearchResult {
 	to: string;
 	icon?: string;
 	type: "page" | "heading" | "feature" | "timeline" | "document";
+	usageKey: string;
+	keywords?: string[];
+	score?: number;
 }
 
 interface StoredHeading {
@@ -33,6 +38,18 @@ interface StoredDocument {
 	name: string;
 	type: string;
 	description?: string;
+	context?: string;
+	to: string;
+	usageKey: string;
+	icon?: string;
+}
+
+interface SearchableGlobalDocument {
+	id: string;
+	name: string;
+	type: string;
+	folderId: string | null;
+	folderPath?: string;
 }
 
 const headingsCache = ref<StoredHeading[]>([]);
@@ -42,6 +59,7 @@ const documentsCache = ref<StoredDocument[]>([]);
 const isLoading = ref(false);
 const isLoaded = ref(false);
 const loadedLocale = ref<string | null>(null);
+const searchUsage = useLocalStorage<Record<string, number>>("search-usage", {});
 
 function slugify(text: string): string {
 	return text
@@ -81,11 +99,11 @@ function stripHtml(html: string): string {
 
 function extractHeadingsFromHtml(html: string, page: string, pagePath: string): StoredHeading[] {
 	if (!html) return [];
-	
+
 	const headings: StoredHeading[] = [];
 	const headingRegex = /<h[1-4][^>]*>(.*?)<\/h[1-4]>/gi;
 	let match;
-	
+
 	while ((match = headingRegex.exec(html)) !== null) {
 		const headingText = stripHtml(match[1] || "");
 		if (headingText && headingText.length > 2) {
@@ -94,24 +112,34 @@ function extractHeadingsFromHtml(html: string, page: string, pagePath: string): 
 			headings.push({
 				id: slugify(headingText),
 				text: headingText,
-				context: context,
-				page: page,
-				pagePath: pagePath,
+				context,
+				page,
+				pagePath,
 			});
 		}
 	}
-	
+
 	return headings;
 }
 
 export function useSearchData() {
 	const nuxtApp = useNuxtApp();
 	const { locale, t } = useI18n();
-	const localePath = useLocalePath();
-	
+
 	const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
 	const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
-	const canAccessDocuments = computed(() => isOwner.value || isReader.value);
+	const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher : false);
+	const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
+	const canAccessDocuments = computed(() => isOwner.value || isReader.value || isPublisher.value || isAdmin.value);
+	const canAccessOwnerDocuments = computed(() => isOwner.value || isAdmin.value);
+
+	const buildGlobalDocumentRoute = (folderId: string | null, fileId: string) => {
+		const params = new URLSearchParams({ fileId });
+		if (folderId) {
+			params.set("folder", folderId);
+		}
+		return `/documents?${params.toString()}`;
+	};
 
 	watch(locale, (newLocale) => {
 		if (loadedLocale.value && loadedLocale.value !== newLocale) {
@@ -131,7 +159,6 @@ export function useSearchData() {
 			const allHeadings: StoredHeading[] = [];
 			const allFeatures: StoredFeature[] = [];
 			const allTimeline: StoredTimeline[] = [];
-
 			const currentLocale = locale.value;
 
 			const [
@@ -176,47 +203,36 @@ export function useSearchData() {
 			if (orgData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(orgData.content, organisatorischesName, "/organisatorisches"));
 			}
-
 			if (homeMiteinanderData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(homeMiteinanderData.content, homeName, "/"));
 			}
-
 			if (aboutIntroData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(aboutIntroData.content, aboutName, "/about"));
 			}
-
 			if (aboutCommunityData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(aboutCommunityData.content, aboutName, "/about"));
 			}
-
 			if (travelLageData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelLageData.content, travelName, "/travel"));
 			}
-
 			if (travelAutoData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelAutoData.content, travelName, "/travel#mit-dem-auto"));
 			}
-
 			if (travelZugData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelZugData.content, travelName, "/travel#mit-dem-zug"));
 			}
-
 			if (travelFlugzeugData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelFlugzeugData.content, travelName, "/travel#mit-dem-flugzeug"));
 			}
-
 			if (travelFreizeitData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelFreizeitData.content, travelName, "/travel#freizeit"));
 			}
-
 			if (travelMaerkteData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelMaerkteData.content, travelName, "/travel#maerkte"));
 			}
-
 			if (travelEinkaufData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelEinkaufData.content, travelName, "/travel#einkauf"));
 			}
-
 			if (travelAusfluegeData?.content) {
 				allHeadings.push(...extractHeadingsFromHtml(travelAusfluegeData.content, travelName, "/travel#ausfluege"));
 			}
@@ -225,53 +241,56 @@ export function useSearchData() {
 				try {
 					const features = JSON.parse(homeFeaturesData.content);
 					if (Array.isArray(features)) {
-						features.forEach((f: any, i: number) => {
-							if (f.title) {
+						features.forEach((feature: any, index: number) => {
+							if (feature.title) {
 								allFeatures.push({
-									id: `feature-${i}`,
-									title: f.title,
-									description: f.description || "",
+									id: `feature-${index}`,
+									title: feature.title,
+									description: feature.description || "",
 								});
 							}
 						});
 					}
-				} catch {}
+				} catch {
+				}
 			}
 
 			if (homeTimelineData?.content) {
 				try {
 					const timeline = JSON.parse(homeTimelineData.content);
 					if (Array.isArray(timeline)) {
-						timeline.forEach((t: any, i: number) => {
-							if (t.title) {
+						timeline.forEach((entry: any, index: number) => {
+							if (entry.title) {
 								allTimeline.push({
-									id: `timeline-${i}`,
-									title: t.title,
-									description: t.description || "",
-									date: t.date || "",
+									id: `timeline-${index}`,
+									title: entry.title,
+									description: entry.description || "",
+									date: entry.date || "",
 								});
 							}
 						});
 					}
-				} catch {}
+				} catch {
+				}
 			}
 
 			if (aboutTimelineData?.content) {
 				try {
 					const timeline = JSON.parse(aboutTimelineData.content);
 					if (Array.isArray(timeline)) {
-						timeline.forEach((t: any, i: number) => {
-							if (t.title) {
+						timeline.forEach((entry: any, index: number) => {
+							if (entry.title) {
 								allTimeline.push({
-									id: `about-timeline-${i}`,
-									title: t.title,
-									description: t.description || "",
-									date: t.date || "",
+									id: `about-timeline-${index}`,
+									title: entry.title,
+									description: entry.description || "",
+									date: entry.date || "",
 								});
 							}
 						});
 					}
-				} catch {}
+				} catch {
+				}
 			}
 
 			headingsCache.value = allHeadings;
@@ -279,8 +298,6 @@ export function useSearchData() {
 			timelineCache.value = allTimeline;
 			loadedLocale.value = currentLocale;
 			isLoaded.value = true;
-		} catch (error) {
-			console.error("Failed to load search data:", error);
 		} finally {
 			isLoading.value = false;
 		}
@@ -295,25 +312,79 @@ export function useSearchData() {
 			if (!user) return;
 
 			const idToken = await user.getIdToken();
-			const response = await $fetch<{ files: any[] }>("/api/files", {
-				method: "POST",
-				body: { limit: 500 },
-				headers: { Authorization: `Bearer ${idToken}` },
-			});
+			const [globalResponse, ownerResponse] = await Promise.all([
+				$fetch<{ files: SearchableGlobalDocument[] }>("/api/files/search", {
+					headers: { Authorization: `Bearer ${idToken}` },
+				}),
+				canAccessOwnerDocuments.value
+					? $fetch<{ documents: any[] }>("/api/owner/documents", {
+						headers: { Authorization: `Bearer ${idToken}` },
+					})
+					: Promise.resolve({ documents: [] }),
+			]);
 
-			if (response?.files) {
-				documentsCache.value = response.files
-					.filter((f: any) => !f.deletedAt)
-					.map((f: any) => ({
-						id: f.id,
-						name: f.name,
-						type: f.type,
-						description: f.name,
-					}));
-			}
-		} catch (error) {
-			console.error("Failed to load documents:", error);
+			const globalDocuments = (globalResponse?.files || [])
+				.filter((file: any) => !file.deletedAt)
+				.map((file: any) => ({
+					id: `global-${file.id}`,
+					name: file.name,
+					type: file.type,
+					description: file.name,
+					context: file.folderPath
+						? `${t("search.documentTypes.global")} · ${file.folderPath}`
+						: t("search.documentTypes.global"),
+					to: buildGlobalDocumentRoute(file.folderId, file.id),
+					usageKey: `global-document:${file.id}`,
+					icon: file.type?.startsWith("image/") ? "i-lucide-image" :
+						file.type?.includes("pdf") ? "i-lucide-file-text" :
+						"i-lucide-file",
+				}));
+
+			const ownerDocuments = (ownerResponse?.documents || []).map((document: any) => ({
+				id: `owner-${document.id}`,
+				name: document.name,
+				type: document.type,
+				description: document.name,
+				context: `${t("search.documentTypes.owner")} · ${document.homeName}`,
+				to: `/owner/documents?fileId=${document.id}`,
+				usageKey: `owner-document:${document.homeId}:${document.id}`,
+				icon: document.type?.startsWith("image/") ? "i-lucide-image" :
+					document.type?.includes("pdf") ? "i-lucide-file-text" :
+					"i-lucide-file",
+			}));
+
+			documentsCache.value = [...ownerDocuments, ...globalDocuments];
+		} catch {
 		}
+	};
+
+	const getUsageCount = (usageKey: string) => searchUsage.value?.[usageKey] || 0;
+
+	const scoreText = (query: string, values: string[]) => {
+		const normalizedQuery = normalizeText(query).trim();
+		const normalizedValues = values.map((value) => normalizeText(value || ""));
+		let score = 0;
+
+		for (const value of normalizedValues) {
+			if (!value) continue;
+			if (value === normalizedQuery) score += 120;
+			if (value.startsWith(normalizedQuery)) score += 70;
+			if (value.includes(normalizedQuery)) score += 35;
+		}
+
+		return score;
+	};
+
+	const sortResults = (results: SearchResult[]) => {
+		return [...results].sort((a, b) => {
+			const scoreDelta = (b.score || 0) - (a.score || 0);
+			if (scoreDelta !== 0) return scoreDelta;
+
+			const usageDelta = getUsageCount(b.usageKey) - getUsageCount(a.usageKey);
+			if (usageDelta !== 0) return usageDelta;
+
+			return a.label.localeCompare(b.label, locale.value === "fr" ? "fr" : "de");
+		});
 	};
 
 	const searchAll = (query: string): SearchResult[] => {
@@ -322,69 +393,166 @@ export function useSearchData() {
 		const searchTerms = normalizeText(query).trim().split(/\s+/);
 		const results: SearchResult[] = [];
 
-		const matchesQuery = (text: string) => 
-			searchTerms.every(term => normalizeText(text).includes(term));
+		const matchesQuery = (text: string) => searchTerms.every((term) => normalizeText(text).includes(term));
 
-		for (const h of headingsCache.value) {
-			if (matchesQuery(h.text) || matchesQuery(h.context)) {
+		for (const heading of headingsCache.value) {
+			if (matchesQuery(heading.text) || matchesQuery(heading.context)) {
 				results.push({
-					id: h.id,
-					label: h.text,
-					context: h.context.substring(0, 80),
-					to: `${h.pagePath}#${h.id}`,
+					id: heading.id,
+					label: heading.text,
+					context: heading.context.substring(0, 80),
+					to: `${heading.pagePath}#${heading.id}`,
 					icon: "i-lucide-heading",
 					type: "heading",
+					usageKey: `heading:${heading.pagePath}:${heading.id}`,
 				});
 			}
 		}
 
-		for (const f of featuresCache.value) {
-			if (matchesQuery(f.title) || matchesQuery(f.description)) {
+		for (const feature of featuresCache.value) {
+			if (matchesQuery(feature.title) || matchesQuery(feature.description)) {
 				results.push({
-					id: f.id,
-					label: f.title,
-					context: f.description.substring(0, 80),
+					id: feature.id,
+					label: feature.title,
+					context: feature.description.substring(0, 80),
 					to: "/#features",
 					icon: "i-lucide-star",
 					type: "feature",
+					usageKey: `feature:${feature.id}`,
 				});
 			}
 		}
 
-		for (const t of timelineCache.value) {
-			if (matchesQuery(t.title) || matchesQuery(t.description) || matchesQuery(t.date)) {
+		for (const timeline of timelineCache.value) {
+			if (matchesQuery(timeline.title) || matchesQuery(timeline.description) || matchesQuery(timeline.date)) {
 				results.push({
-					id: t.id,
-					label: t.title,
-					context: t.description.substring(0, 80),
+					id: timeline.id,
+					label: timeline.title,
+					context: timeline.description.substring(0, 80),
 					to: "/#geschichte",
 					icon: "i-lucide-clock",
 					type: "timeline",
+					usageKey: `timeline:${timeline.id}`,
 				});
 			}
 		}
 
 		if (canAccessDocuments.value) {
-			for (const d of documentsCache.value) {
-				if (matchesQuery(d.name)) {
-					const typeStr = d.type || "";
-					const typeParts = typeStr.split("/");
-					const typeLabel = typeParts[1] ? typeParts[1].toUpperCase() : "Datei";
+			for (const document of documentsCache.value) {
+				if (matchesQuery(`${document.name} ${document.description || ""} ${document.context || ""}`)) {
 					results.push({
-						id: d.id,
-						label: d.name,
-						context: typeLabel,
-						to: "/documents",
-						icon: typeStr.startsWith("image/") ? "i-lucide-image" : 
-							  typeStr.includes("pdf") ? "i-lucide-file-text" : 
-							  "i-lucide-file",
+						id: document.id,
+						label: document.name,
+						context: document.context,
+						to: document.to,
+						icon: document.icon,
 						type: "document",
+						usageKey: document.usageKey,
 					});
 				}
 			}
 		}
 
-		return results.slice(0, 20);
+		return sortResults(results.map((result) => ({
+			...result,
+			score:
+				scoreText(query, [result.label, result.context || "", ...(result.keywords || [])]) +
+				searchTerms.length * 5 +
+				getUsageCount(result.usageKey) * 10,
+		}))).slice(0, 20);
+	};
+
+	const getRecommendations = (): SearchResult[] => {
+		const pageResults: SearchResult[] = [
+			{
+				id: "page-home",
+				label: t("nav.home"),
+				context: t("hero.welcome.subtitle"),
+				to: "/",
+				icon: "i-lucide-house",
+				type: "page",
+				usageKey: "page:/",
+			},
+			{
+				id: "page-organisatorisches",
+				label: t("nav.organisatorisches"),
+				context: t("hero.organisatorisches.subtitle"),
+				to: "/organisatorisches",
+				icon: "i-lucide-clipboard-list",
+				type: "page",
+				usageKey: "page:/organisatorisches",
+			},
+			{
+				id: "page-travel",
+				label: t("nav.travel"),
+				context: t("hero.travel.subtitle"),
+				to: "/travel",
+				icon: "i-lucide-car",
+				type: "page",
+				usageKey: "page:/travel",
+			},
+			{
+				id: "page-about",
+				label: t("nav.about"),
+				context: t("hero.about.subtitle"),
+				to: "/about",
+				icon: "i-lucide-info",
+				type: "page",
+				usageKey: "page:/about",
+			},
+		];
+
+		if (canAccessDocuments.value) {
+			pageResults.push({
+				id: "page-documents",
+				label: t("nav.documents"),
+				context: t("search.recommendations.documents"),
+				to: "/documents",
+				icon: "i-lucide-folder",
+				type: "page",
+				usageKey: "page:/documents",
+			});
+		}
+
+		if (canAccessOwnerDocuments.value) {
+			pageResults.push({
+				id: "page-owner-documents",
+				label: t("ownerDocuments.title"),
+				context: t("ownerDocuments.subtitle"),
+				to: "/owner/documents",
+				icon: "i-lucide-files",
+				type: "page",
+				usageKey: "page:/owner/documents",
+			});
+		}
+
+		const documentRecommendations: SearchResult[] = [...documentsCache.value]
+			.sort((a, b) => getUsageCount(b.usageKey) - getUsageCount(a.usageKey))
+			.slice(0, 8)
+			.map((document) => ({
+				id: document.id,
+				label: document.name,
+				context: document.context,
+				to: document.to,
+				icon: document.icon,
+				type: "document",
+				usageKey: document.usageKey,
+				score: 10 + getUsageCount(document.usageKey) * 10,
+			}));
+
+		const recommendedPages = pageResults.map((result) => ({
+			...result,
+			score: 20 + getUsageCount(result.usageKey) * 10,
+		}));
+
+		return sortResults([...recommendedPages, ...documentRecommendations]).slice(0, 10);
+	};
+
+	const recordSelection = (result: SearchResult) => {
+		searchUsage.value = {
+			...searchUsage.value,
+			[result.usageKey]: getUsageCount(result.usageKey) + 1,
+		};
 	};
 
 	return {
@@ -393,6 +561,9 @@ export function useSearchData() {
 		loadAllData,
 		loadDocuments,
 		searchAll,
+		getRecommendations,
+		recordSelection,
 		canAccessDocuments,
+		canAccessOwnerDocuments,
 	};
 }
