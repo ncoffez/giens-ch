@@ -1,4 +1,5 @@
 import type { MiddlewareNuxtApp } from "../../types/nuxt";
+import { waitForAuthInitialization } from "../composables/useAuthReady";
 
 export const isNotLoggedInLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $currentUser } = nuxtApp;
@@ -10,17 +11,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
 	if (import.meta.server) return;
 
 	const nuxtApp = useNuxtApp();
-
-	if (!nuxtApp.$authInitialized.value) {
-		await new Promise((resolve) => {
-			const unwatch = watch(nuxtApp.$authInitialized, (val) => {
-				if (val) {
-					unwatch();
-					resolve(true);
-				}
-			});
-		});
-	}
+	await waitForAuthInitialization(nuxtApp.$authInitialized);
 
 	return isNotLoggedInLogic(nuxtApp);
 });

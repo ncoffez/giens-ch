@@ -14,6 +14,7 @@ const mockNuxtApp = {
   $isOwner: ref(false),
   $isPublisher: ref(false),
   $currentUser: ref(null as any),
+  $authInitialized: ref(true),
 };
 
 describe("Middleware Logic (Honest Integration)", () => {
@@ -48,12 +49,12 @@ describe("Middleware Logic (Honest Integration)", () => {
     expect(await isPublisherLogic(mockNuxtApp)).toBe('/');
   });
 
-  it("isLoggedInLogic: allows logged in, redirects not logged in", () => {
+  it("isLoggedInLogic: allows logged in, redirects not logged in", async () => {
     mockNuxtApp.$currentUser.value = { uid: 'test' };
-    expect(isLoggedInLogic(mockNuxtApp)).toBe(true);
+    expect(await isLoggedInLogic(mockNuxtApp)).toBe(true);
 
     mockNuxtApp.$currentUser.value = null;
-    expect(isLoggedInLogic(mockNuxtApp)).toBe('/login');
+    expect(await isLoggedInLogic(mockNuxtApp)).toBe('/login');
   });
 
   it("isNotLoggedInLogic: allows not logged in, redirects logged in", async () => {

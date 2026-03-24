@@ -111,20 +111,20 @@
 				icon="i-lucide-file-up"
 				@click="triggerFileUpload"
 				:loading="uploading"
-				label="Upload" />
+				:label="t('editor.upload')" />
 
 			<UButton
 				color="neutral"
 				variant="ghost"
 				icon="i-lucide-letter-text"
 				@click="loadDemo"
-				title="Demo text" />
+				:title="t('editor.demoText')" />
 		</div>
 		<div
 			v-if="uploading"
 			class="px-4 py-2 bg-stone-50 dark:bg-zinc-900 border-b border-gray-200">
 			<UProgress :value="uploadProgress" color="primary" size="sm" />
-			<p class="text-xs text-stone-500 mt-1">Datei wird hochgeladen...</p>
+			<p class="text-xs text-stone-500 mt-1">{{ t("editor.uploading") }}</p>
 		</div>
 		
 		<!-- Drag overlay -->
@@ -134,7 +134,7 @@
 		>
 			<div class="text-center">
 				<UIcon name="i-lucide-file-up" class="w-12 h-12 text-primary mx-auto mb-2" />
-				<p class="text-primary font-medium">Datei hier ablegen</p>
+				<p class="text-primary font-medium">{{ t("editor.dropFile") }}</p>
 			</div>
 		</div>
 		
@@ -156,7 +156,7 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import { watchDeep } from "@vueuse/core";
 
-const model = defineModel({ default: "<p>This is the default content.</p>" });
+const model = defineModel({ default: "" });
 const fileInput = ref<HTMLInputElement | null>(null);
 const editor = ref<Editor>();
 const uploading = ref(false);
@@ -165,6 +165,7 @@ const isDragging = ref(false);
 
 const { token } = useAuthReady();
 const toast = useAppToast();
+const { t } = useI18n();
 
 const triggerFileUpload = () => {
 	fileInput.value?.click();
@@ -212,8 +213,8 @@ const processFile = async (file: File) => {
 		uploadProgress.value = 100;
 	} catch (e: unknown) {
 		console.error("Upload failed", e);
-		const message = getFetchError(e) || "Unbekannter Fehler";
-		toast.error("Upload fehlgeschlagen", message);
+		const message = getFetchError(e) || t("editor.unknownError");
+		toast.error(t("editor.uploadFailed"), message);
 	} finally {
 		setTimeout(() => {
 			uploading.value = false;
@@ -287,7 +288,7 @@ onMounted(() => {
 				multicolor: true,
 			}),
 			Placeholder.configure({
-				placeholder: "Write something...",
+				placeholder: t("editor.placeholder"),
 			}),
 			Image,
 			TaskList,

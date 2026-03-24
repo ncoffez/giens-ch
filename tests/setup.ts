@@ -16,6 +16,11 @@ if (typeof window !== "undefined") {
 }
 
 process.env.FIREBASE_FRONTEND_KEY = JSON.stringify({ apiKey: "test" });
+process.env.FIREBASE_ADMIN_KEY = JSON.stringify({
+	project_id: "test-project",
+	client_email: "test@example.com",
+	private_key: "-----BEGIN PRIVATE KEY-----\\nTEST\\n-----END PRIVATE KEY-----\\n",
+});
 
 // Global mock state
 (global as any).__FIREBASE_MOCK__ = {
@@ -120,6 +125,7 @@ vi.mock("@nuxtjs/i18n", () => ({
 
 // Mock Firebase (Client-side)
 vi.mock("firebase/app", () => ({
+	getApps: vi.fn(() => []),
 	initializeApp: vi.fn(() => ({})),
 }));
 
@@ -143,11 +149,15 @@ vi.mock("firebase/functions", () => ({
 // Mock Firebase Admin (Server-side)
 vi.mock("firebase-admin/app", () => ({
 	initializeApp: vi.fn(),
-	getApp: vi.fn(),
+	getApp: vi.fn(() => ({})),
+	getApps: vi.fn(() => []),
 	cert: vi.fn(),
 }));
 
 vi.mock("firebase-admin/firestore", () => ({
+	FieldValue: {
+		increment: vi.fn((value: number) => ({ __increment__: value })),
+	},
 	getFirestore: vi.fn(() => ({
 		collection: vi.fn(() => ({
 			get: vi.fn(() => Promise.resolve({
@@ -179,6 +189,17 @@ vi.mock("firebase-admin/firestore", () => ({
 					})
 				}))
 			}))
+		})),
+	})),
+}));
+
+vi.mock("firebase-admin/storage", () => ({
+	getStorage: vi.fn(() => ({
+		bucket: vi.fn(() => ({
+			file: vi.fn(() => ({
+				exists: vi.fn(() => Promise.resolve([false])),
+				getSignedUrl: vi.fn(() => Promise.resolve(["https://example.com/file"])),
+			})),
 		})),
 	})),
 }));

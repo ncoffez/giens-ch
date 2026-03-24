@@ -180,6 +180,13 @@
     "edit": "Modifier",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "upload": "Téléverser",
+    "uploading": "Téléversement du fichier...",
+    "dropFile": "Déposez le fichier ici",
+    "demoText": "Texte de démonstration",
+    "placeholder": "Écrivez quelque chose...",
+    "uploadFailed": "Échec du téléversement",
+    "unknownError": "Erreur inconnue",
     "saving": "Enregistrement...",
     "saved": "Enregistré",
     "saveSuccess": "Le contenu a été enregistré avec succès",
@@ -257,6 +264,37 @@
     "warnings": {
       "emailNotVerified": "Veuillez vérifier votre adresse e-mail."
     }
+  },
+  "search": {
+    "title": "Rechercher",
+    "placeholder": "Rechercher des pages, contenus et documents...",
+    "sections": {
+      "recommendations": "Recommandé",
+      "pages": "Accès rapide",
+      "headings": "Titres",
+      "information": "Informations",
+      "documents": "Documents"
+    },
+    "recommendations": {
+      "documents": "Documents et contenus fréquemment utilisés"
+    },
+    "documentTypes": {
+      "global": "Documents partagés",
+      "owner": "Document propriétaire"
+    }
+  },
+  "ownerDocuments": {
+    "title": "Documents des propriétaires",
+    "subtitle": "Tous les fichiers de vos maisons au même endroit.",
+    "emptyTitle": "Aucun document pour le moment",
+    "emptyText": "Téléversez des fichiers dans l’une de vos maisons pour les voir ici.",
+    "loadError": "Impossible de charger les documents.",
+    "downloadError": "Impossible d’ouvrir le document.",
+    "manageHome": "Gérer la maison",
+    "fileCount": "{count} documents"
+  },
+  "share": {
+    "welcome": "Bienvenue !"
   },
   "footer": {
     "copyright": "© {year} Lotissement Beausoleil, Giens"

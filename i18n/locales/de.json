@@ -180,6 +180,13 @@
     "edit": "Bearbeiten",
     "save": "Speichern",
     "cancel": "Abbrechen",
+    "upload": "Upload",
+    "uploading": "Datei wird hochgeladen...",
+    "dropFile": "Datei hier ablegen",
+    "demoText": "Demotext",
+    "placeholder": "Schreiben Sie etwas...",
+    "uploadFailed": "Upload fehlgeschlagen",
+    "unknownError": "Unbekannter Fehler",
     "saving": "Speichern...",
     "saved": "Gespeichert",
     "saveSuccess": "Inhalt wurde erfolgreich gespeichert",
@@ -257,6 +264,37 @@
     "warnings": {
       "emailNotVerified": "Bitte verifizieren Sie Ihre E-Mail-Adresse."
     }
+  },
+  "search": {
+    "title": "Suchen",
+    "placeholder": "Seiten, Inhalte und Dokumente durchsuchen...",
+    "sections": {
+      "recommendations": "Empfohlen",
+      "pages": "Schnellzugriff",
+      "headings": "Überschriften",
+      "information": "Informationen",
+      "documents": "Dokumente"
+    },
+    "recommendations": {
+      "documents": "Häufig genutzte Dokumente und Inhalte"
+    },
+    "documentTypes": {
+      "global": "Gemeinsame Dokumente",
+      "owner": "Eigentümer-Dokument"
+    }
+  },
+  "ownerDocuments": {
+    "title": "Eigentümer-Dokumente",
+    "subtitle": "Alle Dateien aus Ihren Häusern an einem Ort.",
+    "emptyTitle": "Noch keine Dokumente vorhanden",
+    "emptyText": "Laden Sie Dateien in einem Ihrer Häuser hoch, damit sie hier erscheinen.",
+    "loadError": "Dokumente konnten nicht geladen werden.",
+    "downloadError": "Dokument konnte nicht geöffnet werden.",
+    "manageHome": "Haus verwalten",
+    "fileCount": "{count} Dokumente"
+  },
+  "share": {
+    "welcome": "Willkommen!"
   },
   "footer": {
     "copyright": "© {year} Lotissement Beausoleil, Giens"

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.reader && !claims.owner && !claims.admin) {
+	if (!claims.reader && !claims.publisher && !claims.owner && !claims.admin) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 

@@ -110,8 +110,13 @@ const deleteFile = async (file: HomeFile) => {
 	}
 };
 
-const downloadFile = (file: HomeFile) => {
-	window.open(file.url, "_blank");
+const downloadFile = async (file: HomeFile) => {
+	const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files/download`, {
+		headers: { Authorization: `Bearer ${token.value}` },
+		query: { fileId: file.id },
+	});
+
+	window.open(response.url, "_blank", "noopener,noreferrer");
 };
 </script>
 

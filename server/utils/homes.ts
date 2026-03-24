@@ -1,6 +1,7 @@
 import { db } from "../useFirebaseAdmin";
 import type { Home, HomeShare } from "../../types";
 import crypto from "crypto";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function getHomesForUser(userId: string): Promise<Home[]> {
 	const snapshot = await db
@@ -111,10 +112,9 @@ export async function revokeShareLink(shareId: string): Promise<void> {
 }
 
 export async function incrementShareAccess(shareId: string): Promise<void> {
-	const docRef = db.collection("homeShares").doc(shareId);
-	await docRef.update({
-		accessCount: (await docRef.get()).data()?.accessCount + 1 || 1,
-	});
+	await db.collection("homeShares").doc(shareId).set({
+		accessCount: FieldValue.increment(1),
+	}, { merge: true });
 }
 
 export async function getGlobalSettings(): Promise<{
@@ -158,7 +158,7 @@ export async function updateGlobalSettings(settings: Partial<{
 		updatedAt: new Date().toISOString(),
 	};
 
-	await db.collection("settings").doc("global").update(updated);
+	await db.collection("settings").doc("global").set(updated, { merge: true });
 	const updatedDoc = await db.collection("settings").doc("global").get();
 	return { id: updatedDoc.id, ...updatedDoc.data() } as any;
 }

@@ -3,18 +3,61 @@ import { getUserClaims } from "../../utils/auth";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
 const DEFAULT_LIMIT = 50;
+const SIGNED_URL_CACHE_TTL_MS = 55 * 60 * 1000;
+const USER_NAME_CACHE_TTL_MS = 10 * 60 * 1000;
+
+const signedUrlCache = new Map<string, { value: string | null; expiresAt: number }>();
+const fileExistsCache = new Map<string, { value: boolean; expiresAt: number }>();
+const userNameCache = new Map<string, { value: string | null; expiresAt: number }>();
+
+const getCachedValue = <T>(cache: Map<string, { value: T; expiresAt: number }>, key: string): T | undefined => {
+	const cached = cache.get(key);
+	if (!cached) return undefined;
+	if (cached.expiresAt <= Date.now()) {
+		cache.delete(key);
+		return undefined;
+	}
+	return cached.value;
+};
+
+const setCachedValue = <T>(
+	cache: Map<string, { value: T; expiresAt: number }>,
+	key: string,
+	value: T,
+	ttlMs: number
+) => {
+	cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+};
 
 const generateSignedUrl = async (bucket: ReturnType<typeof storage.bucket>, path: string): Promise<string | null> => {
+	const cachedUrl = getCachedValue(signedUrlCache, path);
+	if (cachedUrl !== undefined) {
+		return cachedUrl;
+	}
+
 	try {
 		const file = bucket.file(path);
 		const [url] = await file.getSignedUrl({
 			action: "read",
 			expires: Date.now() + SIGNED_URL_EXPIRY_MINUTES * 60 * 1000,
 		});
+		setCachedValue(signedUrlCache, path, url, SIGNED_URL_CACHE_TTL_MS);
 		return url;
 	} catch {
+		setCachedValue(signedUrlCache, path, null, 60 * 1000);
 		return null;
 	}
+};
+
+const fileExists = async (bucket: ReturnType<typeof storage.bucket>, path: string) => {
+	const cached = getCachedValue(fileExistsCache, path);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const [exists] = await bucket.file(path).exists();
+	setCachedValue(fileExistsCache, path, exists, 5 * 60 * 1000);
+	return exists;
 };
 
 const getResizedPath = (originalPath: string, size: string): string => {
@@ -39,7 +82,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.reader && !claims.owner && !claims.admin) {
+	if (!claims.reader && !claims.publisher && !claims.owner && !claims.admin) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
@@ -95,24 +138,35 @@ export default defineEventHandler(async (event) => {
 	const userNames: Record<string, string> = {};
 	if (userIds.size > 0) {
 		const userDocs = await Promise.all(
-			Array.from(userIds).map((uid) =>
-				db.collection("users").doc(uid).get().then((doc) => ({ uid, data: doc.data() }))
-			)
+			Array.from(userIds).map(async (uid) => {
+				const cachedName = getCachedValue(userNameCache, uid);
+				if (cachedName !== undefined) {
+					return { uid, data: cachedName ? { displayName: cachedName } : undefined };
+				}
+
+				const doc = await db.collection("users").doc(uid).get();
+				return { uid, data: doc.data() };
+			})
 		);
 
-		for (const { uid, data } of userDocs) {
+		await Promise.all(userDocs.map(async ({ uid, data }) => {
 			if (data?.displayName) {
 				userNames[uid] = data.displayName;
-			} else {
-				try {
-					const userRecord = await auth.getUser(uid);
-					if (userRecord.displayName) {
-						userNames[uid] = userRecord.displayName;
-					}
-				} catch {
-				}
+				setCachedValue(userNameCache, uid, data.displayName, USER_NAME_CACHE_TTL_MS);
+				return;
 			}
-		}
+
+			try {
+				const userRecord = await auth.getUser(uid);
+				const displayName = userRecord.displayName || null;
+				if (displayName) {
+					userNames[uid] = displayName;
+				}
+				setCachedValue(userNameCache, uid, displayName, USER_NAME_CACHE_TTL_MS);
+			} catch {
+				setCachedValue(userNameCache, uid, null, USER_NAME_CACHE_TTL_MS);
+			}
+		}));
 	}
 
 	const files = await Promise.all(
@@ -126,15 +180,18 @@ export default defineEventHandler(async (event) => {
 				const thumbnailPath = getResizedPath(data.storagePath, "400x400");
 				const optimizedPath = getResizedPath(data.storagePath, "1920x1920");
 
-				const [thumbnailExists] = await bucket.file(thumbnailPath).exists();
-				const [optimizedExists] = await bucket.file(optimizedPath).exists();
+				const [thumbnailExists, optimizedExists] = await Promise.all([
+					fileExists(bucket, thumbnailPath),
+					fileExists(bucket, optimizedPath),
+				]);
 
-				if (thumbnailExists) {
-					thumbnailUrl = await generateSignedUrl(bucket, thumbnailPath);
-				}
-				if (optimizedExists) {
-					optimizedUrl = await generateSignedUrl(bucket, optimizedPath);
-				}
+				const [thumbnailSignedUrl, optimizedSignedUrl] = await Promise.all([
+					thumbnailExists ? generateSignedUrl(bucket, thumbnailPath) : Promise.resolve(null),
+					optimizedExists ? generateSignedUrl(bucket, optimizedPath) : Promise.resolve(null),
+				]);
+
+				thumbnailUrl = thumbnailSignedUrl;
+				optimizedUrl = optimizedSignedUrl;
 			}
 
 			return {

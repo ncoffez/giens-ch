@@ -2,11 +2,11 @@
 import type { CommandPaletteItem } from "@nuxt/ui";
 
 const { open, closeSearch } = useSearchModal();
-
 const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
+const { t } = useI18n();
 const { canAccessHomes } = useFeatureFlags();
-const { loadAllData, loadDocuments, searchAll, isLoading, canAccessDocuments } = useSearchData();
+const { loadAllData, loadDocuments, searchAll, getRecommendations, recordSelection, isLoading, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
@@ -16,67 +16,169 @@ const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
 
-const staticPageItems = computed(() => {
-	const items: CommandPaletteItem[] = [
+type SearchResultItem = {
+	id: string;
+	label: string;
+	context?: string;
+	to: string;
+	icon?: string;
+	type: "page" | "heading" | "feature" | "timeline" | "document";
+	usageKey: string;
+};
+
+type SearchPaletteItem = CommandPaletteItem & {
+	searchResult?: SearchResultItem;
+};
+
+const staticPageItems = computed<SearchPaletteItem[]>(() => {
+	const items: SearchPaletteItem[] = [
 		{
-			label: "Home",
+			label: t("nav.home"),
 			icon: "i-lucide-house",
 			to: localePath("/"),
+			searchResult: {
+				id: "page-home",
+				label: t("nav.home"),
+				to: "/",
+				icon: "i-lucide-house",
+				type: "page",
+				usageKey: "page:/",
+			},
 		},
 		{
-			label: "Organisatorisches",
+			label: t("nav.organisatorisches"),
 			icon: "i-lucide-clipboard-list",
 			to: localePath("/organisatorisches"),
+			searchResult: {
+				id: "page-organisatorisches",
+				label: t("nav.organisatorisches"),
+				to: "/organisatorisches",
+				icon: "i-lucide-clipboard-list",
+				type: "page",
+				usageKey: "page:/organisatorisches",
+			},
 		},
 		{
-			label: "Anreise",
+			label: t("nav.travel"),
 			icon: "i-lucide-car",
 			to: localePath("/travel"),
+			searchResult: {
+				id: "page-travel",
+				label: t("nav.travel"),
+				to: "/travel",
+				icon: "i-lucide-car",
+				type: "page",
+				usageKey: "page:/travel",
+			},
 		},
 		{
-			label: "Über uns",
+			label: t("nav.about"),
 			icon: "i-lucide-info",
 			to: localePath("/about"),
+			searchResult: {
+				id: "page-about",
+				label: t("nav.about"),
+				to: "/about",
+				icon: "i-lucide-info",
+				type: "page",
+				usageKey: "page:/about",
+			},
 		},
 	];
 
-	if (isOwner.value || isReader.value) {
+	if (canAccessDocuments.value) {
 		items.push({
-			label: "Dokumente",
+			label: t("nav.documents"),
 			icon: "i-lucide-folder",
 			to: localePath("/documents"),
+			searchResult: {
+				id: "page-documents",
+				label: t("nav.documents"),
+				to: "/documents",
+				icon: "i-lucide-folder",
+				type: "page",
+				usageKey: "page:/documents",
+			},
+		});
+	}
+
+	if (canAccessOwnerDocuments.value) {
+		items.push({
+			label: t("ownerDocuments.title"),
+			icon: "i-lucide-files",
+			to: localePath("/owner/documents"),
+			searchResult: {
+				id: "page-owner-documents",
+				label: t("ownerDocuments.title"),
+				to: "/owner/documents",
+				icon: "i-lucide-files",
+				type: "page",
+				usageKey: "page:/owner/documents",
+			},
 		});
 	}
 
 	if (isOwner.value && canAccessHomes.value) {
 		items.push({
-			label: "Mein Haus",
+			label: t("nav.myHomes"),
 			icon: "i-lucide-building-2",
 			to: localePath("/my-homes"),
+			searchResult: {
+				id: "page-my-homes",
+				label: t("nav.myHomes"),
+				to: "/my-homes",
+				icon: "i-lucide-building-2",
+				type: "page",
+				usageKey: "page:/my-homes",
+			},
 		});
 	}
 
 	if (currentUser.value) {
 		items.push({
-			label: "Profil",
+			label: t("nav.profile"),
 			icon: "i-lucide-user",
 			to: localePath("/profile/me"),
+			searchResult: {
+				id: "page-profile",
+				label: t("nav.profile"),
+				to: "/profile/me",
+				icon: "i-lucide-user",
+				type: "page",
+				usageKey: "page:/profile/me",
+			},
 		});
 	}
 
 	if (isAdmin.value) {
 		items.push({
-			label: "Verwaltung",
+			label: t("nav.admin"),
 			icon: "i-lucide-settings",
 			to: localePath("/admin"),
+			searchResult: {
+				id: "page-admin",
+				label: t("nav.admin"),
+				to: "/admin",
+				icon: "i-lucide-settings",
+				type: "page",
+				usageKey: "page:/admin",
+			},
 		});
 	}
 
 	if (!currentUser.value) {
 		items.push({
-			label: "Login",
+			label: t("nav.login"),
 			icon: "i-lucide-log-in",
 			to: localePath("/login"),
+			searchResult: {
+				id: "page-login",
+				label: t("nav.login"),
+				to: "/login",
+				icon: "i-lucide-log-in",
+				type: "page",
+				usageKey: "page:/login",
+			},
 		});
 	}
 
@@ -89,51 +191,72 @@ const searchResults = computed(() => {
 	return searchAll(query);
 });
 
-const headingItems = computed(() => {
+const recommendationItems = computed<SearchPaletteItem[]>(() => {
+	return getRecommendations().map((result) => ({
+		label: result.label,
+		icon: result.icon,
+		to: localePath(result.to),
+		suffix: result.context,
+		searchResult: result,
+	}));
+});
+
+const headingItems = computed<SearchPaletteItem[]>(() => {
 	return searchResults.value
-		.filter(r => r.type === "heading")
+		.filter((result) => result.type === "heading")
 		.slice(0, 5)
-		.map(result => ({
+		.map((result) => ({
 			label: result.label,
 			icon: result.icon,
 			to: localePath(result.to),
 			suffix: result.context ? result.context + "..." : undefined,
+			searchResult: result,
 		}));
 });
 
-const featureItems = computed(() => {
+const featureItems = computed<SearchPaletteItem[]>(() => {
 	return searchResults.value
-		.filter(r => r.type === "feature" || r.type === "timeline")
+		.filter((result) => result.type === "feature" || result.type === "timeline")
 		.slice(0, 5)
-		.map(result => ({
+		.map((result) => ({
 			label: result.label,
 			icon: result.icon,
 			to: localePath(result.to),
 			suffix: result.context ? result.context + "..." : undefined,
+			searchResult: result,
 		}));
 });
 
-const documentItems = computed(() => {
+const documentItems = computed<SearchPaletteItem[]>(() => {
 	if (!canAccessDocuments.value) return [];
-	
+
 	return searchResults.value
-		.filter(r => r.type === "document")
+		.filter((result) => result.type === "document")
 		.slice(0, 5)
-		.map(result => ({
+		.map((result) => ({
 			label: result.label,
 			icon: result.icon,
 			to: localePath(result.to),
 			suffix: result.context,
+			searchResult: result,
 		}));
 });
 
 const groups = computed(() => {
 	const result = [];
 
-	if (staticPageItems.value.length > 0) {
+	if (!searchQuery.value.trim() && recommendationItems.value.length > 0) {
+		result.push({
+			id: "recommendations",
+			label: t("search.sections.recommendations"),
+			items: recommendationItems.value,
+		});
+	}
+
+	if (!searchQuery.value.trim() && staticPageItems.value.length > 0) {
 		result.push({
 			id: "pages",
-			label: "Seiten",
+			label: t("search.sections.pages"),
 			items: staticPageItems.value,
 		});
 	}
@@ -141,7 +264,7 @@ const groups = computed(() => {
 	if (headingItems.value.length > 0) {
 		result.push({
 			id: "headings",
-			label: "Überschriften",
+			label: t("search.sections.headings"),
 			items: headingItems.value,
 		});
 	}
@@ -149,7 +272,7 @@ const groups = computed(() => {
 	if (featureItems.value.length > 0) {
 		result.push({
 			id: "features",
-			label: "Informationen",
+			label: t("search.sections.information"),
 			items: featureItems.value,
 		});
 	}
@@ -157,7 +280,7 @@ const groups = computed(() => {
 	if (documentItems.value.length > 0) {
 		result.push({
 			id: "documents",
-			label: "Dokumente",
+			label: t("search.sections.documents"),
 			items: documentItems.value,
 		});
 	}
@@ -165,7 +288,11 @@ const groups = computed(() => {
 	return result;
 });
 
-function onSelect() {
+function onSelect(item?: SearchPaletteItem) {
+	if (item?.searchResult) {
+		recordSelection(item.searchResult);
+	}
+
 	closeSearch();
 	searchQuery.value = "";
 }
@@ -183,27 +310,28 @@ async function handleOpen(isOpen: boolean) {
 watch(open, handleOpen);
 
 onMounted(() => {
-	const handleKeyDown = (e: KeyboardEvent) => {
-		if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-			e.preventDefault();
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+			event.preventDefault();
 			open.value = !open.value;
 		}
-		if (e.key === "Escape" && open.value) {
+		if (event.key === "Escape" && open.value) {
 			closeSearch();
 		}
 	};
+
 	window.addEventListener("keydown", handleKeyDown);
 	onUnmounted(() => window.removeEventListener("keydown", handleKeyDown));
 });
 </script>
 
 <template>
-	<UModal v-model:open="open" title="Suchen">
+	<UModal v-model:open="open" :title="t('search.title')">
 		<template #content>
 			<UCommandPalette
 				v-model:search-term="searchQuery"
 				:groups="groups"
-				placeholder="Seiten, Überschriften und Dokumente durchsuchen..."
+				:placeholder="t('search.placeholder')"
 				class="h-80"
 				close
 				:loading="isLoading"

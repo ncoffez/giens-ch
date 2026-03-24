@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.87",
-    "@nuxt/test-utils-nightly": "latest",
+    "@nuxt/test-utils-nightly": "3.23.1-20260126-202417-426e0b5",
     "@playwright/test": "^1.58.0",
     "@vitest/coverage-v8": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
