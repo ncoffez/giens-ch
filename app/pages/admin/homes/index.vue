@@ -155,10 +155,26 @@ watchEffect(() => {
 </script>
 
 <template>
-	<div class="max-w-screen-2xl mx-auto px-4 py-8">
-		<h1 class="text-3xl font-bold mb-8">Häuser Verwaltung</h1>
+	<div class="max-w-screen-2xl mx-auto px-2 py-2">
+		<div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+			<div>
+				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-3">Häuser</p>
+				<h1 class="display-copy text-4xl font-bold tracking-[-0.04em]">Häuser verwalten</h1>
+				<p class="app-muted mt-2">Behalten Sie Aktivstatus, Eigentümer und Bearbeitungszugänge übersichtlich im Blick.</p>
+			</div>
+			<div class="grid grid-cols-2 gap-3">
+				<div class="app-surface rounded-2xl px-4 py-3">
+					<p class="text-xs uppercase tracking-[0.18em] app-muted">Aktiv</p>
+					<p class="display-copy text-2xl font-bold">{{ totalActive }}</p>
+				</div>
+				<div class="app-surface rounded-2xl px-4 py-3">
+					<p class="text-xs uppercase tracking-[0.18em] app-muted">Deaktiviert</p>
+					<p class="display-copy text-2xl font-bold">{{ totalDisabled }}</p>
+				</div>
+			</div>
+		</div>
 
-		<UCard class="mb-6">
+		<UCard class="mb-6 rounded-[1.5rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
 			<div class="flex items-center justify-between">
 				<ClientOnly>
 					<USwitch
@@ -172,11 +188,11 @@ watchEffect(() => {
 			</div>
 		</UCard>
 
-		<div v-if="loading" class="text-center py-8">Loading...</div>
+		<div v-if="loading" class="text-center py-8 app-muted">Häuser werden geladen...</div>
 
-		<div v-else-if="error" class="text-center py-8 text-red-500">{{ error }}</div>
+		<div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-red-500">{{ error }}</div>
 
-		<UCard v-else>
+		<UCard v-else class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03] overflow-hidden">
 			<UTable
 				:data="sortedHomes"
 				:columns="[

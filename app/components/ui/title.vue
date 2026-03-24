@@ -1,10 +1,16 @@
 <template>
-	<div class="flex flex-col items-start mb-6 md:mb-12">
-		<h3 id="subtitle" class="text-sm md:text-base font-black uppercase tracking-widest text-stone-600 dark:text-stone-400 mb-2">{{ subtitle }}</h3>
+	<div class="flex flex-col items-start gap-3 mb-8 md:mb-12">
+		<h3
+			id="subtitle"
+			class="text-xs md:text-sm font-extrabold uppercase tracking-[0.28em] text-[var(--app-primary)]/90 mb-0"
+		>
+			{{ subtitle }}
+		</h3>
 		<h2
-			class="skip-ink text-3xl md:text-7xl font-black leading-tight underline underline-offset-[-15%] md:decoration-[1.3rem] decoration-[.6rem] decoration-primary/30 tracking-tighter">
+			class="skip-ink display-copy text-3xl md:text-6xl font-bold leading-[1.02] tracking-[-0.04em] text-balance text-[var(--app-text)]">
 			{{ title }}
 		</h2>
+		<div class="h-1.5 w-16 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-accent)]" />
 	</div>
 </template>
 <script lang="ts" setup>

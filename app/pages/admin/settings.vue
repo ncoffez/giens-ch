@@ -105,10 +105,14 @@ onMounted(fetchSettings);
 </script>
 
 <template>
-	<div class="max-w-screen-lg mx-auto px-4 py-8">
-		<h1 class="text-3xl font-bold mb-8">Admin Einstellungen</h1>
+	<div class="max-w-screen-xl mx-auto px-2 py-2">
+		<div class="mb-8">
+			<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-3">Admin Einstellungen</p>
+			<h1 class="display-copy text-4xl font-bold tracking-[-0.04em]">System und persönliche Steuerung</h1>
+			<p class="app-muted mt-3 max-w-2xl">Pflegen Sie die globalen Standards der Résidence und passen Sie persönliche Verwaltungsoptionen gezielt an.</p>
+		</div>
 
-		<div v-if="error" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+		<div v-if="error" class="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl">
 			{{ error }}
 		</div>
 
@@ -117,7 +121,7 @@ onMounted(fetchSettings);
 		</div>
 
 		<div v-else class="space-y-8">
-			<UCard>
+			<UCard class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
 				<template #header>
 					<div class="flex items-center gap-3">
 						<div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
@@ -146,7 +150,7 @@ onMounted(fetchSettings);
 				</div>
 			</UCard>
 
-			<UCard>
+			<UCard class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
 				<template #header>
 					<div class="flex items-center gap-3">
 						<div class="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">

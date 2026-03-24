@@ -72,11 +72,14 @@ toast.add({
 <template>
 	<div class="space-y-6">
 		<div class="flex items-center justify-between">
-			<h2 class="text-3xl font-extrabold tracking-tight">Kategorien & Berechtigungen</h2>
+			<div>
+				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-2">Labels</p>
+				<h2 class="display-copy text-4xl font-bold tracking-[-0.04em]">Kategorien und Sichtbarkeit</h2>
+			</div>
 		</div>
 
 		<!-- Create Label Form -->
-		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-2xl shadow-sm border-stone-100 dark:border-stone-800">
+		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-[1.5rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
 			<template #header v-if="isCreatingLabel">
 				<div class="flex items-center justify-between">
 					<span class="text-lg font-bold">Neues Label erstellen</span>
@@ -105,7 +108,7 @@ toast.add({
 			</div>
 		</UCard>
 
-		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-stone-100 dark:border-stone-800">
+		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-[1.75rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
 			<div class="divide-y divide-gray-100 dark:divide-gray-800">
 				<div v-for="label of labels" :key="label.id" class="flex items-center justify-between p-6 hover:bg-stone-50 dark:hover:bg-gray-900/50 transition-colors">
 					<div class="flex flex-col gap-1">

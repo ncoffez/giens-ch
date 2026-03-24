@@ -24,7 +24,7 @@ useHead({
 				content: "width=device-width, initial-scale=1"
 			}
 		],
-		link: [
+	link: [
 			{
 				rel: "preconnect",
 				href: "https://giens-ch.web.app"

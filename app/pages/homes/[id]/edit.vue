@@ -220,10 +220,10 @@ onMounted(fetchHome);
 </script>
 
 <template>
-	<div class="min-h-screen bg-stone-50 dark:bg-stone-900">
+	<div class="min-h-screen">
 		<!-- Header -->
-		<header class="sticky top-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border-b border-stone-100 dark:border-stone-800">
-			<div class="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
+		<header class="sticky top-0 z-50 py-3">
+			<div class="app-surface max-w-screen-xl mx-auto px-4 h-16 rounded-[1.5rem] flex items-center justify-between">
 				<div class="flex items-center gap-4">
 					<UButton
 						variant="ghost"
@@ -231,7 +231,10 @@ onMounted(fetchHome);
 						icon="i-lucide-arrow-left"
 						@click="navigateTo(localePath('/my-homes'))"
 					/>
-					<h1 v-if="home" class="font-black text-lg">{{ home.name }}</h1>
+					<div v-if="home">
+						<p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)]">Mein Haus</p>
+						<h1 class="display-copy font-bold text-xl">{{ home.name }}</h1>
+					</div>
 				</div>
 				<div class="flex items-center gap-2">
 					<UButton
@@ -269,8 +272,9 @@ onMounted(fetchHome);
 			<template v-else-if="home">
 				<div class="flex flex-col lg:flex-row gap-8">
 					<!-- Sidebar Navigation -->
-					<aside class="lg:w-64 shrink-0">
-						<nav class="lg:sticky lg:top-24 space-y-1">
+					<aside class="lg:w-72 shrink-0">
+						<div class="app-card rounded-[1.75rem] p-4 lg:sticky lg:top-24">
+						<nav class="space-y-1">
 							<button
 								v-for="section in [
 									{ id: 'links', label: 'Links', icon: 'i-lucide-link' },
@@ -282,15 +286,16 @@ onMounted(fetchHome);
 								]"
 								:key="section.id"
 								@click="activeSection = section.id as any"
-								class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
+								class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
 								:class="activeSection === section.id
-									? 'bg-primary text-white'
-									: 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'"
+									? 'bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-accent)] text-white shadow-[0_14px_32px_rgba(36,108,122,0.2)]'
+									: 'text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-white/[0.04]'"
 							>
 								<UIcon :name="section.icon" class="w-5 h-5" />
 								<span class="font-medium">{{ section.label }}</span>
 							</button>
 						</nav>
+						</div>
 					</aside>
 
 					<!-- Content Area -->

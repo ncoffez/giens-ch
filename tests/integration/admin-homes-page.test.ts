@@ -28,7 +28,7 @@ describe("Admin Homes Page", () => {
 		});
 
 		const component = await mountSuspended(AdminHomesPage);
-		expect(component.text()).toContain("Häuser Verwaltung");
+		expect(component.text()).toContain("Häuser verwalten");
 	});
 
 	it("fetches and displays homes from API", async () => {
@@ -69,7 +69,7 @@ describe("Admin Homes Page", () => {
 		});
 
 		const component = await mountSuspended(AdminHomesPage);
-		expect(component.text()).toContain("Loading...");
+		expect(component.text()).toContain("Häuser werden geladen...");
 	});
 
 	it("displays home count badges when homes are loaded", async () => {

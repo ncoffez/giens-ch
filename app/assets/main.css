@@ -2,25 +2,93 @@
 @import "@nuxt/ui";
 
 :root {
-	font-family: "Open Sans", sans-serif;
-	font-optical-sizing: auto;
+	font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+	color-scheme: light;
+	--app-bg: #f5f1e8;
+	--app-surface: rgba(255, 252, 247, 0.82);
+	--app-surface-strong: #fffaf2;
+	--app-border: rgba(115, 91, 67, 0.14);
+	--app-text: #241d17;
+	--app-muted: #6b625a;
+	--app-primary: #246c7a;
+	--app-accent: #cc8c3a;
+	--app-shadow: 0 24px 60px rgba(36, 29, 23, 0.08);
 }
 
 html,
 body {
-	background-color: var(--color-neutral-50);
+	background:
+		radial-gradient(circle at top left, rgba(227, 196, 145, 0.22), transparent 28%),
+		radial-gradient(circle at top right, rgba(62, 122, 136, 0.16), transparent 32%),
+		linear-gradient(180deg, #fbf7f0 0%, var(--app-bg) 100%);
+	background-color: var(--app-bg);
+	color: var(--app-text);
 	-webkit-tap-highlight-color: transparent;
 	scroll-behavior: smooth;
 	scrollbar-gutter: stable;
+	min-height: 100%;
+	overscroll-behavior-y: none;
 }
 
-.dark html,
-.dark body {
-	background-color: var(--color-neutral-900);
+html.dark,
+html.dark body {
+	color-scheme: dark;
+	--app-bg: #050505;
+	--app-surface: rgba(15, 15, 15, 0.88);
+	--app-surface-strong: #0f0f0f;
+	--app-border: rgba(255, 255, 255, 0.08);
+	--app-text: #f6f1e8;
+	--app-muted: #aea59a;
+	--app-primary: #76b8c0;
+	--app-accent: #e0aa61;
+	--app-shadow: 0 30px 80px rgba(0, 0, 0, 0.48);
+	background:
+		radial-gradient(circle at top left, rgba(118, 184, 192, 0.12), transparent 24%),
+		radial-gradient(circle at top right, rgba(224, 170, 97, 0.1), transparent 30%),
+		linear-gradient(180deg, #050505 0%, #050505 100%);
+	background-color: #050505;
+	color: var(--app-text);
+}
+
+body,
+#__nuxt,
+[data-vaul-drawer-wrapper] {
+	min-height: 100%;
+	background: transparent;
+}
+
+.app-shell {
+	background: transparent;
+	color: var(--app-text);
+}
+
+.app-surface {
+	background: var(--app-surface);
+	border: 1px solid var(--app-border);
+	box-shadow: var(--app-shadow);
+	backdrop-filter: blur(20px);
+}
+
+.app-card {
+	background: var(--app-surface-strong);
+	border: 1px solid var(--app-border);
+	box-shadow: var(--app-shadow);
+}
+
+.app-muted {
+	color: var(--app-muted);
 }
 
 .skip-ink {
 	text-decoration-skip-ink: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+.display-copy {
+	font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 /* App-like transitions */
@@ -83,4 +151,11 @@ body {
 .prose h3,
 .prose h4 {
 	scroll-margin-top: 6rem;
+}
+
+@media (max-width: 768px) {
+	html,
+	body {
+		scroll-padding-top: 5rem;
+	}
 }

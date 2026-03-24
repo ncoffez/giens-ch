@@ -35,7 +35,7 @@
     },
     "entdecken": {
       "title": "Découvrir",
-      "subtitle": "Marchés, excursions et conseils pratiques autour de Giens."
+      "subtitle": "Marchés, criques et bonnes adresses autour de Giens."
     },
     "organisatorisches": {
       "title": "Organisation",
@@ -43,6 +43,15 @@
     }
   },
   "home": {
+    "hero": {
+      "kicker": "Arriver et respirer",
+      "lead": "Un calme méditerranéen, la mer à courte distance et une petite communauté qui entretient sa résidence avec soin.",
+      "stats": {
+        "houses": "Maisons",
+        "minutes": "Min. de la plage",
+        "region": "Côte d'Azur"
+      }
+    },
     "features": {
       "subtitle": "Ce qui nous distingue",
       "title": "Se sentir bien et vivre"
@@ -81,6 +90,17 @@
     }
   },
   "travel": {
+    "intro": {
+      "kicker": "Vue d'ensemble",
+      "lead": "En voiture, en train ou en avion, Giens est facile d'accès si la dernière étape est bien préparée.",
+      "body": "Cette page rassemble les trajets qui fonctionnent le mieux dans la pratique pour les propriétaires et les invités, avec quelques repères utiles pour l'arrivée sur la presqu'île.",
+      "factsTitle": "En bref",
+      "facts": {
+        "distance": "depuis Berne",
+        "drive": "en voiture",
+        "airport": "jusqu'à TLN"
+      }
+    },
     "lage": {
       "subtitle": "Votre destination sur la presqu'île",
       "title": "Situation"
@@ -135,6 +155,15 @@
       "subtitle": "Produits frais sur place",
       "title": "Marchés hebdomadaires",
       "fleaMarket": "Chaque dimanche : Marché aux puces à La Capte",
+      "notes": {
+        "producers": "Petit marché de proximité, idéal pour les produits frais.",
+        "seaside": "Une étape pratique en longeant le front de mer.",
+        "village": "Un marché de village apprécié et détendu.",
+        "quickStop": "Parfait pour le pain, les fruits et quelques achats rapides.",
+        "largeMarket": "Le plus grand choix pour les courses du week-end.",
+        "harbor": "Marché du dimanche avec ambiance portuaire et promenade.",
+        "stroll": "S'accorde bien avec une balade au bord de l'eau."
+      },
       "days": {
         "tue": "Mar",
         "wed": "Mer",
@@ -300,7 +329,29 @@
     "fileCount": "{count} documents"
   },
   "share": {
-    "welcome": "Bienvenue !"
+    "welcome": "Bienvenue",
+    "guestIntro": "Toutes les informations utiles, les contacts et les documents importants de votre séjour réunis au même endroit.",
+    "gallery": "Galerie",
+    "contacts": "Contacts",
+    "wifiTitle": "Wi-Fi",
+    "wifiSubtitle": "Les accès essentiels, prêts dès votre arrivée.",
+    "ssid": "Nom du réseau (SSID)",
+    "password": "Mot de passe",
+    "copy": "Copier",
+    "copied": "Copié",
+    "instructionsTitle": "Informations pratiques",
+    "instructionsSubtitle": "Les consignes les plus importantes pour un séjour fluide et serein.",
+    "filesTitle": "Documents",
+    "filesSubtitle": "Téléchargez ici les fichiers utiles à votre séjour.",
+    "download": "Télécharger",
+    "summary": {
+      "photos": "Photos",
+      "photosValue": "aperçus de la maison",
+      "documents": "Documents",
+      "documentsValue": "fichiers à télécharger",
+      "contacts": "Contacts",
+      "contactsValue": "interlocuteurs"
+    }
   },
   "footer": {
     "copyright": "© {year} Lotissement Beausoleil, Giens"
