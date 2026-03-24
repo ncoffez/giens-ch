@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 	};
 
 	for (const home of homes) {
-		for (const file of home.files || []) {
+		for (const file of [...(home.files || []), ...(home.privateFiles || [])]) {
 			if (!file.storagePath) continue;
 
 			documents.push({
@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
 				updatedAt: file.updatedAt || file.uploadedAt,
 				lastModified: file.lastModified,
 				uploadedBy: file.uploadedBy,
-				downloadPath: `/api/homes/${home.id}/files/download?fileId=${file.id}`,
+				downloadPath: `/api/homes/${home.id}/files/download?fileId=${file.id}&private=${file.visibility === "private" ? "true" : "false"}`,
 			});
 		}
 	}

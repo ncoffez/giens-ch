@@ -28,7 +28,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}
 
-	const file = (home.files || []).find((entry) => entry.id === fileId);
+	const isPrivate = getQuery(event).private === "true";
+	const file = (isPrivate ? (home.privateFiles || []) : (home.files || [])).find((entry) => entry.id === fileId);
 	if (!file?.storagePath) {
 		throw createError({ statusCode: 404, message: "File not found" });
 	}

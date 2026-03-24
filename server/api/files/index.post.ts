@@ -91,8 +91,8 @@ export default defineEventHandler(async (event) => {
 		folderId, 
 		limit = DEFAULT_LIMIT, 
 		cursor = null,
-		sortBy = "name",
-		sortOrder = "asc"
+		sortBy = "date",
+		sortOrder = "desc"
 	} = body || {};
 
 	const effectiveFolderId = folderId === undefined ? null : (folderId || null);

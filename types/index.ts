@@ -46,6 +46,7 @@ export interface HomeFile {
 	uploadedBy: string;
 	lastModified?: number;
 	storagePath?: string;
+	visibility?: "shared" | "private";
 }
 
 export interface HomeFolder {
@@ -72,6 +73,7 @@ export interface Home {
 	ownerIds: string[];
 	photos: string[];
 	files: HomeFile[];
+	privateFiles?: HomeFile[];
 	folders: HomeFolder[];
 	wifiSSID?: string;
 	wifiPassword?: string;
@@ -118,6 +120,7 @@ export interface GlobalFile {
 	storagePath?: string;
 	deletedAt?: string;
 	deletedBy?: string;
+	deletedByLabel?: string;
 }
 
 export interface GlobalFolder {

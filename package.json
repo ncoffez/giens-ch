@@ -11,9 +11,12 @@
     "deploy": "npm run build && firebase deploy",
     "start": "nuxt preview",
     "test": "vitest",
+    "test:fast": "vitest run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "PLAYWRIGHT_SMOKE=1 playwright test tests/e2e/critical-flows.spec.ts tests/e2e/console-errors-public.test.ts tests/e2e/console-errors-critical-flows.test.ts tests/e2e/resource-errors-all-routes.test.ts --project=chromium",
+    "test:e2e:smoke": "PLAYWRIGHT_SMOKE=1 playwright test tests/e2e/critical-flows.spec.ts tests/e2e/console-errors-public.test.ts tests/e2e/console-errors-critical-flows.test.ts tests/e2e/resource-errors-all-routes.test.ts --project=chromium",
+    "test:e2e:full": "playwright test",
     "test:perf": "playwright test tests/e2e/performance-audit.spec.ts --project=chromium",
     "test:e2e:ui": "playwright test --ui"
   },

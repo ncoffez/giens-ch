@@ -1,0 +1,107 @@
+{
+	"generatedAt": "2026-03-24T20:06:52.461Z",
+	"totalJsBytes": 1833207,
+	"totalJsKilobytes": 1790.24,
+	"topClientChunks": [
+		{
+			"file": "BuR58h50.js",
+			"bytes": 753409,
+			"kilobytes": 735.75
+		},
+		{
+			"file": "Bw2z3pm-.js",
+			"bytes": 374394,
+			"kilobytes": 365.62
+		},
+		{
+			"file": "CjCZcxx3.js",
+			"bytes": 68298,
+			"kilobytes": 66.7
+		},
+		{
+			"file": "CT7LiPDM.js",
+			"bytes": 61931,
+			"kilobytes": 60.48
+		},
+		{
+			"file": "D2tDBEgl.js",
+			"bytes": 49544,
+			"kilobytes": 48.38
+		},
+		{
+			"file": "C3ZBa_xw.js",
+			"bytes": 47024,
+			"kilobytes": 45.92
+		},
+		{
+			"file": "CFVqsKue.js",
+			"bytes": 44713,
+			"kilobytes": 43.67
+		},
+		{
+			"file": "BqPC4X4d.js",
+			"bytes": 35756,
+			"kilobytes": 34.92
+		},
+		{
+			"file": "svSoIg4G.js",
+			"bytes": 29044,
+			"kilobytes": 28.36
+		},
+		{
+			"file": "DKXp4Gzq.js",
+			"bytes": 26873,
+			"kilobytes": 26.24
+		},
+		{
+			"file": "CrlE97gl.js",
+			"bytes": 25885,
+			"kilobytes": 25.28
+		},
+		{
+			"file": "Cl97zXnV.js",
+			"bytes": 16319,
+			"kilobytes": 15.94
+		},
+		{
+			"file": "C2cHyrpt.js",
+			"bytes": 15305,
+			"kilobytes": 14.95
+		},
+		{
+			"file": "rW2n8n7E.js",
+			"bytes": 15061,
+			"kilobytes": 14.71
+		},
+		{
+			"file": "QbAbHyBK.js",
+			"bytes": 14614,
+			"kilobytes": 14.27
+		},
+		{
+			"file": "LK1slaMw.js",
+			"bytes": 13072,
+			"kilobytes": 12.77
+		},
+		{
+			"file": "B4TgQ4Kk.js",
+			"bytes": 13052,
+			"kilobytes": 12.75
+		},
+		{
+			"file": "D3jnqh5r.js",
+			"bytes": 13019,
+			"kilobytes": 12.71
+		},
+		{
+			"file": "CE0BaScO.js",
+			"bytes": 12800,
+			"kilobytes": 12.5
+		},
+		{
+			"file": "B1nQ46zW.js",
+			"bytes": 10672,
+			"kilobytes": 10.42
+		}
+	]
+}

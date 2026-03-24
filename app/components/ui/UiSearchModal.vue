@@ -6,7 +6,7 @@ const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
 const { t } = useI18n();
 const { canAccessHomes } = useFeatureFlags();
-const { loadAllData, loadDocuments, searchAll, getRecommendations, getHeadingsByPagePath, recordSelection, isLoading, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
+const { loadAllData, loadDocuments, searchAll, getRecommendations, getDocumentRecommendations, getHeadingsByPagePath, recordSelection, isLoading, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
@@ -262,6 +262,18 @@ const documentItems = computed<SearchPaletteItem[]>(() => {
 		}));
 });
 
+const documentRecommendationItems = computed<SearchPaletteItem[]>(() => {
+	if (!canAccessDocuments.value || searchQuery.value.trim()) return [];
+
+	return getDocumentRecommendations().map((result) => ({
+		label: result.label,
+		icon: result.icon,
+		to: localePath(result.to),
+		suffix: result.context,
+		searchResult: result,
+	}));
+});
+
 const groups = computed(() => {
 	const result = [];
 
@@ -297,19 +309,27 @@ const groups = computed(() => {
 		});
 	}
 
+	if (!searchQuery.value.trim() && documentRecommendationItems.value.length > 0) {
+		result.push({
+			id: "document-recommendations",
+			label: t("search.sections.documents"),
+			items: documentRecommendationItems.value,
+		});
+	}
+
+	if (searchQuery.value.trim() && documentItems.value.length > 0) {
+		result.push({
+			id: "documents",
+			label: t("search.sections.documents"),
+			items: documentItems.value,
+		});
+	}
+
 	if (featureItems.value.length > 0) {
 		result.push({
 			id: "features",
 			label: t("search.sections.information"),
 			items: featureItems.value,
-		});
-	}
-
-	if (documentItems.value.length > 0) {
-		result.push({
-			id: "documents",
-			label: t("search.sections.documents"),
-			items: documentItems.value,
 		});
 	}
 

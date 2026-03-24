@@ -33,6 +33,10 @@ export default defineConfig({
 			use: { ...devices["Pixel 7"] },
 		},
 	],
+	testIgnore: process.env.PLAYWRIGHT_SMOKE ? [
+		"tests/e2e/console-errors-all-routes.test.ts",
+		"tests/e2e/site-integrity.spec.ts",
+	] : undefined,
 	webServer: {
 		command: "npm run dev -- --host 127.0.0.1 --port 3000",
 		url: "http://127.0.0.1:3000",

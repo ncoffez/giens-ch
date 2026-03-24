@@ -45,11 +45,12 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const now = new Date().toISOString();
+	const visibility = body.private ? "private" : "shared";
 
 	// Upload to Firebase Storage
 	const bucket = storage.bucket();
 	const fileId = crypto.randomUUID();
-	const storagePath = `homes/${homeId}/files/${fileId}/${body.name}`;
+	const storagePath = `homes/${homeId}/${visibility === "private" ? "private-files" : "files"}/${fileId}/${body.name}`;
 
 	const file = bucket.file(storagePath);
 	const base64Data = body.file.split(";base64,").pop();
@@ -82,14 +83,16 @@ export default defineEventHandler(async (event) => {
 		uploadedBy: claims.uid,
 		lastModified: typeof body.lastModified === "number" ? body.lastModified : undefined,
 		storagePath,
+		visibility,
 	};
 
-	// Add to home's files array
+	const targetCollectionKey = visibility === "private" ? "privateFiles" : "files";
+
 	await db
 		.collection("homes")
 		.doc(homeId)
 		.update({
-			files: [...(home.files || []), fileRecord],
+			[targetCollectionKey]: [...((home as any)[targetCollectionKey] || []), fileRecord],
 			updatedAt: new Date().toISOString(),
 		});
 

@@ -15,13 +15,14 @@ This document serves as a guide for agentic coding agents operating in this repo
   - Integration Tests: Vitest with `@nuxt/test-utils`
   - E2E Tests: Playwright
 - **Run all tests:**
-  - Integration tests: `npm run test:run`
-  - E2E tests: `npm run test:e2e`
+  - Fast integration suite: `npm run test:fast`
+  - Smoke E2E: `npm run test:e2e` or `npm run test:e2e:smoke`
+  - Full cross-browser E2E: `npm run test:e2e:full`
 - **Run a single test:**
   - Integration: `npx vitest run tests/integration/home.test.ts`
   - E2E: `npx playwright test tests/e2e/critical-flows.spec.ts`
 - **Console Error Detection:** E2E tests automatically detect browser console errors on all routes. Never commit changes that cause console errors.
-- **STRICT MANDATE:** **Always** run the full test suite after any build step or significant refactor. Do not commit or declare a task complete unless all tests are green.
+- **STRICT MANDATE:** Run the appropriate tier for the change you made, and run the full cross-browser suite before release, deployment, or major UI refactors.
 - **Current Status:**
   - Integration: A minimal regression suite exists in `tests/integration/`
   - E2E: Console error detection on all routes (32 pages)
@@ -170,14 +171,21 @@ This document serves as a guide for agentic coding agents operating in this repo
 2. **Plan:** Identify which part of the Nuxt lifecycle your change affects (Client vs. Server vs. Plugin).
 3. **Implement:** Follow the Tab-indentation and Double-quote rules strictly.
 4. **Verify:** Use `npm run dev` to verify changes if a preview environment is available.
-5. **Integration Tests:** Run `npm run test:run` to ensure all tests pass. DO NOT continue if any test fails.
-6. **Console Error Detection:** Run `npm run test:e2e` to check for browser console errors on all 32 routes.
-   - All routes must be error-free
-   - Check test report for attached console logs if errors occur
-   - Fix any console errors before proceeding
-7. **Coverage:** Run `npm run test:coverage` and verify all thresholds (Statements 80%, Lines 80%, Functions 80%, Branches 75%).
-8. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
-9. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
+5. **Fast default gate:** Run `npm run test:fast`.
+6. **UI/routing/browser changes:** Run `npm run test:e2e` for the Chromium smoke suite.
+7. **Release/major refactor gate:** Run `npm run build && npm run test:e2e:full`.
+8. **Coverage:** Run `npm run test:coverage` for explicit coverage work, release prep, or when touching under-tested critical flows.
+9. **Structure:** If creating a new UI component, place it in `app/components/ui/`. If it's a page, place it in `app/pages/`.
+10. **Git/Push:** DO NOT push to GitHub preemptively. Always ask for permission or wait for an explicit request to push changes to the remote repository.
+
+### Test tier guide
+
+| Change type | Minimum verification |
+| --- | --- |
+| Pure utility/server logic without UI impact | `npm run test:fast` |
+| UI copy/layout/component behavior | `npm run test:fast && npm run test:e2e` |
+| Routing, auth, middleware, file access, share links | `npm run test:fast && npm run test:e2e` |
+| Major UI refactor, deployment, release candidate | `npm run build && npm run test:e2e:full && npm run test:coverage` |
 
 ### Console Error Detection
 

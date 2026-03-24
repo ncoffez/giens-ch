@@ -112,5 +112,13 @@ export default defineEventHandler(async (event) => {
 		visibleContacts.push(contact);
 	}
 
-	return { home, share, contacts: visibleContacts };
+	return {
+		home: {
+			...home,
+			files: (home.files || []).filter((file) => file.visibility !== "private"),
+			privateFiles: [],
+		},
+		share,
+		contacts: visibleContacts,
+	};
 });

@@ -433,7 +433,22 @@ onMounted(fetchHome);
 								<h2 class="text-2xl font-black mb-2">Dateien</h2>
 								<p class="text-stone-500">Laden Sie Dokumente hoch, die Mieter herunterladen können.</p>
 							</div>
-							<HomeFiles :home="home" @refresh="fetchHome" />
+							<div class="grid gap-6 xl:grid-cols-2">
+								<div class="space-y-4">
+									<div>
+										<h3 class="text-lg font-bold">Für Besucher freigegeben</h3>
+										<p class="text-sm text-stone-500">Diese Dateien sind über aktive Haus-Links sichtbar.</p>
+									</div>
+									<HomeFiles :home="home" @refresh="fetchHome" />
+								</div>
+								<div class="space-y-4">
+									<div>
+										<h3 class="text-lg font-bold">Privat für Eigentümer</h3>
+										<p class="text-sm text-stone-500">Diese Dateien bleiben intern und erscheinen nie im Besucherzugriff.</p>
+									</div>
+									<HomeFiles :home="home" privacy="private" @refresh="fetchHome" />
+								</div>
+							</div>
 						</div>
 					</main>
 				</div>

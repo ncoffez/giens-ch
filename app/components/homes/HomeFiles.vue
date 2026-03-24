@@ -4,6 +4,7 @@ import { getFileIcon, getFileIconColor } from "~/utils/fileTypes";
 
 const props = defineProps<{
 	home: Home;
+	privacy?: "shared" | "private";
 }>();
 
 const emit = defineEmits<{
@@ -12,6 +13,8 @@ const emit = defineEmits<{
 
 const { token } = useAuthReady();
 const toast = useToast();
+const isPrivate = computed(() => props.privacy === "private");
+const visibleFiles = computed(() => isPrivate.value ? (props.home.privateFiles || []) : (props.home.files || []));
 
 const uploading = ref(false);
 const uploadProgress = ref(0);
@@ -67,6 +70,7 @@ const uploadFiles = async (event: Event) => {
 					type: file.type,
 					size: file.size,
 					lastModified: file.lastModified,
+					private: isPrivate.value,
 				},
 			});
 			successCount++;
@@ -102,7 +106,7 @@ const deleteFile = async (file: HomeFile) => {
 		await $fetch(`/api/homes/${props.home.id}/files/delete`, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
-			body: { fileId: file.id },
+			body: { fileId: file.id, private: isPrivate.value },
 		});
 		toast.add({ title: "Datei gelöscht", color: "success" });
 		emit("refresh");
@@ -114,7 +118,7 @@ const deleteFile = async (file: HomeFile) => {
 const downloadFile = async (file: HomeFile) => {
 	const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files/download`, {
 		headers: { Authorization: `Bearer ${token.value}` },
-		query: { fileId: file.id },
+		query: { fileId: file.id, private: isPrivate.value ? "true" : "false" },
 	});
 
 	window.open(response.url, "_blank", "noopener,noreferrer");
@@ -144,16 +148,18 @@ const downloadFile = async (file: HomeFile) => {
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
 					<p class="text-stone-600 dark:text-stone-400 font-medium">Klicken zum Hochladen</p>
 					<p class="text-sm text-stone-400">PDF, DOC, XLS und mehr (max. 50MB)</p>
-					<p class="text-xs text-stone-400">Mehrere Dateien möglich</p>
+					<p class="text-xs text-stone-400">
+						{{ isPrivate ? "Nur für Eigentümer und Administratoren sichtbar" : "Mehrere Dateien möglich" }}
+					</p>
 				</div>
 			</div>
 			<input type="file" multiple class="hidden" :disabled="uploading" @change="uploadFiles" />
 		</label>
 
 		<!-- File list -->
-		<div v-if="home.files?.length" class="space-y-3">
+		<div v-if="visibleFiles.length" class="space-y-3">
 			<div
-				v-for="file in home.files"
+				v-for="file in visibleFiles"
 				:key="file.id"
 				class="flex items-center gap-4 p-4 bg-white dark:bg-stone-800 rounded-xl border border-stone-100 dark:border-stone-700 group"
 			>
@@ -175,7 +181,9 @@ const downloadFile = async (file: HomeFile) => {
 		<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
 			<UIcon name="i-lucide-folder" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
 			<p class="text-stone-500">Keine Dateien</p>
-			<p class="text-sm text-stone-400">Laden Sie Dokumente hoch, die Mieter herunterladen können</p>
+			<p class="text-sm text-stone-400">
+				{{ isPrivate ? "Laden Sie interne Dokumente nur für Eigentümer hoch" : "Laden Sie Dokumente hoch, die Mieter herunterladen können" }}
+			</p>
 		</div>
 	</div>
 </template>
