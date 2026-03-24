@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const PUBLIC_ROUTES = [
 	"/",
-	"/about",
 	"/travel",
+	"/entdecken",
 	"/login",
 	"/register",
 	"/reset-password",
@@ -16,7 +16,7 @@ test.describe("Public Routes - Basic Load Test", () => {
 			await page.waitForLoadState("networkidle");
 			await page.waitForTimeout(500);
 
-			expect(page.url()).toContain("localhost:3000");
+			expect(page.url()).toMatch(/^http:\/\/(127\.0\.0\.1|localhost):3000\//);
 		});
 	});
 });

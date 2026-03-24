@@ -283,7 +283,7 @@ Given the goal is to improve the testing suite rock solid and we have limited ti
 ### Medium Term (3-4 hours)
 1. Add integration tests for untested pages:
    - `/app/pages/login.vue`, `/app/pages/register.client.vue`, `/app/pages/reset-password.client.vue`
-   - `/app/pages/travel.vue`, `/app/pages/about.vue`
+   - `/app/pages/travel.vue`, `/app/pages/entdecken.vue`
    - `/app/pages/profile.client.vue`
 2. Add integration tests for untested components:
    - `/app/components/tiptap/editor.vue`

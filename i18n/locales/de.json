@@ -10,6 +10,7 @@
     "home": "Home",
     "about": "Über uns",
     "travel": "Anreise",
+    "entdecken": "Entdecken",
     "organisatorisches": "Organisatorisches",
     "documents": "Dokumente",
     "profile": "Profil",
@@ -31,6 +32,10 @@
     "travel": {
       "title": "Anreise nach Giens",
       "subtitle": "Tipps für eine entspannte Reise in den Süden."
+    },
+    "entdecken": {
+      "title": "Entdecken",
+      "subtitle": "Märkte, Ausflüge und praktische Tipps rund um Giens."
     },
     "organisatorisches": {
       "title": "Organisatorisches",
@@ -286,6 +291,7 @@
   "ownerDocuments": {
     "title": "Eigentümer-Dokumente",
     "subtitle": "Alle Dateien aus Ihren Häusern an einem Ort.",
+    "lastUpdated": "Zuletzt aktualisiert",
     "emptyTitle": "Noch keine Dokumente vorhanden",
     "emptyText": "Laden Sie Dateien in einem Ihrer Häuser hoch, damit sie hier erscheinen.",
     "loadError": "Dokumente konnten nicht geladen werden.",

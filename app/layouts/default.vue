@@ -33,7 +33,7 @@
 							variant="ghost"
 							class="rounded-full"
 							aria-label="Suchen"
-							@click="openSearch" />
+							@click="handleOpenSearch" />
 					</div>
 
 					<UiLanguageSwitcher />
@@ -74,7 +74,7 @@
 
 		<!-- Search Modal (accessible from mobile) -->
 		<ClientOnly>
-			<UiSearchModal />
+			<UiLazySearchModal v-if="isSearchMounted" />
 		</ClientOnly>
 
 		<!-- Main Content -->
@@ -105,17 +105,28 @@ const route = useRoute();
 const nuxtApp = useNuxtApp();
 const colorMode = useColorMode();
 const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
-const { openSearch } = useSearchModal();
+const { openSearch, isMounted: isSearchMounted } = useSearchModal();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
-const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
-const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
-const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher : false);
-const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
+const authInitialized = computed(() => import.meta.client ? nuxtApp.$authInitialized?.value ?? false : false);
+const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
+const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
+const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher?.value ?? false : false);
+const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
 
-onMounted(async () => {
-	await fetchSettings();
-	await fetchUserPreference();
+const hasLoadedUserFlags = ref(false);
+
+function handleOpenSearch() {
+	openSearch();
+}
+
+watch([authInitialized, currentUser], async ([initialized, user]) => {
+	if (!import.meta.client || hasLoadedUserFlags.value || !initialized || !user?.value) {
+		return;
+	}
+
+	hasLoadedUserFlags.value = true;
+	await Promise.all([fetchSettings(), fetchUserPreference()]);
 });
 
 const currentThemeIcon = computed(() => {
@@ -163,10 +174,10 @@ const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 		active: route.path === "/travel" || route.path === "/fr/travel",
 	},
 	{
-		label: t("nav.about"),
-		to: localePath("/about"),
-		icon: "i-lucide-info",
-		active: route.path === "/about" || route.path === "/fr/about",
+		label: t("nav.entdecken"),
+		to: localePath("/entdecken"),
+		icon: "i-lucide-map",
+		active: route.path === "/entdecken" || route.path === "/fr/entdecken",
 	},
 ]);
 
@@ -191,10 +202,10 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			active: route.path === "/travel" || route.path === "/fr/travel",
 		},
 		{
-			label: t("nav.about"),
-			to: localePath("/about"),
-			icon: "i-lucide-info",
-			active: route.path === "/about" || route.path === "/fr/about",
+			label: t("nav.entdecken"),
+			to: localePath("/entdecken"),
+			icon: "i-lucide-map",
+			active: route.path === "/entdecken" || route.path === "/fr/entdecken",
 		},
 	];
 

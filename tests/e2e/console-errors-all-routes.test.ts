@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const ALL_ROUTES = [
 	"/",
-	"/about",
 	"/travel",
+	"/entdecken",
 	"/login",
 	"/register",
 	"/reset-password",

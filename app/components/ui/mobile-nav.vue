@@ -48,6 +48,7 @@
 			{ label: t("nav.home"), icon: "i-lucide-house", to: localePath("/") },
 			{ label: t("nav.organisatorisches"), icon: "i-lucide-clipboard-list", to: localePath("/organisatorisches") },
 			{ label: t("nav.travel"), icon: "i-lucide-car", to: localePath("/travel") },
+			{ label: t("nav.entdecken"), icon: "i-lucide-map", to: localePath("/entdecken") },
 		];
 
 		if (import.meta.client && (nuxtApp.$isReader?.value || nuxtApp.$isOwner?.value)) {

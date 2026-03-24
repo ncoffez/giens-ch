@@ -67,6 +67,10 @@ export default defineNuxtConfig({
 			},
 		},
 	},
+	routeRules: {
+		"/about": { redirect: "/" },
+		"/fr/about": { redirect: "/fr" },
+	},
 	hooks: {
 		'nitro:config': (config) => {
 			// @ts-ignore

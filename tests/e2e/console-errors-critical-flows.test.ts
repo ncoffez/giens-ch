@@ -6,13 +6,18 @@ test.describe("Critical User Flows", () => {
 		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 
-	test("about page loads correctly", async ({ page }) => {
+	test("about page redirects to home", async ({ page }) => {
 		await page.goto("/about");
-		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
+		await expect(page).toHaveURL(/\/$/);
 	});
 
 	test("travel page loads correctly", async ({ page }) => {
 		await page.goto("/travel");
+		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
+	});
+
+	test("entdecken page loads correctly", async ({ page }) => {
+		await page.goto("/entdecken");
 		await expect(page.locator("h1, h2, h3").first()).toBeVisible();
 	});
 

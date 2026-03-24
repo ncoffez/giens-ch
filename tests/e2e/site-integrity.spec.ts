@@ -47,4 +47,10 @@ test.describe("Site Integrity", () => {
 		await expect(mapsButton).toBeVisible();
 		await expect(mapsButton).toHaveAttribute("href", /google\.com\/maps/);
 	});
+
+	test("should load entdecken page and show markets section", async ({ page }) => {
+		await page.goto("/entdecken");
+
+		await expect(page.locator("#maerkte")).toBeVisible();
+	});
 });

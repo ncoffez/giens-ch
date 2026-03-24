@@ -42,7 +42,9 @@ export interface HomeFile {
 	url: string;
 	folderId: string | null;
 	uploadedAt: string;
+	updatedAt?: string;
 	uploadedBy: string;
+	lastModified?: number;
 	storagePath?: string;
 }
 

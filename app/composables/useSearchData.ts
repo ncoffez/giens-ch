@@ -52,6 +52,12 @@ interface SearchableGlobalDocument {
 	folderPath?: string;
 }
 
+interface SearchIndexResponse {
+	headings: StoredHeading[];
+	features: StoredFeature[];
+	timeline: StoredTimeline[];
+}
+
 const headingsCache = ref<StoredHeading[]>([]);
 const featuresCache = ref<StoredFeature[]>([]);
 const timelineCache = ref<StoredTimeline[]>([]);
@@ -60,23 +66,6 @@ const isLoading = ref(false);
 const isLoaded = ref(false);
 const loadedLocale = ref<string | null>(null);
 const searchUsage = useLocalStorage<Record<string, number>>("search-usage", {});
-
-function slugify(text: string): string {
-	return text
-		.toLowerCase()
-		.replace(/ä/g, "ae")
-		.replace(/ö/g, "oe")
-		.replace(/ü/g, "ue")
-		.replace(/ß/g, "ss")
-		.replace(/é/g, "e")
-		.replace(/è/g, "e")
-		.replace(/ê/g, "e")
-		.replace(/à/g, "a")
-		.replace(/ù/g, "u")
-		.replace(/ç/g, "c")
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-|-$/g, "");
-}
 
 function normalizeText(text: string): string {
 	return text
@@ -89,47 +78,14 @@ function normalizeText(text: string): string {
 		.replace(/ß/g, "ss");
 }
 
-function stripHtml(html: string): string {
-	if (!html) return "";
-	return html
-		.replace(/<[^>]*>/g, " ")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
-function extractHeadingsFromHtml(html: string, page: string, pagePath: string): StoredHeading[] {
-	if (!html) return [];
-
-	const headings: StoredHeading[] = [];
-	const headingRegex = /<h[1-4][^>]*>(.*?)<\/h[1-4]>/gi;
-	let match;
-
-	while ((match = headingRegex.exec(html)) !== null) {
-		const headingText = stripHtml(match[1] || "");
-		if (headingText && headingText.length > 2) {
-			const nextContent = html.substring(match.index + match[0].length, match.index + match[0].length + 200);
-			const context = stripHtml(nextContent).substring(0, 100);
-			headings.push({
-				id: slugify(headingText),
-				text: headingText,
-				context,
-				page,
-				pagePath,
-			});
-		}
-	}
-
-	return headings;
-}
-
 export function useSearchData() {
 	const nuxtApp = useNuxtApp();
 	const { locale, t } = useI18n();
 
-	const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
-	const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
-	const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher : false);
-	const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
+	const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
+	const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
+	const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher?.value ?? false : false);
+	const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
 	const canAccessDocuments = computed(() => isOwner.value || isReader.value || isPublisher.value || isAdmin.value);
 	const canAccessOwnerDocuments = computed(() => isOwner.value || isAdmin.value);
 
@@ -156,146 +112,14 @@ export function useSearchData() {
 
 		isLoading.value = true;
 		try {
-			const allHeadings: StoredHeading[] = [];
-			const allFeatures: StoredFeature[] = [];
-			const allTimeline: StoredTimeline[] = [];
 			const currentLocale = locale.value;
+			const response = await $fetch<SearchIndexResponse>("/api/search-index", {
+				query: { locale: currentLocale },
+			}).catch(() => null);
 
-			const [
-				orgData,
-				homeFeaturesData,
-				homeTimelineData,
-				homeMiteinanderData,
-				aboutTimelineData,
-				aboutIntroData,
-				aboutCommunityData,
-				travelLageData,
-				travelAutoData,
-				travelZugData,
-				travelFlugzeugData,
-				travelFreizeitData,
-				travelMaerkteData,
-				travelEinkaufData,
-				travelAusfluegeData,
-			] = await Promise.all([
-				$fetch<any>(`/api/content/organisatorisches?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/index-features?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/index-timeline?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/index-miteinander?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/about-timeline?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/about-intro?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/about-community?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-lage?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-auto?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-zug?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-flugzeug?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-freizeit?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-maerkte?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-einkauf?locale=${currentLocale}`).catch(() => null),
-				$fetch<any>(`/api/content/travel-ausfluege?locale=${currentLocale}`).catch(() => null),
-			]);
-
-			const organisatorischesName = t("nav.organisatorisches");
-			const homeName = t("nav.home");
-			const aboutName = t("nav.about");
-			const travelName = t("nav.travel");
-
-			if (orgData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(orgData.content, organisatorischesName, "/organisatorisches"));
-			}
-			if (homeMiteinanderData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(homeMiteinanderData.content, homeName, "/"));
-			}
-			if (aboutIntroData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(aboutIntroData.content, aboutName, "/about"));
-			}
-			if (aboutCommunityData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(aboutCommunityData.content, aboutName, "/about"));
-			}
-			if (travelLageData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelLageData.content, travelName, "/travel"));
-			}
-			if (travelAutoData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelAutoData.content, travelName, "/travel#mit-dem-auto"));
-			}
-			if (travelZugData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelZugData.content, travelName, "/travel#mit-dem-zug"));
-			}
-			if (travelFlugzeugData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelFlugzeugData.content, travelName, "/travel#mit-dem-flugzeug"));
-			}
-			if (travelFreizeitData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelFreizeitData.content, travelName, "/travel#freizeit"));
-			}
-			if (travelMaerkteData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelMaerkteData.content, travelName, "/travel#maerkte"));
-			}
-			if (travelEinkaufData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelEinkaufData.content, travelName, "/travel#einkauf"));
-			}
-			if (travelAusfluegeData?.content) {
-				allHeadings.push(...extractHeadingsFromHtml(travelAusfluegeData.content, travelName, "/travel#ausfluege"));
-			}
-
-			if (homeFeaturesData?.content) {
-				try {
-					const features = JSON.parse(homeFeaturesData.content);
-					if (Array.isArray(features)) {
-						features.forEach((feature: any, index: number) => {
-							if (feature.title) {
-								allFeatures.push({
-									id: `feature-${index}`,
-									title: feature.title,
-									description: feature.description || "",
-								});
-							}
-						});
-					}
-				} catch {
-				}
-			}
-
-			if (homeTimelineData?.content) {
-				try {
-					const timeline = JSON.parse(homeTimelineData.content);
-					if (Array.isArray(timeline)) {
-						timeline.forEach((entry: any, index: number) => {
-							if (entry.title) {
-								allTimeline.push({
-									id: `timeline-${index}`,
-									title: entry.title,
-									description: entry.description || "",
-									date: entry.date || "",
-								});
-							}
-						});
-					}
-				} catch {
-				}
-			}
-
-			if (aboutTimelineData?.content) {
-				try {
-					const timeline = JSON.parse(aboutTimelineData.content);
-					if (Array.isArray(timeline)) {
-						timeline.forEach((entry: any, index: number) => {
-							if (entry.title) {
-								allTimeline.push({
-									id: `about-timeline-${index}`,
-									title: entry.title,
-									description: entry.description || "",
-									date: entry.date || "",
-								});
-							}
-						});
-					}
-				} catch {
-				}
-			}
-
-			headingsCache.value = allHeadings;
-			featuresCache.value = allFeatures;
-			timelineCache.value = allTimeline;
+			headingsCache.value = response?.headings || [];
+			featuresCache.value = response?.features || [];
+			timelineCache.value = response?.timeline || [];
 			loadedLocale.value = currentLocale;
 			isLoaded.value = true;
 		} finally {
@@ -359,6 +183,10 @@ export function useSearchData() {
 	};
 
 	const getUsageCount = (usageKey: string) => searchUsage.value?.[usageKey] || 0;
+
+	const getHeadingsByPagePath = (pagePathPrefix: string) => {
+		return headingsCache.value.filter((heading) => heading.pagePath.startsWith(pagePathPrefix));
+	};
 
 	const scoreText = (query: string, values: string[]) => {
 		const normalizedQuery = normalizeText(query).trim();
@@ -492,13 +320,13 @@ export function useSearchData() {
 				usageKey: "page:/travel",
 			},
 			{
-				id: "page-about",
-				label: t("nav.about"),
-				context: t("hero.about.subtitle"),
-				to: "/about",
-				icon: "i-lucide-info",
+				id: "page-entdecken",
+				label: t("nav.entdecken"),
+				context: t("hero.entdecken.subtitle"),
+				to: "/entdecken",
+				icon: "i-lucide-map",
 				type: "page",
-				usageKey: "page:/about",
+				usageKey: "page:/entdecken",
 			},
 		];
 
@@ -562,6 +390,7 @@ export function useSearchData() {
 		loadDocuments,
 		searchAll,
 		getRecommendations,
+		getHeadingsByPagePath,
 		recordSelection,
 		canAccessDocuments,
 		canAccessOwnerDocuments,
