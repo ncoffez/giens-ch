@@ -28,8 +28,8 @@ const isSaving = ref(false);
 const moveBrowseFolderId = ref<string | null>(null);
 
 const viewMode = ref<"grid" | "list">("list");
-const sortBy = ref<"name" | "date" | "size">("name");
-const sortOrder = ref<"asc" | "desc">("asc");
+const sortBy = ref<"name" | "date" | "size">("date");
+const sortOrder = ref<"asc" | "desc">("desc");
 
 const cursor = ref<string | null>(null);
 const hasMore = ref(false);
@@ -226,6 +226,19 @@ const formatTimestamp = (timestamp: number) => {
 		month: "2-digit",
 		year: "numeric",
 	});
+};
+
+const copyDeepLink = async (params: { folderId?: string | null; fileId?: string | null }) => {
+	const targetUrl = new URL(route.path || "/documents", window.location.origin);
+	if (params.folderId) {
+		targetUrl.searchParams.set("folder", params.folderId);
+	}
+	if (params.fileId) {
+		targetUrl.searchParams.set("fileId", params.fileId);
+	}
+
+	await navigator.clipboard.writeText(targetUrl.toString());
+	toast.add({ title: "Link kopiert", color: "success" });
 };
 
 const fetchData = async (folderId: string | null = null) => {
@@ -723,6 +736,10 @@ const getFolderMenuItems = (folder: GlobalFolder) => [
 			selectedFiles.value = [];
 			openMoveModal();
 		},
+	}, {
+		label: "Link kopieren",
+		icon: "i-lucide-link",
+		onSelect: () => copyDeepLink({ folderId: folder.id }),
 	}],
 	[{
 		label: "Löschen",
@@ -741,6 +758,10 @@ const getFileMenuItems = (file: GlobalFile) => [
 		label: "Download",
 		icon: "i-lucide-download",
 		onSelect: () => downloadFileToDisk(file),
+	}, {
+		label: "Link kopieren",
+		icon: "i-lucide-link",
+		onSelect: () => copyDeepLink({ folderId: file.folderId, fileId: file.id }),
 	}, {
 		label: "Umbenennen",
 		icon: "i-lucide-pencil",
@@ -870,7 +891,7 @@ const toggleSort = (column: "name" | "date" | "size") => {
 		sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
 	} else {
 		sortBy.value = column;
-		sortOrder.value = "asc";
+		sortOrder.value = column === "date" ? "desc" : "asc";
 	}
 	fetchData(currentFolderId.value);
 };

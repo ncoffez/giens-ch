@@ -30,6 +30,7 @@ export async function createHome(name: string, ownerId: string): Promise<Home> {
 		ownerIds: [ownerId],
 		photos: [],
 		files: [],
+		privateFiles: [],
 		folders: [],
 		enabled: true,
 		createdAt: now,

@@ -42,6 +42,7 @@ interface StoredDocument {
 	to: string;
 	usageKey: string;
 	icon?: string;
+	updatedAt?: string;
 }
 
 interface SearchableGlobalDocument {
@@ -159,6 +160,7 @@ export function useSearchData() {
 						: t("search.documentTypes.global"),
 					to: buildGlobalDocumentRoute(file.folderId, file.id),
 					usageKey: `global-document:${file.id}`,
+					updatedAt: file.uploadedAt,
 					icon: file.type?.startsWith("image/") ? "i-lucide-image" :
 						file.type?.includes("pdf") ? "i-lucide-file-text" :
 						"i-lucide-file",
@@ -172,6 +174,7 @@ export function useSearchData() {
 				context: `${t("search.documentTypes.owner")} · ${document.homeName}`,
 				to: `/owner/documents?fileId=${document.id}`,
 				usageKey: `owner-document:${document.homeId}:${document.id}`,
+				updatedAt: document.updatedAt || document.uploadedAt,
 				icon: document.type?.startsWith("image/") ? "i-lucide-image" :
 					document.type?.includes("pdf") ? "i-lucide-file-text" :
 					"i-lucide-file",
@@ -268,6 +271,7 @@ export function useSearchData() {
 		if (canAccessDocuments.value) {
 			for (const document of documentsCache.value) {
 				if (matchesQuery(`${document.name} ${document.description || ""} ${document.context || ""}`)) {
+					const nameScore = scoreText(query, [document.name]);
 					results.push({
 						id: document.id,
 						label: document.name,
@@ -276,6 +280,7 @@ export function useSearchData() {
 						icon: document.icon,
 						type: "document",
 						usageKey: document.usageKey,
+						score: 80 + nameScore,
 					});
 				}
 			}
@@ -283,11 +288,31 @@ export function useSearchData() {
 
 		return sortResults(results.map((result) => ({
 			...result,
-			score:
+			score: (result.score || 0) +
 				scoreText(query, [result.label, result.context || "", ...(result.keywords || [])]) +
 				searchTerms.length * 5 +
 				getUsageCount(result.usageKey) * 10,
 		}))).slice(0, 20);
+	};
+
+	const getDocumentRecommendations = (): SearchResult[] => {
+		return [...documentsCache.value]
+			.sort((a, b) => {
+				const usageDelta = getUsageCount(b.usageKey) - getUsageCount(a.usageKey);
+				if (usageDelta !== 0) return usageDelta;
+				return Date.parse(b.updatedAt || "") - Date.parse(a.updatedAt || "");
+			})
+			.slice(0, 6)
+			.map((document) => ({
+				id: document.id,
+				label: document.name,
+				context: document.context,
+				to: document.to,
+				icon: document.icon,
+				type: "document" as const,
+				usageKey: document.usageKey,
+				score: 15 + getUsageCount(document.usageKey) * 10,
+			}));
 	};
 
 	const getRecommendations = (): SearchResult[] => {
@@ -392,6 +417,7 @@ export function useSearchData() {
 		getRecommendations,
 		getHeadingsByPagePath,
 		recordSelection,
+		getDocumentRecommendations,
 		canAccessDocuments,
 		canAccessOwnerDocuments,
 	};

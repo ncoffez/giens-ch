@@ -34,16 +34,18 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}
 
-	const file = (home.files || []).find((f) => f.id === body.fileId);
+	const isPrivate = !!body.private;
+	const sourceFiles = isPrivate ? (home.privateFiles || []) : (home.files || []);
+	const file = sourceFiles.find((f) => f.id === body.fileId);
 	if (!file) {
 		throw createError({ statusCode: 404, message: "File not found" });
 	}
 
-	// Remove from files array
-	const files = (home.files || []).filter((f) => f.id !== body.fileId);
+	const targetCollectionKey = isPrivate ? "privateFiles" : "files";
+	const files = sourceFiles.filter((f) => f.id !== body.fileId);
 
 	await db.collection("homes").doc(homeId).update({
-		files,
+		[targetCollectionKey]: files,
 		updatedAt: new Date().toISOString(),
 	});
 

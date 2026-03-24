@@ -1,4 +1,4 @@
-import { db, storage } from "../../useFirebaseAdmin";
+import { auth, db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 
 const SIGNED_URL_EXPIRY_MINUTES = 5;
@@ -16,6 +16,30 @@ export default defineEventHandler(async (event) => {
 	const filesSnapshot = await db.collection("globalFiles").where("deletedAt", "!=", null).get();
 
 	const bucket = storage.bucket();
+	const deletedByIds = new Set<string>();
+	filesSnapshot.docs.forEach((doc) => {
+		const data = doc.data();
+		if (data.deletedBy) {
+			deletedByIds.add(data.deletedBy);
+		}
+	});
+
+	const deletedByLabels = new Map<string, string>();
+	await Promise.all(
+		Array.from(deletedByIds).map(async (uid) => {
+			try {
+				const [userDoc, userRecord] = await Promise.all([
+					db.collection("users").doc(uid).get(),
+					auth.getUser(uid),
+				]);
+				const firestoreData = userDoc.exists ? userDoc.data() : null;
+				const label = firestoreData?.displayName || firestoreData?.email || userRecord.displayName || userRecord.email || uid;
+				deletedByLabels.set(uid, label);
+			} catch {
+				deletedByLabels.set(uid, uid);
+			}
+		})
+	);
 
 	const files = await Promise.all(
 		filesSnapshot.docs.map(async (doc) => {
@@ -37,6 +61,7 @@ export default defineEventHandler(async (event) => {
 			return {
 				...data,
 				url,
+				deletedByLabel: data.deletedBy ? deletedByLabels.get(data.deletedBy) || data.deletedBy : null,
 			};
 		})
 	);

@@ -153,6 +153,7 @@ onMounted(fetchData);
 							<div class="flex items-center gap-3 text-xs text-stone-400">
 								<span>{{ formatFileSize(file.size) }}</span>
 								<span v-if="file.deletedAt">· Gelöscht: {{ new Date(file.deletedAt).toLocaleDateString('de-CH') }}</span>
+								<span v-if="file.deletedByLabel">· Von: {{ file.deletedByLabel }}</span>
 							</div>
 						</div>
 

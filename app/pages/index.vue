@@ -341,23 +341,43 @@ useHead({
 
 		<!-- Organisatorisches Link Section -->
 		<section class="max-w-screen-xl mx-auto px-4 w-full">
-			<NuxtLink
-				:to="localePath('/organisatorisches')"
-				class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 border border-primary/20 hover:border-primary/40 transition-all group"
-			>
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-4">
-						<div class="p-3 bg-primary/10 dark:bg-primary/20 rounded-xl">
-							<UIcon name="i-lucide-clipboard-list" class="w-6 h-6 text-primary" />
+			<div class="grid gap-4 lg:grid-cols-2">
+				<NuxtLink
+					:to="localePath('/entdecken')"
+					class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200/70 dark:border-amber-800/50 hover:border-amber-400 transition-all group"
+				>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-4">
+							<div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+								<UIcon name="i-lucide-map" class="w-6 h-6 text-amber-700 dark:text-amber-300" />
+							</div>
+							<div>
+								<h3 class="font-bold text-lg">{{ t("nav.entdecken") }}</h3>
+								<p class="text-stone-600 dark:text-stone-300 text-sm">Märkte, Ausflüge und praktische Tipps rund um Giens</p>
+							</div>
 						</div>
-						<div>
-							<h3 class="font-bold text-lg">{{ t("home.organisatorisches.title") }}</h3>
-							<p class="text-stone-500 text-sm">{{ t("home.organisatorisches.subtitle") }}</p>
-						</div>
+						<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-amber-700 dark:text-amber-300 group-hover:translate-x-1 transition-transform" />
 					</div>
-					<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
-				</div>
-			</NuxtLink>
+				</NuxtLink>
+
+				<NuxtLink
+					:to="localePath('/organisatorisches')"
+					class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 border border-primary/20 hover:border-primary/40 transition-all group"
+				>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-4">
+							<div class="p-3 bg-primary/10 dark:bg-primary/20 rounded-xl">
+								<UIcon name="i-lucide-clipboard-list" class="w-6 h-6 text-primary" />
+							</div>
+							<div>
+								<h3 class="font-bold text-lg">{{ t("home.organisatorisches.title") }}</h3>
+								<p class="text-stone-500 text-sm">{{ t("home.organisatorisches.subtitle") }}</p>
+							</div>
+						</div>
+						<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+					</div>
+				</NuxtLink>
+			</div>
 		</section>
 	</div>
 </template>
