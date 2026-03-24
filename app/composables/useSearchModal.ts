@@ -1,4 +1,5 @@
 const searchModalOpen = ref(false);
+const searchModalMounted = ref(false);
 
 export function useSearchModal() {
 	const open = computed({
@@ -9,6 +10,7 @@ export function useSearchModal() {
 	});
 
 	const openSearch = () => {
+		searchModalMounted.value = true;
 		searchModalOpen.value = true;
 	};
 
@@ -18,6 +20,7 @@ export function useSearchModal() {
 
 	return {
 		open,
+		isMounted: searchModalMounted,
 		openSearch,
 		closeSearch,
 	};

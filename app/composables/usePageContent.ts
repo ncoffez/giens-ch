@@ -11,10 +11,10 @@ export async function usePageContent(contentId: string) {
 	const isSaving = ref(false);
 	const content = ref("");
 	const originalContent = ref("");
+	const fetchKey = computed(() => `content:${contentId}:${locale.value}`);
 
-	const { data, status, refresh, error } = await useFetch<PageContent>(`/api/content/${contentId}`, {
-		server: false,
-		lazy: true,
+	const { data, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {
+		key: fetchKey,
 		query: { locale },
 	});
 

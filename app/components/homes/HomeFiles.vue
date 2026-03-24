@@ -66,6 +66,7 @@ const uploadFiles = async (event: Event) => {
 					name: file.name,
 					type: file.type,
 					size: file.size,
+					lastModified: file.lastModified,
 				},
 			});
 			successCount++;

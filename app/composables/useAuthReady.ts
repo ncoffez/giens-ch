@@ -2,21 +2,24 @@ import type { Ref } from "vue";
 
 export function useAuthReady() {
 	const { $authInitialized, $token } = useNuxtApp();
+	const fallbackReady = computed(() => import.meta.server);
+	const readyRef = $authInitialized ?? fallbackReady;
+	const tokenRef = $token ?? ref<string | null>(null);
 
 	const waitForAuth = async () => {
-		return waitForAuthInitialization($authInitialized);
+		return waitForAuthInitialization(readyRef);
 	};
 
 	const getFreshToken = async () => {
 		await waitForAuth();
-		return $token.value;
+		return tokenRef.value;
 	};
 
 	return {
 		waitForAuth,
 		getFreshToken,
-		isReady: $authInitialized,
-		token: $token,
+		isReady: readyRef,
+		token: tokenRef,
 	};
 }
 

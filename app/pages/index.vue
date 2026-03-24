@@ -145,10 +145,10 @@ useHead({
 				<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 			</div>
 			<template v-else>
-				<ClientOnly>
-					<UiFeatureCardsEditor v-if="featureCards.isEditing.value" v-model="featureCards.data.value" />
-					<UiFeatureCards v-else :cards="featureCards.data.value" />
+				<ClientOnly v-if="featureCards.isEditing.value">
+					<UiLazyFeatureCardsEditor v-model="featureCards.data.value" />
 				</ClientOnly>
+				<UiFeatureCards v-else :cards="featureCards.data.value" />
 			</template>
 		</section>
 
@@ -198,25 +198,15 @@ useHead({
 					<div v-if="miteinanderContent.status.value === 'pending'" class="flex justify-center py-6">
 						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 					</div>
-					<ClientOnly v-else>
-						<TiptapEditor v-if="miteinanderContent.isEditing.value" v-model="miteinanderContent.content.value" />
-						<div
-							v-else
-							class="text-lg md:text-xl text-stone-600 dark:text-stone-400 leading-relaxed prose dark:prose-invert max-w-none"
-							v-html="miteinanderContent.content.value || defaultMiteinanderContent"
-						/>
+					<ClientOnly v-if="miteinanderContent.isEditing.value && miteinanderContent.status.value !== 'pending'">
+						<TiptapLazyEditor v-model="miteinanderContent.content.value" />
 					</ClientOnly>
+					<div
+						v-else-if="miteinanderContent.status.value !== 'pending'"
+						class="text-lg md:text-xl text-stone-600 dark:text-stone-400 leading-relaxed prose dark:prose-invert max-w-none"
+						v-html="miteinanderContent.content.value || defaultMiteinanderContent"
+					/>
 
-					<div class="flex justify-center md:justify-start gap-4">
-						<UButton
-							:to="localePath('/about')"
-							size="xl"
-							color="neutral"
-							variant="outline"
-							class="rounded-full px-8">
-							{{ t("home.miteinander.button") }}
-						</UButton>
-					</div>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<img
@@ -276,10 +266,10 @@ useHead({
 			<div v-if="stats.status.value === 'pending'" class="flex justify-center py-8">
 				<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 			</div>
-			<ClientOnly v-else>
-				<UiStatsEditor v-if="stats.isEditing.value" v-model="stats.data.value" />
-				<UiStats v-else :stats="stats.data.value" />
+			<ClientOnly v-if="stats.isEditing.value && stats.status.value !== 'pending'">
+				<UiLazyStatsEditor v-model="stats.data.value" />
 			</ClientOnly>
+			<UiStats v-else-if="stats.status.value !== 'pending'" :stats="stats.data.value" />
 		</div>
 
 		<!-- Timeline Section -->
@@ -331,10 +321,14 @@ useHead({
 				<div v-if="timeline.status.value === 'pending'" class="flex justify-center py-12">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 				</div>
-				<ClientOnly v-else>
-					<UiTimelineEditor v-if="timeline.isEditing.value" v-model="timeline.data.value" />
-					<UTimeline v-else :default-value="3" :items="timelineItems" class="max-w-2xl mx-auto" />
+				<ClientOnly v-if="timeline.isEditing.value && timeline.status.value !== 'pending'">
+					<UiLazyTimelineEditor v-model="timeline.data.value" />
 				</ClientOnly>
+				<UTimeline
+					v-else-if="timeline.status.value !== 'pending'"
+					:default-value="3"
+					:items="timelineItems"
+					class="max-w-2xl mx-auto" />
 			</div>
 		</section>
 

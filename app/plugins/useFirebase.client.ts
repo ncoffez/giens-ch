@@ -27,7 +27,7 @@ export default defineNuxtPlugin((_nuxtApp) => {
 	const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
 		user.value = currentUser;
 		if (currentUser) {
-			const tokenResult = await getIdTokenResult(currentUser, true);
+			const tokenResult = await getIdTokenResult(currentUser);
 			claims.value = tokenResult.claims;
 			token.value = tokenResult.token;
 		} else {

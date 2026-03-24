@@ -107,22 +107,22 @@ useHead({
 			</div>
 
 			<template v-else>
-				<ClientOnly>
-					<TiptapEditor v-if="organisatorischesContent.isEditing.value" v-model="organisatorischesContent.content.value" />
-					<div v-else>
-						<div
-							v-if="organisatorischesContent.content.value"
-							ref="contentRef"
-							class="prose dark:prose-invert max-w-none"
-							v-html="organisatorischesContent.content.value"
-						/>
-						<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
-							<UIcon name="i-lucide-file-text" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
-							<p class="text-stone-500">{{ t("editor.noContent") }}</p>
-							<p v-if="organisatorischesContent.isAdmin.value" class="text-sm text-stone-400 mt-2">{{ t("editor.addContentHint") }}</p>
-						</div>
-					</div>
+				<ClientOnly v-if="organisatorischesContent.isEditing.value">
+					<TiptapLazyEditor v-model="organisatorischesContent.content.value" />
 				</ClientOnly>
+				<div v-else>
+					<div
+						v-if="organisatorischesContent.content.value"
+						ref="contentRef"
+						class="prose dark:prose-invert max-w-none"
+						v-html="organisatorischesContent.content.value"
+					/>
+					<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
+						<UIcon name="i-lucide-file-text" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
+						<p class="text-stone-500">{{ t("editor.noContent") }}</p>
+						<p v-if="organisatorischesContent.isAdmin.value" class="text-sm text-stone-400 mt-2">{{ t("editor.addContentHint") }}</p>
+					</div>
+				</div>
 			</template>
 		</section>
 	</div>

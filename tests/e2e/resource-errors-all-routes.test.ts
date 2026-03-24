@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const ALL_ROUTES = [
 	'/',
-	'/about',
 	'/travel',
+	'/entdecken',
 	'/login',
 	'/register',
 	'/reset-password',
@@ -30,7 +30,7 @@ test.describe('All Routes - Basic Load Test', () => {
 		test(`${route}`, async ({ page }) => {
 			await page.goto(route);
 			await page.waitForLoadState('networkidle');
-			expect(page.url()).toContain('localhost:3000');
+			expect(page.url()).toMatch(/^http:\/\/(127\.0\.0\.1|localhost):3000\//);
 		});
 	});
 });

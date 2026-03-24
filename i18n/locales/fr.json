@@ -10,6 +10,7 @@
     "home": "Accueil",
     "about": "À propos",
     "travel": "Comment venir",
+    "entdecken": "Découvrir",
     "organisatorisches": "Organisation",
     "documents": "Documents",
     "profile": "Profil",
@@ -31,6 +32,10 @@
     "travel": {
       "title": "Comment venir à Giens",
       "subtitle": "Conseils pour un voyage détendu dans le Sud."
+    },
+    "entdecken": {
+      "title": "Découvrir",
+      "subtitle": "Marchés, excursions et conseils pratiques autour de Giens."
     },
     "organisatorisches": {
       "title": "Organisation",
@@ -286,6 +291,7 @@
   "ownerDocuments": {
     "title": "Documents des propriétaires",
     "subtitle": "Tous les fichiers de vos maisons au même endroit.",
+    "lastUpdated": "Dernière mise à jour",
     "emptyTitle": "Aucun document pour le moment",
     "emptyText": "Téléversez des fichiers dans l’une de vos maisons pour les voir ici.",
     "loadError": "Impossible de charger les documents.",

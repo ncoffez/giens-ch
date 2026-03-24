@@ -9,6 +9,8 @@ interface OwnerDocument {
 	type: string;
 	size: number;
 	uploadedAt: string;
+	updatedAt?: string;
+	lastModified?: number;
 	uploadedBy: string;
 	downloadPath: string;
 }
@@ -26,6 +28,13 @@ export default defineEventHandler(async (event) => {
 	const homes = await getHomesForUser(claims.uid);
 	const documents: OwnerDocument[] = [];
 
+	const getDocumentTimestamp = (document: Pick<OwnerDocument, "updatedAt" | "uploadedAt" | "lastModified">) => {
+		const isoTime = Date.parse(document.updatedAt || document.uploadedAt || "");
+		if (!Number.isNaN(isoTime) && isoTime > 0) return isoTime;
+		if (typeof document.lastModified === "number" && Number.isFinite(document.lastModified)) return document.lastModified;
+		return 0;
+	};
+
 	for (const home of homes) {
 		for (const file of home.files || []) {
 			if (!file.storagePath) continue;
@@ -38,13 +47,17 @@ export default defineEventHandler(async (event) => {
 				type: file.type,
 				size: file.size,
 				uploadedAt: file.uploadedAt,
+				updatedAt: file.updatedAt || file.uploadedAt,
+				lastModified: file.lastModified,
 				uploadedBy: file.uploadedBy,
 				downloadPath: `/api/homes/${home.id}/files/download?fileId=${file.id}`,
 			});
 		}
 	}
 
-	documents.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+	documents.sort((a, b) => {
+		return getDocumentTimestamp(b) - getDocumentTimestamp(a);
+	});
 
 	return {
 		documents,

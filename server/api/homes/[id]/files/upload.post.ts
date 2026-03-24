@@ -44,6 +44,8 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
+	const now = new Date().toISOString();
+
 	// Upload to Firebase Storage
 	const bucket = storage.bucket();
 	const fileId = crypto.randomUUID();
@@ -75,8 +77,10 @@ export default defineEventHandler(async (event) => {
 		size: body.size || 0,
 		url: publicUrl,
 		folderId: body.folderId || null,
-		uploadedAt: new Date().toISOString(),
+		uploadedAt: now,
+		updatedAt: now,
 		uploadedBy: claims.uid,
+		lastModified: typeof body.lastModified === "number" ? body.lastModified : undefined,
 		storagePath,
 	};
 

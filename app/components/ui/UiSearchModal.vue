@@ -6,15 +6,15 @@ const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
 const { t } = useI18n();
 const { canAccessHomes } = useFeatureFlags();
-const { loadAllData, loadDocuments, searchAll, getRecommendations, recordSelection, isLoading, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
+const { loadAllData, loadDocuments, searchAll, getRecommendations, getHeadingsByPagePath, recordSelection, isLoading, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
 
-const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
-const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
-const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
-const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
+const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
+const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
+const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
+const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 
 type SearchResultItem = {
 	id: string;
@@ -72,16 +72,16 @@ const staticPageItems = computed<SearchPaletteItem[]>(() => {
 			},
 		},
 		{
-			label: t("nav.about"),
-			icon: "i-lucide-info",
-			to: localePath("/about"),
+			label: t("nav.entdecken"),
+			icon: "i-lucide-map",
+			to: localePath("/entdecken"),
 			searchResult: {
-				id: "page-about",
-				label: t("nav.about"),
-				to: "/about",
-				icon: "i-lucide-info",
+				id: "page-entdecken",
+				label: t("nav.entdecken"),
+				to: "/entdecken",
+				icon: "i-lucide-map",
 				type: "page",
-				usageKey: "page:/about",
+				usageKey: "page:/entdecken",
 			},
 		},
 	];
@@ -214,6 +214,26 @@ const headingItems = computed<SearchPaletteItem[]>(() => {
 		}));
 });
 
+const organisatorischesHeadingItems = computed<SearchPaletteItem[]>(() => {
+	return getHeadingsByPagePath("/organisatorisches")
+		.slice(0, 6)
+		.map((result) => ({
+			label: result.text,
+			icon: "i-lucide-heading",
+			to: localePath(`${result.pagePath}#${result.id}`),
+			suffix: result.context ? result.context + "..." : undefined,
+			searchResult: {
+				id: result.id,
+				label: result.text,
+				context: result.context,
+				to: `${result.pagePath}#${result.id}`,
+				icon: "i-lucide-heading",
+				type: "heading" as const,
+				usageKey: `heading:${result.pagePath}:${result.id}`,
+			},
+		}));
+});
+
 const featureItems = computed<SearchPaletteItem[]>(() => {
 	return searchResults.value
 		.filter((result) => result.type === "feature" || result.type === "timeline")
@@ -258,6 +278,14 @@ const groups = computed(() => {
 			id: "pages",
 			label: t("search.sections.pages"),
 			items: staticPageItems.value,
+		});
+	}
+
+	if (!searchQuery.value.trim() && organisatorischesHeadingItems.value.length > 0) {
+		result.push({
+			id: "organisatorisches-headings",
+			label: t("nav.organisatorisches"),
+			items: organisatorischesHeadingItems.value,
 		});
 	}
 

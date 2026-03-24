@@ -56,7 +56,7 @@
 						<div class="min-w-0 flex-1">
 							<p class="truncate font-semibold">{{ document.name }}</p>
 							<p class="text-sm text-stone-500">
-								{{ formatFileSize(document.size) }} · {{ formatDate(document.uploadedAt) }}
+								{{ formatFileSize(document.size) }} · {{ t("ownerDocuments.lastUpdated") }}: {{ formatDate(document) }}
 							</p>
 						</div>
 						<UIcon name="i-lucide-download" class="w-5 h-5 text-stone-400" />
@@ -80,6 +80,8 @@ interface OwnerDocumentItem {
 	type: string;
 	size: number;
 	uploadedAt: string;
+	updatedAt?: string;
+	lastModified?: number;
 	uploadedBy: string;
 	downloadPath: string;
 }
@@ -113,7 +115,10 @@ const groupedDocuments = computed(() => {
 		grouped.get(document.homeId)?.documents.push(document);
 	}
 
-	return Array.from(grouped.values());
+	return Array.from(grouped.values()).map((group) => ({
+		...group,
+		documents: [...group.documents].sort((a, b) => getDocumentTimestamp(b) - getDocumentTimestamp(a)),
+	}));
 });
 
 const formatFileSize = (bytes: number) => {
@@ -122,8 +127,18 @@ const formatFileSize = (bytes: number) => {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString(locale.value === "fr" ? "fr-CH" : "de-CH", {
+const getDocumentTimestamp = (document: OwnerDocumentItem) => {
+	const isoTimestamp = Date.parse(document.updatedAt || document.uploadedAt || "");
+	if (!Number.isNaN(isoTimestamp) && isoTimestamp > 0) return isoTimestamp;
+	if (typeof document.lastModified === "number" && Number.isFinite(document.lastModified)) return document.lastModified;
+	return 0;
+};
+
+const formatDate = (document: OwnerDocumentItem) => {
+	const timestamp = getDocumentTimestamp(document);
+	if (!timestamp) return "—";
+
+	return new Date(timestamp).toLocaleDateString(locale.value === "fr" ? "fr-CH" : "de-CH", {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
