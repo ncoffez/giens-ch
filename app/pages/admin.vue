@@ -40,20 +40,24 @@ const items = [
 </script>
 
 <template>
-	<div class="mb-20 mt-12 max-w-screen-xl mx-auto px-4">
-		<div class="flex flex-col lg:flex-row gap-12">
+	<div class="mb-20 mt-6 max-w-screen-2xl mx-auto px-4">
+		<div class="app-card rounded-[2rem] p-4 md:p-6 lg:p-8">
+		<div class="flex flex-col lg:flex-row gap-6 lg:gap-10">
 			<!-- Sidebar -->
-			<aside class="w-full lg:w-64 shrink-0">
-				<div class="sticky top-24 space-y-6">
-					<div class="px-3">
-						<h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Admin</h1>
-						<p class="text-sm text-stone-500 mt-1">Verwaltung & Einstellungen</p>
+			<aside class="w-full lg:w-72 shrink-0">
+				<div class="lg:sticky lg:top-24 space-y-5">
+					<div class="rounded-[1.5rem] bg-gradient-to-br from-[var(--app-primary)]/12 to-[var(--app-accent)]/10 border border-[var(--app-border)] px-5 py-5">
+						<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-3">Kontrollzentrum</p>
+						<h1 class="display-copy text-3xl font-bold tracking-[-0.04em]">Administration</h1>
+						<p class="text-sm app-muted mt-2">Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort.</p>
 					</div>
 					
+					<div class="app-surface rounded-[1.5rem] p-3">
 					<UNavigationMenu 
 						:items="items" 
 						orientation="vertical"
 						class="w-full" />
+					</div>
 				</div>
 			</aside>
 
@@ -61,6 +65,7 @@ const items = [
 			<main class="flex-1 min-w-0">
 				<NuxtPage />
 			</main>
+		</div>
 		</div>
 	</div>
 </template>

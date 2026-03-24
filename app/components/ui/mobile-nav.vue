@@ -1,23 +1,25 @@
 <template>
-	<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-stone-100 dark:border-stone-800 pb-safe">
-		<div class="flex items-center justify-around h-18 px-2 py-1">
+	<nav class="lg:hidden fixed bottom-3 left-3 right-3 z-50">
+		<div class="app-surface rounded-[1.75rem] px-3 pt-2 pb-[calc(0.55rem+env(safe-area-inset-bottom))]">
+		<div class="grid grid-cols-5 items-center gap-1">
 			<NuxtLink
 				v-for="item in navItems"
 				:key="item.to"
 				:to="item.to"
-				class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-stone-500 dark:text-stone-400 transition-all duration-200 rounded-lg"
-				:class="{ 'text-primary-600 dark:text-primary-400': isActive(item.to.toString()) }">
-				<UIcon :name="item.icon" class="w-7 h-7" />
-				<span class="text-[11px] font-semibold uppercase tracking-wide">{{ item.label }}</span>
+				class="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[var(--app-muted)] transition-all duration-200"
+				:class="{ 'bg-[color:var(--app-primary)]/10 text-[var(--app-primary)]': isActive(item.to.toString()) }">
+				<UIcon :name="item.icon" class="w-5 h-5" />
+				<span class="text-[10px] font-semibold tracking-[0.08em] text-center leading-tight">{{ item.label }}</span>
 			</NuxtLink>
 			<button
-				class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 text-stone-500 dark:text-stone-400 transition-all duration-200 rounded-lg active:scale-95"
+				class="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[1.25rem] bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-accent)] text-white shadow-[0_16px_32px_rgba(36,108,122,0.28)] active:scale-95"
 				aria-label="Suchen"
 				@click="openSearch"
 			>
-				<UIcon name="i-lucide-search" class="w-7 h-7" />
-				<span class="text-[11px] font-semibold uppercase tracking-wide">{{ t("nav.search") }}</span>
+				<UIcon name="i-lucide-search" class="w-5 h-5" />
+				<span class="text-[10px] font-semibold tracking-[0.08em]">{{ t("nav.search") }}</span>
 			</button>
+		</div>
 		</div>
 	</nav>
 </template>
@@ -47,25 +49,16 @@
 		const items = [
 			{ label: t("nav.home"), icon: "i-lucide-house", to: localePath("/") },
 			{ label: t("nav.organisatorisches"), icon: "i-lucide-clipboard-list", to: localePath("/organisatorisches") },
-			{ label: t("nav.travel"), icon: "i-lucide-car", to: localePath("/travel") },
 			{ label: t("nav.entdecken"), icon: "i-lucide-map", to: localePath("/entdecken") },
 		];
 
 		if (import.meta.client && (nuxtApp.$isReader?.value || nuxtApp.$isOwner?.value)) {
-			items.push({ label: t("nav.documents"), icon: "i-lucide-folder", to: localePath("/documents") });
-		}
-
-		if (import.meta.client && nuxtApp.$isOwner?.value && canAccessHomes.value) {
-			items.push({ label: t("nav.myHomes"), icon: "i-lucide-building-2", to: localePath("/my-homes") });
-		}
-
-		if (import.meta.client && nuxtApp.$currentUser?.value) {
-			items.push({ label: t("nav.profile"), icon: "i-lucide-circle-user", to: localePath("/profile") });
+			items.splice(2, 0, { label: t("nav.documents"), icon: "i-lucide-folder", to: localePath("/documents") });
 		} else {
-			items.push({ label: t("nav.login"), icon: "i-lucide-log-in", to: localePath("/login") });
+			items.push({ label: t("nav.travel"), icon: "i-lucide-car", to: localePath("/travel") });
 		}
 
-		return items;
+		return items.slice(0, 4);
 	});
 </script>
 
@@ -79,7 +72,4 @@
 	color: var(--color-primary-400);
 }
 
-.pb-safe {
-	padding-bottom: env(safe-area-inset-bottom);
-}
 </style>

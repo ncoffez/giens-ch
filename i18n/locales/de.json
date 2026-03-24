@@ -35,7 +35,7 @@
     },
     "entdecken": {
       "title": "Entdecken",
-      "subtitle": "Märkte, Ausflüge und praktische Tipps rund um Giens."
+      "subtitle": "Märkte, Buchten und Lieblingsorte rund um Giens."
     },
     "organisatorisches": {
       "title": "Organisatorisches",
@@ -43,6 +43,15 @@
     }
   },
   "home": {
+    "hero": {
+      "kicker": "Ankommen und aufatmen",
+      "lead": "Mediterrane Ruhe, kurze Wege zum Meer und eine kleine Gemeinschaft, die ihre Résidence mit Sorgfalt pflegt.",
+      "stats": {
+        "houses": "Häuser",
+        "minutes": "Min. zum Strand",
+        "region": "Côte d'Azur"
+      }
+    },
     "features": {
       "subtitle": "Was uns auszeichnet",
       "title": "Wohlfühlen und Erleben"
@@ -81,6 +90,17 @@
     }
   },
   "travel": {
+    "intro": {
+      "kicker": "Schnell orientiert",
+      "lead": "Ob mit Auto, Zug oder Flug: Giens ist gut erreichbar, wenn man die letzte Etappe sauber plant.",
+      "body": "Diese Seite bündelt die Wege, die sich für Eigentümer und Gäste in der Praxis bewährt haben, inklusive kurzer Hinweise für die Ankunft auf der Halbinsel.",
+      "factsTitle": "Auf einen Blick",
+      "facts": {
+        "distance": "ab Bern",
+        "drive": "mit dem Auto",
+        "airport": "bis TLN"
+      }
+    },
     "lage": {
       "subtitle": "Ihr Ziel auf der Halbinsel",
       "title": "Lage"
@@ -135,6 +155,15 @@
       "subtitle": "Frische Produkte vor Ort",
       "title": "Wochenmärkte",
       "fleaMarket": "Jeden Sonntag: Flohmarkt (Marché aux Puces) in La Capte",
+      "notes": {
+        "producers": "Klein, nah und ideal für frische Produkte.",
+        "seaside": "Praktischer Halt auf dem Weg entlang der Küste.",
+        "village": "Beliebter Dorfmarkt mit entspannter Atmosphäre.",
+        "quickStop": "Gut für Brot, Obst und einen kurzen Einkaufsstopp.",
+        "largeMarket": "Die grösste Auswahl für den Wochenendeinkauf.",
+        "harbor": "Sonntagsmarkt mit Hafenstimmung und Promenade.",
+        "stroll": "Gut kombinierbar mit einem Spaziergang am Wasser."
+      },
       "days": {
         "tue": "Di",
         "wed": "Mi",
@@ -300,7 +329,29 @@
     "fileCount": "{count} Dokumente"
   },
   "share": {
-    "welcome": "Willkommen!"
+    "welcome": "Willkommen",
+    "guestIntro": "Alle wichtigen Informationen, Kontakte und Unterlagen für Ihren Aufenthalt auf einen Blick.",
+    "gallery": "Galerie",
+    "contacts": "Kontaktpersonen",
+    "wifiTitle": "WLAN",
+    "wifiSubtitle": "Schnell griffbereit für Ihre Ankunft.",
+    "ssid": "Netzwerkname (SSID)",
+    "password": "Passwort",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "instructionsTitle": "Anleitung",
+    "instructionsSubtitle": "Die wichtigsten Hinweise für einen entspannten Aufenthalt.",
+    "filesTitle": "Dokumente",
+    "filesSubtitle": "Unterlagen und nützliche Informationen zum Download.",
+    "download": "Download",
+    "summary": {
+      "photos": "Fotos",
+      "photosValue": "Eindrücke aus dem Haus",
+      "documents": "Dokumente",
+      "documentsValue": "Dateien zum Download",
+      "contacts": "Kontakte",
+      "contactsValue": "Ansprechpartner"
+    }
   },
   "footer": {
     "copyright": "© {year} Lotissement Beausoleil, Giens"

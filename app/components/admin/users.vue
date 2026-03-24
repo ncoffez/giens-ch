@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { watch } from 'vue';
-import type { AdminUser } from '../../../types';
+import type { AdminUser } from "../../../types";
 
 const toast = useToast();
 const localePath = useLocalePath();
@@ -14,28 +13,17 @@ const { data: users, status, refresh } = useAsyncData("admin-users-list", async 
 	
 	try {
 		const headers = await getAuthHeaders();
-		console.log("AdminUsers: Fetching with token...");
-		
-		const response = await $fetch<AdminUser[]>("/api/users", {
-			headers
-		});
-		
-		console.log("AdminUsers: API Response received", response?.length, "users");
-		return response;
-	} catch (e: unknown) {
-		console.error("AdminUsers: Fetch error", e);
-		return [];
-	}
+			const response = await $fetch<AdminUser[]>("/api/users", {
+				headers
+			});
+			return response;
+		} catch (e: unknown) {
+			return [];
+		}
 }, {
 	lazy: true,
 	watch: [authError],
 	immediate: true
-});
-
-watch(users, (newUsers) => {
-	if (newUsers && newUsers.length > 0) {
-		console.log("AdminUsers: users ref updated", newUsers.length);
-	}
 });
 
 const isModalOpen = ref(false);
@@ -192,8 +180,12 @@ const getItems = (row: AdminUser) => [
 
 <template>
 	<div class="space-y-6">
-		<div class="flex items-center justify-between">
-			<h2 class="text-3xl font-extrabold tracking-tight">Benutzerverwaltung</h2>
+		<div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+			<div>
+				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-2">Benutzer</p>
+				<h2 class="display-copy text-4xl font-bold tracking-[-0.04em]">Benutzerverwaltung</h2>
+				<p class="app-muted mt-2">Rollen, Zugriff und Kommunikation zentral und nachvollziehbar pflegen.</p>
+			</div>
 			<UButton 
 				icon="i-lucide-user-plus" 
 				label="Benutzer einladen" 
@@ -209,14 +201,14 @@ const getItems = (row: AdminUser) => [
 			<UButton label="Erneut versuchen" variant="ghost" class="mt-4" @click="refresh" />
 		</div>
 		
-		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-2xl shadow-lg border-stone-100 dark:border-stone-800">
+		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-[1.75rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
 			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-stone-500' }">
-				<<template #user-cell="{ row }">
+				<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />
 						<div class="flex flex-col">
 							<NuxtLink :to="`/profile/${row.original.uid}`" class="text-md font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors">
-								{{ row.original.displayName || 'Kein Name' }}
+								{{ row.original.displayName || "Kein Name" }}
 							</NuxtLink>
 							<span class="text-sm text-stone-500 font-medium">{{ row.original.email }}</span>
 						</div>
@@ -226,7 +218,7 @@ const getItems = (row: AdminUser) => [
 				<template #roles-cell="{ row }">
 					<div class="flex flex-wrap gap-1.5">
 						<UBadge v-if="row.original.customClaims?.admin" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Admin</UBadge>
-						<UBadge v-if="row.original.customClaims?.publisher" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Pub</UBadge>
+						<UBadge v-if="row.original.customClaims?.publisher" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Publisher</UBadge>
 						<UBadge v-if="row.original.customClaims?.owner" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Besitzer</UBadge>
 						<UBadge v-if="row.original.customClaims?.reader" color="neutral" variant="subtle" size="md" class="rounded-full px-3 py-1.5 font-medium">Leser</UBadge>
 						<span v-if="!row.original.customClaims || Object.keys(row.original.customClaims).length === 0" class="text-xs text-stone-400 italic">Keine Rollen</span>
@@ -239,7 +231,7 @@ const getItems = (row: AdminUser) => [
 						variant="subtle" 
 						size="md"
 						class="capitalize font-bold px-3 py-1 rounded-full">
-						{{ row.original.disabled ? 'Deaktiviert' : 'Aktiv' }}
+						{{ row.original.disabled ? "Deaktiviert" : "Aktiv" }}
 					</UBadge>
 				</template>
 

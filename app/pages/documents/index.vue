@@ -926,12 +926,13 @@ watch(() => route.query.folder, (newFolderId) => {
 </script>
 
 <template>
-	<div class="min-h-screen bg-stone-50 dark:bg-stone-900 pb-20 lg:pb-0">
+	<div class="min-h-screen pb-20 lg:pb-0">
 		<div class="max-w-screen-xl mx-auto px-4 py-6 md:py-8">
 			<div class="flex items-center justify-between mb-6 md:mb-8 gap-4">
 				<div>
-					<h1 class="text-2xl md:text-3xl font-black">Dokumente</h1>
-					<p class="text-stone-500 text-sm md:text-base mt-1 hidden sm:block">Sichtbar nur für Hauseigentümer und Administratoren</p>
+					<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-2">Dokumente</p>
+					<h1 class="display-copy text-3xl md:text-4xl font-bold tracking-[-0.04em]">Gemeinsame Unterlagen</h1>
+					<p class="app-muted text-sm md:text-base mt-2 hidden sm:block">Wichtige Dateien, Ordner und Downloads für Eigentümer und Administration.</p>
 				</div>
 				<div v-if="$isAdmin" class="flex items-center gap-2 shrink-0">
 					<UButton
@@ -994,7 +995,7 @@ watch(() => route.query.folder, (newFolderId) => {
 			</div>
 
 			<template v-else>
-				<div class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm overflow-hidden">
+				<div class="app-card rounded-[2rem] overflow-hidden">
 					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto">
 						<div class="flex items-center gap-2 text-sm whitespace-nowrap">
 							<button

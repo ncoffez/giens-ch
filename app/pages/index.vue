@@ -90,7 +90,7 @@ useHead({
 		{
 			rel: "preload",
 			as: "image",
-			href: "/giens/giens-hauser-1920w.webp",
+			href: "/giens/hauseingang_cropped-1920w.webp",
 			fetchpriority: "high",
 		},
 	],
@@ -101,10 +101,49 @@ useHead({
 	<div class="gap-24 flex flex-col mb-20">
 		<UiHero
 			:title="t('hero.welcome.title')"
-			:subtitle="t('hero.welcome.subtitle')"
-			src="/giens/giens-hauser.jpeg"
-			alt="Giens Häuser"
-			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
+			src="/giens/hauseingang_cropped.jpg"
+			alt="Eingang zur Résidence Beausoleil"
+			height="h-[42vh] md:h-[56vh] min-h-[320px] md:min-h-[460px]"
+			image-class="object-[center_58%]"
+			content-class="max-w-3xl"
+		/>
+
+		<section class="max-w-screen-xl mx-auto w-full px-4 -mt-12 md:-mt-16 relative z-10">
+			<div class="app-card rounded-[1.75rem] p-6 md:p-8 lg:p-10 grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)] items-end">
+				<div class="space-y-4">
+					<p class="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[var(--app-primary)]/90">
+						{{ t("home.hero.kicker") }}
+					</p>
+					<p class="max-w-3xl text-lg md:text-[1.75rem] leading-tight text-[var(--app-text)] text-balance">
+						{{ t("home.hero.lead") }}
+					</p>
+					<p class="max-w-2xl text-sm md:text-base text-[var(--app-muted)] leading-relaxed">
+						{{ t("hero.welcome.subtitle") }}
+					</p>
+				</div>
+
+				<div class="grid grid-cols-3 gap-3 md:gap-4">
+					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
+						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">20</div>
+						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+							{{ t("home.hero.stats.houses") }}
+						</div>
+					</div>
+					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
+						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">15</div>
+						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+							{{ t("home.hero.stats.minutes") }}
+						</div>
+					</div>
+					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
+						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">Var</div>
+						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+							{{ t("home.hero.stats.region") }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
 		<!-- Feature Cards Section -->
 		<section class="max-w-screen-xl mx-auto w-full px-4">

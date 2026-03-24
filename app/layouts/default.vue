@@ -1,5 +1,5 @@
 <template>
-	<div class="mx-auto md:px-8 px-4 min-h-screen flex flex-col">
+	<div class="app-shell mx-auto px-3 md:px-6 min-h-screen flex flex-col">
 		<!-- Skip to content link for accessibility -->
 		<a
 			href="#main-content"
@@ -9,9 +9,10 @@
 		</a>
 
 		<!-- Navigation Header -->
-		<header class="flex items-center justify-between py-4 md:py-6 max-w-screen-xl mx-auto w-full">
-			<div class="flex items-center gap-8">
-				<NuxtLink :to="localePath('/')">
+		<header class="sticky top-0 z-40 py-3 md:py-5">
+			<div class="app-surface flex items-center justify-between gap-3 md:gap-6 rounded-[1.5rem] px-4 md:px-6 py-3 max-w-screen-xl mx-auto w-full">
+				<div class="flex items-center gap-4 md:gap-8 min-w-0">
+				<NuxtLink :to="localePath('/')" class="shrink-0">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
 				<div class="hidden lg:block">
@@ -25,13 +26,13 @@
 			</div>
 
 			<ClientOnly>
-				<div class="flex items-center gap-2 md:gap-3">
-					<div class="hidden lg:block">
+				<div class="flex items-center gap-1 md:gap-2 shrink-0">
+					<div class="hidden md:block">
 						<UButton
 							icon="i-lucide-search"
 							color="neutral"
-							variant="ghost"
-							class="rounded-full"
+							variant="soft"
+							class="rounded-full px-4"
 							aria-label="Suchen"
 							@click="handleOpenSearch" />
 					</div>
@@ -44,7 +45,7 @@
 						<UButton
 							:icon="currentThemeIcon"
 							color="neutral"
-							variant="ghost"
+							variant="soft"
 							class="rounded-full"
 							:aria-label="'Farbschema ändern'" />
 					</UDropdownMenu>
@@ -63,13 +64,14 @@
 									:label="(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? 'Profil'"
 									icon="i-lucide-circle-user"
 									color="neutral"
-									variant="ghost"
+									variant="soft"
 									trailing-icon="i-lucide-chevron-down" />
 							</UDropdownMenu>
 						</template>
 					</div>
 				</div>
 			</ClientOnly>
+			</div>
 		</header>
 
 		<!-- Search Modal (accessible from mobile) -->
@@ -78,7 +80,7 @@
 		</ClientOnly>
 
 		<!-- Main Content -->
-		<main id="main-content" class="flex-1 my-4 md:my-6 mb-24 md:mb-20 mx-auto w-full max-w-screen-xl">
+		<main id="main-content" class="flex-1 my-4 md:my-6 mb-28 md:mb-16 mx-auto w-full max-w-screen-xl">
 			<slot />
 		</main>
 
@@ -88,8 +90,8 @@
 		</ClientOnly>
 
 		<!-- Footer -->
-		<footer class="py-12 border-t border-stone-100 dark:border-stone-800">
-			<div class="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-stone-500">
+		<footer class="py-10 md:py-12">
+			<div class="app-surface max-w-screen-xl mx-auto rounded-[1.75rem] px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm app-muted">
 				<p>{{ t("footer.copyright", { year: new Date().getFullYear() }) }}</p>
 			</div>
 		</footer>

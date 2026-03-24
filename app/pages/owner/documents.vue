@@ -24,7 +24,7 @@
 			<section
 				v-for="group in groupedDocuments"
 				:key="group.homeId"
-				class="rounded-3xl border border-stone-200 bg-white p-6 dark:bg-stone-900/40 dark:border-stone-800"
+				class="app-card rounded-[2rem] p-6"
 			>
 				<div class="flex items-center justify-between gap-4 mb-5">
 					<div>

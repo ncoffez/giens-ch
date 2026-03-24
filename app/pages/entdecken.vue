@@ -17,9 +17,14 @@ const ausfluegeContent = await usePageContent("travel-ausfluege");
 		<UiHero
 			:title="t('hero.entdecken.title')"
 			:subtitle="t('hero.entdecken.subtitle')"
-			src="/giens/giens-aerial.webp"
-			alt="Luftaufnahme von Giens und der Halbinsel"
-			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
+			src="/giens/porquerolle.webp"
+			alt="Türkisfarbenes Wasser und Küste bei Porquerolles"
+			:responsive="false"
+			height="h-[40vh] md:h-[54vh] min-h-[300px] md:min-h-[420px]"
+			image-class="object-[center_62%]"
+			content-class="max-w-3xl"
+			subtitle-class="md:text-xl"
+			overlay-class="bg-[linear-gradient(180deg,rgba(6,16,22,0.12)_0%,rgba(6,16,22,0.2)_34%,rgba(6,16,22,0.72)_100%)] dark:bg-[linear-gradient(180deg,rgba(5,8,10,0.16)_0%,rgba(5,8,10,0.3)_34%,rgba(5,8,10,0.84)_100%)]" />
 
 		<section id="freizeit" class="max-w-screen-xl mx-auto px-4 scroll-mt-32">
 			<UiTitle :subtitle="t('travel.freizeit.subtitle')" :title="t('travel.freizeit.title')" />
