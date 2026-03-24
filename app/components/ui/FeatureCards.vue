@@ -19,17 +19,22 @@ function getColorClasses(color: string) {
 </script>
 
 <template>
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-8 md:mt-12">
+	<div class="grid grid-cols-1 gap-x-10 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
 		<div
 			v-for="card in cards"
 			:key="card.title"
-			class="p-6 md:p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm space-y-4"
+			class="space-y-5 border-l border-[var(--app-border)] pl-5 md:pl-6"
 		>
-			<div :class="[getColorClasses(card.bgColor).bg, getColorClasses(card.iconColor).text, 'p-3 w-fit rounded-2xl']">
-				<UIcon :name="card.icon" class="w-8 h-8" />
+			<div class="flex items-center gap-4">
+				<div :class="[getColorClasses(card.bgColor).bg, getColorClasses(card.iconColor).text, 'flex h-12 w-12 items-center justify-center rounded-full']">
+					<UIcon :name="card.icon" class="w-6 h-6" />
+				</div>
+				<span class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-muted)]">
+					{{ card.title }}
+				</span>
 			</div>
-			<h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ card.title }}</h3>
-			<p class="text-stone-500 text-sm leading-relaxed">{{ card.description }}</p>
+			<h3 class="display-copy text-2xl leading-tight tracking-[-0.03em] text-[var(--app-text)]">{{ card.title }}</h3>
+			<p class="max-w-sm text-sm leading-relaxed text-[var(--app-muted)]">{{ card.description }}</p>
 		</div>
 	</div>
 </template>

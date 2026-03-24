@@ -85,221 +85,186 @@ const timelineItems = computed<TimelineItem[]>(() =>
 	})),
 );
 
+const heroLeads = computed(() => [
+	t("home.hero.lead"),
+	t("home.hero.leads.1"),
+	t("home.hero.leads.2"),
+]);
+
+const activeHeroLeadIndex = ref(0);
+
+const activeHeroLead = computed(() => heroLeads.value[activeHeroLeadIndex.value] || heroLeads.value[0]);
+
 useHead({
 	link: [
 		{
 			rel: "preload",
 			as: "image",
-			href: "/giens/hauseingang_cropped-1920w.webp",
+			href: "/giens/giens-hauser-1920w.webp",
 			fetchpriority: "high",
 		},
 	],
 });
+
+onMounted(() => {
+	if (heroLeads.value.length < 2) return;
+
+	activeHeroLeadIndex.value = Math.floor(Math.random() * heroLeads.value.length);
+});
 </script>
 
 <template>
-	<div class="gap-24 flex flex-col mb-20">
+	<div class="flex flex-col gap-20 pb-20 md:gap-24">
 		<UiHero
 			:title="t('hero.welcome.title')"
-			src="/giens/hauseingang_cropped.jpg"
-			alt="Eingang zur Résidence Beausoleil"
-			height="h-[42vh] md:h-[56vh] min-h-[320px] md:min-h-[460px]"
-			image-class="object-[center_58%]"
-			content-class="max-w-3xl"
+			:subtitle="t('hero.welcome.subtitle')"
+			src="/giens/giens-hauser.jpeg"
+			alt="Giens Häuser"
+			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]"
 		/>
 
-		<section class="max-w-screen-xl mx-auto w-full px-4 -mt-12 md:-mt-16 relative z-10">
-			<div class="app-card rounded-[1.75rem] p-6 md:p-8 lg:p-10 grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)] items-end">
+		<section class="mx-auto -mt-24 grid w-full max-w-screen-xl gap-8 px-4 md:-mt-28 md:px-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.75fr)] lg:items-end">
+			<div class="app-surface rounded-[2rem] px-6 py-6 md:px-8 md:py-8">
 				<div class="space-y-4">
 					<p class="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[var(--app-primary)]/90">
 						{{ t("home.hero.kicker") }}
 					</p>
-					<p class="max-w-3xl text-lg md:text-[1.75rem] leading-tight text-[var(--app-text)] text-balance">
-						{{ t("home.hero.lead") }}
-					</p>
-					<p class="max-w-2xl text-sm md:text-base text-[var(--app-muted)] leading-relaxed">
-						{{ t("hero.welcome.subtitle") }}
-					</p>
+					<Transition name="page" mode="out-in">
+						<p
+							:key="activeHeroLead"
+							class="max-w-3xl text-lg md:text-[1.75rem] leading-tight text-[var(--app-text)] text-balance"
+						>
+							{{ activeHeroLead }}
+						</p>
+					</Transition>
 				</div>
+			</div>
 
-				<div class="grid grid-cols-3 gap-3 md:gap-4">
-					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
-						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">20</div>
-						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-							{{ t("home.hero.stats.houses") }}
-						</div>
+			<div class="grid grid-cols-3 gap-3 border-t border-[var(--app-border)] bg-transparent pt-5 md:gap-4 lg:border-t-0 lg:bg-transparent lg:pt-0">
+				<div class="px-2 py-3 text-center md:px-3">
+					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">20</div>
+					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+						{{ t("home.hero.stats.houses") }}
 					</div>
-					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
-						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">15</div>
-						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-							{{ t("home.hero.stats.minutes") }}
-						</div>
+				</div>
+				<div class="border-x border-[var(--app-border)] px-2 py-3 text-center md:px-3">
+					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">15</div>
+					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+						{{ t("home.hero.stats.minutes") }}
 					</div>
-					<div class="rounded-[1.35rem] bg-[var(--app-surface)] border border-[var(--app-border)] px-4 py-4 md:px-5 md:py-5 text-center">
-						<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">Var</div>
-						<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-							{{ t("home.hero.stats.region") }}
-						</div>
+				</div>
+				<div class="px-2 py-3 text-center md:px-3">
+					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">Var</div>
+					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
+						{{ t("home.hero.stats.region") }}
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Feature Cards Section -->
-		<section class="max-w-screen-xl mx-auto w-full px-4">
-			<UiTitle :subtitle="t('home.features.subtitle')" :title="t('home.features.title')" />
-			
-			<div class="flex items-center justify-end mb-4 gap-2">
-				<template v-if="featureCards.isAdmin.value && !featureCards.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						@click="featureCards.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
+		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
+			<UiOpenSection :subtitle="t('home.features.subtitle')" :title="t('home.features.title')">
+				<template #actions>
+					<template v-if="featureCards.isAdmin.value && !featureCards.isEditing.value">
+						<UButton color="neutral" variant="outline" icon="i-lucide-edit" @click="featureCards.startEditing()">
+							{{ t("editor.edit") }}
+						</UButton>
+					</template>
+					<template v-else-if="featureCards.isEditing.value">
+						<UButton color="neutral" variant="ghost" :disabled="featureCards.isSaving.value" @click="featureCards.cancelEditing()">
+							{{ t("editor.cancel") }}
+						</UButton>
+						<UButton color="primary" icon="i-lucide-save" :loading="featureCards.isSaving.value" @click="featureCards.save()">
+							{{ t("editor.save") }}
+						</UButton>
+					</template>
 				</template>
-				<template v-else-if="featureCards.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						@click="featureCards.cancelEditing()"
-						:disabled="featureCards.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						:loading="featureCards.isSaving.value"
-						@click="featureCards.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
-			</div>
 
-			<div v-if="featureCards.status.value === 'pending'" class="flex justify-center py-12">
-				<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-			</div>
-			<template v-else>
-				<ClientOnly v-if="featureCards.isEditing.value">
-					<UiLazyFeatureCardsEditor v-model="featureCards.data.value" />
-				</ClientOnly>
-				<UiFeatureCards v-else :cards="featureCards.data.value" />
-			</template>
-		</section>
-
-		<!-- Miteinander Section -->
-		<section
-			class="bg-stone-50 dark:bg-stone-900/50 py-12 md:py-24 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 overflow-hidden relative shadow-sm">
-			<div class="max-w-screen-xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-				<div class="space-y-6 md:space-y-8 text-center md:text-left">
-					<h2 class="text-3xl md:text-6xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
-						{{ t("home.miteinander.title") }}
-					</h2>
-					
-					<div class="flex items-center justify-end gap-2">
-						<template v-if="miteinanderContent.isAdmin.value && !miteinanderContent.isEditing.value">
-							<UButton
-								color="neutral"
-								variant="outline"
-								icon="i-lucide-edit"
-								size="sm"
-								@click="miteinanderContent.startEditing()"
-							>
-								{{ t("editor.edit") }}
-							</UButton>
-						</template>
-						<template v-else-if="miteinanderContent.isEditing.value">
-							<UButton
-								color="neutral"
-								variant="ghost"
-								size="sm"
-								@click="miteinanderContent.cancelEditing()"
-								:disabled="miteinanderContent.isSaving.value"
-							>
-								{{ t("editor.cancel") }}
-							</UButton>
-							<UButton
-								color="primary"
-								icon="i-lucide-save"
-								size="sm"
-								:loading="miteinanderContent.isSaving.value"
-								@click="miteinanderContent.save()"
-							>
-								{{ t("editor.save") }}
-							</UButton>
-						</template>
-					</div>
-
-					<div v-if="miteinanderContent.status.value === 'pending'" class="flex justify-center py-6">
-						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-					</div>
-					<ClientOnly v-if="miteinanderContent.isEditing.value && miteinanderContent.status.value !== 'pending'">
-						<TiptapLazyEditor v-model="miteinanderContent.content.value" />
+				<div v-if="featureCards.status.value === 'pending'" class="flex justify-center py-12">
+					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+				</div>
+				<template v-else>
+					<ClientOnly v-if="featureCards.isEditing.value">
+						<UiLazyFeatureCardsEditor v-model="featureCards.data.value" />
 					</ClientOnly>
-					<div
-						v-else-if="miteinanderContent.status.value !== 'pending'"
-						class="text-lg md:text-xl text-stone-600 dark:text-stone-400 leading-relaxed prose dark:prose-invert max-w-none"
-						v-html="miteinanderContent.content.value || defaultMiteinanderContent"
-					/>
-
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<img
-						src="/giens/giensgarten.webp"
-						alt="Gartenansicht"
-						width="400"
-						height="400"
-						loading="lazy"
-						class="rounded-3xl shadow-lg rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover" />
-					<img
-						src="/giens/giensschaukeln.webp"
-						alt="Schaukeln"
-						width="400"
-						height="400"
-						loading="lazy"
-						class="rounded-3xl shadow-lg -rotate-2 md:rotate-3 hover:rotate-0 transition-transform duration-500 aspect-square object-cover mt-4 md:mt-8" />
-				</div>
-			</div>
+					<UiFeatureCards v-else :cards="featureCards.data.value" />
+				</template>
+			</UiOpenSection>
 		</section>
 
-		<!-- Statistics Banner -->
-		<div class="max-w-screen-xl mx-auto px-4 mt-12 mb-8">
-			<div class="flex items-center justify-end mb-4 gap-2">
-				<template v-if="stats.isAdmin.value && !stats.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						size="sm"
-						@click="stats.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
+		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
+			<UiOpenSection :subtitle="t('home.miteinander.subtitle')" :title="t('home.miteinander.title')">
+				<template #actions>
+					<template v-if="miteinanderContent.isAdmin.value && !miteinanderContent.isEditing.value">
+						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="miteinanderContent.startEditing()">
+							{{ t("editor.edit") }}
+						</UButton>
+					</template>
+					<template v-else-if="miteinanderContent.isEditing.value">
+						<UButton color="neutral" variant="ghost" size="sm" :disabled="miteinanderContent.isSaving.value" @click="miteinanderContent.cancelEditing()">
+							{{ t("editor.cancel") }}
+						</UButton>
+						<UButton color="primary" icon="i-lucide-save" size="sm" :loading="miteinanderContent.isSaving.value" @click="miteinanderContent.save()">
+							{{ t("editor.save") }}
+						</UButton>
+					</template>
 				</template>
-				<template v-else-if="stats.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						@click="stats.cancelEditing()"
-						:disabled="stats.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						size="sm"
-						:loading="stats.isSaving.value"
-						@click="stats.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
+
+				<div class="grid gap-10 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center">
+					<div class="space-y-6">
+						<div v-if="miteinanderContent.status.value === 'pending'" class="flex justify-center py-6">
+							<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+						</div>
+						<ClientOnly v-if="miteinanderContent.isEditing.value && miteinanderContent.status.value !== 'pending'">
+							<TiptapLazyEditor v-model="miteinanderContent.content.value" />
+						</ClientOnly>
+						<div
+							v-else-if="miteinanderContent.status.value !== 'pending'"
+							class="prose max-w-none text-lg leading-relaxed text-[var(--app-muted)] dark:prose-invert"
+							v-html="miteinanderContent.content.value || defaultMiteinanderContent"
+						/>
+					</div>
+
+					<div class="grid gap-5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+						<img
+							src="/giens/giensgarten.webp"
+							alt="Gartenansicht"
+							width="700"
+							height="900"
+							loading="lazy"
+							class="aspect-[4/5] w-full object-cover" />
+						<img
+							src="/giens/giensschaukeln.webp"
+							alt="Schaukeln"
+							width="600"
+							height="700"
+							loading="lazy"
+							class="mt-0 aspect-[4/5] w-full object-cover sm:mt-12" />
+					</div>
+				</div>
+			</UiOpenSection>
+		</section>
+
+		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
+			<div class="grid gap-6 border-y border-[var(--app-border)] py-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+				<div>
+					<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">Beausoleil in Zahlen</p>
+				</div>
+				<div class="flex items-center justify-end gap-2">
+					<template v-if="stats.isAdmin.value && !stats.isEditing.value">
+						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="stats.startEditing()">
+							{{ t("editor.edit") }}
+						</UButton>
+					</template>
+					<template v-else-if="stats.isEditing.value">
+						<UButton color="neutral" variant="ghost" size="sm" :disabled="stats.isSaving.value" @click="stats.cancelEditing()">
+							{{ t("editor.cancel") }}
+						</UButton>
+						<UButton color="primary" icon="i-lucide-save" size="sm" :loading="stats.isSaving.value" @click="stats.save()">
+							{{ t("editor.save") }}
+						</UButton>
+					</template>
+				</div>
 			</div>
 
 			<div v-if="stats.status.value === 'pending'" class="flex justify-center py-8">
@@ -309,53 +274,25 @@ useHead({
 				<UiLazyStatsEditor v-model="stats.data.value" />
 			</ClientOnly>
 			<UiStats v-else-if="stats.status.value !== 'pending'" :stats="stats.data.value" />
-		</div>
+		</section>
 
-		<!-- Timeline Section -->
-		<section
-			id="geschichte"
-			class="bg-stone-50 dark:bg-stone-900/50 py-16 rounded-[2rem] md:rounded-[3rem] border border-stone-100 dark:border-stone-800 shadow-sm scroll-mt-24">
-			<div class="max-w-screen-lg mx-auto px-4">
-				<div class="text-center mb-10 md:mb-16">
-					<h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-						{{ t("home.timeline.title") }}
-					</h2>
-					<div class="w-16 md:w-20 h-1 bg-primary mx-auto mt-3 md:mt-4 rounded-full"></div>
-				</div>
-
-				<div class="flex items-center justify-end mb-4 gap-2">
+		<section id="geschichte" class="mx-auto w-full max-w-screen-xl scroll-mt-24 px-4 md:px-6">
+			<UiOpenSection :subtitle="t('home.timeline.subtitle')" :title="t('home.timeline.title')">
+				<template #actions>
 					<template v-if="timeline.isAdmin.value && !timeline.isEditing.value">
-						<UButton
-							color="neutral"
-							variant="outline"
-							icon="i-lucide-edit"
-							size="sm"
-							@click="timeline.startEditing()"
-						>
+						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="timeline.startEditing()">
 							{{ t("editor.edit") }}
 						</UButton>
 					</template>
 					<template v-else-if="timeline.isEditing.value">
-						<UButton
-							color="neutral"
-							variant="ghost"
-							size="sm"
-							@click="timeline.cancelEditing()"
-							:disabled="timeline.isSaving.value"
-						>
+						<UButton color="neutral" variant="ghost" size="sm" :disabled="timeline.isSaving.value" @click="timeline.cancelEditing()">
 							{{ t("editor.cancel") }}
 						</UButton>
-						<UButton
-							color="primary"
-							icon="i-lucide-save"
-							size="sm"
-							:loading="timeline.isSaving.value"
-							@click="timeline.save()"
-						>
+						<UButton color="primary" icon="i-lucide-save" size="sm" :loading="timeline.isSaving.value" @click="timeline.save()">
 							{{ t("editor.save") }}
 						</UButton>
 					</template>
-				</div>
+				</template>
 
 				<div v-if="timeline.status.value === 'pending'" class="flex justify-center py-12">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -367,53 +304,45 @@ useHead({
 					v-else-if="timeline.status.value !== 'pending'"
 					:default-value="3"
 					:items="timelineItems"
-					class="max-w-2xl mx-auto" />
-			</div>
+					class="max-w-3xl" />
+			</UiOpenSection>
 		</section>
 
 		<section class="space-y-8 md:space-y-12">
-			<div class="max-w-screen-xl mx-auto px-4">
-				<UiTitle :subtitle="t('home.impressions.subtitle')" :title="t('home.impressions.title')" />
+			<div class="mx-auto max-w-screen-xl px-4 md:px-6">
+				<UiOpenSection :subtitle="t('home.impressions.subtitle')" :title="t('home.impressions.title')">
+					<UiSlides class="mb-2" />
+				</UiOpenSection>
 			</div>
-			<UiSlides class="mb-8" />
 		</section>
 
-		<!-- Organisatorisches Link Section -->
-		<section class="max-w-screen-xl mx-auto px-4 w-full">
-			<div class="grid gap-4 lg:grid-cols-2">
+		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
+			<div class="grid gap-10 border-t border-[var(--app-border)] pt-12 lg:grid-cols-2">
 				<NuxtLink
 					:to="localePath('/entdecken')"
-					class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200/70 dark:border-amber-800/50 hover:border-amber-400 transition-all group"
+					class="group block border-b border-[var(--app-border)] pb-6 transition-colors hover:text-[var(--app-accent)] lg:pb-8"
 				>
-					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-4">
-							<div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-								<UIcon name="i-lucide-map" class="w-6 h-6 text-amber-700 dark:text-amber-300" />
-							</div>
-							<div>
-								<h3 class="font-bold text-lg">{{ t("nav.entdecken") }}</h3>
-								<p class="text-stone-600 dark:text-stone-300 text-sm">Märkte, Ausflüge und praktische Tipps rund um Giens</p>
-							</div>
+					<div class="flex items-start justify-between gap-4">
+						<div class="space-y-3">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-accent)]">Rund um Giens</p>
+							<h3 class="display-copy text-3xl tracking-[-0.03em] text-[var(--app-text)]">{{ t("nav.entdecken") }}</h3>
+							<p class="max-w-md text-sm leading-relaxed text-[var(--app-muted)]">Märkte, Ausflüge und praktische Tipps rund um Giens.</p>
 						</div>
-						<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-amber-700 dark:text-amber-300 group-hover:translate-x-1 transition-transform" />
+						<UIcon name="i-lucide-arrow-right" class="mt-2 h-5 w-5 shrink-0 text-[var(--app-accent)] transition-transform group-hover:translate-x-1" />
 					</div>
 				</NuxtLink>
 
 				<NuxtLink
 					:to="localePath('/organisatorisches')"
-					class="block p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 border border-primary/20 hover:border-primary/40 transition-all group"
+					class="group block border-b border-[var(--app-border)] pb-6 transition-colors hover:text-[var(--app-primary)] lg:pb-8"
 				>
-					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-4">
-							<div class="p-3 bg-primary/10 dark:bg-primary/20 rounded-xl">
-								<UIcon name="i-lucide-clipboard-list" class="w-6 h-6 text-primary" />
-							</div>
-							<div>
-								<h3 class="font-bold text-lg">{{ t("home.organisatorisches.title") }}</h3>
-								<p class="text-stone-500 text-sm">{{ t("home.organisatorisches.subtitle") }}</p>
-							</div>
+					<div class="flex items-start justify-between gap-4">
+						<div class="space-y-3">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">Gut vorbereitet</p>
+							<h3 class="display-copy text-3xl tracking-[-0.03em] text-[var(--app-text)]">{{ t("home.organisatorisches.title") }}</h3>
+							<p class="max-w-md text-sm leading-relaxed text-[var(--app-muted)]">{{ t("home.organisatorisches.subtitle") }}</p>
 						</div>
-						<UIcon name="i-lucide-arrow-right" class="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+						<UIcon name="i-lucide-arrow-right" class="mt-2 h-5 w-5 shrink-0 text-[var(--app-primary)] transition-transform group-hover:translate-x-1" />
 					</div>
 				</NuxtLink>
 			</div>

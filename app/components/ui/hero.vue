@@ -1,7 +1,7 @@
 <template>
 	<section
-		class="relative w-full overflow-hidden rounded-[1.5rem] md:rounded-[2rem] border border-white/20 dark:border-white/6 shadow-[0_24px_64px_rgba(20,18,14,0.12)] dark:shadow-[0_28px_84px_rgba(0,0,0,0.42)] bg-stone-100 dark:bg-stone-900"
-		:class="[height || 'h-[34vh] md:h-[50vh] min-h-[260px] md:min-h-[400px]']"
+		class="relative w-full overflow-hidden bg-stone-100 dark:bg-stone-900"
+		:class="[heroShellClass, height || 'h-[34vh] md:h-[50vh] min-h-[260px] md:min-h-[400px]']"
 	>
 		<picture v-if="src" class="absolute inset-0">
 			<template v-if="isExternalUrl">
@@ -65,6 +65,7 @@ interface Props {
 	alt?: string;
 	height?: string;
 	eyebrow?: string;
+	variant?: "contained" | "immersive";
 	imageClass?: string;
 	contentClass?: string;
 	titleClass?: string;
@@ -76,7 +77,16 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
 	height: "h-[50vh] min-h-[400px]",
 	alt: "",
+	variant: "contained",
 	responsive: true,
+});
+
+const heroShellClass = computed(() => {
+	if (props.variant === "immersive") {
+		return "min-h-[76svh] md:min-h-screen";
+	}
+
+	return "rounded-[1.5rem] border border-white/20 shadow-[0_24px_64px_rgba(20,18,14,0.12)] md:rounded-[2rem] dark:border-white/6 dark:shadow-[0_28px_84px_rgba(0,0,0,0.42)]";
 });
 
 const isExternalUrl = computed(() => {
@@ -85,7 +95,9 @@ const isExternalUrl = computed(() => {
 });
 
 const imageClasses = computed(() => [
-	"absolute inset-0 object-cover h-full w-full brightness-[1.05] contrast-[92%] scale-100 md:scale-[1.03]",
+	props.variant === "immersive"
+		? "absolute inset-0 h-full w-full object-cover brightness-[0.98] contrast-[92%] scale-100 md:scale-[1.01]"
+		: "absolute inset-0 h-full w-full object-cover brightness-[1.05] contrast-[92%] scale-100 md:scale-[1.03]",
 	props.imageClass,
 ]);
 

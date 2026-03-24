@@ -1,18 +1,16 @@
 import { useLocalStorage } from "@vueuse/core";
+import {
+	searchCollections,
+	sortSearchResults,
+	type SearchDocument,
+	type SearchFeature,
+	type SearchHeading,
+	type SearchPage,
+	type SearchResult,
+	type SearchTimeline,
+} from "~/utils/search";
 
-interface SearchResult {
-	id: string;
-	label: string;
-	context?: string;
-	to: string;
-	icon?: string;
-	type: "page" | "heading" | "feature" | "timeline" | "document";
-	usageKey: string;
-	keywords?: string[];
-	score?: number;
-}
-
-interface StoredHeading {
+interface StoredHeading extends SearchHeading {
 	id: string;
 	text: string;
 	context: string;
@@ -20,20 +18,20 @@ interface StoredHeading {
 	pagePath: string;
 }
 
-interface StoredFeature {
+interface StoredFeature extends SearchFeature {
 	id: string;
 	title: string;
 	description: string;
 }
 
-interface StoredTimeline {
+interface StoredTimeline extends SearchTimeline {
 	id: string;
 	title: string;
 	description: string;
 	date: string;
 }
 
-interface StoredDocument {
+interface StoredDocument extends SearchDocument {
 	id: string;
 	name: string;
 	type: string;
@@ -67,17 +65,6 @@ const isLoading = ref(false);
 const isLoaded = ref(false);
 const loadedLocale = ref<string | null>(null);
 const searchUsage = useLocalStorage<Record<string, number>>("search-usage", {});
-
-function normalizeText(text: string): string {
-	return text
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.replace(/ä/g, "a")
-		.replace(/ö/g, "o")
-		.replace(/ü/g, "u")
-		.replace(/ß/g, "ss");
-}
 
 export function useSearchData() {
 	const nuxtApp = useNuxtApp();
@@ -191,108 +178,135 @@ export function useSearchData() {
 		return headingsCache.value.filter((heading) => heading.pagePath.startsWith(pagePathPrefix));
 	};
 
-	const scoreText = (query: string, values: string[]) => {
-		const normalizedQuery = normalizeText(query).trim();
-		const normalizedValues = values.map((value) => normalizeText(value || ""));
-		let score = 0;
+	const searchPages = computed<SearchPage[]>(() => {
+		const results: SearchPage[] = [
+			{
+				id: "page-home",
+				label: t("nav.home"),
+				context: t("hero.welcome.subtitle"),
+				to: "/",
+				icon: "i-lucide-house",
+				usageKey: "page:/",
+				keywords: ["beausoleil", "giens", "residence"],
+			},
+			{
+				id: "page-organisatorisches",
+				label: t("nav.organisatorisches"),
+				context: t("hero.organisatorisches.subtitle"),
+				to: "/organisatorisches",
+				icon: "i-lucide-clipboard-list",
+				usageKey: "page:/organisatorisches",
+				keywords: ["check-in", "wifi", "anreise", "organisation"],
+			},
+			{
+				id: "page-travel",
+				label: t("nav.travel"),
+				context: t("hero.travel.subtitle"),
+				to: "/travel",
+				icon: "i-lucide-car",
+				usageKey: "page:/travel",
+				keywords: ["anreise", "comment venir", "auto", "zug", "flugzeug"],
+			},
+			{
+				id: "page-entdecken",
+				label: t("nav.entdecken"),
+				context: t("hero.entdecken.subtitle"),
+				to: "/entdecken",
+				icon: "i-lucide-map",
+				usageKey: "page:/entdecken",
+				keywords: ["markte", "märkte", "ausfluge", "ausflüge", "plages", "balades"],
+			},
+		];
 
-		for (const value of normalizedValues) {
-			if (!value) continue;
-			if (value === normalizedQuery) score += 120;
-			if (value.startsWith(normalizedQuery)) score += 70;
-			if (value.includes(normalizedQuery)) score += 35;
+		if (canAccessDocuments.value) {
+			results.push({
+				id: "page-documents",
+				label: t("nav.documents"),
+				context: t("search.recommendations.documents"),
+				to: "/documents",
+				icon: "i-lucide-folder",
+				usageKey: "page:/documents",
+				keywords: ["files", "dateien", "ordner", "documents"],
+			});
 		}
 
-		return score;
-	};
+		if (canAccessOwnerDocuments.value) {
+			results.push({
+				id: "page-owner-documents",
+				label: t("ownerDocuments.title"),
+				context: t("ownerDocuments.subtitle"),
+				to: "/owner/documents",
+				icon: "i-lucide-files",
+				usageKey: "page:/owner/documents",
+				keywords: ["owner", "proprietaire", "eigentuemer", "eigentümer"],
+			});
+		}
 
-	const sortResults = (results: SearchResult[]) => {
-		return [...results].sort((a, b) => {
-			const scoreDelta = (b.score || 0) - (a.score || 0);
-			if (scoreDelta !== 0) return scoreDelta;
+		if (isOwner.value) {
+			results.push({
+				id: "page-my-homes",
+				label: t("nav.myHomes"),
+				context: t("share.guestIntro"),
+				to: "/my-homes",
+				icon: "i-lucide-building-2",
+				usageKey: "page:/my-homes",
+				keywords: ["hauser", "häuser", "homes", "maisons"],
+			});
+		}
 
-			const usageDelta = getUsageCount(b.usageKey) - getUsageCount(a.usageKey);
-			if (usageDelta !== 0) return usageDelta;
+		if (import.meta.client && nuxtApp.$currentUser?.value) {
+			results.push({
+				id: "page-profile",
+				label: t("nav.profile"),
+				context: t("auth.accountSettings"),
+				to: "/profile/me",
+				icon: "i-lucide-user",
+				usageKey: "page:/profile/me",
+				keywords: ["profil", "compte", "account"],
+			});
+		}
 
-			return a.label.localeCompare(b.label, locale.value === "fr" ? "fr" : "de");
-		});
-	};
+		if (isAdmin.value) {
+			results.push({
+				id: "page-admin",
+				label: t("nav.admin"),
+				context: t("nav.admin"),
+				to: "/admin",
+				icon: "i-lucide-settings",
+				usageKey: "page:/admin",
+				keywords: ["admin", "verwaltung", "administration"],
+			});
+		}
+
+		if (!(import.meta.client && nuxtApp.$currentUser?.value)) {
+			results.push({
+				id: "page-login",
+				label: t("nav.login"),
+				context: t("auth.loginSubtitle"),
+				to: "/login",
+				icon: "i-lucide-log-in",
+				usageKey: "page:/login",
+				keywords: ["login", "connexion", "anmelden"],
+			});
+		}
+
+		return results;
+	});
 
 	const searchAll = (query: string): SearchResult[] => {
 		if (!query.trim() || !isLoaded.value) return [];
 
-		const searchTerms = normalizeText(query).trim().split(/\s+/);
-		const results: SearchResult[] = [];
-
-		const matchesQuery = (text: string) => searchTerms.every((term) => normalizeText(text).includes(term));
-
-		for (const heading of headingsCache.value) {
-			if (matchesQuery(heading.text) || matchesQuery(heading.context)) {
-				results.push({
-					id: heading.id,
-					label: heading.text,
-					context: heading.context.substring(0, 80),
-					to: `${heading.pagePath}#${heading.id}`,
-					icon: "i-lucide-heading",
-					type: "heading",
-					usageKey: `heading:${heading.pagePath}:${heading.id}`,
-				});
-			}
-		}
-
-		for (const feature of featuresCache.value) {
-			if (matchesQuery(feature.title) || matchesQuery(feature.description)) {
-				results.push({
-					id: feature.id,
-					label: feature.title,
-					context: feature.description.substring(0, 80),
-					to: "/#features",
-					icon: "i-lucide-star",
-					type: "feature",
-					usageKey: `feature:${feature.id}`,
-				});
-			}
-		}
-
-		for (const timeline of timelineCache.value) {
-			if (matchesQuery(timeline.title) || matchesQuery(timeline.description) || matchesQuery(timeline.date)) {
-				results.push({
-					id: timeline.id,
-					label: timeline.title,
-					context: timeline.description.substring(0, 80),
-					to: "/#geschichte",
-					icon: "i-lucide-clock",
-					type: "timeline",
-					usageKey: `timeline:${timeline.id}`,
-				});
-			}
-		}
-
-		if (canAccessDocuments.value) {
-			for (const document of documentsCache.value) {
-				if (matchesQuery(`${document.name} ${document.description || ""} ${document.context || ""}`)) {
-					const nameScore = scoreText(query, [document.name]);
-					results.push({
-						id: document.id,
-						label: document.name,
-						context: document.context,
-						to: document.to,
-						icon: document.icon,
-						type: "document",
-						usageKey: document.usageKey,
-						score: 80 + nameScore,
-					});
-				}
-			}
-		}
-
-		return sortResults(results.map((result) => ({
-			...result,
-			score: (result.score || 0) +
-				scoreText(query, [result.label, result.context || "", ...(result.keywords || [])]) +
-				searchTerms.length * 5 +
-				getUsageCount(result.usageKey) * 10,
-		}))).slice(0, 20);
+		return searchCollections({
+			pages: searchPages.value,
+			headings: headingsCache.value,
+			features: featuresCache.value,
+			timeline: timelineCache.value,
+			documents: documentsCache.value,
+			query,
+			locale: locale.value,
+			canAccessDocuments: canAccessDocuments.value,
+			getUsageCount,
+		});
 	};
 
 	const getDocumentRecommendations = (): SearchResult[] => {
@@ -316,68 +330,12 @@ export function useSearchData() {
 	};
 
 	const getRecommendations = (): SearchResult[] => {
-		const pageResults: SearchResult[] = [
-			{
-				id: "page-home",
-				label: t("nav.home"),
-				context: t("hero.welcome.subtitle"),
-				to: "/",
-				icon: "i-lucide-house",
-				type: "page",
-				usageKey: "page:/",
-			},
-			{
-				id: "page-organisatorisches",
-				label: t("nav.organisatorisches"),
-				context: t("hero.organisatorisches.subtitle"),
-				to: "/organisatorisches",
-				icon: "i-lucide-clipboard-list",
-				type: "page",
-				usageKey: "page:/organisatorisches",
-			},
-			{
-				id: "page-travel",
-				label: t("nav.travel"),
-				context: t("hero.travel.subtitle"),
-				to: "/travel",
-				icon: "i-lucide-car",
-				type: "page",
-				usageKey: "page:/travel",
-			},
-			{
-				id: "page-entdecken",
-				label: t("nav.entdecken"),
-				context: t("hero.entdecken.subtitle"),
-				to: "/entdecken",
-				icon: "i-lucide-map",
-				type: "page",
-				usageKey: "page:/entdecken",
-			},
+		const recommendedPageResults: SearchResult[] = [
+			...searchPages.value.map((result) => ({
+				...result,
+				type: "page" as const,
+			})),
 		];
-
-		if (canAccessDocuments.value) {
-			pageResults.push({
-				id: "page-documents",
-				label: t("nav.documents"),
-				context: t("search.recommendations.documents"),
-				to: "/documents",
-				icon: "i-lucide-folder",
-				type: "page",
-				usageKey: "page:/documents",
-			});
-		}
-
-		if (canAccessOwnerDocuments.value) {
-			pageResults.push({
-				id: "page-owner-documents",
-				label: t("ownerDocuments.title"),
-				context: t("ownerDocuments.subtitle"),
-				to: "/owner/documents",
-				icon: "i-lucide-files",
-				type: "page",
-				usageKey: "page:/owner/documents",
-			});
-		}
 
 		const documentRecommendations: SearchResult[] = [...documentsCache.value]
 			.sort((a, b) => getUsageCount(b.usageKey) - getUsageCount(a.usageKey))
@@ -393,12 +351,12 @@ export function useSearchData() {
 				score: 10 + getUsageCount(document.usageKey) * 10,
 			}));
 
-		const recommendedPages = pageResults.map((result) => ({
+		const recommendedPages = recommendedPageResults.map((result) => ({
 			...result,
 			score: 20 + getUsageCount(result.usageKey) * 10,
 		}));
 
-		return sortResults([...recommendedPages, ...documentRecommendations]).slice(0, 10);
+		return sortSearchResults([...recommendedPages, ...documentRecommendations], locale.value, getUsageCount).slice(0, 10);
 	};
 
 	const recordSelection = (result: SearchResult) => {

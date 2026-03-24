@@ -14,10 +14,7 @@ const localeItems = computed(() => {
 	];
 });
 
-const currentLocaleName = computed(() => {
-	const localesList = locales.value as { code: string; name: string }[];
-	return localesList.find((l) => l.code === locale.value)?.name || locale.value.toUpperCase();
-});
+const currentLocaleCode = computed(() => locale.value.toUpperCase());
 </script>
 
 <template>
@@ -25,9 +22,9 @@ const currentLocaleName = computed(() => {
 		<UButton
 			color="neutral"
 			variant="ghost"
-			class="rounded-full font-bold px-2 md:px-3"
+			class="rounded-full font-bold px-2 md:px-3 tracking-[0.18em]"
 		>
-			{{ currentLocaleName }}
+			{{ currentLocaleCode }}
 		</UButton>
 	</UDropdownMenu>
 </template>

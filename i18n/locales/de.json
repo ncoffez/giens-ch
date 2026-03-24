@@ -46,6 +46,10 @@
     "hero": {
       "kicker": "Ankommen und aufatmen",
       "lead": "Mediterrane Ruhe, kurze Wege zum Meer und eine kleine Gemeinschaft, die ihre Résidence mit Sorgfalt pflegt.",
+      "leads": {
+        "1": "Licht, Garten und kurze Wege zum Meer. Ein Ort, der leise entschleunigt.",
+        "2": "Zwischen Pinien, Salzluft und Gemeinschaft entsteht hier eine besondere Form von Sommerruhe."
+      },
       "stats": {
         "houses": "Häuser",
         "minutes": "Min. zum Strand",
@@ -57,10 +61,12 @@
       "title": "Wohlfühlen und Erleben"
     },
     "miteinander": {
+      "subtitle": "Gemeinschaft",
       "title": "Miteinander Gestalten",
       "button": "Mehr erfahren"
     },
     "timeline": {
+      "subtitle": "Geschichte",
       "title": "Unsere Geschichte"
     },
     "impressions": {
@@ -95,10 +101,38 @@
       "lead": "Ob mit Auto, Zug oder Flug: Giens ist gut erreichbar, wenn man die letzte Etappe sauber plant.",
       "body": "Diese Seite bündelt die Wege, die sich für Eigentümer und Gäste in der Praxis bewährt haben, inklusive kurzer Hinweise für die Ankunft auf der Halbinsel.",
       "factsTitle": "Auf einen Blick",
+      "pillars": {
+        "drive": {
+          "title": "Mit dem Auto",
+          "description": "Die flexibelste Variante für Familien, längere Aufenthalte und viel Gepäck."
+        },
+        "train": {
+          "title": "Mit dem Zug",
+          "description": "Entspannt bis Hyères reisen und die letzte Etappe mit Bus oder Taxi ergänzen."
+        },
+        "flight": {
+          "title": "Mit dem Flugzeug",
+          "description": "Schnell im Süden, besonders praktisch für Kurzaufenthalte oder spontane Reisen."
+        }
+      },
       "facts": {
         "distance": "ab Bern",
         "drive": "mit dem Auto",
         "airport": "bis TLN"
+      }
+    },
+    "locationFacts": {
+      "walk": {
+        "label": "Zu Fuss",
+        "value": "ca. 15 Min. zum Strand"
+      },
+      "port": {
+        "label": "Fähre",
+        "value": "rund 1 km bis La Tour Fondue"
+      },
+      "nature": {
+        "label": "Umgebung",
+        "value": "direkt an geschützten Naturzonen"
       }
     },
     "lage": {

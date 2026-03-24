@@ -15,7 +15,15 @@
 				<NuxtLink :to="localePath('/')" class="shrink-0">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
-				<div class="hidden lg:block">
+				<div class="hidden lg:block xl:hidden">
+					<ClientOnly>
+						<UNavigationMenu :items="compactNavigationItems" />
+						<template #fallback>
+							<UNavigationMenu :items="compactPublicNavigationItems" />
+						</template>
+					</ClientOnly>
+				</div>
+				<div class="hidden xl:block">
 					<ClientOnly>
 						<UNavigationMenu :items="navigationItems" />
 						<template #fallback>
@@ -26,7 +34,7 @@
 			</div>
 
 			<ClientOnly>
-				<div class="flex items-center gap-1 md:gap-2 shrink-0">
+				<div class="flex items-center gap-1 md:gap-2 xl:gap-1 shrink-0">
 					<div class="hidden md:block">
 						<UButton
 							icon="i-lucide-search"
@@ -53,21 +61,36 @@
 						<template v-if="!currentUser.value">
 							<UButton
 								:to="localePath('/login')"
-								:label="t('nav.login')"
 								icon="i-lucide-circle-user"
 								color="neutral"
-								variant="ghost" />
+								variant="ghost">
+								<span class="hidden 2xl:inline">{{ t("nav.login") }}</span>
+							</UButton>
 						</template>
-						<template v-else>
-							<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
-								<UButton
-									:label="(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? 'Profil'"
-									icon="i-lucide-circle-user"
-									color="neutral"
-									variant="soft"
-									trailing-icon="i-lucide-chevron-down" />
-							</UDropdownMenu>
-						</template>
+							<template v-else>
+								<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
+									<UButton
+										color="neutral"
+										variant="soft"
+										trailing-icon="i-lucide-chevron-down"
+										class="max-w-[3.25rem] 2xl:max-w-[15rem]">
+										<img
+											v-if="userPhotoUrl"
+											:src="userPhotoUrl"
+											:alt="userDisplayName"
+											class="h-7 w-7 shrink-0 rounded-full object-cover"
+										/>
+										<UIcon
+											v-else
+											name="i-lucide-circle-user"
+											class="h-5 w-5 shrink-0"
+										/>
+										<span class="hidden 2xl:inline truncate">
+											{{ userDisplayName }}
+										</span>
+									</UButton>
+								</UDropdownMenu>
+							</template>
 					</div>
 				</div>
 			</ClientOnly>
@@ -115,6 +138,10 @@ const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? f
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
 const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher?.value ?? false : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
+const userDisplayName = computed(() =>
+	(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? "Profil"
+);
+const userPhotoUrl = computed(() => currentUser.value?.photoURL || "");
 
 const hasLoadedUserFlags = ref(false);
 
@@ -164,10 +191,31 @@ const themeItems = [
 
 const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
 	{
-		label: t("nav.home"),
-		icon: "i-lucide-house",
-		to: localePath("/"),
-		active: route.path === "/" || route.path === "/fr",
+		label: t("nav.organisatorisches"),
+		icon: "i-lucide-clipboard-list",
+		to: localePath("/organisatorisches"),
+		active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
+	},
+	{
+		label: t("nav.travel"),
+		to: localePath("/travel"),
+		icon: "i-lucide-car",
+		active: route.path === "/travel" || route.path === "/fr/travel",
+	},
+	{
+		label: t("nav.entdecken"),
+		to: localePath("/entdecken"),
+		icon: "i-lucide-map",
+		active: route.path === "/entdecken" || route.path === "/fr/entdecken",
+	},
+]);
+
+const compactPublicNavigationItems = computed<NavigationMenuItem[]>(() => [
+	{
+		label: t("nav.organisatorisches"),
+		icon: "i-lucide-clipboard-list",
+		to: localePath("/organisatorisches"),
+		active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
 	},
 	{
 		label: t("nav.travel"),
@@ -191,6 +239,40 @@ const navigationItems = computed<NavigationMenuItem[]>(() => {
 			to: localePath("/"),
 			active: route.path === "/" || route.path === "/fr",
 		},
+		{
+			label: t("nav.organisatorisches"),
+			icon: "i-lucide-clipboard-list",
+			to: localePath("/organisatorisches"),
+			active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
+		},
+		{
+			label: t("nav.travel"),
+			to: localePath("/travel"),
+			icon: "i-lucide-car",
+			active: route.path === "/travel" || route.path === "/fr/travel",
+		},
+		{
+			label: t("nav.entdecken"),
+			to: localePath("/entdecken"),
+			icon: "i-lucide-map",
+			active: route.path === "/entdecken" || route.path === "/fr/entdecken",
+		},
+	];
+
+	if (import.meta.client && (isOwner.value || isReader.value || isPublisher.value)) {
+		items.push({
+			label: t("nav.documents"),
+			icon: "i-lucide-folder",
+			to: localePath("/documents"),
+			active: route.path.startsWith("/documents") || route.path.startsWith("/fr/documents"),
+		});
+	}
+
+	return items;
+});
+
+const compactNavigationItems = computed<NavigationMenuItem[]>(() => {
+	const items: NavigationMenuItem[] = [
 		{
 			label: t("nav.organisatorisches"),
 			icon: "i-lucide-clipboard-list",
@@ -282,4 +364,5 @@ const userItems = computed(() => {
 .dark .router-link-active {
 	color: var(--color-primary-400);
 }
+
 </style>

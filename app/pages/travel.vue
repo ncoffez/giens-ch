@@ -9,6 +9,74 @@ const defaultZug = `<p>Die Anreise mit dem Zug ist eine bequeme Alternative. SNC
 
 const defaultFlugzeug = `<p>Der Flughafen <strong>Toulon-Hyères (TLN)</strong> liegt nur 15 Minuten von Giens entfernt und ist ideal für Kurztrips.</p><p>Alternativ bietet sich der Flughafen <strong>Marseille (MRS)</strong> an, der von Zürich oder Genf oft mehrmals täglich direkt angeflogen wird. Die Weiterreise nach Giens dauert von dort etwa 1h 15min mit dem Auto.</p>`;
 
+const routeFacts = computed(() => [
+	{ value: "700 km", label: t("travel.intro.facts.distance") },
+	{ value: "7-8 h", label: t("travel.intro.facts.drive") },
+	{ value: "15 min", label: t("travel.intro.facts.airport") },
+]);
+
+const planningPillars = computed(() => [
+	{
+		title: t("travel.intro.pillars.drive.title"),
+		description: t("travel.intro.pillars.drive.description"),
+		icon: "i-lucide-car",
+	},
+	{
+		title: t("travel.intro.pillars.train.title"),
+		description: t("travel.intro.pillars.train.description"),
+		icon: "i-lucide-train-front",
+	},
+	{
+		title: t("travel.intro.pillars.flight.title"),
+		description: t("travel.intro.pillars.flight.description"),
+		icon: "i-lucide-plane",
+	},
+]);
+
+const routeLinks = computed(() => [
+	{ id: "mit-dem-auto", icon: "i-lucide-car", label: t("travel.quickLinks.auto") },
+	{ id: "mit-dem-zug", icon: "i-lucide-train-front", label: t("travel.quickLinks.zug") },
+	{ id: "mit-dem-flugzeug", icon: "i-lucide-plane", label: t("travel.quickLinks.flugzeug") },
+]);
+
+const autoSteps = [
+	{
+		title: "Bern – Lausanne – Genève",
+		detail: "Grenze Bardonnex Richtung Frankreich",
+	},
+	{
+		title: "Annecy – Chambéry – Grenoble",
+		detail: "A41 / A43 / A48",
+	},
+	{
+		title: "Valence – Orange – Aix",
+		detail: "A49 / A7 / A8",
+	},
+	{
+		title: "Toulon – Hyères – Giens",
+		detail: "A52 / A50 / A570",
+	},
+];
+
+const trainSteps = [
+	{ label: "Etappe 1", route: "Bern – Genève", detail: "InterCity, ca. 1h 45min" },
+	{ label: "Etappe 2", route: "Genève – Marseille", detail: "TGV Lyria, ca. 4h 30min" },
+	{ label: "Etappe 3", route: "Marseille – Hyères", detail: "TER, ca. 1h" },
+];
+
+const flightFacts = computed(() => [
+	{
+		icon: "i-lucide-plane-takeoff",
+		title: t("travel.flugzeug.directFlights"),
+		description: t("travel.flugzeug.directFlightsText"),
+	},
+	{
+		icon: "i-lucide-car-front",
+		title: t("travel.flugzeug.rentalCar"),
+		description: t("travel.flugzeug.rentalCarText"),
+	},
+]);
+
 const lageContent = await usePageContent("travel-lage");
 const autoContent = await usePageContent("travel-auto");
 const zugContent = await usePageContent("travel-zug");
@@ -16,372 +84,346 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 </script>
 
 <template>
-	<div class="space-y-24 mb-20">
+	<div class="space-y-20 pb-20">
 		<UiHero
 			:title="t('hero.travel.title')"
 			:subtitle="t('hero.travel.subtitle')"
 			src="/giens/hyeres.webp"
 			alt="Blick auf Hyères und das Meer"
-			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
+			height="h-[40vh] md:h-[52vh] min-h-[300px] md:min-h-[420px]"
+			content-class="max-w-3xl"
+		/>
 
-		<!-- Lage Section -->
-		<section class="max-w-screen-lg mx-auto px-4">
-			<UiTitle :subtitle="t('travel.lage.subtitle')" :title="t('travel.lage.title')" />
+		<section class="mx-auto grid max-w-screen-xl gap-10 border-b border-[var(--app-border)] px-4 pb-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] lg:items-start">
+			<div class="space-y-6">
+				<div class="space-y-4">
+					<p class="text-[11px] font-extrabold uppercase tracking-[0.28em] text-[var(--app-primary)]/90">
+						{{ t("travel.intro.kicker") }}
+					</p>
+					<h2 class="display-copy max-w-4xl text-3xl md:text-5xl leading-[1.04] tracking-[-0.05em] text-[var(--app-text)]">
+						{{ t("travel.intro.lead") }}
+					</h2>
+					<p class="max-w-3xl text-base md:text-lg leading-relaxed text-[var(--app-muted)]">
+						{{ t("travel.intro.body") }}
+					</p>
+				</div>
 
-			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="lageContent.isAdmin.value && !lageContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						size="sm"
-						@click="lageContent.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
-				</template>
-				<template v-else-if="lageContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						@click="lageContent.cancelEditing()"
-						:disabled="lageContent.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						size="sm"
-						:loading="lageContent.isSaving.value"
-						@click="lageContent.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
-			</div>
-
-			<div v-if="lageContent.status.value === 'pending'" class="flex justify-center py-8">
-				<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-			</div>
-			<ClientOnly v-if="lageContent.isEditing.value && lageContent.status.value !== 'pending'">
-				<TiptapLazyEditor v-model="lageContent.content.value" />
-			</ClientOnly>
-			<div
-				v-else-if="lageContent.status.value !== 'pending'"
-				class="mt-8 prose dark:prose-invert max-w-none text-lg"
-				v-html="lageContent.content.value || defaultLage"
-			/>
-		</section>
-
-		<!-- Quick Links -->
-		<section class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-screen-lg mx-auto px-4">
-			<UiTravelCard to="#mit-dem-auto" :title="t('travel.quickLinks.auto')" icon="i-lucide-car" />
-			<UiTravelCard to="#mit-dem-zug" :title="t('travel.quickLinks.zug')" icon="i-lucide-train-front" />
-			<UiTravelCard to="#mit-dem-flugzeug" :title="t('travel.quickLinks.flugzeug')" icon="i-lucide-plane" />
-		</section>
-
-		<!-- Details: Auto -->
-		<section id="mit-dem-auto" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
-			<UiTitle :subtitle="t('travel.auto.subtitle')" :title="t('travel.auto.title')" />
-
-			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="autoContent.isAdmin.value && !autoContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						size="sm"
-						@click="autoContent.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
-				</template>
-				<template v-else-if="autoContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						@click="autoContent.cancelEditing()"
-						:disabled="autoContent.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						size="sm"
-						:loading="autoContent.isSaving.value"
-						@click="autoContent.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
-			</div>
-
-			<div class="grid md:grid-cols-2 gap-12 items-start mt-12">
-				<div class="space-y-8">
-					<div v-if="autoContent.status.value === 'pending'" class="flex justify-center py-8">
-						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-					</div>
-					<ClientOnly v-if="autoContent.isEditing.value && autoContent.status.value !== 'pending'">
-						<TiptapLazyEditor v-model="autoContent.content.value" />
-					</ClientOnly>
+				<div class="grid gap-4 md:grid-cols-3">
 					<div
-						v-else-if="autoContent.status.value !== 'pending'"
-						class="text-lg text-stone-700 dark:text-stone-300 prose dark:prose-invert max-w-none"
-						v-html="autoContent.content.value || defaultAuto"
-					/>
-
-					<UButton
-						v-if="!autoContent.isEditing.value"
-						to="https://www.google.com/maps/dir/?api=1&destination=Lotissement+Beausoleil,+Hyeres"
-						target="_blank"
-						size="xl"
-						color="neutral"
-						class="rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
-						icon="i-lucide-map">
-						{{ t("travel.auto.routeButton") }}
-					</UButton>
-
-					<div
-						v-if="!autoContent.isEditing.value"
-						class="bg-neutral-50 dark:bg-neutral-900 p-6 rounded-2xl border-l-8 border-primary shadow-sm flex gap-4">
-						<UIcon name="i-lucide-info" class="w-8 h-8 text-primary shrink-0" />
-						<p class="italic text-base">
-							<strong>{{ t("travel.auto.tip") }}</strong> {{ t("travel.auto.tipText") }}
-						</p>
+						v-for="pillar in planningPillars"
+						:key="pillar.title"
+						class="border-t border-[var(--app-border)] pt-4"
+					>
+						<div class="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--app-primary)]/10 text-[var(--app-primary)]">
+							<UIcon :name="pillar.icon" class="h-5 w-5" />
+						</div>
+						<p class="text-base font-semibold text-[var(--app-text)]">{{ pillar.title }}</p>
+						<p class="mt-2 text-sm leading-relaxed text-[var(--app-muted)]">{{ pillar.description }}</p>
 					</div>
 				</div>
-				<div class="bg-stone-50 dark:bg-stone-900/50 p-8 rounded-3xl border border-stone-100 dark:border-stone-800 shadow-sm">
-					<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-						<UIcon name="i-lucide-map-pin" class="text-primary" />
-						{{ t("travel.auto.routeTitle") }}
-					</h3>
-					<ul class="space-y-6 text-base">
-						<li class="flex gap-4 items-start">
-							<span
-								class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold shrink-0 text-sm"
-								>1</span
-							>
-							<div>
-								<span class="font-bold">Bern – Lausanne – Genève</span>
-								<p class="text-sm text-stone-500">Zoll Richtung France (Bardonnex)</p>
-							</div>
-						</li>
-						<li class="flex gap-4 items-start">
-							<span
-								class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold shrink-0 text-sm"
-								>2</span
-							>
-							<div>
-								<span class="font-bold">Annecy – Chambéry – Grenoble</span>
-								<p class="text-sm text-stone-500">A41/A43/A48</p>
-							</div>
-						</li>
-						<li class="flex gap-4 items-start">
-							<span
-								class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold shrink-0 text-sm"
-								>3</span
-							>
-							<div>
-								<span class="font-bold">Valence – Orange – Aix</span>
-								<p class="text-sm text-stone-500">A49/A7/A8</p>
-							</div>
-						</li>
-						<li class="flex gap-4 items-start">
-							<span
-								class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold shrink-0 text-sm"
-								>4</span
-							>
-							<div>
-								<span class="font-bold">Toulon – Hyères – Giens</span>
-								<p class="text-sm text-stone-500">A52/A50/A570</p>
-							</div>
-						</li>
-					</ul>
-					<div class="mt-8 pt-6 border-t border-stone-200 dark:border-stone-700">
-						<div class="flex justify-between items-center text-sm text-stone-500">
-							<span>{{ t("travel.auto.toll") }}</span>
-							<span class="font-bold text-gray-900 dark:text-white">{{ t("travel.auto.tollPrice") }}</span>
+			</div>
+
+			<div class="space-y-5 border-l-0 lg:border-l lg:border-[var(--app-border)] lg:pl-8">
+				<p class="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]">
+					{{ t("travel.intro.factsTitle") }}
+				</p>
+				<div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+					<div
+						v-for="fact in routeFacts"
+						:key="fact.label"
+						class="border-b border-[var(--app-border)] pb-4 last:border-b-0 last:pb-0">
+						<div class="display-copy text-2xl md:text-3xl text-[var(--app-text)]">{{ fact.value }}</div>
+						<div class="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--app-muted)]">{{ fact.label }}</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-screen-xl px-4">
+			<div class="flex flex-wrap gap-3 border-b border-[var(--app-border)] pb-6">
+				<a
+					v-for="link in routeLinks"
+					:key="link.id"
+					:href="`#${link.id}`"
+					class="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:border-[var(--app-primary)]/45 hover:text-[var(--app-primary)]">
+					<UIcon :name="link.icon" class="h-4 w-4" />
+					{{ link.label }}
+				</a>
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-screen-xl px-4">
+			<div class="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
+				<div class="space-y-5">
+					<UiTitle :subtitle="t('travel.lage.subtitle')" :title="t('travel.lage.title')" />
+
+					<div class="flex items-center justify-end gap-2">
+						<template v-if="lageContent.isAdmin.value && !lageContent.isEditing.value">
+							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="lageContent.startEditing()">
+								{{ t("editor.edit") }}
+							</UButton>
+						</template>
+						<template v-else-if="lageContent.isEditing.value">
+							<UButton color="neutral" variant="ghost" size="sm" :disabled="lageContent.isSaving.value" @click="lageContent.cancelEditing()">
+								{{ t("editor.cancel") }}
+							</UButton>
+							<UButton color="primary" icon="i-lucide-save" size="sm" :loading="lageContent.isSaving.value" @click="lageContent.save()">
+								{{ t("editor.save") }}
+							</UButton>
+						</template>
+					</div>
+
+					<div v-if="lageContent.status.value === 'pending'" class="flex justify-center py-8">
+						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+					</div>
+					<ClientOnly v-if="lageContent.isEditing.value && lageContent.status.value !== 'pending'">
+						<TiptapLazyEditor v-model="lageContent.content.value" />
+					</ClientOnly>
+					<div
+						v-else-if="lageContent.status.value !== 'pending'"
+						class="prose max-w-none text-lg leading-relaxed dark:prose-invert"
+						v-html="lageContent.content.value || defaultLage"
+					/>
+				</div>
+
+				<div class="grid gap-6">
+					<div class="overflow-hidden rounded-[1.75rem] border border-[var(--app-border)] bg-[var(--app-surface)]">
+					<img
+						src="/giens/giens-aerial.webp"
+						alt="Landschaft der Halbinsel Giens"
+						class="h-[320px] w-full object-cover"
+						loading="lazy"
+					/>
+					</div>
+					<div class="grid gap-4 sm:grid-cols-3">
+						<div class="border-t border-[var(--app-border)] pt-4">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.walk.label") }}</p>
+							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.walk.value") }}</p>
+						</div>
+						<div class="border-t border-[var(--app-border)] pt-4">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.port.label") }}</p>
+							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.port.value") }}</p>
+						</div>
+						<div class="border-t border-[var(--app-border)] pt-4">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.nature.label") }}</p>
+							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.nature.value") }}</p>
 						</div>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- Details: Zug -->
-		<section id="mit-dem-zug" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
-			<UiTitle :subtitle="t('travel.zug.subtitle')" :title="t('travel.zug.title')" />
+		<section id="mit-dem-auto" class="scroll-mt-32 border-t border-[var(--app-border)] pt-16">
+			<div class="mx-auto max-w-screen-xl px-4">
+				<div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
+					<div class="space-y-6">
+						<UiTitle :subtitle="t('travel.auto.subtitle')" :title="t('travel.auto.title')" />
 
-			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="zugContent.isAdmin.value && !zugContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						size="sm"
-						@click="zugContent.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
-				</template>
-				<template v-else-if="zugContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						@click="zugContent.cancelEditing()"
-						:disabled="zugContent.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						size="sm"
-						:loading="zugContent.isSaving.value"
-						@click="zugContent.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
+						<div class="flex items-center justify-end gap-2">
+							<template v-if="autoContent.isAdmin.value && !autoContent.isEditing.value">
+								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="autoContent.startEditing()">
+									{{ t("editor.edit") }}
+								</UButton>
+							</template>
+							<template v-else-if="autoContent.isEditing.value">
+								<UButton color="neutral" variant="ghost" size="sm" :disabled="autoContent.isSaving.value" @click="autoContent.cancelEditing()">
+									{{ t("editor.cancel") }}
+								</UButton>
+								<UButton color="primary" icon="i-lucide-save" size="sm" :loading="autoContent.isSaving.value" @click="autoContent.save()">
+									{{ t("editor.save") }}
+								</UButton>
+							</template>
+						</div>
+
+						<div v-if="autoContent.status.value === 'pending'" class="flex justify-center py-8">
+							<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+						</div>
+						<ClientOnly v-if="autoContent.isEditing.value && autoContent.status.value !== 'pending'">
+							<TiptapLazyEditor v-model="autoContent.content.value" />
+						</ClientOnly>
+						<div
+							v-else-if="autoContent.status.value !== 'pending'"
+							class="prose max-w-none text-lg leading-relaxed dark:prose-invert"
+							v-html="autoContent.content.value || defaultAuto"
+						/>
+
+						<div class="flex flex-wrap gap-3">
+							<UButton
+								v-if="!autoContent.isEditing.value"
+								to="https://www.google.com/maps/dir/?api=1&destination=Lotissement+Beausoleil,+Hyeres"
+								target="_blank"
+								size="lg"
+								color="neutral"
+								variant="soft"
+								class="rounded-full px-6"
+								icon="i-lucide-map">
+								{{ t("travel.auto.routeButton") }}
+							</UButton>
+						</div>
+
+						<div
+							v-if="!autoContent.isEditing.value"
+							class="max-w-3xl border-l-2 border-[var(--app-accent)] pl-4 text-sm leading-relaxed text-[var(--app-muted)]">
+							<strong class="text-[var(--app-text)]">{{ t("travel.auto.tip") }}</strong> {{ t("travel.auto.tipText") }}
+						</div>
+					</div>
+
+					<div class="space-y-4">
+						<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">
+							{{ t("travel.auto.routeTitle") }}
+						</p>
+						<ol class="space-y-4">
+							<li
+								v-for="(step, index) in autoSteps"
+								:key="step.title"
+								class="flex gap-4 border-b border-[var(--app-border)] pb-4 last:border-b-0 last:pb-0">
+								<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] text-sm font-semibold text-[var(--app-text)]">
+									{{ index + 1 }}
+								</div>
+								<div>
+									<p class="font-semibold text-[var(--app-text)]">{{ step.title }}</p>
+									<p class="text-sm text-[var(--app-muted)]">{{ step.detail }}</p>
+								</div>
+							</li>
+						</ol>
+						<div class="flex items-center justify-between border-t border-[var(--app-border)] pt-4 text-sm">
+							<span class="text-[var(--app-muted)]">{{ t("travel.auto.toll") }}</span>
+							<span class="font-semibold text-[var(--app-text)]">{{ t("travel.auto.tollPrice") }}</span>
+						</div>
+					</div>
+				</div>
 			</div>
+		</section>
 
-			<div
-				class="mt-12 bg-white dark:bg-gray-950 rounded-3xl border border-stone-100 dark:border-stone-800 overflow-hidden shadow-xl">
-				<div class="p-8 md:p-12">
+		<section id="mit-dem-zug" class="scroll-mt-32 border-t border-[var(--app-border)] pt-16">
+			<div class="mx-auto max-w-screen-xl px-4">
+				<div class="space-y-6">
+					<UiTitle :subtitle="t('travel.zug.subtitle')" :title="t('travel.zug.title')" />
+
+					<div class="flex items-center justify-end gap-2">
+						<template v-if="zugContent.isAdmin.value && !zugContent.isEditing.value">
+							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="zugContent.startEditing()">
+								{{ t("editor.edit") }}
+							</UButton>
+						</template>
+						<template v-else-if="zugContent.isEditing.value">
+							<UButton color="neutral" variant="ghost" size="sm" :disabled="zugContent.isSaving.value" @click="zugContent.cancelEditing()">
+								{{ t("editor.cancel") }}
+							</UButton>
+							<UButton color="primary" icon="i-lucide-save" size="sm" :loading="zugContent.isSaving.value" @click="zugContent.save()">
+								{{ t("editor.save") }}
+							</UButton>
+						</template>
+					</div>
+
 					<div v-if="zugContent.status.value === 'pending'" class="flex justify-center py-8">
 						<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 					</div>
 					<ClientOnly v-if="zugContent.isEditing.value && zugContent.status.value !== 'pending'">
 						<TiptapLazyEditor v-model="zugContent.content.value" />
 					</ClientOnly>
-					<div v-else-if="zugContent.status.value !== 'pending'">
-						<p class="text-xl mb-12 text-stone-700 dark:text-stone-300" v-html="zugContent.content.value || defaultZug" />
-						<div class="grid md:grid-cols-3 gap-8 relative">
-							<div class="space-y-2 relative">
-								<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 1</div>
-								<div class="font-bold text-xl">Bern – Genève</div>
-								<p class="text-sm text-stone-500">InterCity, ca. 1h 45min</p>
-							</div>
-							<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
-								<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 2</div>
-								<div class="font-bold text-xl">Genève – Marseille</div>
-								<p class="text-sm text-stone-500">TGV Lyria, ca. 4h 30min</p>
-							</div>
-							<div class="space-y-2 border-l border-stone-100 dark:border-stone-800 md:pl-8">
-								<div class="text-xs font-black text-primary uppercase tracking-widest mb-1">Etappe 3</div>
-								<div class="font-bold text-xl">Marseille – Hyères</div>
-								<p class="text-sm text-stone-500">Regionalzug TER, ca. 1h</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div
-					v-if="!zugContent.isEditing.value"
-					class="bg-neutral-900 dark:bg-black p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-white">
-					<div class="flex items-center gap-4">
-						<div class="p-3 bg-white/10 rounded-xl">
-							<UIcon name="i-lucide-bus" class="w-8 h-8 text-white" />
-						</div>
-						<div>
-							<span class="font-bold block text-lg text-white">{{ t("travel.zug.transfer") }}</span>
-							<span class="text-white/80">{{ t("travel.zug.transferText") }}</span>
-						</div>
-					</div>
-					<div class="flex gap-4">
-						<UButton
-							to="https://www.reseaumistral.com/se-deplacer/lignes/ligne-bus-67"
-							target="_blank"
-							color="neutral"
-							variant="solid"
-							size="xl"
-							class="rounded-full px-8 bg-white text-neutral-900 hover:bg-gray-100 border-none"
-							icon="i-lucide-bus-front"
-							>{{ t("travel.zug.busButton") }}</UButton
-						>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Details: Flugzeug -->
-		<section id="mit-dem-flugzeug" class="max-w-screen-lg mx-auto px-4 scroll-mt-32">
-			<UiTitle :subtitle="t('travel.flugzeug.subtitle')" :title="t('travel.flugzeug.title')" />
-
-			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="flugzeugContent.isAdmin.value && !flugzeugContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="outline"
-						icon="i-lucide-edit"
-						size="sm"
-						@click="flugzeugContent.startEditing()"
-					>
-						{{ t("editor.edit") }}
-					</UButton>
-				</template>
-				<template v-else-if="flugzeugContent.isEditing.value">
-					<UButton
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						@click="flugzeugContent.cancelEditing()"
-						:disabled="flugzeugContent.isSaving.value"
-					>
-						{{ t("editor.cancel") }}
-					</UButton>
-					<UButton
-						color="primary"
-						icon="i-lucide-save"
-						size="sm"
-						:loading="flugzeugContent.isSaving.value"
-						@click="flugzeugContent.save()"
-					>
-						{{ t("editor.save") }}
-					</UButton>
-				</template>
-			</div>
-
-			<div class="grid md:grid-cols-2 gap-12 mt-12 items-center">
-				<div v-if="flugzeugContent.status.value === 'pending'" class="flex justify-center py-8">
-					<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-				</div>
-				<ClientOnly v-if="flugzeugContent.isEditing.value && flugzeugContent.status.value !== 'pending'">
-					<TiptapLazyEditor v-model="flugzeugContent.content.value" />
-				</ClientOnly>
-				<div
-					v-else-if="flugzeugContent.status.value !== 'pending'"
-					class="prose dark:prose-invert max-w-none text-lg"
-					v-html="flugzeugContent.content.value || defaultFlugzeug"
-				/>
-				<div v-if="!flugzeugContent.isEditing.value" class="grid grid-cols-1 gap-4">
 					<div
-						class="p-6 rounded-2xl bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm flex items-center gap-6">
-						<div class="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-primary">
-							<UIcon name="i-lucide-plane-takeoff" class="w-10 h-10" />
+						v-else-if="zugContent.status.value !== 'pending'"
+						class="max-w-3xl text-lg leading-relaxed text-[var(--app-muted)] prose dark:prose-invert"
+						v-html="zugContent.content.value || defaultZug"
+					/>
+
+					<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.5fr)]">
+						<div class="grid gap-4 md:grid-cols-3">
+							<div
+								v-for="step in trainSteps"
+								:key="step.route"
+								class="border-t border-[var(--app-border)] pt-4">
+								<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">
+									{{ step.label }}
+								</p>
+								<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ step.route }}</p>
+								<p class="mt-1 text-sm text-[var(--app-muted)]">{{ step.detail }}</p>
+							</div>
 						</div>
-						<div>
-							<div class="text-lg font-bold">{{ t("travel.flugzeug.directFlights") }}</div>
-							<div class="text-stone-500">{{ t("travel.flugzeug.directFlightsText") }}</div>
-						</div>
-					</div>
-					<div
-						class="p-6 rounded-2xl bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 shadow-sm flex items-center gap-6">
-						<div class="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 text-secondary">
-							<UIcon name="i-lucide-car-front" class="w-10 h-10" />
-						</div>
-						<div>
-							<div class="text-lg font-bold">{{ t("travel.flugzeug.rentalCar") }}</div>
-							<div class="text-stone-500">{{ t("travel.flugzeug.rentalCarText") }}</div>
+
+						<div class="rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
+							<div class="flex items-start gap-3">
+								<div class="rounded-2xl bg-[var(--app-primary)]/12 p-3 text-[var(--app-primary)]">
+									<UIcon name="i-lucide-bus" class="h-6 w-6" />
+								</div>
+								<div class="space-y-1">
+									<p class="font-semibold text-[var(--app-text)]">{{ t("travel.zug.transfer") }}</p>
+									<p class="text-sm leading-relaxed text-[var(--app-muted)]">{{ t("travel.zug.transferText") }}</p>
+								</div>
+							</div>
+
+							<UButton
+								v-if="!zugContent.isEditing.value"
+								to="https://www.reseaumistral.com/se-deplacer/lignes/ligne-bus-67"
+								target="_blank"
+								color="neutral"
+								variant="soft"
+								size="lg"
+								class="mt-5 rounded-full px-5"
+								icon="i-lucide-bus-front">
+								{{ t("travel.zug.busButton") }}
+							</UButton>
 						</div>
 					</div>
 				</div>
 			</div>
 		</section>
 
+		<section id="mit-dem-flugzeug" class="scroll-mt-32 border-t border-[var(--app-border)] pt-16">
+			<div class="mx-auto max-w-screen-xl px-4">
+				<div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.7fr)]">
+					<div class="space-y-6">
+						<UiTitle :subtitle="t('travel.flugzeug.subtitle')" :title="t('travel.flugzeug.title')" />
+
+						<div class="flex items-center justify-end gap-2">
+							<template v-if="flugzeugContent.isAdmin.value && !flugzeugContent.isEditing.value">
+								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="flugzeugContent.startEditing()">
+									{{ t("editor.edit") }}
+								</UButton>
+							</template>
+							<template v-else-if="flugzeugContent.isEditing.value">
+								<UButton color="neutral" variant="ghost" size="sm" :disabled="flugzeugContent.isSaving.value" @click="flugzeugContent.cancelEditing()">
+									{{ t("editor.cancel") }}
+								</UButton>
+								<UButton color="primary" icon="i-lucide-save" size="sm" :loading="flugzeugContent.isSaving.value" @click="flugzeugContent.save()">
+									{{ t("editor.save") }}
+								</UButton>
+							</template>
+						</div>
+
+						<div v-if="flugzeugContent.status.value === 'pending'" class="flex justify-center py-8">
+							<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+						</div>
+						<ClientOnly v-if="flugzeugContent.isEditing.value && flugzeugContent.status.value !== 'pending'">
+							<TiptapLazyEditor v-model="flugzeugContent.content.value" />
+						</ClientOnly>
+						<div
+							v-else-if="flugzeugContent.status.value !== 'pending'"
+							class="prose max-w-none text-lg leading-relaxed dark:prose-invert"
+							v-html="flugzeugContent.content.value || defaultFlugzeug"
+						/>
+					</div>
+
+					<div class="space-y-4">
+						<div
+							v-for="item in flightFacts"
+							:key="item.title"
+							class="border-t border-[var(--app-border)] pt-4">
+							<div class="flex items-start gap-3">
+								<div class="rounded-2xl bg-[var(--app-accent)]/14 p-3 text-[var(--app-accent)]">
+									<UIcon :name="item.icon" class="h-6 w-6" />
+								</div>
+								<div>
+									<p class="font-semibold text-[var(--app-text)]">{{ item.title }}</p>
+									<p class="mt-1 text-sm leading-relaxed text-[var(--app-muted)]">{{ item.description }}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
 </template>
 

@@ -57,6 +57,9 @@ const galleryOpen = ref(false);
 const galleryIndex = ref(0);
 const videoOpen = ref(false);
 const currentVideo = ref<GlobalFile | null>(null);
+const previewFile = ref<GlobalFile | null>(null);
+const previewUrl = ref<string | null>(null);
+const previewLoading = ref(false);
 const highlightedFileId = computed(() => {
 	const fileId = route.query.fileId;
 	return typeof fileId === "string" ? fileId : "";
@@ -228,6 +231,22 @@ const formatTimestamp = (timestamp: number) => {
 	});
 };
 
+const isPdfFile = (file: GlobalFile | null) => file?.type === "application/pdf";
+const isOfficePreviewable = (file: GlobalFile | null) => {
+	if (!file) return false;
+	return [
+		"application/msword",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		"application/vnd.ms-excel",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+	].includes(file.type);
+};
+
+const officePreviewUrl = computed(() => {
+	if (!previewUrl.value || !isOfficePreviewable(previewFile.value)) return "";
+	return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl.value)}`;
+});
+
 const copyDeepLink = async (params: { folderId?: string | null; fileId?: string | null }) => {
 	const targetUrl = new URL(route.path || "/documents", window.location.origin);
 	if (params.folderId) {
@@ -239,6 +258,36 @@ const copyDeepLink = async (params: { folderId?: string | null; fileId?: string 
 
 	await navigator.clipboard.writeText(targetUrl.toString());
 	toast.add({ title: "Link kopiert", color: "success" });
+};
+
+const loadPreview = async (file: GlobalFile | null) => {
+	previewFile.value = file;
+	previewUrl.value = null;
+
+	if (!file) return;
+	if (!(file.type.startsWith("image/") || file.type === "video/mp4" || isPdfFile(file) || isOfficePreviewable(file))) {
+		return;
+	}
+
+	try {
+		previewLoading.value = true;
+		const response = await $fetch<{ url: string }>(`/api/files/download?fileId=${file.id}`, {
+			headers: { Authorization: `Bearer ${token.value}` },
+		});
+		previewUrl.value = response.url;
+	} catch (e: unknown) {
+		toast.add({ title: "Vorschau nicht verfügbar", description: getErrorMessage(e), color: "warning" });
+	} finally {
+		previewLoading.value = false;
+	}
+};
+
+const getFolderDeleteSummary = async (folderId: string) => {
+	return await $fetch<{ fileCount: number; folderCount: number }>("/api/folders/delete", {
+		method: "POST",
+		headers: { Authorization: `Bearer ${token.value}` },
+		body: { folderId, dryRun: true },
+	});
 };
 
 const fetchData = async (folderId: string | null = null) => {
@@ -644,26 +693,29 @@ const deleteFile = async (file: GlobalFile) => {
 
 const deleteSelectedItems = async () => {
 	const total = selectedFiles.value.length + selectedFolders.value.length;
-	if (!confirm(`${total} Element(e) wirklich löschen?`)) return;
+	let warningText = `${total} Element(e) wirklich löschen?`;
+
+	if (selectedFolders.value.length > 0) {
+		const summaries = await Promise.all(selectedFolders.value.map(folder => getFolderDeleteSummary(folder.id)));
+		const nestedFiles = summaries.reduce((sum, summary) => sum + summary.fileCount, 0);
+		const nestedFolders = summaries.reduce((sum, summary) => sum + summary.folderCount, 0);
+		if (nestedFiles > 0 || nestedFolders > 0) {
+			warningText += `\n\nDabei werden auch ${nestedFiles} Datei(en) und ${nestedFolders} Unterordner gelöscht.`;
+		}
+	}
+
+	if (!confirm(warningText)) return;
 
 	let deletedCount = 0;
 
 	for (const folder of [...selectedFolders.value]) {
-		const hasFiles = files.value.some(f => f.folderId === folder.id);
-		const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
-
-		if (hasFiles || hasSubfolders) {
-			toast.add({ title: `"${folder.name}" ist nicht leer`, description: "Übersprungen.", color: "warning" });
-			continue;
-		}
-
 		try {
-			await $fetch("/api/folders/delete", {
+			const result = await $fetch<{ fileCount: number; folderCount: number }>("/api/folders/delete", {
 				method: "POST",
 				headers: { Authorization: `Bearer ${token.value}` },
 				body: { folderId: folder.id },
 			});
-			deletedCount++;
+			deletedCount += 1 + result.folderCount + result.fileCount;
 		} catch (e: unknown) {
 			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: getFetchError(e), color: "error" });
 		}
@@ -691,23 +743,27 @@ const deleteSelectedItems = async () => {
 };
 
 const deleteFolder = async (folder: GlobalFolder) => {
-	const hasFiles = files.value.some(f => f.folderId === folder.id);
-	const hasSubfolders = folders.value.some(f => f.parentId === folder.id);
-
-	if (hasFiles || hasSubfolders) {
-		toast.add({ title: "Ordner ist nicht leer", description: "Bitte löschen Sie zuerst alle Dateien und Unterordner.", color: "warning" });
-		return;
+	const summary = await getFolderDeleteSummary(folder.id);
+	let warningText = `"${folder.name}" wirklich löschen?`;
+	if (summary.fileCount > 0 || summary.folderCount > 0) {
+		warningText += `\n\nDabei werden auch ${summary.fileCount} Datei(en) und ${summary.folderCount} Unterordner gelöscht.`;
 	}
 
-	if (!confirm(`"${folder.name}" wirklich löschen?`)) return;
+	if (!confirm(warningText)) return;
 
 	try {
-		await $fetch("/api/folders/delete", {
+		const result = await $fetch<{ fileCount: number; folderCount: number }>("/api/folders/delete", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { folderId: folder.id },
 		});
-		toast.add({ title: "Ordner gelöscht", color: "success" });
+		toast.add({
+			title: "Ordner gelöscht",
+			description: result.fileCount > 0 || result.folderCount > 0
+				? `${result.fileCount} Datei(en) und ${result.folderCount} Unterordner entfernt.`
+				: undefined,
+			color: "success",
+		});
 		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
@@ -923,6 +979,28 @@ watch(() => route.query.folder, (newFolderId) => {
 		fetchData(folderId);
 	}
 });
+
+watch(
+	() => selectedFiles.value.map(file => file.id),
+	async () => {
+		if (selectedFiles.value.length === 1 && selectedFolders.value.length === 0) {
+			await loadPreview(selectedFiles.value[0]);
+			return;
+		}
+		previewFile.value = null;
+		previewUrl.value = null;
+	},
+);
+
+watch(
+	() => selectedFolders.value.length,
+	() => {
+		if (selectedFolders.value.length > 0) {
+			previewFile.value = null;
+			previewUrl.value = null;
+		}
+	},
+);
 </script>
 
 <template>
@@ -995,6 +1073,7 @@ watch(() => route.query.folder, (newFolderId) => {
 			</div>
 
 			<template v-else>
+				<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
 				<div class="app-card rounded-[2rem] overflow-hidden">
 					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto">
 						<div class="flex items-center gap-2 text-sm whitespace-nowrap">
@@ -1360,6 +1439,88 @@ watch(() => route.query.folder, (newFolderId) => {
 							</div>
 						</div>
 					</div>
+				</div>
+
+				<aside class="space-y-4 xl:sticky xl:top-28">
+					<div
+						v-if="previewFile"
+						class="app-card overflow-hidden rounded-[1.75rem] border border-[var(--app-border)]">
+						<div class="border-b border-[var(--app-border)] px-5 py-4">
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">Ausgewählte Datei</p>
+							<h2 class="mt-2 text-lg font-semibold text-[var(--app-text)] break-words">{{ previewFile.name }}</h2>
+						</div>
+						<div class="border-b border-[var(--app-border)] bg-black/3 p-4 dark:bg-white/[0.02]">
+							<div class="overflow-hidden rounded-[1.25rem] bg-stone-100 dark:bg-stone-950">
+								<div v-if="previewLoading" class="flex h-[220px] items-center justify-center">
+									<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+								</div>
+								<img
+									v-else-if="previewUrl && previewFile.type.startsWith('image/')"
+									:src="previewUrl"
+									:alt="previewFile.name"
+									class="h-[220px] w-full object-cover" />
+								<video
+									v-else-if="previewUrl && previewFile.type === 'video/mp4'"
+									:src="previewUrl"
+									controls
+									class="h-[220px] w-full object-cover" />
+								<iframe
+									v-else-if="previewUrl && isPdfFile(previewFile)"
+									:src="previewUrl"
+									class="h-[320px] w-full bg-white"
+									title="PDF Vorschau" />
+								<iframe
+									v-else-if="officePreviewUrl"
+									:src="officePreviewUrl"
+									class="h-[320px] w-full bg-white"
+									title="Dokument Vorschau" />
+								<div
+									v-else
+									class="flex h-[220px] flex-col items-center justify-center gap-3 px-6 text-center text-stone-500 dark:text-stone-400">
+									<UIcon :name="getFileIcon(previewFile.type)" class="h-10 w-10" :class="getFileIconColor(previewFile.type)" />
+									<p class="font-medium text-[var(--app-text)]">{{ previewFile.name }}</p>
+									<p class="text-sm">Für diesen Dateityp ist keine direkte Vorschau verfügbar.</p>
+								</div>
+							</div>
+						</div>
+						<div class="space-y-4 px-5 py-4">
+							<div class="grid grid-cols-2 gap-3 text-sm">
+								<div>
+									<p class="text-stone-400">Typ</p>
+									<p class="font-medium text-[var(--app-text)]">{{ getFileTypeName(previewFile.type) }}</p>
+								</div>
+								<div>
+									<p class="text-stone-400">Größe</p>
+									<p class="font-medium text-[var(--app-text)]">{{ formatFileSize(previewFile.size) }}</p>
+								</div>
+								<div>
+									<p class="text-stone-400">Hochgeladen</p>
+									<p class="font-medium text-[var(--app-text)]">{{ formatDate(previewFile.uploadedAt) }}</p>
+								</div>
+								<div>
+									<p class="text-stone-400">Dateidatum</p>
+									<p class="font-medium text-[var(--app-text)]">{{ previewFile.lastModified ? formatTimestamp(previewFile.lastModified) : "—" }}</p>
+								</div>
+							</div>
+							<div class="flex flex-wrap gap-2">
+								<UButton color="neutral" variant="soft" icon="i-lucide-eye" @click="handleFileClick(previewFile)">
+									Öffnen
+								</UButton>
+								<UButton color="neutral" variant="ghost" icon="i-lucide-download" @click="downloadFileToDisk(previewFile)">
+									Download
+								</UButton>
+								<UButton color="neutral" variant="ghost" icon="i-lucide-link" @click="copyDeepLink({ folderId: previewFile.folderId, fileId: previewFile.id })">
+									Link
+								</UButton>
+							</div>
+						</div>
+					</div>
+					<div
+						v-else
+						class="hidden rounded-[1.75rem] border border-dashed border-[var(--app-border)] px-5 py-6 text-sm text-[var(--app-muted)] xl:block">
+						Wählen Sie eine Datei aus, um rechts eine Vorschau und die wichtigsten Metadaten zu sehen.
+					</div>
+				</aside>
 				</div>
 
 				<UModal v-model:open="isRenameModalOpen" title="Datei umbenennen">

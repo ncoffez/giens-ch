@@ -201,6 +201,19 @@ const recommendationItems = computed<SearchPaletteItem[]>(() => {
 	}));
 });
 
+const pageItems = computed<SearchPaletteItem[]>(() => {
+	return searchResults.value
+		.filter((result) => result.type === "page")
+		.slice(0, 6)
+		.map((result) => ({
+			label: result.label,
+			icon: result.icon,
+			to: localePath(result.to),
+			suffix: result.context,
+			searchResult: result,
+		}));
+});
+
 const headingItems = computed<SearchPaletteItem[]>(() => {
 	return searchResults.value
 		.filter((result) => result.type === "heading")
@@ -293,6 +306,14 @@ const groups = computed(() => {
 		});
 	}
 
+	if (searchQuery.value.trim() && pageItems.value.length > 0) {
+		result.push({
+			id: "matched-pages",
+			label: t("search.sections.pages"),
+			items: pageItems.value,
+		});
+	}
+
 	if (!searchQuery.value.trim() && organisatorischesHeadingItems.value.length > 0) {
 		result.push({
 			id: "organisatorisches-headings",
@@ -374,17 +395,64 @@ onMounted(() => {
 </script>
 
 <template>
-	<UModal v-model:open="open" :title="t('search.title')">
+	<UModal
+		v-model:open="open"
+		:title="t('search.title')"
+		:ui="{ content: 'sm:max-w-4xl rounded-[2rem] border border-[var(--app-border)] bg-[var(--app-surface-strong)] shadow-[var(--app-shadow)]' }">
 		<template #content>
-			<UCommandPalette
-				v-model:search-term="searchQuery"
-				:groups="groups"
-				:placeholder="t('search.placeholder')"
-				class="h-80"
-				close
-				:loading="isLoading"
-				@update:model-value="onSelect"
-				@update:open="open = $event" />
+			<div class="space-y-4 p-3 md:p-5">
+				<div class="flex items-start justify-between gap-4 px-2 pt-1">
+					<div class="space-y-1">
+						<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">
+							{{ t("search.title") }}
+						</p>
+						<p class="max-w-2xl text-sm text-[var(--app-muted)]">
+							{{ t("search.placeholder") }}
+						</p>
+					</div>
+					<div class="hidden rounded-full border border-[var(--app-border)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)] md:block">
+						⌘K
+					</div>
+				</div>
+
+				<UCommandPalette
+					v-model:search-term="searchQuery"
+					:groups="groups"
+					:placeholder="t('search.placeholder')"
+					class="search-palette h-[24rem] md:h-[30rem]"
+					close
+					:loading="isLoading"
+					@update:model-value="onSelect"
+					@update:open="open = $event" />
+			</div>
 		</template>
 	</UModal>
 </template>
+
+<style scoped>
+:deep(.search-palette [data-slot="command-input"]) {
+	padding: 1rem 1.1rem;
+	border-radius: 1.1rem;
+	border: 1px solid var(--app-border);
+	background: color-mix(in srgb, var(--app-surface) 88%, white 12%);
+}
+
+:deep(.search-palette [data-slot="command-list"]) {
+	padding: 0.5rem;
+}
+
+:deep(.search-palette [data-slot="command-group-heading"]) {
+	padding: 0.25rem 0.65rem 0.5rem;
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--app-muted);
+}
+
+:deep(.search-palette [data-slot="command-item"]) {
+	min-height: 3.4rem;
+	border-radius: 1rem;
+	padding: 0.8rem 0.9rem;
+}
+</style>
