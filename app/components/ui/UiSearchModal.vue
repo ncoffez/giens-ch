@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { CommandPaletteItem } from "@nuxt/ui";
 
-const open = defineModel<boolean>({ default: false });
+const { open, closeSearch } = useSearchModal();
 
 const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
@@ -13,6 +13,8 @@ const hasLoaded = ref(false);
 
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader : false);
+const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin : false);
+const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
 
 const staticPageItems = computed(() => {
 	const items: CommandPaletteItem[] = [
@@ -38,6 +40,14 @@ const staticPageItems = computed(() => {
 		},
 	];
 
+	if (isOwner.value || isReader.value) {
+		items.push({
+			label: "Dokumente",
+			icon: "i-lucide-folder",
+			to: localePath("/documents"),
+		});
+	}
+
 	if (isOwner.value && canAccessHomes.value) {
 		items.push({
 			label: "Mein Haus",
@@ -46,11 +56,27 @@ const staticPageItems = computed(() => {
 		});
 	}
 
-	if (isOwner.value || isReader.value) {
+	if (currentUser.value) {
 		items.push({
-			label: "Dokumente",
-			icon: "i-lucide-folder",
-			to: localePath("/documents"),
+			label: "Profil",
+			icon: "i-lucide-user",
+			to: localePath("/profile/me"),
+		});
+	}
+
+	if (isAdmin.value) {
+		items.push({
+			label: "Verwaltung",
+			icon: "i-lucide-settings",
+			to: localePath("/admin"),
+		});
+	}
+
+	if (!currentUser.value) {
+		items.push({
+			label: "Login",
+			icon: "i-lucide-log-in",
+			to: localePath("/login"),
 		});
 	}
 
@@ -140,7 +166,7 @@ const groups = computed(() => {
 });
 
 function onSelect() {
-	open.value = false;
+	closeSearch();
 	searchQuery.value = "";
 }
 
@@ -163,7 +189,7 @@ onMounted(() => {
 			open.value = !open.value;
 		}
 		if (e.key === "Escape" && open.value) {
-			open.value = false;
+			closeSearch();
 		}
 	};
 	window.addEventListener("keydown", handleKeyDown);
@@ -173,14 +199,6 @@ onMounted(() => {
 
 <template>
 	<UModal v-model:open="open" title="Suchen">
-		<UButton
-			icon="i-lucide-search"
-			color="neutral"
-			variant="ghost"
-			class="rounded-full"
-			aria-label="Suchen"
-			@click="open = true" />
-
 		<template #content>
 			<UCommandPalette
 				v-model:search-term="searchQuery"

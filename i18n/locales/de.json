@@ -16,7 +16,8 @@
     "myHomes": "Meine Häuser",
     "admin": "Verwaltung",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "search": "Suchen"
   },
   "hero": {
     "welcome": {

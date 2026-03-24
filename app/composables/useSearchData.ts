@@ -60,6 +60,17 @@ function slugify(text: string): string {
 		.replace(/^-|-$/g, "");
 }
 
+function normalizeText(text: string): string {
+	return text
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/ä/g, "a")
+		.replace(/ö/g, "o")
+		.replace(/ü/g, "u")
+		.replace(/ß/g, "ss");
+}
+
 function stripHtml(html: string): string {
 	if (!html) return "";
 	return html
@@ -308,11 +319,11 @@ export function useSearchData() {
 	const searchAll = (query: string): SearchResult[] => {
 		if (!query.trim() || !isLoaded.value) return [];
 
-		const searchTerms = query.toLowerCase().trim().split(/\s+/);
+		const searchTerms = normalizeText(query).trim().split(/\s+/);
 		const results: SearchResult[] = [];
 
 		const matchesQuery = (text: string) => 
-			searchTerms.every(term => text.toLowerCase().includes(term));
+			searchTerms.every(term => normalizeText(text).includes(term));
 
 		for (const h of headingsCache.value) {
 			if (matchesQuery(h.text) || matchesQuery(h.context)) {

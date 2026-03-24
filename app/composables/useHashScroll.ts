@@ -1,10 +1,15 @@
 export function useHashScroll() {
 	const route = useRoute();
+	const hasScrolledForPath = ref<string | null>(null);
 
 	const scrollToHash = async (hash: string, maxRetries = 30) => {
 		if (!hash) return;
 
 		const elementId = hash.replace("#", "");
+		const pathKey = route.path + hash;
+
+		if (hasScrolledForPath.value === pathKey) return;
+		hasScrolledForPath.value = pathKey;
 
 		for (let i = 0; i < maxRetries; i++) {
 			const element = document.getElementById(elementId);
@@ -24,11 +29,15 @@ export function useHashScroll() {
 		}
 	};
 
+	watch(() => route.path, () => {
+		hasScrolledForPath.value = null;
+	});
+
 	watch(() => route.hash, (newHash, oldHash) => {
-		if (newHash && newHash !== oldHash) {
+		if (newHash && newHash !== oldHash && oldHash !== undefined) {
 			nextTick(() => scrollToHash(newHash));
 		}
-	}, { immediate: true });
+	});
 
 	return {
 		scrollToHash,
