@@ -46,6 +46,10 @@
     "hero": {
       "kicker": "Arriver et respirer",
       "lead": "Un calme méditerranéen, la mer à courte distance et une petite communauté qui entretient sa résidence avec soin.",
+      "leads": {
+        "1": "Lumière, jardin et mer à quelques minutes. Un lieu qui apaise sans effort.",
+        "2": "Entre pins, air salin et esprit de communauté, l'été y prend un rythme plus doux."
+      },
       "stats": {
         "houses": "Maisons",
         "minutes": "Min. de la plage",
@@ -57,10 +61,12 @@
       "title": "Se sentir bien et vivre"
     },
     "miteinander": {
+      "subtitle": "Communauté",
       "title": "Créer ensemble",
       "button": "En savoir plus"
     },
     "timeline": {
+      "subtitle": "Histoire",
       "title": "Notre histoire"
     },
     "impressions": {
@@ -95,10 +101,38 @@
       "lead": "En voiture, en train ou en avion, Giens est facile d'accès si la dernière étape est bien préparée.",
       "body": "Cette page rassemble les trajets qui fonctionnent le mieux dans la pratique pour les propriétaires et les invités, avec quelques repères utiles pour l'arrivée sur la presqu'île.",
       "factsTitle": "En bref",
+      "pillars": {
+        "drive": {
+          "title": "En voiture",
+          "description": "L'option la plus souple pour les familles, les séjours prolongés et les bagages."
+        },
+        "train": {
+          "title": "En train",
+          "description": "Un trajet plus paisible jusqu'à Hyères, puis un court transfert en bus ou en taxi."
+        },
+        "flight": {
+          "title": "En avion",
+          "description": "La solution la plus rapide vers le Sud, idéale pour les courts séjours."
+        }
+      },
       "facts": {
         "distance": "depuis Berne",
         "drive": "en voiture",
         "airport": "jusqu'à TLN"
+      }
+    },
+    "locationFacts": {
+      "walk": {
+        "label": "À pied",
+        "value": "env. 15 min de la plage"
+      },
+      "port": {
+        "label": "Ferry",
+        "value": "env. 1 km de La Tour Fondue"
+      },
+      "nature": {
+        "label": "Environnement",
+        "value": "au bord des zones naturelles protégées"
       }
     },
     "lage": {

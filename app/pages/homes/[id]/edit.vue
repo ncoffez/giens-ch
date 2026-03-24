@@ -288,7 +288,7 @@ onMounted(fetchHome);
 								@click="activeSection = section.id as any"
 								class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
 								:class="activeSection === section.id
-									? 'bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-accent)] text-white shadow-[0_14px_32px_rgba(36,108,122,0.2)]'
+									? 'border border-[var(--app-primary)]/20 bg-[var(--app-primary)]/10 text-[var(--app-text)] shadow-none'
 									: 'text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-white/[0.04]'"
 							>
 								<UIcon :name="section.icon" class="w-5 h-5" />

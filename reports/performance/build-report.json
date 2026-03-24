@@ -1,105 +1,105 @@
 {
-	"generatedAt": "2026-03-24T20:42:41.664Z",
-	"totalJsBytes": 1847077,
-	"totalJsKilobytes": 1803.79,
+	"generatedAt": "2026-03-24T21:33:14.106Z",
+	"totalJsBytes": 1861015,
+	"totalJsKilobytes": 1817.4,
 	"topClientChunks": [
 		{
-			"file": "B4GuDUp4.js",
+			"file": "BXz-7qmZ.js",
 			"bytes": 753409,
 			"kilobytes": 735.75
 		},
 		{
-			"file": "B2B2D1Wf.js",
+			"file": "Avx1mJJ3.js",
 			"bytes": 374343,
 			"kilobytes": 365.57
 		},
 		{
-			"file": "DKBGMHIn.js",
+			"file": "Bv54RUlG.js",
 			"bytes": 68298,
 			"kilobytes": 66.7
 		},
 		{
-			"file": "DSsNEdRx.js",
-			"bytes": 61931,
-			"kilobytes": 60.48
+			"file": "B3D1SepV.js",
+			"bytes": 64891,
+			"kilobytes": 63.37
 		},
 		{
-			"file": "Bg-Gg2rL.js",
+			"file": "Clpjt8Ux.js",
+			"bytes": 49564,
+			"kilobytes": 48.4
+		},
+		{
+			"file": "0JPBXfSV.js",
 			"bytes": 49549,
 			"kilobytes": 48.39
 		},
 		{
-			"file": "BPiMOm9S.js",
+			"file": "BotECmxZ.js",
 			"bytes": 47024,
 			"kilobytes": 45.92
 		},
 		{
-			"file": "BApJ-i8u.js",
-			"bytes": 44782,
-			"kilobytes": 43.73
-		},
-		{
-			"file": "BlZgDpCl.js",
+			"file": "CdpHniLU.js",
 			"bytes": 35756,
 			"kilobytes": 34.92
 		},
 		{
-			"file": "CcxUJMyH.js",
+			"file": "C9N35iUs.js",
 			"bytes": 29044,
 			"kilobytes": 28.36
 		},
 		{
-			"file": "B4kkqeb4.js",
-			"bytes": 27832,
-			"kilobytes": 27.18
+			"file": "Di_LkPkO.js",
+			"bytes": 28139,
+			"kilobytes": 27.48
 		},
 		{
-			"file": "7FTrQ6AH.js",
-			"bytes": 27099,
-			"kilobytes": 26.46
+			"file": "B0O7NlO7.js",
+			"bytes": 27080,
+			"kilobytes": 26.45
 		},
 		{
-			"file": "D_1r30Cm.js",
-			"bytes": 16319,
-			"kilobytes": 15.94
+			"file": "BLZQxULI.js",
+			"bytes": 18133,
+			"kilobytes": 17.71
 		},
 		{
-			"file": "CLknbBCu.js",
-			"bytes": 15966,
-			"kilobytes": 15.59
+			"file": "B9yD88m9.js",
+			"bytes": 17183,
+			"kilobytes": 16.78
 		},
 		{
-			"file": "DOGlgQCA.js",
-			"bytes": 15561,
-			"kilobytes": 15.2
+			"file": "nXqImLs_.js",
+			"bytes": 16786,
+			"kilobytes": 16.39
 		},
 		{
-			"file": "eRBAo1su.js",
+			"file": "ClWFYuHt.js",
 			"bytes": 15305,
 			"kilobytes": 14.95
 		},
 		{
-			"file": "CklpCbuq.js",
+			"file": "DVR8bfC4.js",
 			"bytes": 15061,
 			"kilobytes": 14.71
 		},
 		{
-			"file": "DAPnoA0T.js",
+			"file": "C314VIuj.js",
 			"bytes": 14945,
 			"kilobytes": 14.59
 		},
 		{
-			"file": "CEHBm0ll.js",
+			"file": "CFN4Se6y.js",
 			"bytes": 13052,
 			"kilobytes": 12.75
 		},
 		{
-			"file": "sSySnhd2.js",
+			"file": "bGsYkLKh.js",
 			"bytes": 13015,
 			"kilobytes": 12.71
 		},
 		{
-			"file": "DkSzdEwP.js",
+			"file": "HFA6WQBM.js",
 			"bytes": 10672,
 			"kilobytes": 10.42
 		}

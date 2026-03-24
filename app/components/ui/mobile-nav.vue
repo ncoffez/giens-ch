@@ -12,12 +12,12 @@
 				<span class="text-[10px] font-semibold tracking-[0.08em] text-center leading-tight">{{ item.label }}</span>
 			</NuxtLink>
 			<button
-				class="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[1.25rem] bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-accent)] text-white shadow-[0_16px_32px_rgba(36,108,122,0.28)] active:scale-95"
+				class="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl border border-[var(--app-border)] bg-[color:var(--app-surface-strong)] text-[var(--app-text)] transition-all duration-200 active:scale-95 hover:border-[var(--app-primary)]/40 hover:text-[var(--app-primary)]"
 				aria-label="Suchen"
 				@click="openSearch"
 			>
 				<UIcon name="i-lucide-search" class="w-5 h-5" />
-				<span class="text-[10px] font-semibold tracking-[0.08em]">{{ t("nav.search") }}</span>
+				<span class="text-[10px] font-semibold tracking-[0.08em] text-center leading-tight">{{ t("nav.search") }}</span>
 			</button>
 		</div>
 		</div>
