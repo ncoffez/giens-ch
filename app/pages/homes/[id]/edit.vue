@@ -43,6 +43,9 @@ const contactForm = ref({
 	notes: "",
 	hidden: false,
 });
+const ownerContacts = computed(() => formContacts.value.filter((contact) => contact.isOwner));
+const additionalContacts = computed(() => formContacts.value.filter((contact) => !contact.isOwner));
+const isEditingOwnerContact = computed(() => Boolean(editingContact.value?.isOwner));
 
 const fetchHome = async () => {
 	try {
@@ -365,7 +368,7 @@ onMounted(fetchHome);
 							<div class="flex items-center justify-between">
 								<div>
 									<h2 class="text-2xl font-black mb-2">Kontakte</h2>
-									<p class="text-stone-500">Verwalten Sie Kontaktpersonen für Ihre Mieter.</p>
+									<p class="text-stone-500">Pflegen Sie Eigentümer- und Zusatzkontakte, damit Gäste die richtigen Ansprechpartner erreichen.</p>
 								</div>
 								<UButton
 									icon="i-lucide-plus"
@@ -383,36 +386,80 @@ onMounted(fetchHome);
 								</UButton>
 							</div>
 
-							<div v-else class="space-y-4">
-								<div v-for="contact in formContacts" :key="contact.id" class="relative">
-									<ContactCard :contact="contact" :show-hidden-badge="true" />
-									<div class="absolute top-4 right-4 flex items-center gap-2">
-										<UButton
-											:icon="contact.hidden ? 'i-lucide-eye-off' : 'i-lucide-eye'"
-											color="neutral"
-											variant="ghost"
-											size="sm"
-											@click="toggleContactHidden(contact.id)"
-											:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
-										/>
-										<UButton
-											v-if="!contact.isOwner"
-											icon="i-lucide-pencil"
-											color="neutral"
-											variant="ghost"
-											size="sm"
-											@click="openContactModal(contact)"
-										/>
-										<UButton
-											v-if="!contact.isOwner"
-											icon="i-lucide-trash-2"
-											color="error"
-											variant="ghost"
-											size="sm"
-											@click="deleteContact(contact.id)"
-										/>
+							<div v-else class="space-y-6">
+								<section v-if="ownerContacts.length > 0" class="space-y-4">
+									<div class="space-y-1">
+										<h3 class="text-lg font-bold">Eigentümer</h3>
+										<p class="text-sm text-stone-500">Name und Profil bleiben erhalten, E-Mail, Telefon und Hinweise können hier hausbezogen ergänzt werden.</p>
 									</div>
-								</div>
+									<div class="grid gap-4 xl:grid-cols-2">
+										<ContactCard
+											v-for="contact in ownerContacts"
+											:key="contact.id"
+											:contact="contact"
+											:show-hidden-badge="true">
+											<template #actions>
+												<UButton
+													:icon="contact.hidden ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+													color="neutral"
+													variant="ghost"
+													size="sm"
+													@click="toggleContactHidden(contact.id)"
+													:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
+												/>
+												<UButton
+													icon="i-lucide-pencil"
+													color="neutral"
+													variant="ghost"
+													size="sm"
+													@click="openContactModal(contact)"
+												/>
+											</template>
+										</ContactCard>
+									</div>
+								</section>
+
+								<section class="space-y-4">
+									<div class="space-y-1">
+										<h3 class="text-lg font-bold">Weitere Kontakte</h3>
+										<p class="text-sm text-stone-500">Hauswartung, Nachbarschaft oder lokale Hilfeleistungen lassen sich hier separat pflegen.</p>
+									</div>
+									<div v-if="additionalContacts.length === 0" class="rounded-2xl border border-dashed border-stone-200 bg-white/70 px-6 py-8 text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-800/60">
+										Noch keine zusätzlichen Kontakte vorhanden.
+									</div>
+									<div v-else class="grid gap-4 xl:grid-cols-2">
+										<ContactCard
+											v-for="contact in additionalContacts"
+											:key="contact.id"
+											:contact="contact"
+											:show-hidden-badge="true">
+											<template #actions>
+												<UButton
+													:icon="contact.hidden ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+													color="neutral"
+													variant="ghost"
+													size="sm"
+													@click="toggleContactHidden(contact.id)"
+													:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
+												/>
+												<UButton
+													icon="i-lucide-pencil"
+													color="neutral"
+													variant="ghost"
+													size="sm"
+													@click="openContactModal(contact)"
+												/>
+												<UButton
+													icon="i-lucide-trash-2"
+													color="error"
+													variant="ghost"
+													size="sm"
+													@click="deleteContact(contact.id)"
+												/>
+											</template>
+										</ContactCard>
+									</div>
+								</section>
 							</div>
 						</div>
 
@@ -420,16 +467,18 @@ onMounted(fetchHome);
 						<div v-else-if="activeSection === 'instructions'" class="space-y-6">
 							<div>
 								<h2 class="text-2xl font-black mb-2">Anleitung</h2>
-								<p class="text-stone-500">Schreiben Sie eine Anleitung für Ihre Mieter.</p>
+								<p class="text-stone-500">Hinterlegen Sie die wichtigsten Hinweise für Ankunft, Aufenthalt und Abreise in einer klaren, gut lesbaren Struktur.</p>
 							</div>
-							<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6">
-								<TiptapEditor v-model="formInstructions" />
-								<div class="flex justify-end mt-6">
-									<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
-										Speichern
-									</UButton>
+							<div class="flex items-start justify-between gap-4 rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4">
+								<div class="space-y-1">
+									<p class="text-sm font-semibold text-[var(--app-text)]">Hinweise für Gäste</p>
+									<p class="text-sm text-[var(--app-muted)]">Der Editor bringt bereits seine eigene Oberfläche mit. Die Abschnittskarte bleibt deshalb bewusst schlank.</p>
 								</div>
+								<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
+									Speichern
+								</UButton>
 							</div>
+							<TiptapEditor v-model="formInstructions" />
 						</div>
 
 						<!-- Files Section -->
@@ -465,12 +514,15 @@ onMounted(fetchHome);
 			<template #content>
 				<div class="p-6">
 					<h3 class="text-lg font-bold mb-4">
-						{{ editingContact ? "Kontakt bearbeiten" : "Neuer Kontakt" }}
+						{{ editingContact ? (isEditingOwnerContact ? "Eigentümerkontakt ergänzen" : "Kontakt bearbeiten") : "Neuer Kontakt" }}
 					</h3>
 
 					<div class="space-y-4">
 						<UFormField label="Name" required>
-							<UInput v-model="contactForm.name" placeholder="Vorname Nachname" size="xl" />
+							<UInput v-model="contactForm.name" placeholder="Vorname Nachname" size="xl" :disabled="isEditingOwnerContact" />
+							<p v-if="isEditingOwnerContact" class="mt-1 text-xs text-stone-500">
+								Der Name kommt aus dem Eigentümerprofil. Hier ergänzen Sie nur die Kontaktdaten für dieses Haus.
+							</p>
 						</UFormField>
 
 						<UFormField label="E-Mail">

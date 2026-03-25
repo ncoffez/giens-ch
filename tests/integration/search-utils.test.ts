@@ -143,4 +143,39 @@ describe("search utilities", () => {
 
 		expect(results.some((result) => result.type === "document")).toBe(false);
 	});
+
+	it("keeps heading matches available beyond the first 24 mixed results", () => {
+		const crowdedPages: SearchPage[] = Array.from({ length: 40 }, (_, index) => ({
+			id: `page-${index}`,
+			label: `Guide ${index}`,
+			context: "Anreise und Check-in Informationen",
+			to: `/guide-${index}`,
+			icon: "i-lucide-file-text",
+			usageKey: `page:/guide-${index}`,
+			keywords: ["anreise"],
+		}));
+
+		const results = searchCollections({
+			pages: crowdedPages,
+			headings: [
+				{
+					id: "arrival-heading",
+					text: "Anreise im Detail",
+					context: "Alle Schritte für die Ankunft",
+					page: "Organisatorisches",
+					pagePath: "/organisatorisches",
+				},
+			],
+			features: [],
+			timeline: [],
+			documents: [],
+			query: "anreise",
+			locale: "de",
+			canAccessDocuments: false,
+			getUsageCount: () => 0,
+		});
+
+		expect(results.length).toBeGreaterThan(24);
+		expect(results.some((result) => result.type === "heading" && result.id === "arrival-heading")).toBe(true);
+	});
 });

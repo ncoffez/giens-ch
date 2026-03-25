@@ -247,8 +247,10 @@ onMounted(() => {
 
 		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
 			<div class="grid gap-6 border-y border-[var(--app-border)] py-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-				<div>
-					<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">Beausoleil in Zahlen</p>
+				<div class="text-center md:text-left">
+					<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">
+						{{ t("home.stats.title") }}
+					</p>
 				</div>
 				<div class="flex items-center justify-end gap-2">
 					<template v-if="stats.isAdmin.value && !stats.isEditing.value">

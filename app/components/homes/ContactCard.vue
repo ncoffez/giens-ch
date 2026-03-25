@@ -35,25 +35,33 @@ const props = withDefaults(defineProps<Props>(), {
 			/>
 
 			<div class="flex-1 min-w-0">
-				<div class="flex items-center gap-2">
-					<NuxtLink
-						v-if="contact.isOwner"
-						:to="`/profile/${contact.id.replace('owner-', '')}`"
-						class="font-medium hover:text-primary transition-colors"
-					>
-						{{ contact.name }}
-					</NuxtLink>
-					<p v-else class="font-medium">{{ contact.name }}</p>
-					
-					<span v-if="contact.isOwner" class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">
-						Eigentümer
-					</span>
-					<span v-else-if="showHiddenBadge && contact.hidden" class="text-xs bg-stone-100 dark:bg-stone-700 text-stone-500 px-2 py-0.5 rounded-full">
-						Versteckt
-					</span>
-				</div>
+				<div class="flex flex-wrap items-start justify-between gap-3">
+					<div class="min-w-0 flex-1">
+						<div class="flex flex-wrap items-center gap-2">
+							<NuxtLink
+								v-if="contact.isOwner"
+								:to="`/profile/${contact.id.replace('owner-', '')}`"
+								class="font-medium hover:text-primary transition-colors"
+							>
+								{{ contact.name }}
+							</NuxtLink>
+							<p v-else class="font-medium">{{ contact.name }}</p>
 
-				<p v-if="contact.notes" class="text-sm text-stone-500 mt-1">{{ contact.notes }}</p>
+							<span v-if="contact.isOwner" class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">
+								Eigentümer
+							</span>
+							<span v-else-if="showHiddenBadge && contact.hidden" class="text-xs bg-stone-100 dark:bg-stone-700 text-stone-500 px-2 py-0.5 rounded-full">
+								Versteckt
+							</span>
+						</div>
+
+						<p v-if="contact.notes" class="text-sm text-stone-500 mt-1">{{ contact.notes }}</p>
+					</div>
+
+					<div v-if="$slots.actions" class="flex shrink-0 items-center gap-1">
+						<slot name="actions" />
+					</div>
+				</div>
 
 				<div v-if="contact.email || contact.phone" class="mt-2 space-y-1">
 					<a

@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
 	const [foldersSnapshot, filesSnapshot] = await Promise.all([
 		db.collection("globalFolders").get(),
-		db.collection("globalFiles").orderBy("uploadedAt", "desc").limit(500).get(),
+		db.collection("globalFiles").orderBy("uploadedAt", "desc").get(),
 	]);
 
 	const folders = foldersSnapshot.docs.map((doc) => ({

@@ -234,5 +234,5 @@ export function searchCollections({
 		score: (result.score || 0) +
 			searchTerms.length * 5 +
 			getUsageCount(result.usageKey) * 10,
-	})), locale, getUsageCount).slice(0, 24);
+	})), locale, getUsageCount).slice(0, 60);
 }

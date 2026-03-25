@@ -420,7 +420,7 @@ onMounted(() => {
 							{{ t("search.title") }}
 						</p>
 						<p class="max-w-2xl text-sm text-[var(--app-muted)]">
-							{{ t("search.placeholder") }}
+							{{ t("search.subtitle") }}
 						</p>
 					</div>
 					<div class="hidden rounded-full border border-[var(--app-border)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)] md:block">
