@@ -9,16 +9,17 @@
 <script setup lang="ts">
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
 
-const { locale } = useI18n();
+const i18n = useI18n();
 const runtimeConfig = useRuntimeConfig();
 const siteUrl = runtimeConfig.public.SITE_URL;
 const defaultTitle = "Résidence Beausoleil";
 const defaultDescription = "Mediterrane Ruhe, Gemeinschaft und gut gepflegte Ferienhäuser auf der Halbinsel Giens.";
 const defaultImage = buildAbsoluteSiteUrl("/photos/giens-hauser.jpeg", siteUrl);
+const activeLocale = computed(() => i18n.locale?.value || "de");
 
 useHead(() => ({
 	htmlAttrs: {
-		lang: locale.value,
+		lang: activeLocale.value,
 	},
 	link: [
 		{
@@ -41,7 +42,7 @@ useSeoMeta({
 	ogTitle: defaultTitle,
 	ogDescription: defaultDescription,
 	ogType: "website",
-	ogLocale: () => locale.value,
+	ogLocale: () => activeLocale.value,
 	ogUrl: siteUrl,
 	ogImage: defaultImage,
 	twitterCard: "summary_large_image",
