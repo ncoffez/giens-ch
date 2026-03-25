@@ -36,6 +36,7 @@
 </template>
 <script lang="ts" setup>
 import { GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { sanitizeRedirectPath } from "~/utils/redirect";
 
 const { t } = useI18n();
 const state = reactive({
@@ -47,6 +48,7 @@ const localePath = useLocalePath();
 const { $currentUser } = useNuxtApp();
 const toast = useAppToast();
 const isRedirecting = ref(false);
+const route = useRoute();
 
 definePageMeta({
 	middleware: "is-not-logged-in",
@@ -63,7 +65,8 @@ async function redirectAfterLogin() {
 
 	isRedirecting.value = true;
 	try {
-		await router.replace(localePath("/"));
+		const redirectTarget = sanitizeRedirectPath(route.query.redirect, localePath("/"));
+		await router.replace(redirectTarget);
 	} finally {
 		isRedirecting.value = false;
 	}

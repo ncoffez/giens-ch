@@ -34,9 +34,11 @@ describe("Middleware Logic (Honest Integration)", () => {
   });
 
   it("isOwnerLogic: allows owner, redirects non-owner", async () => {
+    mockNuxtApp.$currentUser.value = { uid: "test" };
     mockNuxtApp.$isOwner.value = true;
     expect(await isOwnerLogic(mockNuxtApp)).toBe(true);
 
+    mockNuxtApp.$currentUser.value = { uid: "test" };
     mockNuxtApp.$isOwner.value = false;
     expect(await isOwnerLogic(mockNuxtApp)).toBe('/');
   });
@@ -54,7 +56,7 @@ describe("Middleware Logic (Honest Integration)", () => {
     expect(await isLoggedInLogic(mockNuxtApp)).toBe(true);
 
     mockNuxtApp.$currentUser.value = null;
-    expect(await isLoggedInLogic(mockNuxtApp)).toBe('/login');
+    expect(await isLoggedInLogic(mockNuxtApp, { redirectPath: "/documents?folder=abc&fileId=123" })).toBe('/login?redirect=%2Fdocuments%3Ffolder%3Dabc%26fileId%3D123');
   });
 
   it("isNotLoggedInLogic: allows not logged in, redirects logged in", async () => {
@@ -62,6 +64,6 @@ describe("Middleware Logic (Honest Integration)", () => {
     expect(await isNotLoggedInLogic(mockNuxtApp)).toBe(true);
 
     mockNuxtApp.$currentUser.value = { uid: 'test' };
-    expect(await isNotLoggedInLogic(mockNuxtApp)).toBe('/');
+    expect(await isNotLoggedInLogic(mockNuxtApp, "/documents?fileId=123")).toBe('/documents?fileId=123');
   });
 });

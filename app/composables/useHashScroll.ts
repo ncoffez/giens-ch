@@ -9,14 +9,15 @@ export function useHashScroll() {
 		const pathKey = route.path + hash;
 
 		if (hasScrolledForPath.value === pathKey) return;
-		hasScrolledForPath.value = pathKey;
 
 		for (let i = 0; i < maxRetries; i++) {
 			const element = document.getElementById(elementId);
 			if (element) {
-				element.scrollIntoView({ behavior: "smooth", block: "start" });
+				const top = element.getBoundingClientRect().top + window.scrollY - 112;
+				window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
 				element.classList.add("search-highlight");
 				setTimeout(() => element.classList.remove("search-highlight"), 2500);
+				hasScrolledForPath.value = pathKey;
 				return;
 			}
 			await new Promise((r) => setTimeout(r, 100));

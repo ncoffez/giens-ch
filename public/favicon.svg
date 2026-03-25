@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+	<title>Résidence Beausoleil</title>
+	<desc>Haus, Sonne und Meer als Signet der Résidence Beausoleil.</desc>
+	<defs>
+		<linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+			<stop offset="0%" stop-color="#f6efe2" />
+			<stop offset="100%" stop-color="#f5d9a6" />
+		</linearGradient>
+		<linearGradient id="sea" x1="0%" y1="0%" x2="100%" y2="0%">
+			<stop offset="0%" stop-color="#1f6c74" />
+			<stop offset="100%" stop-color="#3aa1a1" />
+		</linearGradient>
+	</defs>
+	<rect width="64" height="64" rx="18" fill="url(#sky)" />
+	<circle cx="45" cy="18" r="8" fill="#f2a531" />
+	<path d="M10 46c4-3 8-4 12-4s8 1 12 4 8 4 12 4 8-1 12-4v8H10z" fill="url(#sea)" />
+	<path d="M17 34 32 21l15 13v14H36V36H28v12H17z" fill="#f8f4eb" />
+	<path d="M14 35 32 19l18 16" fill="none" stroke="#8e4f31" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+	<path d="M20 34v16h24V34" fill="none" stroke="#8e4f31" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+	<path d="M27 50V38h10v12" fill="none" stroke="#8e4f31" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+	<path d="M13 48c3-2 6-3 9-3s6 1 9 3 6 3 9 3 6-1 9-3 6-3 9-3" fill="none" stroke="#f8f4eb" stroke-linecap="round" stroke-width="2.5" opacity="0.9" />
+</svg>

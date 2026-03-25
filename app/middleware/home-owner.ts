@@ -1,7 +1,12 @@
 import type { MiddlewareNuxtApp } from "../../types/nuxt";
 import { waitForAuthInitialization } from "../composables/useAuthReady";
+import { sanitizeRedirectPath } from "../utils/redirect";
 
-export const homeOwnerLogic = async (nuxtApp: MiddlewareNuxtApp, homeId: string) => {
+export const homeOwnerLogic = async (
+	nuxtApp: MiddlewareNuxtApp,
+	homeId: string,
+	options?: { loginPath?: string; redirectPath?: string },
+) => {
 	const { $isAdmin, $token } = nuxtApp;
 
 	if ($isAdmin?.value) {
@@ -10,7 +15,10 @@ export const homeOwnerLogic = async (nuxtApp: MiddlewareNuxtApp, homeId: string)
 
 	const token = $token?.value;
 	if (!token) {
-		return { redirect: "/", reason: "no_token" };
+		return {
+			redirect: `${options?.loginPath || "/login"}?redirect=${encodeURIComponent(sanitizeRedirectPath(options?.redirectPath, `/homes/${homeId}/edit`))}`,
+			reason: "no_token",
+		};
 	}
 
 	try {
@@ -40,7 +48,11 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 	const homeId = to.params.id as string;
 	await waitForAuthInitialization(nuxtApp.$authInitialized);
 
-	const result = await homeOwnerLogic(nuxtApp, homeId);
+	const localePath = useLocalePath();
+	const result = await homeOwnerLogic(nuxtApp, homeId, {
+		loginPath: localePath("/login"),
+		redirectPath: to.fullPath,
+	});
 
 	if (result === true) {
 		return;

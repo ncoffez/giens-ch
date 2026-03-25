@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import type { CommandPaletteItem } from "@nuxt/ui";
-import { buildSearchTarget } from "~/utils/search";
 
 const { open, closeSearch } = useSearchModal();
 const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
 const { t } = useI18n();
 const { canAccessHomes } = useFeatureFlags();
-const { loadAllData, loadDocuments, searchAll, searchDocuments, documentSearchResults, getRecommendations, getDocumentRecommendations, getHeadingsByPagePath, recordSelection, isLoading, isSearchingDocuments, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
+const { loadDocuments, searchAll, searchResults, getRecommendations, getDocumentRecommendations, recordSelection, isLoading, isSearching, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
@@ -186,16 +185,6 @@ const staticPageItems = computed<SearchPaletteItem[]>(() => {
 	return items;
 });
 
-const localSearchResults = computed(() => {
-	const query = searchQuery.value.trim();
-	if (!query) return [];
-	return searchAll(query);
-});
-
-const searchResults = computed(() => {
-	return [...localSearchResults.value, ...documentSearchResults.value];
-});
-
 const recommendationItems = computed<SearchPaletteItem[]>(() => {
 	return getRecommendations().map((result) => ({
 		label: result.label,
@@ -229,26 +218,6 @@ const headingItems = computed<SearchPaletteItem[]>(() => {
 			to: localePath(result.to),
 			suffix: result.context ? result.context + "..." : undefined,
 			searchResult: result,
-		}));
-});
-
-const organisatorischesHeadingItems = computed<SearchPaletteItem[]>(() => {
-	return getHeadingsByPagePath("/organisatorisches")
-		.slice(0, 6)
-		.map((result) => ({
-			label: result.text,
-			icon: "i-lucide-heading",
-			to: localePath(buildSearchTarget(result.pagePath, result.id)),
-			suffix: result.context ? result.context + "..." : undefined,
-			searchResult: {
-				id: result.id,
-				label: result.text,
-				context: result.context,
-				to: buildSearchTarget(result.pagePath, result.id),
-				icon: "i-lucide-heading",
-				type: "heading" as const,
-				usageKey: `heading:${result.pagePath}:${result.id}`,
-			},
 		}));
 });
 
@@ -319,14 +288,6 @@ const groups = computed(() => {
 		});
 	}
 
-	if (!searchQuery.value.trim() && organisatorischesHeadingItems.value.length > 0) {
-		result.push({
-			id: "organisatorisches-headings",
-			label: t("nav.organisatorisches"),
-			items: organisatorischesHeadingItems.value,
-		});
-	}
-
 	if (headingItems.value.length > 0) {
 		result.push({
 			id: "headings",
@@ -374,7 +335,6 @@ function onSelect(item?: SearchPaletteItem) {
 async function handleOpen(isOpen: boolean) {
 	if (isOpen && !hasLoaded.value) {
 		hasLoaded.value = true;
-		await loadAllData();
 		if (canAccessDocuments.value) {
 			await loadDocuments();
 		}
@@ -385,7 +345,7 @@ watch(open, handleOpen);
 
 watch(searchQuery, (value, _, onCleanup) => {
 	const timer = window.setTimeout(async () => {
-		await searchDocuments(value);
+		await searchAll(value);
 	}, 180);
 
 	onCleanup(() => window.clearTimeout(timer));
@@ -434,7 +394,7 @@ onMounted(() => {
 					:placeholder="t('search.placeholder')"
 					class="search-palette h-[24rem] md:h-[30rem]"
 					close
-					:loading="isLoading || isSearchingDocuments"
+					:loading="isLoading || isSearching"
 					@update:model-value="onSelect"
 					@update:open="open = $event" />
 			</div>

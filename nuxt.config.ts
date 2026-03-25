@@ -50,6 +50,7 @@ export default defineNuxtConfig({
 		public: {
 			FIREBASE_FRONTEND_KEY: process.env.FIREBASE_FRONTEND_KEY,
 			TEST_VARIABLE: process.env.TEST_VARIABLE,
+			SITE_URL: process.env.SITE_URL || "https://giens-ch.web.app",
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
 		TEST_SECRET: process.env.TEST_SECRET,
