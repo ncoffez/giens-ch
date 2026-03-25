@@ -35,12 +35,21 @@ test.describe("Critical User Flows", () => {
 		await page.goto("/");
 		await page.setViewportSize({ width: 375, height: 667 });
 
-		const mobileNav = page.locator("nav.fixed.bottom-0");
-		const hasMobileNav = await mobileNav.count() > 0;
+		const mobileNav = page.locator("[data-mobile-nav]");
+		await expect(mobileNav).toBeVisible();
+	});
 
-		if (hasMobileNav) {
-			await expect(mobileNav).toBeVisible();
-		}
+	test("mobile navigation moves to a side rail in landscape mobile view", async ({ page }) => {
+		await page.goto("/");
+		await page.setViewportSize({ width: 844, height: 390 });
+
+		const mobileNav = page.locator("[data-mobile-nav]");
+		await expect(mobileNav).toBeVisible();
+
+		const box = await mobileNav.boundingBox();
+		expect(box).not.toBeNull();
+		expect(box!.x).toBeLessThan(24);
+		expect(box!.width).toBeLessThan(120);
 	});
 
 	test("error pages exist", async ({ page }) => {

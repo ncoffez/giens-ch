@@ -181,3 +181,17 @@ export interface TimelineItem {
 	description: string;
 	icon: string;
 }
+
+export interface MarketItem {
+	dayKey: string;
+	label: string;
+	href: string;
+	isHighlighted?: boolean;
+	compactLabel?: boolean;
+}
+
+export interface JourneyStep {
+	eyebrow?: string;
+	title: string;
+	detail: string;
+}

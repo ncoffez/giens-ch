@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	buildSearchTarget,
 	normalizeText,
 	searchCollections,
 	type SearchDocument,
@@ -123,6 +124,11 @@ describe("search utilities", () => {
 
 		expect(wifiResults.some((result) => result.type === "heading" && result.to === "/organisatorisches#wifi")).toBe(true);
 		expect(marketResults.some((result) => result.type === "heading" && result.to === "/entdecken#markets")).toBe(true);
+	});
+
+	it("preserves existing section hashes instead of appending duplicate anchors", () => {
+		expect(buildSearchTarget("/travel#mit-dem-auto", "anreise-mit-dem-auto")).toBe("/travel#mit-dem-auto");
+		expect(buildSearchTarget("/entdecken", "marches-hebdomadaires")).toBe("/entdecken#marches-hebdomadaires");
 	});
 
 	it("matches document file names when document access is enabled", () => {
