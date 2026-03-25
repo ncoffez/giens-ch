@@ -55,6 +55,8 @@ export default defineNuxtConfig({
 		TEST_SECRET: process.env.TEST_SECRET,
 		UNSPLASH_API_KEY: process.env.UNSPLASH_API_KEY,
 		GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+		GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+		DOCUMENT_TRANSLATION_LANGUAGES: process.env.DOCUMENT_TRANSLATION_LANGUAGES || "fr",
 	},
 	nitro: {
 		preset: "firebase",

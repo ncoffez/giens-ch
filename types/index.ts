@@ -47,6 +47,10 @@ export interface HomeFile {
 	lastModified?: number;
 	storagePath?: string;
 	visibility?: "shared" | "private";
+	searchText?: string;
+	searchSummary?: string;
+	searchKeywords?: string[];
+	searchUpdatedAt?: string;
 }
 
 export interface HomeFolder {
@@ -121,6 +125,10 @@ export interface GlobalFile {
 	deletedAt?: string;
 	deletedBy?: string;
 	deletedByLabel?: string;
+	searchText?: string;
+	searchSummary?: string;
+	searchKeywords?: string[];
+	searchUpdatedAt?: string;
 }
 
 export interface GlobalFolder {

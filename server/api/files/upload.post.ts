@@ -1,5 +1,7 @@
 import { db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { buildDocumentSearchFieldsFromBuffer } from "../../utils/documentSearch";
+import { buildDocumentProcessingRecord } from "../../utils/documentProcessing";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -49,6 +51,7 @@ export default defineEventHandler(async (event) => {
 
 	const bucket = storage.bucket();
 	const file = bucket.file(storagePath);
+	const config = useRuntimeConfig();
 
 	await file.save(buffer, {
 		metadata: {
@@ -69,9 +72,34 @@ export default defineEventHandler(async (event) => {
 		uploadedAt: new Date().toISOString(),
 		uploadedBy: claims.uid,
 		lastModified: typeof lastModified === "number" ? lastModified : undefined,
+		...buildDocumentSearchFieldsFromBuffer({
+			name,
+			type: mimeType,
+			buffer,
+			searchText: typeof body.searchText === "string" ? body.searchText : "",
+			searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : name,
+			searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+		}),
 	};
 
-	await db.collection("globalFiles").doc(fileId).set(fileRecord);
+	const processingRecord = await buildDocumentProcessingRecord({
+		scope: "global",
+		fileId,
+		name,
+		type: mimeType,
+		buffer,
+		searchText: typeof body.searchText === "string" ? body.searchText : "",
+		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : name,
+		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
+		geminiApiKey: config.GEMINI_API_KEY,
+		geminiModel: config.GEMINI_MODEL,
+	});
+
+	await Promise.all([
+		db.collection("globalFiles").doc(fileId).set(fileRecord),
+		db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord),
+	]);
 
 	return fileRecord;
 });

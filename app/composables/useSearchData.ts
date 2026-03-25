@@ -57,14 +57,19 @@ interface SearchIndexResponse {
 	timeline: StoredTimeline[];
 }
 
+interface ServerSearchDocument extends StoredDocument {}
+
 const headingsCache = ref<StoredHeading[]>([]);
 const featuresCache = ref<StoredFeature[]>([]);
 const timelineCache = ref<StoredTimeline[]>([]);
 const documentsCache = ref<StoredDocument[]>([]);
+const documentSearchResults = ref<StoredDocument[]>([]);
 const isLoading = ref(false);
+const isSearchingDocuments = ref(false);
 const isLoaded = ref(false);
 const loadedLocale = ref<string | null>(null);
 const searchUsage = useLocalStorage<Record<string, number>>("search-usage", {});
+let activeDocumentSearch = 0;
 
 export function useSearchData() {
 	const nuxtApp = useNuxtApp();
@@ -92,6 +97,7 @@ export function useSearchData() {
 			featuresCache.value = [];
 			timelineCache.value = [];
 			documentsCache.value = [];
+			documentSearchResults.value = [];
 		}
 	});
 
@@ -169,6 +175,49 @@ export function useSearchData() {
 
 			documentsCache.value = [...ownerDocuments, ...globalDocuments];
 		} catch {
+		}
+	};
+
+	const searchDocuments = async (query: string) => {
+		if (!canAccessDocuments.value) {
+			documentSearchResults.value = [];
+			return;
+		}
+
+		const trimmedQuery = query.trim();
+		if (!trimmedQuery) {
+			documentSearchResults.value = [];
+			return;
+		}
+
+		const searchId = ++activeDocumentSearch;
+		isSearchingDocuments.value = true;
+
+		try {
+			const { $auth } = useNuxtApp();
+			const user = $auth.currentUser;
+			if (!user) {
+				documentSearchResults.value = [];
+				return;
+			}
+
+			const idToken = await user.getIdToken();
+			const response = await $fetch<{ documents: ServerSearchDocument[] }>("/api/search/documents", {
+				query: { q: trimmedQuery, locale: locale.value },
+				headers: { Authorization: `Bearer ${idToken}` },
+			}).catch(() => null);
+
+			if (searchId === activeDocumentSearch) {
+				documentSearchResults.value = response?.documents || [];
+			}
+		} catch {
+			if (searchId === activeDocumentSearch) {
+				documentSearchResults.value = [];
+			}
+		} finally {
+			if (searchId === activeDocumentSearch) {
+				isSearchingDocuments.value = false;
+			}
 		}
 	};
 
@@ -301,7 +350,7 @@ export function useSearchData() {
 			headings: headingsCache.value,
 			features: featuresCache.value,
 			timeline: timelineCache.value,
-			documents: documentsCache.value,
+			documents: [],
 			query,
 			locale: locale.value,
 			canAccessDocuments: canAccessDocuments.value,
@@ -368,6 +417,7 @@ export function useSearchData() {
 
 	return {
 		isLoading: readonly(isLoading),
+		isSearchingDocuments: readonly(isSearchingDocuments),
 		isLoaded: readonly(isLoaded),
 		loadAllData,
 		loadDocuments,
@@ -378,5 +428,7 @@ export function useSearchData() {
 		getDocumentRecommendations,
 		canAccessDocuments,
 		canAccessOwnerDocuments,
+		searchDocuments,
+		documentSearchResults: readonly(documentSearchResults),
 	};
 }

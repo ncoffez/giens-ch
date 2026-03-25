@@ -1,6 +1,8 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
 import { isHomeOwner, getHomeById } from "../../../../utils/homes";
 import { getUserClaims } from "../../../../utils/auth";
+import { buildDocumentSearchFieldsFromBuffer } from "../../../../utils/documentSearch";
+import { buildDocumentProcessingRecord } from "../../../../utils/documentProcessing";
 import crypto from "crypto";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -46,6 +48,7 @@ export default defineEventHandler(async (event) => {
 
 	const now = new Date().toISOString();
 	const visibility = body.private ? "private" : "shared";
+	const config = useRuntimeConfig();
 
 	// Upload to Firebase Storage
 	const bucket = storage.bucket();
@@ -54,8 +57,9 @@ export default defineEventHandler(async (event) => {
 
 	const file = bucket.file(storagePath);
 	const base64Data = body.file.split(";base64,").pop();
+	const buffer = Buffer.from(base64Data, "base64");
 
-	await file.save(Buffer.from(base64Data, "base64"), {
+	await file.save(buffer, {
 		contentType: body.type || "application/octet-stream",
 	});
 
@@ -84,17 +88,43 @@ export default defineEventHandler(async (event) => {
 		lastModified: typeof body.lastModified === "number" ? body.lastModified : undefined,
 		storagePath,
 		visibility,
+		...buildDocumentSearchFieldsFromBuffer({
+			name: body.name,
+			type: body.type || "application/octet-stream",
+			buffer,
+			searchText: typeof body.searchText === "string" ? body.searchText : "",
+			searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : body.name,
+			searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+		}),
 	};
 
 	const targetCollectionKey = visibility === "private" ? "privateFiles" : "files";
+	const processingRecord = await buildDocumentProcessingRecord({
+		scope: "owner",
+		fileId,
+		homeId,
+		visibility,
+		name: body.name,
+		type: body.type || "application/octet-stream",
+		buffer,
+		searchText: typeof body.searchText === "string" ? body.searchText : "",
+		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : body.name,
+		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
+		geminiApiKey: config.GEMINI_API_KEY,
+		geminiModel: config.GEMINI_MODEL,
+	});
 
-	await db
-		.collection("homes")
-		.doc(homeId)
-		.update({
+	await Promise.all([
+		db
+			.collection("homes")
+			.doc(homeId)
+			.update({
 			[targetCollectionKey]: [...((home as any)[targetCollectionKey] || []), fileRecord],
 			updatedAt: new Date().toISOString(),
-		});
+			}),
+		db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord),
+	]);
 
 	return fileRecord;
 });
