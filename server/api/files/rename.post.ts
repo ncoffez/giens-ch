@@ -1,4 +1,6 @@
 import { db, auth } from "../../useFirebaseAdmin";
+import { buildDocumentSearchFields } from "../../utils/documentSearch";
+import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -33,10 +35,32 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 404, message: "File not found" });
 		}
 
+		const existingData = fileDoc.data() as Record<string, any>;
+		const processingRef = db.collection("documentProcessing").doc(buildDocumentProcessingId("global", fileId));
+		const processingDoc = await processingRef.get();
+
+		const nextFields = buildDocumentSearchFields({
+			name: trimmedName,
+			type: existingData.type,
+			searchText: typeof existingData.searchText === "string" ? existingData.searchText : "",
+			searchSummary: typeof existingData.searchSummary === "string" ? existingData.searchSummary : trimmedName,
+			searchKeywords: Array.isArray(existingData.searchKeywords) ? existingData.searchKeywords : [],
+		});
+
 		await fileRef.update({
 			name: trimmedName,
 			updatedAt: new Date().toISOString(),
+			...nextFields,
 		});
+
+		if (processingDoc.exists) {
+			await processingRef.set({
+				name: trimmedName,
+				searchSummary: nextFields.searchSummary,
+				searchKeywords: nextFields.searchKeywords,
+				searchUpdatedAt: nextFields.searchUpdatedAt,
+			}, { merge: true });
+		}
 
 		return { success: true, id: fileId, name: trimmedName };
 	} catch (e: unknown) {

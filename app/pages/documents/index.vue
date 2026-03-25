@@ -8,8 +8,29 @@ definePageMeta({ middleware: ["is-logged-in"] });
 
 const { $isAdmin } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
+const { locale } = useI18n();
 const toast = useToast();
 const route = useRoute();
+
+interface DocumentTranslationState {
+	searchText: string;
+	searchSummary: string;
+	translatedAt: string;
+	model: string;
+}
+
+interface DocumentProcessingState {
+	searchText: string;
+	searchSummary: string;
+	searchKeywords?: string[];
+	searchUpdatedAt: string;
+	extractionSource: "text" | "ooxml" | "gemini" | "metadata";
+	ocrApplied: boolean;
+	translationLanguages?: string[];
+	translations?: Record<string, DocumentTranslationState>;
+	localizedText?: string;
+	localizedSummary?: string;
+}
 
 const files = ref<GlobalFile[]>([]);
 const folders = ref<GlobalFolder[]>([]);
@@ -60,9 +81,33 @@ const currentVideo = ref<GlobalFile | null>(null);
 const previewFile = ref<GlobalFile | null>(null);
 const previewUrl = ref<string | null>(null);
 const previewLoading = ref(false);
+const processingLoading = ref(false);
+const processingError = ref<string | null>(null);
+const documentProcessing = ref<DocumentProcessingState | null>(null);
 const highlightedFileId = computed(() => {
 	const fileId = route.query.fileId;
 	return typeof fileId === "string" ? fileId : "";
+});
+
+const activePreviewLocale = computed(() => locale.value === "fr" ? "fr" : "de");
+const activeTranslation = computed(() => {
+	if (!documentProcessing.value || activePreviewLocale.value === "de") return null;
+	return documentProcessing.value.translations?.[activePreviewLocale.value] || null;
+});
+const previewSummaryText = computed(() => {
+	if (!documentProcessing.value) return "";
+	return activeTranslation.value?.searchSummary || documentProcessing.value.localizedSummary || documentProcessing.value.searchSummary;
+});
+const previewBodyText = computed(() => {
+	if (!documentProcessing.value) return "";
+	return activeTranslation.value?.searchText || documentProcessing.value.localizedText || documentProcessing.value.searchText;
+});
+const translationStatusLabel = computed(() => {
+	if (!documentProcessing.value?.translationLanguages?.length) return "Keine automatische Übersetzung";
+	if (activePreviewLocale.value === "de") return "Originalsprache";
+	return documentProcessing.value.translationLanguages.includes(activePreviewLocale.value)
+		? `Übersetzung: ${activePreviewLocale.value.toUpperCase()}`
+		: "Keine Übersetzung für diese Sprache";
 });
 
 const currentFolder = computed(() => {
@@ -260,9 +305,33 @@ const copyDeepLink = async (params: { folderId?: string | null; fileId?: string 
 	toast.add({ title: "Link kopiert", color: "success" });
 };
 
+const loadDocumentProcessing = async (file: GlobalFile | null) => {
+	documentProcessing.value = null;
+	processingError.value = null;
+
+	if (!file) return;
+
+	try {
+		processingLoading.value = true;
+		const response = await $fetch<{ processing: DocumentProcessingState | null }>(`/api/files/processing`, {
+			headers: { Authorization: `Bearer ${token.value}` },
+			query: {
+				fileId: file.id,
+				locale: activePreviewLocale.value,
+			},
+		});
+		documentProcessing.value = response.processing || null;
+	} catch (e: unknown) {
+		processingError.value = getFetchError(e) || "Texterkennung nicht verfügbar";
+	} finally {
+		processingLoading.value = false;
+	}
+};
+
 const loadPreview = async (file: GlobalFile | null) => {
 	previewFile.value = file;
 	previewUrl.value = null;
+	await loadDocumentProcessing(file);
 
 	if (!file) return;
 	if (!(file.type.startsWith("image/") || file.type === "video/mp4" || isPdfFile(file) || isOfficePreviewable(file))) {
@@ -980,6 +1049,12 @@ watch(() => route.query.folder, (newFolderId) => {
 	}
 });
 
+watch(activePreviewLocale, () => {
+	if (previewFile.value) {
+		loadDocumentProcessing(previewFile.value);
+	}
+});
+
 watch(
 	() => selectedFiles.value.map(file => file.id),
 	async () => {
@@ -1500,6 +1575,36 @@ watch(
 								<div>
 									<p class="text-stone-400">Dateidatum</p>
 									<p class="font-medium text-[var(--app-text)]">{{ previewFile.lastModified ? formatTimestamp(previewFile.lastModified) : "—" }}</p>
+								</div>
+							</div>
+							<div class="rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-surface)]/80 p-4">
+								<div class="flex items-start justify-between gap-3">
+									<div>
+										<p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--app-primary)]">Dokumentinhalt</p>
+										<p class="mt-1 text-sm text-[var(--app-muted)]">{{ translationStatusLabel }}</p>
+									</div>
+									<div v-if="documentProcessing" class="flex flex-wrap justify-end gap-2 text-[11px] text-stone-500">
+										<span class="rounded-full bg-stone-100 px-2 py-1 dark:bg-stone-800">{{ documentProcessing.extractionSource }}</span>
+										<span v-if="documentProcessing.ocrApplied" class="rounded-full bg-primary-50 px-2 py-1 text-primary dark:bg-primary-900/20">OCR</span>
+									</div>
+								</div>
+								<div v-if="processingLoading" class="flex items-center gap-3 py-5 text-sm text-[var(--app-muted)]">
+									<div class="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+									<span>Dokument wird analysiert...</span>
+								</div>
+								<div v-else-if="processingError" class="py-3 text-sm text-red-600">
+									{{ processingError }}
+								</div>
+								<div v-else-if="documentProcessing" class="space-y-3 pt-4">
+									<p v-if="previewSummaryText" class="text-sm font-medium text-[var(--app-text)]">
+										{{ previewSummaryText }}
+									</p>
+									<div class="max-h-72 overflow-auto rounded-2xl bg-stone-50 p-3 text-sm leading-6 text-[var(--app-text)] dark:bg-stone-900/60">
+										<pre class="whitespace-pre-wrap font-sans">{{ previewBodyText || "Kein extrahierter Text verfügbar." }}</pre>
+									</div>
+								</div>
+								<div v-else class="py-3 text-sm text-[var(--app-muted)]">
+									Für diese Datei liegt noch kein extrahierter oder übersetzter Inhalt vor.
 								</div>
 							</div>
 							<div class="flex flex-wrap gap-2">
