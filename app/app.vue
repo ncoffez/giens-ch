@@ -9,7 +9,6 @@
 <script setup lang="ts">
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
 
-const { unsubscribe } = useNuxtApp();
 const { locale } = useI18n();
 const runtimeConfig = useRuntimeConfig();
 const siteUrl = runtimeConfig.public.SITE_URL;
@@ -50,6 +49,4 @@ useSeoMeta({
 	twitterDescription: defaultDescription,
 	twitterImage: defaultImage,
 });
-
-onUnmounted(() => unsubscribe());
 </script>
