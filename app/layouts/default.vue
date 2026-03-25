@@ -58,7 +58,7 @@
 							:aria-label="'Farbschema ändern'" />
 					</UDropdownMenu>
 					<div class="hidden lg:block">
-						<template v-if="!currentUser.value">
+						<template v-if="!currentUser">
 							<UButton
 								:to="localePath('/login')"
 								icon="i-lucide-circle-user"
