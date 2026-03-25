@@ -95,16 +95,17 @@ const defaultFlightFacts: FeatureCard[] = [
 	},
 ];
 
-const lageContent = await usePageContent("travel-lage");
-const autoContent = await usePageContent("travel-auto");
-const zugContent = await usePageContent("travel-zug");
-const flugzeugContent = await usePageContent("travel-flugzeug");
-const routeFacts = await usePageData<StatItem[]>("travel-intro-facts", defaultRouteFacts);
-const planningPillars = await usePageData<FeatureCard[]>("travel-intro-pillars", defaultPlanningPillars);
-const locationFacts = await usePageData<StatItem[]>("travel-location-facts", defaultLocationFacts);
-const autoSteps = await usePageData<JourneyStep[]>("travel-auto-steps", defaultAutoSteps);
-const trainSteps = await usePageData<JourneyStep[]>("travel-zug-steps", defaultTrainSteps);
-const flightFacts = await usePageData<FeatureCard[]>("travel-flugzeug-facts", defaultFlightFacts);
+const publicPageBundle = await usePublicPageBundle("travel");
+const lageContent = publicPageBundle.createContentSection("travel-lage", defaultLage);
+const autoContent = publicPageBundle.createContentSection("travel-auto", defaultAuto);
+const zugContent = publicPageBundle.createContentSection("travel-zug", defaultZug);
+const flugzeugContent = publicPageBundle.createContentSection("travel-flugzeug", defaultFlugzeug);
+const routeFacts = publicPageBundle.createDataSection<StatItem[]>("travel-intro-facts", defaultRouteFacts);
+const planningPillars = publicPageBundle.createDataSection<FeatureCard[]>("travel-intro-pillars", defaultPlanningPillars);
+const locationFacts = publicPageBundle.createDataSection<StatItem[]>("travel-location-facts", defaultLocationFacts);
+const autoSteps = publicPageBundle.createDataSection<JourneyStep[]>("travel-auto-steps", defaultAutoSteps);
+const trainSteps = publicPageBundle.createDataSection<JourneyStep[]>("travel-zug-steps", defaultTrainSteps);
+const flightFacts = publicPageBundle.createDataSection<FeatureCard[]>("travel-flugzeug-facts", defaultFlightFacts);
 
 function getColorClasses(color: string) {
 	const colors: Record<string, { bg: string; text: string; border: string }> = {

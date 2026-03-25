@@ -64,7 +64,7 @@ const state = reactive({
 });
 const router = useRouter();
 const localePath = useLocalePath();
-const { $auth } = useNuxtApp();
+const { $ensureAuth } = useNuxtApp();
 const toast = useToast();
 const loading = ref(false);
 
@@ -80,7 +80,8 @@ async function resetPassword() {
 
 	loading.value = true;
 	try {
-		await sendPasswordResetEmail($auth, state.email);
+		const auth = await $ensureAuth();
+		await sendPasswordResetEmail(auth, state.email);
 		toast.add({
 			color: "success",
 			title: t("auth.success.reset"),

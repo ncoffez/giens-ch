@@ -55,11 +55,8 @@ export function useSearchData() {
 
 		try {
 			isLoadingRecommendations.value = true;
-			const { $auth } = useNuxtApp();
-			const user = $auth.currentUser;
-			if (!user) return;
-
-			const idToken = await user.getIdToken();
+			const idToken = await useNuxtApp().$getAuthToken();
+			if (!idToken) return;
 			const [globalResponse, ownerResponse] = await Promise.all([
 				$fetch<{ files: SearchableGlobalDocument[] }>("/api/files/search", {
 					headers: { Authorization: `Bearer ${idToken}` },
@@ -122,10 +119,9 @@ export function useSearchData() {
 
 		try {
 			const headers: Record<string, string> = {};
-			const { $auth } = useNuxtApp();
-			const user = $auth.currentUser;
-			if (user) {
-				headers.Authorization = `Bearer ${await user.getIdToken()}`;
+			const idToken = await useNuxtApp().$getAuthToken();
+			if (idToken) {
+				headers.Authorization = `Bearer ${idToken}`;
 			}
 
 			const response = await $fetch<{ results: SearchResult[] }>("/api/search", {

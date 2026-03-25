@@ -87,12 +87,13 @@ async function loginToFirebase(method: "google" | "password", email?: string, pa
 }
 
 async function loginWithGoogle() {
-	const { $auth } = useNuxtApp();
+	const { $ensureAuth } = useNuxtApp();
+	const auth = await $ensureAuth();
 	const provider = new GoogleAuthProvider();
 	provider.addScope("email");
 	provider.addScope("profile");
 	try {
-		await signInWithPopup($auth, provider);
+		await signInWithPopup(auth, provider);
 		toast.success(t("auth.success.login"));
 		await redirectAfterLogin();
 	} catch (e: unknown) {
@@ -101,12 +102,13 @@ async function loginWithGoogle() {
 }
 
 async function loginWithApple() {
-	const { $auth } = useNuxtApp();
+	const { $ensureAuth } = useNuxtApp();
+	const auth = await $ensureAuth();
 	const provider = new OAuthProvider("apple.com");
 	provider.addScope("email");
 	provider.addScope("name");
 	try {
-		await signInWithPopup($auth, provider);
+		await signInWithPopup(auth, provider);
 		toast.success(t("auth.success.login"));
 		await redirectAfterLogin();
 	} catch (e: unknown) {
@@ -115,10 +117,11 @@ async function loginWithApple() {
 }
 
 async function loginWithPassword(email: string, password: string) {
-	const { $auth } = useNuxtApp();
+	const { $ensureAuth } = useNuxtApp();
 	if (!email || !password) throw new Error("Email and password are required for password login.");
 	try {
-		const { user } = await signInWithEmailAndPassword($auth, email, password);
+		const auth = await $ensureAuth();
+		const { user } = await signInWithEmailAndPassword(auth, email, password);
 		if (!user.emailVerified) {
 			toast.add({ color: "warning", title: t("auth.warnings.emailNotVerified"), description: t("auth.warnings.emailNotVerified") });
 		}

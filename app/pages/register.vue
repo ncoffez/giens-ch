@@ -38,7 +38,7 @@ const state = reactive({
 });
 const router = useRouter();
 const localePath = useLocalePath();
-const { $auth } = useNuxtApp();
+const { $ensureAuth } = useNuxtApp();
 const toast = useToast();
 const loading = ref(false);
 
@@ -87,7 +87,8 @@ async function register() {
 
 	loading.value = true;
 	try {
-		const userCredential = await createUserWithEmailAndPassword($auth, state.email, state.password);
+		const auth = await $ensureAuth();
+		const userCredential = await createUserWithEmailAndPassword(auth, state.email, state.password);
 		await updateProfile(userCredential.user, { displayName: state.name.trim() });
 		toast.add({
 			color: "success",

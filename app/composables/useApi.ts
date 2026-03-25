@@ -2,10 +2,10 @@ import { useNuxtApp } from "#app";
 import type { NitroFetchRequest, AvailableRouterMethod, NitroFetchOptions } from "nitropack";
 
 export function useApi() {
-	const { $auth } = useNuxtApp();
+	const { $getAuthToken } = useNuxtApp();
 
 	const getHeaders = async (): Promise<Record<string, string>> => {
-		const token = await $auth.currentUser?.getIdToken();
+		const token = await $getAuthToken();
 		return token ? { Authorization: `Bearer ${token}` } : {};
 	};
 
