@@ -12,7 +12,7 @@
 		<header class="sticky top-0 z-40 py-3 md:py-5">
 			<div class="app-surface flex items-center justify-between gap-3 md:gap-6 rounded-[1.5rem] px-4 md:px-6 py-3 max-w-screen-xl mx-auto w-full">
 				<div class="flex items-center gap-4 md:gap-8 min-w-0">
-				<NuxtLink :to="localePath('/')" class="shrink-0">
+				<NuxtLink :to="localePath('/')" class="logo-link shrink-0">
 					<UiLogo class="m-0!" />
 				</NuxtLink>
 				<div class="hidden lg:block xl:hidden">
@@ -363,6 +363,12 @@ const userItems = computed(() => {
 }
 .dark .router-link-active {
 	color: var(--color-primary-400);
+}
+.logo-link.router-link-active,
+.logo-link.router-link-exact-active,
+.dark .logo-link.router-link-active,
+.dark .logo-link.router-link-exact-active {
+	color: inherit !important;
 }
 
 </style>
