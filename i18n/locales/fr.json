@@ -42,8 +42,8 @@
       "subtitle": "Informations importantes sur la Résidence Beausoleil"
     }
   },
-  "home": {
-    "hero": {
+	"home": {
+		"hero": {
       "kicker": "Arriver et respirer",
       "lead": "Un calme méditerranéen, la mer à courte distance et une petite communauté qui entretient sa résidence avec soin.",
       "leads": {
@@ -55,14 +55,17 @@
         "minutes": "Min. de la plage",
         "region": "Côte d'Azur"
       }
-    },
-    "features": {
-      "subtitle": "Ce qui nous distingue",
-      "title": "Se sentir bien et vivre"
-    },
-    "miteinander": {
-      "subtitle": "Communauté",
-      "title": "Créer ensemble",
+		},
+		"features": {
+			"subtitle": "Confort, ambiance et vie sur place",
+			"title": "La vie au Beausoleil"
+		},
+		"stats": {
+			"title": "Beausoleil en chiffres"
+		},
+		"miteinander": {
+			"subtitle": "Communauté",
+			"title": "Créer ensemble",
       "button": "En savoir plus"
     },
     "timeline": {
@@ -333,10 +336,11 @@
       "emailNotVerified": "Veuillez vérifier votre adresse e-mail."
     }
   },
-  "search": {
-    "title": "Rechercher",
-    "placeholder": "Rechercher des pages, contenus et documents...",
-    "sections": {
+	"search": {
+		"title": "Rechercher",
+		"subtitle": "Accédez directement aux pages, titres et documents auxquels vous avez accès.",
+		"placeholder": "Rechercher des pages, contenus et documents...",
+		"sections": {
       "recommendations": "Recommandé",
       "pages": "Accès rapide",
       "headings": "Titres",

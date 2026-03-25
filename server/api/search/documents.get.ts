@@ -66,6 +66,24 @@ const matchesQuery = (query: string, values: Array<string | undefined>) => {
 	return normalizedTerms.every((term) => haystack.includes(term));
 };
 
+const scoreQuery = (query: string, values: Array<string | undefined>) => {
+	const normalizedQuery = normalizeText(query).trim();
+	if (!normalizedQuery) return 0;
+
+	let score = 0;
+
+	for (const value of values) {
+		const normalizedValue = normalizeText(value || "");
+		if (!normalizedValue) continue;
+
+		if (normalizedValue === normalizedQuery) score += 140;
+		if (normalizedValue.startsWith(normalizedQuery)) score += 90;
+		if (normalizedValue.includes(normalizedQuery)) score += 45;
+	}
+
+	return score;
+};
+
 const getFileIcon = (type: string) => {
 	if (type?.startsWith("image/")) return "i-lucide-image";
 	if (type?.includes("pdf")) return "i-lucide-file-text";
@@ -140,7 +158,7 @@ export default defineEventHandler(async (event) => {
 
 	const [foldersSnapshot, filesSnapshot] = await Promise.all([
 		db.collection("globalFolders").get(),
-		db.collection("globalFiles").orderBy("uploadedAt", "desc").limit(500).get(),
+		db.collection("globalFiles").orderBy("uploadedAt", "desc").get(),
 	]);
 
 	const folders = foldersSnapshot.docs.map((doc) => ({
@@ -174,11 +192,18 @@ export default defineEventHandler(async (event) => {
 				description: localized.searchSummary || file.searchSummary || file.name,
 				keywords: localized.keywords.length ? localized.keywords : file.searchKeywords || [],
 				searchText: localized.searchText || file.searchText || "",
+				score: scoreQuery(query, [
+					file.name,
+					folderPath,
+					localized.searchSummary || file.searchSummary,
+					localized.searchText || file.searchText,
+					...(localized.keywords.length ? localized.keywords : file.searchKeywords || []),
+				]),
 			};
 		})
 		.filter((file) => matchesQuery(query, [file.name, file.context, file.description, file.searchText, ...(file.keywords || [])]));
 
-	const ownerDocuments: SearchDocumentResponseItem[] = [];
+	const ownerDocuments: Array<SearchDocumentResponseItem & { score: number }> = [];
 
 	if (claims.owner || claims.admin) {
 		const homes = await getHomesForUser(claims.uid);
@@ -222,14 +247,27 @@ export default defineEventHandler(async (event) => {
 					updatedAt: file.updatedAt || file.uploadedAt,
 					description: localized.searchSummary || searchSummary || file.name,
 					keywords: localized.keywords.length ? localized.keywords : searchKeywords,
+					score: scoreQuery(query, [
+						file.name,
+						home.name,
+						localized.searchSummary || searchSummary,
+						localized.searchText || searchText,
+						...(localized.keywords.length ? localized.keywords : searchKeywords),
+					]),
 				});
 			}
 		}
 	}
 
 	const documents = [...ownerDocuments, ...globalDocuments]
-		.sort((a, b) => Date.parse(b.updatedAt || "") - Date.parse(a.updatedAt || ""))
-		.slice(0, 24);
+		.sort((a, b) => {
+			const scoreDelta = (b.score || 0) - (a.score || 0);
+			if (scoreDelta !== 0) return scoreDelta;
+
+			return Date.parse(b.updatedAt || "") - Date.parse(a.updatedAt || "");
+		})
+		.slice(0, 48)
+		.map(({ score, searchText, ...document }) => document);
 
 	return { documents };
 });

@@ -17,17 +17,17 @@
 				</NuxtLink>
 				<div class="hidden lg:block xl:hidden">
 					<ClientOnly>
-						<UNavigationMenu :items="compactNavigationItems" />
+						<UNavigationMenu v-bind="headerNavigationProps" :items="compactNavigationItems" />
 						<template #fallback>
-							<UNavigationMenu :items="compactPublicNavigationItems" />
+							<UNavigationMenu v-bind="headerNavigationProps" :items="compactPublicNavigationItems" />
 						</template>
 					</ClientOnly>
 				</div>
 				<div class="hidden xl:block">
 					<ClientOnly>
-						<UNavigationMenu :items="navigationItems" />
+						<UNavigationMenu v-bind="headerNavigationProps" :items="navigationItems" />
 						<template #fallback>
-							<UNavigationMenu :items="publicNavigationItems" />
+							<UNavigationMenu v-bind="headerNavigationProps" :items="publicNavigationItems" />
 						</template>
 					</ClientOnly>
 				</div>
@@ -39,8 +39,8 @@
 						<UButton
 							icon="i-lucide-search"
 							color="neutral"
-							variant="soft"
-							class="rounded-full px-4"
+							variant="ghost"
+							:class="headerActionButtonClass"
 							aria-label="Suchen"
 							@click="handleOpenSearch" />
 					</div>
@@ -53,8 +53,8 @@
 						<UButton
 							:icon="currentThemeIcon"
 							color="neutral"
-							variant="soft"
-							class="rounded-full"
+							variant="ghost"
+							:class="headerActionButtonClass"
 							:aria-label="'Farbschema ändern'" />
 					</UDropdownMenu>
 					<div class="hidden lg:block">
@@ -63,7 +63,8 @@
 								:to="localePath('/login')"
 								icon="i-lucide-circle-user"
 								color="neutral"
-								variant="ghost">
+								variant="ghost"
+								:class="headerActionButtonClass">
 								<span class="hidden 2xl:inline">{{ t("nav.login") }}</span>
 							</UButton>
 						</template>
@@ -71,9 +72,9 @@
 								<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
 									<UButton
 										color="neutral"
-										variant="soft"
+										variant="ghost"
 										trailing-icon="i-lucide-chevron-down"
-										class="max-w-[3.25rem] 2xl:max-w-[15rem]">
+										:class="`${headerActionButtonClass} max-w-[3.25rem] 2xl:max-w-[15rem]`">
 										<img
 											v-if="userPhotoUrl"
 											:src="userPhotoUrl"
@@ -144,6 +145,17 @@ const userDisplayName = computed(() =>
 const userPhotoUrl = computed(() => currentUser.value?.photoURL || "");
 
 const hasLoadedUserFlags = ref(false);
+const headerActionButtonClass = "rounded-full border border-transparent bg-transparent px-3 text-[var(--app-text)] hover:border-[var(--app-border)] hover:bg-black/5 dark:hover:bg-white/6";
+const headerNavigationProps = {
+	variant: "link" as const,
+	highlight: true,
+	color: "neutral" as const,
+	ui: {
+		link: "rounded-full px-3 py-2 before:bg-transparent hover:before:bg-transparent data-[state=open]:before:bg-transparent",
+		linkLeadingIcon: "text-[var(--app-muted)] group-hover:text-[var(--app-text)] group-data-[state=open]:text-[var(--app-text)]",
+		linkLabel: "text-[var(--app-text)]",
+	},
+};
 
 function handleOpenSearch() {
 	openSearch();

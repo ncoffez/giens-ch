@@ -42,8 +42,8 @@
       "subtitle": "Wichtige Informationen zur Résidence Beausoleil"
     }
   },
-  "home": {
-    "hero": {
+	"home": {
+		"hero": {
       "kicker": "Ankommen und aufatmen",
       "lead": "Mediterrane Ruhe, kurze Wege zum Meer und eine kleine Gemeinschaft, die ihre Résidence mit Sorgfalt pflegt.",
       "leads": {
@@ -55,14 +55,17 @@
         "minutes": "Min. zum Strand",
         "region": "Côte d'Azur"
       }
-    },
-    "features": {
-      "subtitle": "Was uns auszeichnet",
-      "title": "Wohlfühlen und Erleben"
-    },
-    "miteinander": {
-      "subtitle": "Gemeinschaft",
-      "title": "Miteinander Gestalten",
+		},
+		"features": {
+			"subtitle": "Ausstattung, Atmosphäre und Alltag vor Ort",
+			"title": "So lebt es sich im Beausoleil"
+		},
+		"stats": {
+			"title": "Beausoleil in Zahlen"
+		},
+		"miteinander": {
+			"subtitle": "Gemeinschaft",
+			"title": "Miteinander Gestalten",
       "button": "Mehr erfahren"
     },
     "timeline": {
@@ -333,10 +336,11 @@
       "emailNotVerified": "Bitte verifizieren Sie Ihre E-Mail-Adresse."
     }
   },
-  "search": {
-    "title": "Suchen",
-    "placeholder": "Seiten, Inhalte und Dokumente durchsuchen...",
-    "sections": {
+	"search": {
+		"title": "Suchen",
+		"subtitle": "Springen Sie direkt zu Seiten, Überschriften und Dokumenten, auf die Sie Zugriff haben.",
+		"placeholder": "Seiten, Inhalte und Dokumente durchsuchen...",
+		"sections": {
       "recommendations": "Empfohlen",
       "pages": "Schnellzugriff",
       "headings": "Überschriften",
