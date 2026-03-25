@@ -1,23 +1,23 @@
 <template>
 	<nav class="lg:hidden fixed bottom-3 left-3 right-3 z-50">
 		<div class="app-surface rounded-[1.75rem] px-3 pt-2 pb-[calc(0.55rem+env(safe-area-inset-bottom))]">
-		<div class="grid grid-cols-5 items-center gap-1">
+		<div class="grid grid-cols-5 items-center gap-0.5">
 			<NuxtLink
 				v-for="item in navItems"
 				:key="item.to"
 				:to="item.to"
-				class="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[var(--app-muted)] transition-all duration-200"
+				class="flex min-h-[60px] min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[var(--app-muted)] transition-all duration-200"
 				:class="{ 'bg-[color:var(--app-primary)]/10 text-[var(--app-primary)]': isActive(item.to.toString()) }">
 				<UIcon :name="item.icon" class="w-5 h-5" />
-				<span class="text-[10px] font-semibold tracking-[0.08em] text-center leading-tight">{{ item.label }}</span>
+				<span class="max-w-full break-all text-center text-[9px] font-semibold leading-[1.05] tracking-[0.03em]">{{ item.label }}</span>
 			</NuxtLink>
 			<button
-				class="flex min-h-[60px] flex-col items-center justify-center gap-1 rounded-2xl border border-[var(--app-border)] bg-[color:var(--app-surface-strong)] text-[var(--app-text)] transition-all duration-200 active:scale-95 hover:border-[var(--app-primary)]/40 hover:text-[var(--app-primary)]"
+				class="flex min-h-[60px] min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border border-[var(--app-border)] bg-[color:var(--app-surface-strong)] px-1 py-2 text-[var(--app-text)] transition-all duration-200 active:scale-95 hover:border-[var(--app-primary)]/40 hover:text-[var(--app-primary)]"
 				aria-label="Suchen"
 				@click="openSearch"
 			>
 				<UIcon name="i-lucide-search" class="w-5 h-5" />
-				<span class="text-[10px] font-semibold tracking-[0.08em] text-center leading-tight">{{ t("nav.search") }}</span>
+				<span class="max-w-full break-all text-center text-[9px] font-semibold leading-[1.05] tracking-[0.03em]">{{ t("nav.search") }}</span>
 			</button>
 		</div>
 		</div>

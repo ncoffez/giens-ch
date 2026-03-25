@@ -66,7 +66,7 @@ const translations: Record<string, string> = {
 	"nav.admin": "Verwaltung",
 	"nav.login": "Anmelden",
 	"nav.logout": "Abmelden",
-	"footer.copyright": "© {year} Lotissement Beausoleil, Giens",
+	"footer.copyright": "© {year} Résidence Beausoleil, Giens",
 	"stats.editStats": "Statistiken bearbeiten",
 	"travel.intro.kicker": "Schnell orientiert",
 	"travel.intro.lead": "Ob mit Auto, Zug oder Flug: Giens ist gut erreichbar, wenn man die letzte Etappe sauber plant.",

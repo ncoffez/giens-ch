@@ -6,7 +6,6 @@ const localeItems = computed(() => {
 	return [
 		localesList.map((l) => ({
 			label: l.name,
-			icon: locale.value === l.code ? "i-lucide-check" : undefined,
 			onSelect: () => {
 				setLocale(l.code);
 			},

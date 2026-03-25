@@ -1074,7 +1074,7 @@ watch(
 
 			<template v-else>
 				<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-				<div class="app-card rounded-[2rem] overflow-hidden">
+				<div class="overflow-hidden md:app-card md:rounded-[2rem]">
 					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto">
 						<div class="flex items-center gap-2 text-sm whitespace-nowrap">
 							<button

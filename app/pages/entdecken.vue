@@ -1,6 +1,14 @@
 <script lang="ts" setup>
 const { t } = useI18n();
 
+interface MarketItem {
+	dayKey: string;
+	label: string;
+	href: string;
+	isHighlighted?: boolean;
+	compactLabel?: boolean;
+}
+
 const defaultFreizeit = `<p>Die Halbinsel von Giens bietet ein breites Angebot an Freizeitaktivitäten für jeden Geschmack.</p>`;
 const defaultMaerkte = `<p>In der Region gibt es jeden Tag der Woche einen Markt – frische Produkte direkt vom Erzeuger.</p>`;
 const defaultEinkauf = `<p>Für den täglichen Bedarf finden Sie in der Umgebung alles Wichtige.</p>`;
@@ -10,6 +18,16 @@ const freizeitContent = await usePageContent("travel-freizeit");
 const maerkteContent = await usePageContent("travel-maerkte");
 const einkaufContent = await usePageContent("travel-einkauf");
 const ausfluegeContent = await usePageContent("travel-ausfluege");
+
+const marketItems: MarketItem[] = [
+	{ dayKey: "tue", label: "Giens", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Giens" },
+	{ dayKey: "wed", label: "L'Ayguade", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+L%27Ayguade" },
+	{ dayKey: "thu", label: "Carqueiranne", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Carqueiranne" },
+	{ dayKey: "fri", label: "La Capte", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+La+Capte" },
+	{ dayKey: "sat", label: "Hyères", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Hy%C3%A8res" },
+	{ dayKey: "sun", label: "Hyères-Port", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Hy%C3%A8res+Port", isHighlighted: true },
+	{ dayKey: "sun", label: "La Londe", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+La+Londe-les-Maures", compactLabel: true },
+];
 </script>
 
 <template>
@@ -149,34 +167,24 @@ const ausfluegeContent = await usePageContent("travel-ausfluege");
 			<div v-else-if="maerkteContent.status.value !== 'pending'">
 				<div class="prose dark:prose-invert max-w-none mb-8" v-html="maerkteContent.content.value || defaultMaerkte" />
 				<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mt-8">
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.tue") }}</div>
-						<div class="font-bold">Giens</div>
-					</div>
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.wed") }}</div>
-						<div class="font-bold">L'Ayguade</div>
-					</div>
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.thu") }}</div>
-						<div class="font-bold">Carqueiranne</div>
-					</div>
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.fri") }}</div>
-						<div class="font-bold">La Capte</div>
-					</div>
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.sat") }}</div>
-						<div class="font-bold">Hyères</div>
-					</div>
-					<div class="p-4 rounded-xl bg-primary/10 border border-primary/30 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.sun") }}</div>
-						<div class="font-bold">Hyères-Port</div>
-					</div>
-					<div class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 text-center">
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t("travel.maerkte.days.sun") }}</div>
-						<div class="font-bold text-sm">La Londe</div>
-					</div>
+					<a
+						v-for="market in marketItems"
+						:key="`${market.dayKey}-${market.label}`"
+						:href="market.href"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group p-4 rounded-xl border text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+						:class="market.isHighlighted
+							? 'bg-primary/10 border-primary/30 hover:border-primary/50'
+							: 'bg-stone-50 dark:bg-stone-900 border-stone-100 dark:border-stone-800 hover:border-primary/40'"
+					>
+						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t(`travel.maerkte.days.${market.dayKey}`) }}</div>
+						<div class="font-bold" :class="market.compactLabel ? 'text-sm' : ''">{{ market.label }}</div>
+						<div class="mt-2 flex items-center justify-center gap-1 text-[11px] text-stone-400 transition-colors group-hover:text-primary">
+							<UIcon name="i-lucide-map-pin" class="w-3.5 h-3.5" />
+							<span>Karte</span>
+						</div>
+					</a>
 				</div>
 				<p class="text-stone-500 text-sm mt-4 text-center">
 					{{ t("travel.maerkte.fleaMarket") }}
