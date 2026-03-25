@@ -4,29 +4,30 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 	const nuxtApp = useNuxtApp();
 	const { token } = useAuthReady();
 	const toast = useAppToast();
-	const { locale } = useI18n();
+	const i18n = useI18n();
 
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
 	const isEditing = ref(false);
 	const isSaving = ref(false);
 	const data = ref<T>(JSON.parse(JSON.stringify(defaultData))) as Ref<T>;
 	const originalData = ref<T>(JSON.parse(JSON.stringify(defaultData))) as Ref<T>;
-	const fetchKey = computed(() => `content-data:${contentId}:${locale.value}`);
+	const activeLocale = computed(() => i18n.locale?.value || "de");
+	const fetchKey = computed(() => `content-data:${contentId}:${activeLocale.value}`);
 
 	const { data: responseData, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {
 		key: fetchKey,
-		query: { locale },
+		query: { locale: activeLocale },
 	});
 
 	function parseContent(content: string | LocalizedContent, translated?: { fr?: string }): T {
 		let contentStr: string;
 		
 		if (typeof content === "string") {
-			contentStr = locale.value === "fr" && translated?.fr 
+			contentStr = activeLocale.value === "fr" && translated?.fr 
 				? translated.fr 
 				: content;
 		} else if (typeof content === "object" && content !== null) {
-			contentStr = content[locale.value as "de" | "fr"] || content.de || "";
+			contentStr = content[activeLocale.value as "de" | "fr"] || content.de || "";
 		} else {
 			return JSON.parse(JSON.stringify(defaultData));
 		}
@@ -50,7 +51,7 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 		{ immediate: true },
 	);
 
-	watch(locale, () => {
+	watch(activeLocale, () => {
 		if (responseData.value?.content !== undefined) {
 			const parsed = parseContent(responseData.value.content, responseData.value.translated);
 			data.value = parsed;

@@ -4,18 +4,19 @@ export async function usePageContent(contentId: string) {
 	const nuxtApp = useNuxtApp();
 	const { token } = useAuthReady();
 	const toast = useAppToast();
-	const { locale } = useI18n();
+	const i18n = useI18n();
 
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
 	const isEditing = ref(false);
 	const isSaving = ref(false);
 	const content = ref("");
 	const originalContent = ref("");
-	const fetchKey = computed(() => `content:${contentId}:${locale.value}`);
+	const activeLocale = computed(() => i18n.locale?.value || "de");
+	const fetchKey = computed(() => `content:${contentId}:${activeLocale.value}`);
 
 	const { data, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {
 		key: fetchKey,
-		query: { locale },
+		query: { locale: activeLocale },
 	});
 
 	function extractContent(data: PageContent | null | undefined, currentLocale: string): string {
@@ -40,16 +41,16 @@ export async function usePageContent(contentId: string) {
 		data,
 		(newData) => {
 			if (newData) {
-				content.value = extractContent(newData, locale.value);
+				content.value = extractContent(newData, activeLocale.value);
 				originalContent.value = content.value;
 			}
 		},
 		{ immediate: true },
 	);
 
-	watch(locale, () => {
+	watch(activeLocale, () => {
 		if (data.value) {
-			content.value = extractContent(data.value, locale.value);
+			content.value = extractContent(data.value, activeLocale.value);
 			originalContent.value = content.value;
 		}
 	});

@@ -41,14 +41,15 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 	const nuxtApp = useNuxtApp();
 	const { token } = useAuthReady();
 	const toast = useAppToast();
-	const { locale } = useI18n();
+	const i18n = useI18n();
 	const sections = ref<Record<string, PageContent>>({});
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
+	const activeLocale = computed(() => i18n.locale?.value || "de");
 
-	const fetchKey = computed(() => `public-page-content:${page}:${locale.value}`);
+	const fetchKey = computed(() => `public-page-content:${page}:${activeLocale.value}`);
 	const { data, status, refresh, error } = await useFetch<PublicPageBundleResponse>(() => `/api/page-content/${page}`, {
 		key: fetchKey,
-		query: { locale },
+		query: { locale: activeLocale },
 	});
 
 	watch(
@@ -59,7 +60,7 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 		{ immediate: true },
 	);
 
-	watch(locale, () => {
+	watch(activeLocale, () => {
 		sections.value = data.value?.sections || {};
 	});
 
@@ -80,11 +81,11 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 		const originalContent = ref(defaultContent);
 
 		const syncFromBundle = () => {
-			content.value = extractLocalizedString(sections.value[contentId], locale.value) || defaultContent;
+			content.value = extractLocalizedString(sections.value[contentId], activeLocale.value) || defaultContent;
 			originalContent.value = content.value;
 		};
 
-		watch([sections, locale], syncFromBundle, { immediate: true });
+		watch([sections, activeLocale], syncFromBundle, { immediate: true });
 
 		return {
 			content,
@@ -127,12 +128,12 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 		const originalData = ref<T>(cloneDefault(defaultData)) as Ref<T>;
 
 		const syncFromBundle = () => {
-			const nextValue = parseLocalizedJson(sections.value[contentId], locale.value, defaultData);
+			const nextValue = parseLocalizedJson(sections.value[contentId], activeLocale.value, defaultData);
 			sectionData.value = nextValue;
 			originalData.value = cloneDefault(nextValue);
 		};
 
-		watch([sections, locale], syncFromBundle, { immediate: true });
+		watch([sections, activeLocale], syncFromBundle, { immediate: true });
 
 		return {
 			data: sectionData,
