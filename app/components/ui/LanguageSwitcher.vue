@@ -1,19 +1,22 @@
 <script lang="ts" setup>
-const { locale, locales, setLocale } = useI18n();
+const i18n = useI18n();
 
 const localeItems = computed(() => {
-	const localesList = locales.value as { code: string; name: string }[];
+	const localesList = Array.isArray(i18n.locales?.value)
+		? i18n.locales.value as { code: string; name: string }[]
+		: [];
+
 	return [
 		localesList.map((l) => ({
 			label: l.name,
 			onSelect: () => {
-				setLocale(l.code);
+				return i18n.setLocale(l.code);
 			},
 		})),
 	];
 });
 
-const currentLocaleCode = computed(() => locale.value.toUpperCase());
+const currentLocaleCode = computed(() => (i18n.locale?.value || "de").toUpperCase());
 </script>
 
 <template>
