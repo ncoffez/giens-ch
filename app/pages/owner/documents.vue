@@ -13,7 +13,7 @@
 
 		<div
 			v-else-if="!documents.length"
-			class="rounded-3xl border border-dashed border-stone-300 p-10 text-center bg-stone-50 dark:bg-stone-900/40"
+			class="rounded-2xl border border-dashed border-stone-300 bg-stone-50 p-8 text-center dark:bg-stone-900/40 md:rounded-3xl md:p-10"
 		>
 			<UIcon name="i-lucide-folder-open" class="w-12 h-12 mx-auto text-stone-400 mb-4" />
 			<p class="font-semibold text-stone-700 dark:text-stone-300">{{ t("ownerDocuments.emptyTitle") }}</p>
@@ -24,7 +24,7 @@
 			<section
 				v-for="group in groupedDocuments"
 				:key="group.homeId"
-				class="app-card rounded-[2rem] p-6"
+				class="rounded-2xl border border-stone-200/80 bg-stone-50/75 p-4 dark:border-stone-800 dark:bg-stone-900/50 md:rounded-[2rem] md:border-[var(--app-border)] md:bg-[var(--app-surface-strong)] md:p-6 md:shadow-[var(--app-shadow)]"
 			>
 				<div class="flex items-center justify-between gap-4 mb-5">
 					<div>
@@ -46,7 +46,7 @@
 						v-for="document in group.documents"
 						:key="document.id"
 						:data-owner-file-id="document.id"
-						class="flex w-full items-center gap-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition hover:border-primary hover:bg-primary-50/50 dark:border-stone-700 dark:bg-stone-800/50 dark:hover:bg-primary-900/10"
+						class="flex w-full items-center gap-4 rounded-2xl border border-stone-200 bg-white/90 px-4 py-4 text-left transition hover:border-primary hover:bg-primary-50/50 dark:border-stone-700 dark:bg-stone-800/70 dark:hover:bg-primary-900/10"
 						:class="{ 'ring-2 ring-primary': highlightedFileId === document.id }"
 					>
 						<button
@@ -54,7 +54,7 @@
 							class="flex min-w-0 flex-1 items-center gap-4 text-left"
 							@click="downloadDocument(document)"
 						>
-							<div class="rounded-xl bg-white p-3 dark:bg-stone-900">
+							<div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-900">
 								<UIcon :name="getFileIcon(document.type)" class="w-5 h-5" :class="getFileIconColor(document.type)" />
 							</div>
 							<div class="min-w-0 flex-1">

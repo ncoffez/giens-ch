@@ -9,8 +9,8 @@
 		</a>
 
 		<!-- Navigation Header -->
-		<header class="z-40 py-3 md:sticky md:top-0 md:py-5">
-			<div class="app-surface flex items-center justify-between gap-3 md:gap-6 rounded-[1.5rem] px-4 md:px-6 py-3 max-w-screen-xl mx-auto w-full">
+		<header class="z-40 py-2 md:sticky md:top-0 md:py-5">
+			<div class="flex items-center justify-between gap-3 md:gap-6 max-w-screen-xl mx-auto w-full px-0 py-2 md:rounded-[1.5rem] md:border md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:px-6 md:py-3 md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
 				<div class="flex items-center gap-4 md:gap-8 min-w-0">
 				<NuxtLink :to="localePath('/')" class="logo-link shrink-0">
 					<UiLogo class="m-0!" />
@@ -109,13 +109,11 @@
 		</main>
 
 		<!-- Mobile Navigation -->
-		<ClientOnly>
-			<UiMobileNav />
-		</ClientOnly>
+		<UiMobileNav />
 
 		<!-- Footer -->
-		<footer class="py-10 md:py-12">
-			<div class="app-surface max-w-screen-xl mx-auto rounded-[1.75rem] px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm app-muted">
+		<footer class="py-8 md:py-12">
+			<div class="max-w-screen-xl mx-auto px-1 py-2 flex flex-col md:flex-row justify-between items-center gap-4 text-sm app-muted md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:px-6 md:py-6 md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
 				<p>{{ t("footer.copyright", { year: new Date().getFullYear() }) }}</p>
 			</div>
 		</footer>
@@ -133,7 +131,7 @@ const colorMode = useColorMode();
 const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
 const { openSearch, isMounted: isSearchMounted } = useSearchModal();
 
-const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser : null);
+const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 const authInitialized = computed(() => import.meta.client ? nuxtApp.$authInitialized?.value ?? false : false);
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
@@ -162,7 +160,7 @@ function handleOpenSearch() {
 }
 
 watch([authInitialized, currentUser], async ([initialized, user]) => {
-	if (!import.meta.client || hasLoadedUserFlags.value || !initialized || !user?.value) {
+	if (!import.meta.client || hasLoadedUserFlags.value || !initialized || !user) {
 		return;
 	}
 

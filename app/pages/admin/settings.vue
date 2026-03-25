@@ -121,21 +121,19 @@ onMounted(fetchSettings);
 		</div>
 
 		<div v-else class="space-y-8">
-			<UCard class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
-				<template #header>
-					<div class="flex items-center gap-3">
-						<div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-							<UIcon name="i-lucide-user" class="w-5 h-5 text-primary" />
-						</div>
-						<div>
-							<h2 class="text-lg font-semibold">Persönliche Einstellungen</h2>
-							<p class="text-sm text-stone-500">Nur für Sie sichtbar</p>
-						</div>
+			<section class="rounded-2xl px-0 py-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:px-6 md:py-6 md:dark:bg-white/[0.03]">
+				<div class="mb-5 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+						<UIcon name="i-lucide-user" class="w-5 h-5 text-primary" />
 					</div>
-				</template>
+					<div>
+						<h2 class="text-lg font-semibold">Persönliche Einstellungen</h2>
+						<p class="text-sm text-stone-500">Nur für Sie sichtbar</p>
+					</div>
+				</div>
 
 				<div class="space-y-6">
-					<div class="flex items-start justify-between gap-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/50">
+					<div class="flex items-start justify-between gap-4 rounded-xl border border-stone-200/70 bg-stone-50/80 p-4 dark:border-stone-800 dark:bg-stone-900/50">
 						<div class="flex items-start gap-3">
 							<UIcon name="i-lucide-home" class="w-5 h-5 text-stone-400 mt-0.5" />
 							<div>
@@ -148,20 +146,18 @@ onMounted(fetchSettings);
 						<USwitch v-model="personalSettings.homesFeatureEnabled" :loading="savingPersonal" />
 					</div>
 				</div>
-			</UCard>
+			</section>
 
-			<UCard class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
-				<template #header>
-					<div class="flex items-center gap-3">
-						<div class="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
-							<UIcon name="i-lucide-settings" class="w-5 h-5 text-stone-500" />
-						</div>
-						<div>
-							<h2 class="text-lg font-semibold">Globale Einstellungen</h2>
-							<p class="text-sm text-stone-500">Für alle Benutzer gültig</p>
-						</div>
+			<section class="rounded-2xl px-0 py-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:px-6 md:py-6 md:dark:bg-white/[0.03]">
+				<div class="mb-5 flex items-center gap-3">
+					<div class="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+						<UIcon name="i-lucide-settings" class="w-5 h-5 text-stone-500" />
 					</div>
-				</template>
+					<div>
+						<h2 class="text-lg font-semibold">Globale Einstellungen</h2>
+						<p class="text-sm text-stone-500">Für alle Benutzer gültig</p>
+					</div>
+				</div>
 
 				<form @submit.prevent="saveGlobalSettings" class="space-y-6">
 					<UFormField
@@ -190,7 +186,7 @@ onMounted(fetchSettings);
 
 					<div class="space-y-4">
 						<h3 class="text-sm font-semibold text-stone-500 uppercase tracking-wide">Feature Flags</h3>
-						<div class="flex items-start justify-between gap-4 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/50">
+						<div class="flex items-start justify-between gap-4 rounded-xl border border-stone-200/70 bg-stone-50/80 p-4 dark:border-stone-800 dark:bg-stone-900/50">
 							<div class="flex items-start gap-3">
 								<UIcon name="i-lucide-globe" class="w-5 h-5 text-stone-400 mt-0.5" />
 								<div>
@@ -210,7 +206,7 @@ onMounted(fetchSettings);
 						</UButton>
 					</div>
 				</form>
-			</UCard>
+			</section>
 		</div>
 	</div>
 </template>

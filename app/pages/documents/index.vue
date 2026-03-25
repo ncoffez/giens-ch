@@ -1193,7 +1193,7 @@ watch(
 				</div>
 			</div>
 
-			<div v-if="uploadQueue.isUploading" class="mb-6 bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-4">
+			<div v-if="uploadQueue.isUploading" class="mb-6 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-4 dark:border-stone-700 dark:bg-stone-800/70 md:bg-white md:dark:bg-stone-800">
 				<div class="flex items-center gap-4">
 					<div class="flex-1">
 						<div class="flex items-center justify-between mb-2">
@@ -1231,8 +1231,8 @@ watch(
 
 			<template v-else>
 				<div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-				<div class="overflow-hidden md:app-card md:rounded-[2rem]">
-					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto">
+				<div class="-mx-4 overflow-hidden md:mx-0 md:rounded-[2rem] md:border md:border-[var(--app-border)] md:bg-[var(--app-surface-strong)] md:shadow-[var(--app-shadow)]">
+					<div class="px-4 md:px-6 py-3 md:py-4 border-b border-stone-100 dark:border-stone-800 overflow-x-auto bg-white/80 dark:bg-stone-900/50 md:bg-transparent">
 						<div class="flex items-center gap-2 text-sm whitespace-nowrap">
 							<button
 								v-if="currentFolderId"
@@ -1261,7 +1261,7 @@ watch(
 						</div>
 					</div>
 
-					<div class="px-4 md:px-6 py-2 md:py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4">
+					<div class="px-4 md:px-6 py-2 md:py-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-4 bg-white/80 dark:bg-stone-900/50 md:bg-transparent">
 						<div class="flex items-center gap-2">
 							<div class="flex items-center gap-1 p-1 bg-stone-100 dark:bg-stone-800 rounded-lg">
 								<UButton
@@ -1335,7 +1335,7 @@ watch(
 					</div>
 
 					<div
-						class="min-h-[300px]"
+						class="min-h-[300px] bg-transparent md:bg-transparent"
 						:class="{ 'border-2 border-dashed border-primary bg-primary-50 dark:bg-primary-900/10': dragover && $isAdmin }"
 						@dragover.prevent="dragover = true"
 						@dragleave.prevent="dragover = false"
@@ -1349,9 +1349,9 @@ watch(
 
 						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
 							<div
-								v-for="folder in sortedSubfolders"
+							v-for="folder in sortedSubfolders"
 								:key="folder.id"
-								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
+								class="group relative p-3 md:p-4 rounded-2xl bg-stone-50 dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md md:bg-white"
 								:class="isFolderSelected(folder) ? 'border-primary ring-2 ring-primary/20' : 'border-stone-200 dark:border-stone-700 hover:border-primary'"
 							>
 								<button
@@ -1403,10 +1403,10 @@ watch(
 							</div>
 
 							<div
-								v-for="file in sortedFiles"
+							v-for="file in sortedFiles"
 								:key="file.id"
 								:data-file-id="file.id"
-								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
+								class="group relative p-3 md:p-4 rounded-2xl bg-stone-50 dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md md:bg-white"
 								:class="[
 									isFileSelected(file)
 										? 'border-primary ring-2 ring-primary/20'
@@ -1603,12 +1603,12 @@ watch(
 				<aside class="space-y-4 xl:sticky xl:top-28">
 					<div
 						v-if="previewFile"
-						class="app-card overflow-hidden rounded-[1.75rem] border border-[var(--app-border)]">
+						class="overflow-hidden rounded-2xl border border-stone-200/80 bg-stone-50/80 dark:border-stone-800 dark:bg-stone-900/50 md:rounded-[1.75rem] md:border-[var(--app-border)] md:bg-[var(--app-surface-strong)] md:shadow-[var(--app-shadow)]">
 						<div class="border-b border-[var(--app-border)] px-5 py-4">
 							<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">Ausgewählte Datei</p>
 							<h2 class="mt-2 text-lg font-semibold text-[var(--app-text)] break-words">{{ previewFile.name }}</h2>
 						</div>
-						<div class="border-b border-[var(--app-border)] bg-black/3 p-4 dark:bg-white/[0.02]">
+						<div class="border-b border-[var(--app-border)] bg-white/75 p-4 dark:bg-white/[0.02] md:bg-black/3">
 							<div class="overflow-hidden rounded-[1.25rem] bg-stone-100 dark:bg-stone-950">
 								<div v-if="previewLoading" class="flex h-[220px] items-center justify-center">
 									<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -1661,7 +1661,7 @@ watch(
 									<p class="font-medium text-[var(--app-text)]">{{ previewFile.lastModified ? formatTimestamp(previewFile.lastModified) : "—" }}</p>
 								</div>
 							</div>
-							<div class="rounded-[1.25rem] border border-[var(--app-border)] bg-[var(--app-surface)]/80 p-4">
+							<div class="rounded-[1.25rem] border border-[var(--app-border)] bg-white/75 p-4 dark:bg-[var(--app-surface)]/80">
 								<div class="flex items-start justify-between gap-3">
 									<div>
 										<p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--app-primary)]">Dokumentinhalt</p>
