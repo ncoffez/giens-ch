@@ -8,6 +8,7 @@ dist
 
 # Firebase
 .firebase
+.local-data/
 
 # Node dependencies
 node_modules
@@ -23,8 +24,6 @@ coverage/
 .DS_Store
 .fleet
 .idea
-.firebase/**
-.cache
 
 # Local env files
 .env
