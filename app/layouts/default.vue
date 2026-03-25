@@ -1,5 +1,5 @@
 <template>
-	<div class="app-shell mx-auto px-3 md:px-6 min-h-screen flex flex-col">
+	<div class="app-shell app-shell-with-mobile-nav mx-auto px-3 md:px-6 min-h-screen flex flex-col">
 		<!-- Skip to content link for accessibility -->
 		<a
 			href="#main-content"
@@ -103,7 +103,7 @@
 		</ClientOnly>
 
 		<!-- Main Content -->
-		<main id="main-content" class="flex-1 my-4 md:my-6 mb-28 md:mb-16 mx-auto w-full max-w-screen-xl">
+		<main id="main-content" class="app-main-shell flex-1 my-4 md:my-6 mb-28 md:mb-16 mx-auto w-full max-w-screen-xl">
 			<slot />
 		</main>
 
@@ -354,6 +354,18 @@ const userItems = computed(() => {
 	return items;
 });
 </script>
+
+<style scoped>
+@media (orientation: landscape) and (max-width: 1023px) and (max-height: 640px) {
+	.app-shell-with-mobile-nav {
+		padding-left: calc(5.5rem + env(safe-area-inset-left));
+	}
+
+	.app-main-shell {
+		margin-bottom: 1.5rem;
+	}
+}
+</style>
 
 <style scoped>
 @reference "@/assets/main.css";

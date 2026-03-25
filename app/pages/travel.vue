@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { FeatureCard, JourneyStep, StatItem } from "../../types";
+
 const { t } = useI18n();
 
 const defaultLage = `<p>Unsere Ferienhäuser liegen idyllisch auf der Halbinsel von Giens an der Avenue des Arbanais 313, nur etwa 15 Gehminuten vom Strand und vom Dorfzentrum entfernt.</p><p>Die Halbinsel von Giens befindet sich bei etwa 43°2′ nördlicher Breite an der Côte d'Azur im Département Var und gehört zu den südlichen Regionen des französischen Festlands.</p><p>Ein großer Teil der Halbinsel ist als Naturschutzgebiet ausgewiesen und steht unter besonderem Schutz. Besonders die Salinen und Feuchtgebiete zwischen den beiden Sanddämmen (Tombolos) bilden ein wichtiges Rückzugsgebiet für Zug- und Brutvögel.</p>`;
@@ -9,29 +11,35 @@ const defaultZug = `<p>Die Anreise mit dem Zug ist eine bequeme Alternative. SNC
 
 const defaultFlugzeug = `<p>Der Flughafen <strong>Toulon-Hyères (TLN)</strong> liegt nur 15 Minuten von Giens entfernt und ist ideal für Kurztrips.</p><p>Alternativ bietet sich der Flughafen <strong>Marseille (MRS)</strong> an, der von Zürich oder Genf oft mehrmals täglich direkt angeflogen wird. Die Weiterreise nach Giens dauert von dort etwa 1h 15min mit dem Auto.</p>`;
 
-const routeFacts = computed(() => [
+const defaultRouteFacts: StatItem[] = [
 	{ value: "700 km", label: t("travel.intro.facts.distance") },
 	{ value: "7-8 h", label: t("travel.intro.facts.drive") },
 	{ value: "15 min", label: t("travel.intro.facts.airport") },
-]);
+];
 
-const planningPillars = computed(() => [
+const defaultPlanningPillars: FeatureCard[] = [
 	{
 		title: t("travel.intro.pillars.drive.title"),
 		description: t("travel.intro.pillars.drive.description"),
 		icon: "i-lucide-car",
+		bgColor: "blue",
+		iconColor: "blue",
 	},
 	{
 		title: t("travel.intro.pillars.train.title"),
 		description: t("travel.intro.pillars.train.description"),
 		icon: "i-lucide-train-front",
+		bgColor: "emerald",
+		iconColor: "emerald",
 	},
 	{
 		title: t("travel.intro.pillars.flight.title"),
 		description: t("travel.intro.pillars.flight.description"),
 		icon: "i-lucide-plane",
+		bgColor: "amber",
+		iconColor: "amber",
 	},
-]);
+];
 
 const routeLinks = computed(() => [
 	{ id: "mit-dem-auto", icon: "i-lucide-car", label: t("travel.quickLinks.auto") },
@@ -39,7 +47,13 @@ const routeLinks = computed(() => [
 	{ id: "mit-dem-flugzeug", icon: "i-lucide-plane", label: t("travel.quickLinks.flugzeug") },
 ]);
 
-const autoSteps = [
+const defaultLocationFacts: StatItem[] = [
+	{ label: t("travel.locationFacts.walk.label"), value: t("travel.locationFacts.walk.value") },
+	{ label: t("travel.locationFacts.port.label"), value: t("travel.locationFacts.port.value") },
+	{ label: t("travel.locationFacts.nature.label"), value: t("travel.locationFacts.nature.value") },
+];
+
+const defaultAutoSteps: JourneyStep[] = [
 	{
 		title: "Bern – Lausanne – Genève",
 		detail: "Grenze Bardonnex Richtung Frankreich",
@@ -58,29 +72,76 @@ const autoSteps = [
 	},
 ];
 
-const trainSteps = [
-	{ label: "Etappe 1", route: "Bern – Genève", detail: "InterCity, ca. 1h 45min" },
-	{ label: "Etappe 2", route: "Genève – Marseille", detail: "TGV Lyria, ca. 4h 30min" },
-	{ label: "Etappe 3", route: "Marseille – Hyères", detail: "TER, ca. 1h" },
+const defaultTrainSteps: JourneyStep[] = [
+	{ eyebrow: "Etappe 1", title: "Bern – Genève", detail: "InterCity, ca. 1h 45min" },
+	{ eyebrow: "Etappe 2", title: "Genève – Marseille", detail: "TGV Lyria, ca. 4h 30min" },
+	{ eyebrow: "Etappe 3", title: "Marseille – Hyères", detail: "TER, ca. 1h" },
 ];
 
-const flightFacts = computed(() => [
+const defaultFlightFacts: FeatureCard[] = [
 	{
 		icon: "i-lucide-plane-takeoff",
 		title: t("travel.flugzeug.directFlights"),
 		description: t("travel.flugzeug.directFlightsText"),
+		bgColor: "blue",
+		iconColor: "blue",
 	},
 	{
 		icon: "i-lucide-car-front",
 		title: t("travel.flugzeug.rentalCar"),
 		description: t("travel.flugzeug.rentalCarText"),
+		bgColor: "amber",
+		iconColor: "amber",
 	},
-]);
+];
 
 const lageContent = await usePageContent("travel-lage");
 const autoContent = await usePageContent("travel-auto");
 const zugContent = await usePageContent("travel-zug");
 const flugzeugContent = await usePageContent("travel-flugzeug");
+const routeFacts = await usePageData<StatItem[]>("travel-intro-facts", defaultRouteFacts);
+const planningPillars = await usePageData<FeatureCard[]>("travel-intro-pillars", defaultPlanningPillars);
+const locationFacts = await usePageData<StatItem[]>("travel-location-facts", defaultLocationFacts);
+const autoSteps = await usePageData<JourneyStep[]>("travel-auto-steps", defaultAutoSteps);
+const trainSteps = await usePageData<JourneyStep[]>("travel-zug-steps", defaultTrainSteps);
+const flightFacts = await usePageData<FeatureCard[]>("travel-flugzeug-facts", defaultFlightFacts);
+
+function getColorClasses(color: string) {
+	const colors: Record<string, { bg: string; text: string; border: string }> = {
+		blue: {
+			bg: "bg-blue-100 dark:bg-blue-900/30",
+			text: "text-blue-600 dark:text-blue-400",
+			border: "border-blue-100 dark:border-blue-900",
+		},
+		amber: {
+			bg: "bg-amber-100 dark:bg-amber-900/30",
+			text: "text-amber-600 dark:text-amber-400",
+			border: "border-amber-100 dark:border-amber-900",
+		},
+		rose: {
+			bg: "bg-rose-100 dark:bg-rose-900/30",
+			text: "text-rose-600 dark:text-rose-400",
+			border: "border-rose-100 dark:border-rose-900",
+		},
+		emerald: {
+			bg: "bg-emerald-100 dark:bg-emerald-900/30",
+			text: "text-emerald-600 dark:text-emerald-400",
+			border: "border-emerald-100 dark:border-emerald-900",
+		},
+		purple: {
+			bg: "bg-purple-100 dark:bg-purple-900/30",
+			text: "text-purple-600 dark:text-purple-400",
+			border: "border-purple-100 dark:border-purple-900",
+		},
+		cyan: {
+			bg: "bg-cyan-100 dark:bg-cyan-900/30",
+			text: "text-cyan-600 dark:text-cyan-400",
+			border: "border-cyan-100 dark:border-cyan-900",
+		},
+	};
+
+	return colors[color] || colors.blue;
+}
 </script>
 
 <template>
@@ -108,13 +169,32 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 					</p>
 				</div>
 
-				<div class="grid gap-4 md:grid-cols-3">
+				<div class="flex items-center justify-end gap-2">
+					<template v-if="planningPillars.isAdmin.value && !planningPillars.isEditing.value">
+						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="planningPillars.startEditing()">
+							Elemente bearbeiten
+						</UButton>
+					</template>
+					<template v-else-if="planningPillars.isEditing.value">
+						<UButton color="neutral" variant="ghost" size="sm" :disabled="planningPillars.isSaving.value" @click="planningPillars.cancelEditing()">
+							{{ t("editor.cancel") }}
+						</UButton>
+						<UButton color="primary" icon="i-lucide-save" size="sm" :loading="planningPillars.isSaving.value" @click="planningPillars.save()">
+							{{ t("editor.save") }}
+						</UButton>
+					</template>
+				</div>
+
+				<ClientOnly v-if="planningPillars.isEditing.value">
+					<UiLazyFeatureCardsEditor v-model="planningPillars.data.value" />
+				</ClientOnly>
+				<div v-else class="grid gap-4 md:grid-cols-3">
 					<div
-						v-for="pillar in planningPillars"
+						v-for="pillar in planningPillars.data.value"
 						:key="pillar.title"
 						class="border-t border-[var(--app-border)] pt-4"
 					>
-						<div class="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--app-primary)]/10 text-[var(--app-primary)]">
+						<div :class="[getColorClasses(pillar.bgColor).bg, getColorClasses(pillar.iconColor).text, 'mb-3 flex h-11 w-11 items-center justify-center rounded-full']">
 							<UIcon :name="pillar.icon" class="h-5 w-5" />
 						</div>
 						<p class="text-base font-semibold text-[var(--app-text)]">{{ pillar.title }}</p>
@@ -124,12 +204,32 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 			</div>
 
 			<div class="space-y-5 border-l-0 lg:border-l lg:border-[var(--app-border)] lg:pl-8">
-				<p class="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]">
-					{{ t("travel.intro.factsTitle") }}
-				</p>
-				<div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+				<div class="flex items-center justify-between gap-3">
+					<p class="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]">
+						{{ t("travel.intro.factsTitle") }}
+					</p>
+					<div class="flex items-center gap-2">
+						<template v-if="routeFacts.isAdmin.value && !routeFacts.isEditing.value">
+							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="routeFacts.startEditing()">
+								Fakten bearbeiten
+							</UButton>
+						</template>
+						<template v-else-if="routeFacts.isEditing.value">
+							<UButton color="neutral" variant="ghost" size="sm" :disabled="routeFacts.isSaving.value" @click="routeFacts.cancelEditing()">
+								{{ t("editor.cancel") }}
+							</UButton>
+							<UButton color="primary" icon="i-lucide-save" size="sm" :loading="routeFacts.isSaving.value" @click="routeFacts.save()">
+								{{ t("editor.save") }}
+							</UButton>
+						</template>
+					</div>
+				</div>
+				<ClientOnly v-if="routeFacts.isEditing.value">
+					<UiLazyStatsEditor v-model="routeFacts.data.value" />
+				</ClientOnly>
+				<div v-else class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
 					<div
-						v-for="fact in routeFacts"
+						v-for="fact in routeFacts.data.value"
 						:key="fact.label"
 						class="border-b border-[var(--app-border)] pb-4 last:border-b-0 last:pb-0">
 						<div class="display-copy text-2xl md:text-3xl text-[var(--app-text)]">{{ fact.value }}</div>
@@ -195,18 +295,32 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 						loading="lazy"
 					/>
 					</div>
-					<div class="grid gap-4 sm:grid-cols-3">
-						<div class="border-t border-[var(--app-border)] pt-4">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.walk.label") }}</p>
-							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.walk.value") }}</p>
-						</div>
-						<div class="border-t border-[var(--app-border)] pt-4">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.port.label") }}</p>
-							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.port.value") }}</p>
-						</div>
-						<div class="border-t border-[var(--app-border)] pt-4">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("travel.locationFacts.nature.label") }}</p>
-							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ t("travel.locationFacts.nature.value") }}</p>
+					<div class="flex items-center justify-end gap-2">
+						<template v-if="locationFacts.isAdmin.value && !locationFacts.isEditing.value">
+							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="locationFacts.startEditing()">
+								Fakten bearbeiten
+							</UButton>
+						</template>
+						<template v-else-if="locationFacts.isEditing.value">
+							<UButton color="neutral" variant="ghost" size="sm" :disabled="locationFacts.isSaving.value" @click="locationFacts.cancelEditing()">
+								{{ t("editor.cancel") }}
+							</UButton>
+							<UButton color="primary" icon="i-lucide-save" size="sm" :loading="locationFacts.isSaving.value" @click="locationFacts.save()">
+								{{ t("editor.save") }}
+							</UButton>
+						</template>
+					</div>
+					<ClientOnly v-if="locationFacts.isEditing.value">
+						<UiLazyStatsEditor v-model="locationFacts.data.value" />
+					</ClientOnly>
+					<div v-else class="grid gap-4 sm:grid-cols-3">
+						<div
+							v-for="fact in locationFacts.data.value"
+							:key="fact.label"
+							class="border-t border-[var(--app-border)] pt-4"
+						>
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ fact.label }}</p>
+							<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ fact.value }}</p>
 						</div>
 					</div>
 				</div>
@@ -269,12 +383,37 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 					</div>
 
 					<div class="space-y-4">
+						<div class="flex items-center justify-end gap-2">
+							<template v-if="autoSteps.isAdmin.value && !autoSteps.isEditing.value">
+								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="autoSteps.startEditing()">
+									Stops bearbeiten
+								</UButton>
+							</template>
+							<template v-else-if="autoSteps.isEditing.value">
+								<UButton color="neutral" variant="ghost" size="sm" :disabled="autoSteps.isSaving.value" @click="autoSteps.cancelEditing()">
+									{{ t("editor.cancel") }}
+								</UButton>
+								<UButton color="primary" icon="i-lucide-save" size="sm" :loading="autoSteps.isSaving.value" @click="autoSteps.save()">
+									{{ t("editor.save") }}
+								</UButton>
+							</template>
+						</div>
 						<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">
 							{{ t("travel.auto.routeTitle") }}
 						</p>
-						<ol class="space-y-4">
+						<ClientOnly v-if="autoSteps.isEditing.value">
+							<UiLazyJourneyStepsEditor
+								v-model="autoSteps.data.value"
+								title-label="Route"
+								detail-label="Hinweis"
+								add-label="Stopp hinzufügen"
+								title-placeholder="z.B. Bern – Lausanne – Genève"
+								detail-placeholder="z.B. Grenze Bardonnex Richtung Frankreich"
+							/>
+						</ClientOnly>
+						<ol v-else class="space-y-4">
 							<li
-								v-for="(step, index) in autoSteps"
+								v-for="(step, index) in autoSteps.data.value"
 								:key="step.title"
 								class="flex gap-4 border-b border-[var(--app-border)] pb-4 last:border-b-0 last:pb-0">
 								<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] text-sm font-semibold text-[var(--app-text)]">
@@ -329,20 +468,49 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 					/>
 
 					<div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.5fr)]">
-						<div class="grid gap-4 md:grid-cols-3">
-							<div
-								v-for="step in trainSteps"
-								:key="step.route"
-								class="border-t border-[var(--app-border)] pt-4">
-								<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">
-									{{ step.label }}
-								</p>
-								<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ step.route }}</p>
-								<p class="mt-1 text-sm text-[var(--app-muted)]">{{ step.detail }}</p>
+						<div class="space-y-4">
+							<div class="flex items-center justify-end gap-2">
+								<template v-if="trainSteps.isAdmin.value && !trainSteps.isEditing.value">
+									<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="trainSteps.startEditing()">
+										Etappen bearbeiten
+									</UButton>
+								</template>
+								<template v-else-if="trainSteps.isEditing.value">
+									<UButton color="neutral" variant="ghost" size="sm" :disabled="trainSteps.isSaving.value" @click="trainSteps.cancelEditing()">
+										{{ t("editor.cancel") }}
+									</UButton>
+									<UButton color="primary" icon="i-lucide-save" size="sm" :loading="trainSteps.isSaving.value" @click="trainSteps.save()">
+										{{ t("editor.save") }}
+									</UButton>
+								</template>
 							</div>
-						</div>
+							<ClientOnly v-if="trainSteps.isEditing.value">
+								<UiLazyJourneyStepsEditor
+									v-model="trainSteps.data.value"
+									eyebrow-label="Etikett"
+									title-label="Route"
+									detail-label="Detail"
+									add-label="Etappe hinzufügen"
+									eyebrow-placeholder="z.B. Etappe 1"
+									title-placeholder="z.B. Bern – Genève"
+									detail-placeholder="z.B. InterCity, ca. 1h 45min"
+								/>
+							</ClientOnly>
+								<div v-else class="grid gap-4 md:grid-cols-3">
+									<div
+										v-for="step in trainSteps.data.value"
+										:key="`${step.eyebrow}-${step.title}`"
+										class="border-t border-[var(--app-border)] pt-4">
+									<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">
+										{{ step.eyebrow }}
+									</p>
+									<p class="mt-2 text-lg font-semibold text-[var(--app-text)]">{{ step.title }}</p>
+										<p class="mt-1 text-sm text-[var(--app-muted)]">{{ step.detail }}</p>
+									</div>
+								</div>
+							</div>
 
-						<div class="rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
+							<div class="rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
 							<div class="flex items-start gap-3">
 								<div class="rounded-2xl bg-[var(--app-primary)]/12 p-3 text-[var(--app-primary)]">
 									<UIcon name="i-lucide-bus" class="h-6 w-6" />
@@ -406,12 +574,31 @@ const flugzeugContent = await usePageContent("travel-flugzeug");
 					</div>
 
 					<div class="space-y-4">
+						<div class="flex items-center justify-end gap-2">
+							<template v-if="flightFacts.isAdmin.value && !flightFacts.isEditing.value">
+								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="flightFacts.startEditing()">
+									Infos bearbeiten
+								</UButton>
+							</template>
+							<template v-else-if="flightFacts.isEditing.value">
+								<UButton color="neutral" variant="ghost" size="sm" :disabled="flightFacts.isSaving.value" @click="flightFacts.cancelEditing()">
+									{{ t("editor.cancel") }}
+								</UButton>
+								<UButton color="primary" icon="i-lucide-save" size="sm" :loading="flightFacts.isSaving.value" @click="flightFacts.save()">
+									{{ t("editor.save") }}
+								</UButton>
+							</template>
+						</div>
+						<ClientOnly v-if="flightFacts.isEditing.value">
+							<UiLazyFeatureCardsEditor v-model="flightFacts.data.value" />
+						</ClientOnly>
 						<div
-							v-for="item in flightFacts"
+							v-else
+							v-for="item in flightFacts.data.value"
 							:key="item.title"
 							class="border-t border-[var(--app-border)] pt-4">
 							<div class="flex items-start gap-3">
-								<div class="rounded-2xl bg-[var(--app-accent)]/14 p-3 text-[var(--app-accent)]">
+								<div :class="[getColorClasses(item.bgColor).bg, getColorClasses(item.iconColor).text, 'rounded-2xl p-3']">
 									<UIcon :name="item.icon" class="h-6 w-6" />
 								</div>
 								<div>

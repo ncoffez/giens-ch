@@ -66,6 +66,15 @@ export interface SearchCollections {
 	getUsageCount: (usageKey: string) => number;
 }
 
+export function buildSearchTarget(pagePath: string, id: string): string {
+	const [basePath, existingHash] = pagePath.split("#");
+	const anchor = existingHash || id;
+
+	if (!anchor) return basePath || pagePath;
+
+	return `${basePath || pagePath}#${anchor}`;
+}
+
 export function normalizeText(text: string): string {
 	return text
 		.toLowerCase()
@@ -154,7 +163,7 @@ export function searchCollections({
 				id: heading.id,
 				label: heading.text,
 				context: heading.context.substring(0, 80),
-				to: `${heading.pagePath}#${heading.id}`,
+				to: buildSearchTarget(heading.pagePath, heading.id),
 				icon: "i-lucide-heading",
 				type: "heading",
 				usageKey: `heading:${heading.pagePath}:${heading.id}`,

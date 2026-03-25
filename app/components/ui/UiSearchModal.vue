@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { CommandPaletteItem } from "@nuxt/ui";
+import { buildSearchTarget } from "~/utils/search";
 
 const { open, closeSearch } = useSearchModal();
 const localePath = useLocalePath();
@@ -233,13 +234,13 @@ const organisatorischesHeadingItems = computed<SearchPaletteItem[]>(() => {
 		.map((result) => ({
 			label: result.text,
 			icon: "i-lucide-heading",
-			to: localePath(`${result.pagePath}#${result.id}`),
+			to: localePath(buildSearchTarget(result.pagePath, result.id)),
 			suffix: result.context ? result.context + "..." : undefined,
 			searchResult: {
 				id: result.id,
 				label: result.text,
 				context: result.context,
-				to: `${result.pagePath}#${result.id}`,
+				to: buildSearchTarget(result.pagePath, result.id),
 				icon: "i-lucide-heading",
 				type: "heading" as const,
 				usageKey: `heading:${result.pagePath}:${result.id}`,
