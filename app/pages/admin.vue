@@ -41,7 +41,6 @@ const items = [
 
 <template>
 	<div class="mb-20 mt-6 max-w-screen-2xl mx-auto px-4">
-		<div class="app-card rounded-[2rem] p-4 md:p-6 lg:p-8">
 		<div class="flex flex-col lg:flex-row gap-6 lg:gap-10">
 			<!-- Sidebar -->
 			<aside class="w-full lg:w-72 shrink-0">
@@ -52,7 +51,7 @@ const items = [
 						<p class="text-sm app-muted mt-2">Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort.</p>
 					</div>
 					
-					<div class="app-surface rounded-[1.5rem] p-3">
+					<div class="rounded-[1.25rem] border border-stone-200/70 bg-stone-50/80 p-2 dark:border-stone-800 dark:bg-stone-900/50 lg:rounded-[1.5rem] lg:border-[var(--app-border)] lg:bg-[var(--app-surface)] lg:p-3 lg:shadow-[var(--app-shadow)] lg:backdrop-blur-[20px]">
 					<UNavigationMenu 
 						:items="items" 
 						orientation="vertical"
@@ -65,7 +64,6 @@ const items = [
 			<main class="flex-1 min-w-0">
 				<NuxtPage />
 			</main>
-		</div>
 		</div>
 	</div>
 </template>

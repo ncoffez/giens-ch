@@ -79,14 +79,12 @@ toast.add({
 		</div>
 
 		<!-- Create Label Form -->
-		<UCard :ui="{ body: { padding: 'p-4' } }" class="rounded-[1.5rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
-			<template #header v-if="isCreatingLabel">
-				<div class="flex items-center justify-between">
-					<span class="text-lg font-bold">Neues Label erstellen</span>
-					<UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" @click="isCreatingLabel = false" />
-				</div>
-			</template>
-			
+		<div class="rounded-2xl px-0 py-0 md:rounded-[1.5rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:px-4 md:py-4 md:dark:bg-white/[0.03]">
+			<div v-if="isCreatingLabel" class="mb-4 flex items-center justify-between px-1">
+				<span class="text-lg font-bold">Neues Label erstellen</span>
+				<UButton icon="i-lucide-x" variant="ghost" color="neutral" size="sm" @click="isCreatingLabel = false" />
+			</div>
+
 			<div v-if="!isCreatingLabel">
 				<UButton icon="i-lucide-plus" color="neutral" variant="outline" @click="isCreatingLabel = true">
 					Neues Label erstellen
@@ -106,9 +104,9 @@ toast.add({
 					</UButton>
 				</div>
 			</div>
-		</UCard>
+		</div>
 
-		<UCard :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-[1.75rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
+		<div class="-mx-3 overflow-hidden md:mx-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:dark:bg-white/[0.03]">
 			<div class="divide-y divide-gray-100 dark:divide-gray-800">
 				<div v-for="label of labels" :key="label.id" class="flex items-center justify-between p-6 hover:bg-stone-50 dark:hover:bg-gray-900/50 transition-colors">
 					<div class="flex flex-col gap-1">
@@ -129,6 +127,6 @@ toast.add({
 					<UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-stone-400" />
 				</div>
 			</div>
-		</UCard>
+		</div>
 	</div>
 </template>

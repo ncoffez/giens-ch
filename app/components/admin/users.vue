@@ -29,10 +29,13 @@ const { data: users, status, refresh } = useAsyncData("admin-users-list", async 
 const isModalOpen = ref(false);
 const isRoleModalOpen = ref(false);
 const isEditNameModalOpen = ref(false);
+const isResetLinkModalOpen = ref(false);
 const isPending = ref(false);
 const selectedUserForRoles = ref<AdminUser | null>(null);
 const selectedUserForEdit = ref<AdminUser | null>(null);
 const editDisplayName = ref("");
+const resetLink = ref("");
+const resetLinkEmail = ref("");
 
 const userRoles = ref({
 	admin: false,
@@ -72,13 +75,17 @@ const columns = [
 		});
 
 		if (response.success) {
-			toast.add({
-				title: "Erfolgreich",
-				description: `Aktion '${action}' wurde ausgeführt.`,
-				color: "success"
-			});
 			if (action === "reset-password" && response.link) {
-				console.log("Reset link:", response.link);
+				resetLink.value = response.link;
+				resetLinkEmail.value = user?.email || "";
+				isResetLinkModalOpen.value = true;
+				await copyResetLink();
+			} else {
+				toast.add({
+					title: "Erfolgreich",
+					description: `Aktion '${action}' wurde ausgeführt.`,
+					color: "success"
+				});
 			}
 			isRoleModalOpen.value = false;
 			isEditNameModalOpen.value = false;
@@ -93,6 +100,27 @@ const columns = [
 		});
 	} finally {
 		isPending.value = false;
+	}
+}
+
+async function copyResetLink() {
+	if (!import.meta.client || !resetLink.value) {
+		return;
+	}
+
+	try {
+		await navigator.clipboard.writeText(resetLink.value);
+		toast.add({
+			title: "Reset-Link kopiert",
+			description: "Der Passwort-Reset-Link liegt jetzt in der Zwischenablage.",
+			color: "success"
+		});
+	} catch {
+		toast.add({
+			title: "Reset-Link bereit",
+			description: "Der Link konnte nicht automatisch kopiert werden und steht unten manuell bereit.",
+			color: "warning"
+		});
 	}
 }
 
@@ -195,13 +223,13 @@ const getItems = (row: AdminUser) => [
 
 		<UiUserTableSkeleton v-if="status === 'pending'" />
 		
-		<div v-else-if="users && users.length === 0" class="p-12 text-center bg-stone-50 dark:bg-stone-900 rounded-2xl border border-dashed border-stone-200 dark:border-stone-800">
+		<div v-else-if="users && users.length === 0" class="px-4 py-10 text-center bg-stone-50/80 dark:bg-stone-900/60 rounded-2xl md:border md:border-dashed md:border-stone-200 md:dark:border-stone-800">
 			<UIcon name="i-lucide-users" class="w-12 h-12 text-stone-300 mx-auto mb-4" />
 			<p class="text-stone-500 font-medium">Keine Benutzer gefunden oder Zugriff verweigert.</p>
 			<UButton label="Erneut versuchen" variant="ghost" class="mt-4" @click="refresh" />
 		</div>
 		
-		<UCard v-else-if="users && users.length > 0" :ui="{ body: { padding: 'p-0' } }" class="overflow-hidden rounded-[1.75rem] shadow-none border-[var(--app-border)] bg-white/70 dark:bg-white/[0.03]">
+		<div v-else-if="users && users.length > 0" class="-mx-3 overflow-hidden md:mx-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:dark:bg-white/[0.03]">
 			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-stone-500' }">
 				<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
@@ -241,7 +269,7 @@ const getItems = (row: AdminUser) => [
 					</UDropdownMenu>
 				</template>
 			</UTable>
-		</UCard>
+		</div>
 
 		<!-- Role Management Modal -->
 		<UModal v-model:open="isRoleModalOpen" title="Rollen verwalten">
@@ -297,6 +325,34 @@ const getItems = (row: AdminUser) => [
 					<div class="flex justify-end gap-4 pt-6">
 						<UButton color="neutral" variant="ghost" label="Abbrechen" size="lg" @click="isEditNameModalOpen = false" />
 						<UButton label="Name speichern" size="lg" :loading="isPending" @click="handleAction('update-name', selectedUserForEdit)" />
+					</div>
+				</div>
+			</template>
+		</UModal>
+
+		<UModal v-model:open="isResetLinkModalOpen" title="Passwort-Reset-Link">
+			<template #body>
+				<div class="p-8 space-y-6">
+					<div class="space-y-2">
+						<h3 class="text-xl font-bold">Reset-Link bereit</h3>
+						<p class="text-sm text-stone-500">
+							Der Link für <b>{{ resetLinkEmail }}</b> wurde generiert. Sie können ihn direkt kopieren und manuell zustellen.
+						</p>
+					</div>
+
+					<UFormField label="Reset-Link" size="lg">
+						<UTextarea
+							:model-value="resetLink"
+							:rows="5"
+							readonly
+							:autoresize="false"
+							class="w-full font-mono text-xs"
+						/>
+					</UFormField>
+
+					<div class="flex justify-end gap-4 pt-2">
+						<UButton color="neutral" variant="ghost" label="Schliessen" size="lg" @click="isResetLinkModalOpen = false" />
+						<UButton icon="i-lucide-copy" label="Link kopieren" size="lg" @click="copyResetLink" />
 					</div>
 				</div>
 			</template>

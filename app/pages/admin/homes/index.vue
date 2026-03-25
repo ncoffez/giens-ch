@@ -163,18 +163,18 @@ watchEffect(() => {
 				<p class="app-muted mt-2">Behalten Sie Aktivstatus, Eigentümer und Bearbeitungszugänge übersichtlich im Blick.</p>
 			</div>
 			<div class="grid grid-cols-2 gap-3">
-				<div class="app-surface rounded-2xl px-4 py-3">
+				<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
 					<p class="text-xs uppercase tracking-[0.18em] app-muted">Aktiv</p>
 					<p class="display-copy text-2xl font-bold">{{ totalActive }}</p>
 				</div>
-				<div class="app-surface rounded-2xl px-4 py-3">
+				<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
 					<p class="text-xs uppercase tracking-[0.18em] app-muted">Deaktiviert</p>
 					<p class="display-copy text-2xl font-bold">{{ totalDisabled }}</p>
 				</div>
 			</div>
 		</div>
 
-		<UCard class="mb-6 rounded-[1.5rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03]">
+		<div class="mb-6 rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-4 dark:border-stone-800 dark:bg-stone-900/50 md:rounded-[1.5rem] md:border-[var(--app-border)] md:bg-white/70 md:dark:bg-white/[0.03]">
 			<div class="flex items-center justify-between">
 				<ClientOnly>
 					<USwitch
@@ -186,13 +186,13 @@ watchEffect(() => {
 					{{ totalActive }} aktiv · {{ totalDisabled }} deaktiviert
 				</span>
 			</div>
-		</UCard>
+		</div>
 
 		<div v-if="loading" class="text-center py-8 app-muted">Häuser werden geladen...</div>
 
 		<div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-red-500">{{ error }}</div>
 
-		<UCard v-else class="rounded-[1.75rem] border-[var(--app-border)] shadow-none bg-white/70 dark:bg-white/[0.03] overflow-hidden">
+		<div v-else class="-mx-2 overflow-hidden md:mx-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:dark:bg-white/[0.03]">
 			<UTable
 				:data="sortedHomes"
 				:columns="[
@@ -292,6 +292,6 @@ watchEffect(() => {
 					</UDropdownMenu>
 				</template>
 			</UTable>
-		</UCard>
+		</div>
 	</div>
 </template>

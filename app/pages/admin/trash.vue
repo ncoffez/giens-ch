@@ -133,7 +133,7 @@ onMounted(fetchData);
 				<p class="text-stone-500">Keine gelöschten Dateien vorhanden</p>
 			</div>
 
-			<div v-else class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm overflow-hidden">
+			<div v-else class="-mx-4 overflow-hidden md:mx-0 md:rounded-2xl md:border md:border-stone-100 md:bg-white md:shadow-sm md:dark:border-stone-800 md:dark:bg-stone-900">
 				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800">
 					<p class="text-sm text-stone-500">{{ files.length }} Datei{{ files.length !== 1 ? 'en' : '' }} im Papierkorb</p>
 				</div>
