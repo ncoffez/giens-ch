@@ -4,10 +4,15 @@ import path from "node:path";
 
 interface RouteAudit {
 	route: string;
+	mode: "production-preview";
 	jsBytes: number;
+	cssBytes: number;
+	imageBytes: number;
 	requestCount: number;
 	fetchCount: number;
 	scriptCount: number;
+	stylesheetCount: number;
+	imageCount: number;
 	lcpMs: number | null;
 	longTaskCount: number;
 	longTaskDurationMs: number;
@@ -25,9 +30,13 @@ test.describe("Performance Audit", () => {
 
 		for (const route of routes) {
 			let jsBytes = 0;
+			let cssBytes = 0;
+			let imageBytes = 0;
 			let requestCount = 0;
 			let fetchCount = 0;
 			let scriptCount = 0;
+			let stylesheetCount = 0;
+			let imageCount = 0;
 
 			page.removeAllListeners("response");
 			page.on("response", async (response) => {
@@ -39,19 +48,33 @@ test.describe("Performance Audit", () => {
 					fetchCount += 1;
 				}
 
-				if (type === "script") {
-					scriptCount += 1;
+				const getResponseBytes = async () => {
 					const lengthHeader = response.headers()["content-length"];
 					if (lengthHeader) {
-						jsBytes += Number(lengthHeader);
-						return;
+						return Number(lengthHeader);
 					}
 
 					try {
 						const body = await response.body();
-						jsBytes += body.byteLength;
+						return body.byteLength;
 					} catch {
+						return 0;
 					}
+				};
+
+				if (type === "script") {
+					scriptCount += 1;
+					jsBytes += await getResponseBytes();
+				}
+
+				if (type === "stylesheet") {
+					stylesheetCount += 1;
+					cssBytes += await getResponseBytes();
+				}
+
+				if (type === "image") {
+					imageCount += 1;
+					imageBytes += await getResponseBytes();
 				}
 			});
 
@@ -83,10 +106,15 @@ test.describe("Performance Audit", () => {
 			const perfAudit = await page.evaluate(() => (window as any).__perfAudit);
 			audits.push({
 				route,
+				mode: "production-preview",
 				jsBytes,
+				cssBytes,
+				imageBytes,
 				requestCount,
 				fetchCount,
 				scriptCount,
+				stylesheetCount,
+				imageCount,
 				lcpMs: perfAudit?.lcpMs ?? null,
 				longTaskCount: perfAudit?.longTaskCount ?? 0,
 				longTaskDurationMs: Number((perfAudit?.longTaskDurationMs ?? 0).toFixed(2)),

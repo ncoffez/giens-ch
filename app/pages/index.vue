@@ -71,10 +71,11 @@ const defaultTimeline: AppTimelineItem[] = [
 
 const defaultMiteinanderContent = `<p>Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement. Im Frühling und Herbst arbeiten wir gemeinsam an der Pflege und Verschönerung der Siedlung.</p>`;
 
-const featureCards = await usePageData<FeatureCard[]>("index-features", defaultFeatureCards);
-const miteinanderContent = await usePageContent("index-miteinander");
-const stats = await usePageData<StatItem[]>("index-stats", defaultStats);
-const timeline = await usePageData<AppTimelineItem[]>("index-timeline", defaultTimeline);
+const publicPageBundle = await usePublicPageBundle("home");
+const featureCards = publicPageBundle.createDataSection<FeatureCard[]>("index-features", defaultFeatureCards);
+const miteinanderContent = publicPageBundle.createContentSection("index-miteinander", defaultMiteinanderContent);
+const stats = publicPageBundle.createDataSection<StatItem[]>("index-stats", defaultStats);
+const timeline = publicPageBundle.createDataSection<AppTimelineItem[]>("index-timeline", defaultTimeline);
 
 const timelineItems = computed<TimelineItem[]>(() => 
 	timeline.data.value.map((item) => ({

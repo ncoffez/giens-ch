@@ -66,7 +66,7 @@ useHead({
 		<UiHero
 			:title="t('hero.organisatorisches.title')"
 			:subtitle="t('hero.organisatorisches.subtitle')"
-			src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1920&q=80"
+			src="/giens/hauseingang_cropped.jpg"
 			alt="Dokumente und Organisation"
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 

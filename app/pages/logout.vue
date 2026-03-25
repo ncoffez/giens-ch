@@ -6,9 +6,9 @@ onMounted(async () => {
 	navigateTo(localePath("/"));
 });
 async function logoutFromFirebase() {
-	const { $auth, $currentUser } = useNuxtApp();
+	const { $currentUser, $signOut } = useNuxtApp();
 	$currentUser.value = null;
-	await $auth.signOut();
+	await $signOut();
 	return { message: "success", code: 200 };
 }
 </script>

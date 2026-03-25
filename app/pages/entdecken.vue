@@ -8,10 +8,11 @@ const defaultMaerkte = `<p>In der Region gibt es jeden Tag der Woche einen Markt
 const defaultEinkauf = `<p>Für den täglichen Bedarf finden Sie in der Umgebung alles Wichtige.</p>`;
 const defaultAusfluege = `<p>Von Giens aus erreichen Sie bequem traumhafte Ausflugsziele.</p>`;
 
-const freizeitContent = await usePageContent("travel-freizeit");
-const maerkteContent = await usePageContent("travel-maerkte");
-const einkaufContent = await usePageContent("travel-einkauf");
-const ausfluegeContent = await usePageContent("travel-ausfluege");
+const publicPageBundle = await usePublicPageBundle("entdecken");
+const freizeitContent = publicPageBundle.createContentSection("travel-freizeit", defaultFreizeit);
+const maerkteContent = publicPageBundle.createContentSection("travel-maerkte", defaultMaerkte);
+const einkaufContent = publicPageBundle.createContentSection("travel-einkauf", defaultEinkauf);
+const ausfluegeContent = publicPageBundle.createContentSection("travel-ausfluege", defaultAusfluege);
 
 const defaultFreizeitCards: FeatureCard[] = [
 	{
@@ -105,11 +106,11 @@ const defaultExcursionCards: FeatureCard[] = [
 	},
 ];
 
-const freizeitCards = await usePageData<FeatureCard[]>("travel-freizeit-cards", defaultFreizeitCards);
-const marketItems = await usePageData<MarketItem[]>("travel-market-items", defaultMarketItems);
-const shoppingCards = await usePageData<FeatureCard[]>("travel-shopping-cards", defaultShoppingCards);
-const laundryCard = await usePageData<FeatureCard[]>("travel-laundry-card", defaultLaundryCard);
-const excursionCards = await usePageData<FeatureCard[]>("travel-excursion-cards", defaultExcursionCards);
+const freizeitCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-freizeit-cards", defaultFreizeitCards);
+const marketItems = publicPageBundle.createDataSection<MarketItem[]>("travel-market-items", defaultMarketItems);
+const shoppingCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-shopping-cards", defaultShoppingCards);
+const laundryCard = publicPageBundle.createDataSection<FeatureCard[]>("travel-laundry-card", defaultLaundryCard);
+const excursionCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-excursion-cards", defaultExcursionCards);
 
 function getColorClasses(color: string) {
 	const colors: Record<string, { bg: string; text: string; border: string; gradient: string }> = {
@@ -162,7 +163,6 @@ function getColorClasses(color: string) {
 			:subtitle="t('hero.entdecken.subtitle')"
 			src="/giens/porquerolle.webp"
 			alt="Türkisfarbenes Wasser und Küste bei Porquerolles"
-			:responsive="false"
 			height="h-[40vh] md:h-[54vh] min-h-[300px] md:min-h-[420px]"
 			image-class="object-[center_62%]"
 			content-class="max-w-3xl"

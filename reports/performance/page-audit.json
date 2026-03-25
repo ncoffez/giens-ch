@@ -1,0 +1,50 @@
+{
+	"generatedAt": "2026-03-25T10:20:43.806Z",
+	"routes": [
+		{
+			"route": "/",
+			"mode": "production-preview",
+			"jsBytes": 692253,
+			"cssBytes": 255021,
+			"imageBytes": 2211062,
+			"requestCount": 42,
+			"fetchCount": 1,
+			"scriptCount": 29,
+			"stylesheetCount": 3,
+			"imageCount": 8,
+			"lcpMs": 172,
+			"longTaskCount": 0,
+			"longTaskDurationMs": 0
+		},
+		{
+			"route": "/travel",
+			"mode": "production-preview",
+			"jsBytes": 691304,
+			"cssBytes": 255076,
+			"imageBytes": 926458,
+			"requestCount": 36,
+			"fetchCount": 1,
+			"scriptCount": 28,
+			"stylesheetCount": 4,
+			"imageCount": 2,
+			"lcpMs": 196,
+			"longTaskCount": 0,
+			"longTaskDurationMs": 0
+		},
+		{
+			"route": "/entdecken",
+			"mode": "production-preview",
+			"jsBytes": 685467,
+			"cssBytes": 255076,
+			"imageBytes": 560970,
+			"requestCount": 34,
+			"fetchCount": 1,
+			"scriptCount": 27,
+			"stylesheetCount": 4,
+			"imageCount": 1,
+			"lcpMs": 184,
+			"longTaskCount": 0,
+			"longTaskDurationMs": 0
+		}
+	]
+}

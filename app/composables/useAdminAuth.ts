@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { waitForAuthInitialization } from "./useAuthReady";
 
 export function useAdminAuth() {
-	const { $auth, $currentUser, $isAdmin, $authInitialized } = useNuxtApp();
+	const { $ensureAuth, $currentUser, $isAdmin, $authInitialized, $getAuthToken } = useNuxtApp();
 
 	const isCheckingAuth = ref(false);
 	const authError = ref<string | null>(null);
@@ -30,7 +30,8 @@ async function waitForAuthInit(): Promise<void> {
 				return false;
 			}
 
-			const user = $auth.currentUser;
+			const auth = await $ensureAuth();
+			const user = auth.currentUser;
 			if (!user) {
 				authError.value = "Nicht authentifiziert";
 				return false;
@@ -51,13 +52,17 @@ async function waitForAuthInit(): Promise<void> {
 	 */
 	async function getAuthHeaders(): Promise<Record<string, string>> {
 		try {
-			const user = $auth.currentUser;
-			if (!user) {
+			const auth = await $ensureAuth();
+			if (!auth.currentUser) {
 				authError.value = "Nicht authentifiziert";
 				return {};
 			}
 
-			const token = await user.getIdToken(true);
+			const token = await $getAuthToken(true);
+			if (!token) {
+				authError.value = "Nicht authentifiziert";
+				return {};
+			}
 			return { Authorization: `Bearer ${token}` };
 		} catch (error: unknown) {
 			authError.value = "Fehler beim Abrufen des Tokens";

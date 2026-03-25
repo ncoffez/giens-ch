@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { doc, updateDoc, addDoc, collection } from "firebase/firestore";
 
-const { $db } = useNuxtApp();
+const { $ensureFirestore } = useNuxtApp();
 const toast = useToast();
 const { data: labels, status, refresh } = useFetch<any[]>("/api/labels");
 
@@ -11,62 +11,64 @@ const isPending = ref(false);
 
 const updateLabel = async (id: string, currentPrivacy: boolean) => {
 	try {
-		await updateDoc(doc($db, `labels/${id}`), { private: !currentPrivacy });
-toast.add({
-				title: "Aktualisiert",
-				description: `Sichtbarkeit für '${id}' wurde geändert.`,
-				color: "success"
-			});
-			await refresh();
-		} catch (error: unknown) {
-			toast.add({
-				title: "Fehler",
-				description: error.message,
-				color: "error"
-			});
-		}
-	};
+		const db = await $ensureFirestore();
+		await updateDoc(doc(db, `labels/${id}`), { private: !currentPrivacy });
+		toast.add({
+			title: "Aktualisiert",
+			description: `Sichtbarkeit für '${id}' wurde geändert.`,
+			color: "success"
+		});
+		await refresh();
+	} catch (error: unknown) {
+		toast.add({
+			title: "Fehler",
+			description: error.message,
+			color: "error"
+		});
+	}
+};
 
-	const createLabel = async () => {
-		if (!newLabelId.value || newLabelId.value.trim().length < 2) {
-			toast.add({
-				title: "Fehler",
-				description: "Label-ID muss mindestens 2 Zeichen haben.",
-				color: "error"
-			});
-			return;
-		}
+const createLabel = async () => {
+	if (!newLabelId.value || newLabelId.value.trim().length < 2) {
+		toast.add({
+			title: "Fehler",
+			description: "Label-ID muss mindestens 2 Zeichen haben.",
+			color: "error"
+		});
+		return;
+	}
 
-		isPending.value = true;
-		try {
-			const labelId = newLabelId.value.trim().toLowerCase();
-			const labelTitle = labelId.charAt(0).toUpperCase() + labelId.slice(1);
-			
-			await addDoc(collection($db, "labels"), {
-				id: labelId,
-				title: labelTitle,
-				name: labelId,
-				private: false
-			});
-			
-			toast.add({
-				title: "Erfolgreich",
-				description: `Label '${labelTitle}' wurde erstellt.`,
-				color: "success"
-			});
-			newLabelId.value = "";
-			isCreatingLabel.value = false;
-			await refresh();
-		} catch (error: unknown) {
-			toast.add({
-				title: "Fehler",
-				description: error.message,
-				color: "error"
-			});
-		} finally {
-			isPending.value = false;
-		}
-	};
+	isPending.value = true;
+	try {
+		const db = await $ensureFirestore();
+		const labelId = newLabelId.value.trim().toLowerCase();
+		const labelTitle = labelId.charAt(0).toUpperCase() + labelId.slice(1);
+		
+		await addDoc(collection(db, "labels"), {
+			id: labelId,
+			title: labelTitle,
+			name: labelId,
+			private: false
+		});
+		
+		toast.add({
+			title: "Erfolgreich",
+			description: `Label '${labelTitle}' wurde erstellt.`,
+			color: "success"
+		});
+		newLabelId.value = "";
+		isCreatingLabel.value = false;
+		await refresh();
+	} catch (error: unknown) {
+		toast.add({
+			title: "Fehler",
+			description: error.message,
+			color: "error"
+		});
+	} finally {
+		isPending.value = false;
+	}
+};
 </script>
 
 <template>
