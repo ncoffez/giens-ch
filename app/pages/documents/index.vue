@@ -88,7 +88,7 @@ const highlightedFileId = computed(() => {
 	const fileId = route.query.fileId;
 	return typeof fileId === "string" ? fileId : "";
 });
-
+const deepLinkBasePath = computed(() => route.path || "/documents");
 const activePreviewLocale = computed(() => locale.value === "fr" ? "fr" : "de");
 const activeTranslation = computed(() => {
 	if (!documentProcessing.value || activePreviewLocale.value === "de") return null;
@@ -109,6 +109,7 @@ const translationStatusLabel = computed(() => {
 		? `Übersetzung: ${activePreviewLocale.value.toUpperCase()}`
 		: "Keine Übersetzung für diese Sprache";
 });
+const canDownloadTranslatedFile = computed(() => !!activeTranslation.value?.searchText && !!previewFile.value);
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -292,8 +293,8 @@ const officePreviewUrl = computed(() => {
 	return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl.value)}`;
 });
 
-const copyDeepLink = async (params: { folderId?: string | null; fileId?: string | null }) => {
-	const targetUrl = new URL(route.path || "/documents", window.location.origin);
+const buildDeepLinkPath = (params: { folderId?: string | null; fileId?: string | null }) => {
+	const targetUrl = new URL(deepLinkBasePath.value, window.location.origin);
 	if (params.folderId) {
 		targetUrl.searchParams.set("folder", params.folderId);
 	}
@@ -301,8 +302,64 @@ const copyDeepLink = async (params: { folderId?: string | null; fileId?: string 
 		targetUrl.searchParams.set("fileId", params.fileId);
 	}
 
-	await navigator.clipboard.writeText(targetUrl.toString());
+	return targetUrl.toString();
+};
+
+const copyDeepLink = async (params: { folderId?: string | null; fileId?: string | null }) => {
+	await navigator.clipboard.writeText(buildDeepLinkPath(params));
 	toast.add({ title: "Link kopiert", color: "success" });
+};
+
+const downloadTranslatedFile = async (file: GlobalFile) => {
+	if (!canDownloadTranslatedFile.value) return;
+
+	try {
+		const response = await fetch(`/api/files/translated-download?fileId=${encodeURIComponent(file.id)}&locale=${encodeURIComponent(activePreviewLocale.value)}`, {
+			headers: { Authorization: `Bearer ${token.value}` },
+		});
+
+		if (!response.ok) {
+			throw new Error(await response.text().catch(() => ""));
+		}
+
+		const blob = await response.blob();
+		const downloadUrl = window.URL.createObjectURL(blob);
+		const disposition = response.headers.get("content-disposition") || "";
+		const fileName = disposition.match(/filename="([^"]+)"/)?.[1]
+			|| `${file.name}-${activePreviewLocale.value}-translated.html`;
+		const link = document.createElement("a");
+		link.href = downloadUrl;
+		link.download = fileName;
+		link.style.display = "none";
+		document.body.appendChild(link);
+		link.click();
+		setTimeout(() => {
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(downloadUrl);
+		}, 100);
+	} catch (e: unknown) {
+		toast.add({
+			title: "Übersetzte Datei nicht verfügbar",
+			description: getErrorMessage(e),
+			color: "error",
+		});
+	}
+};
+
+const focusHighlightedFile = async () => {
+	if (!highlightedFileId.value) return;
+
+	const highlightedFile = files.value.find((file) => file.id === highlightedFileId.value);
+	if (!highlightedFile) return;
+
+	selectedFolders.value = [];
+	selectedFiles.value = [highlightedFile];
+
+	await nextTick();
+	const target = document.querySelector(`[data-file-id="${highlightedFile.id}"]`);
+	if (target instanceof HTMLElement) {
+		target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+	}
 };
 
 const loadDocumentProcessing = async (file: GlobalFile | null) => {
@@ -382,6 +439,7 @@ const fetchData = async (folderId: string | null = null) => {
 		folders.value = data.folders || [];
 		cursor.value = data.nextCursor || null;
 		hasMore.value = data.hasMore || false;
+		await focusHighlightedFile();
 		
 		const hasImages = (data.files || []).some((f: GlobalFile) => 
 			f.folderId === folderId && f.type.startsWith("image/")
@@ -840,41 +898,50 @@ const deleteFolder = async (folder: GlobalFolder) => {
 	}
 };
 
-const getFolderMenuItems = (folder: GlobalFolder) => [
-	[{
-		label: "Umbenennen",
-		icon: "i-lucide-pencil",
-		onSelect: () => {
-			editingFolderId.value = folder.id;
-			editingFolderName.value = folder.name;
-			nextTick(() => {
-				const input = document.querySelector('.folder-name-input') as HTMLInputElement;
-				input?.focus();
-				input?.select();
-			});
-		},
-	}, {
-		label: "Verschieben",
-		icon: "i-lucide-folder-input",
-		onSelect: () => {
-			selectedFolders.value = [folder];
-			selectedFiles.value = [];
-			openMoveModal();
-		},
-	}, {
+const getFolderMenuItems = (folder: GlobalFolder) => {
+	const items = [[{
 		label: "Link kopieren",
 		icon: "i-lucide-link",
 		onSelect: () => copyDeepLink({ folderId: folder.id }),
-	}],
-	[{
-		label: "Löschen",
-		icon: "i-lucide-trash-2",
-		onSelect: () => deleteFolder(folder),
-	}],
-];
+	}]];
 
-const getFileMenuItems = (file: GlobalFile) => [
-	[{
+	if (!$isAdmin.value) {
+		return items;
+	}
+
+	return [
+		[{
+			label: "Umbenennen",
+			icon: "i-lucide-pencil",
+			onSelect: () => {
+				editingFolderId.value = folder.id;
+				editingFolderName.value = folder.name;
+				nextTick(() => {
+					const input = document.querySelector(".folder-name-input") as HTMLInputElement;
+					input?.focus();
+					input?.select();
+				});
+			},
+		}, {
+			label: "Verschieben",
+			icon: "i-lucide-folder-input",
+			onSelect: () => {
+				selectedFolders.value = [folder];
+				selectedFiles.value = [];
+				openMoveModal();
+			},
+		}],
+		...items,
+		[{
+			label: "Löschen",
+			icon: "i-lucide-trash-2",
+			onSelect: () => deleteFolder(folder),
+		}],
+	];
+};
+
+const getFileMenuItems = (file: GlobalFile) => {
+	const items = [[{
 		label: file.type.startsWith("image/") ? "Anzeigen" : file.type === "video/mp4" ? "Abspielen" : file.type === "application/pdf" ? "Öffnen" : "Download",
 		icon: file.type.startsWith("image/") ? "i-lucide-eye" : file.type === "video/mp4" ? "i-lucide-play" : file.type === "application/pdf" ? "i-lucide-external-link" : "i-lucide-download",
 		onSelect: () => handleFileClick(file),
@@ -887,29 +954,38 @@ const getFileMenuItems = (file: GlobalFile) => [
 		label: "Link kopieren",
 		icon: "i-lucide-link",
 		onSelect: () => copyDeepLink({ folderId: file.folderId, fileId: file.id }),
-	}, {
-		label: "Umbenennen",
-		icon: "i-lucide-pencil",
-		onSelect: () => {
-			selectedFiles.value = [file];
-			selectedFolders.value = [];
-			openRenameModal();
-		},
-	}, {
-		label: "Verschieben",
-		icon: "i-lucide-folder-input",
-		onSelect: () => {
-			selectedFiles.value = [file];
-			selectedFolders.value = [];
-			openMoveModal();
-		},
-	}],
-	[{
-		label: "Löschen",
-		icon: "i-lucide-trash-2",
-		onSelect: () => deleteFile(file),
-	}],
-];
+	}]];
+
+	if (!$isAdmin.value) {
+		return items;
+	}
+
+	return [
+		...items,
+		[{
+			label: "Umbenennen",
+			icon: "i-lucide-pencil",
+			onSelect: () => {
+				selectedFiles.value = [file];
+				selectedFolders.value = [];
+				openRenameModal();
+			},
+		}, {
+			label: "Verschieben",
+			icon: "i-lucide-folder-input",
+			onSelect: () => {
+				selectedFiles.value = [file];
+				selectedFolders.value = [];
+				openMoveModal();
+			},
+		}],
+		[{
+			label: "Löschen",
+			icon: "i-lucide-trash-2",
+			onSelect: () => deleteFile(file),
+		}],
+	];
+};
 
 const openRenameModal = () => {
 	if (selectedFiles.value.length !== 1) return;
@@ -1046,6 +1122,12 @@ watch(() => route.query.folder, (newFolderId) => {
 	if (folderId !== currentFolderId.value) {
 		currentFolderId.value = folderId;
 		fetchData(folderId);
+	}
+});
+
+watch(highlightedFileId, () => {
+	if (highlightedFileId.value) {
+		focusHighlightedFile();
 	}
 });
 
@@ -1284,7 +1366,7 @@ watch(
 										<UIcon v-if="isFolderSelected(folder)" name="i-lucide-check" class="w-4 h-4 text-white" />
 									</div>
 								</button>
-								<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+								<UDropdownMenu v-if="(!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
 									<button
 										class="absolute top-2 right-2 w-10 h-10 flex items-center justify-center z-10"
 										@click.stop
@@ -1323,6 +1405,7 @@ watch(
 							<div
 								v-for="file in sortedFiles"
 								:key="file.id"
+								:data-file-id="file.id"
 								class="group relative p-3 md:p-4 rounded-2xl bg-white dark:bg-stone-800 border transition-all text-center shadow-sm hover:shadow-md"
 								:class="[
 									isFileSelected(file)
@@ -1342,7 +1425,7 @@ watch(
 										<UIcon v-if="isFileSelected(file)" name="i-lucide-check" class="w-4 h-4 text-white" />
 									</div>
 								</button>
-								<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
+								<UDropdownMenu :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
 									<button
 										class="absolute top-2 right-2 w-10 h-10 flex items-center justify-center z-10"
 										@click.stop
@@ -1451,7 +1534,7 @@ watch(
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(folder.createdAt) }}</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ folder.createdByName || "—" }}</td>
 											<td class="py-3 px-2">
-												<UDropdownMenu v-if="$isAdmin && (!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
+												<UDropdownMenu v-if="(!editingFolderId || editingFolderId !== folder.id)" :items="getFolderMenuItems(folder)" :ui="{ content: 'min-w-36' }">
 													<button class="w-8 h-8 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
 														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 													</button>
@@ -1461,6 +1544,7 @@ watch(
 										<tr
 											v-for="file in sortedFiles"
 											:key="file.id"
+											:data-file-id="file.id"
 											class="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
 											:class="{
 												'bg-primary-50 dark:bg-primary-900/20': isFileSelected(file) || highlightedFileId === file.id
@@ -1495,7 +1579,7 @@ watch(
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">{{ formatDate(file.uploadedAt) }}</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500 truncate">{{ file.uploadedByName || "—" }}</td>
 											<td class="py-3 px-2">
-												<UDropdownMenu v-if="$isAdmin" :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
+												<UDropdownMenu :items="getFileMenuItems(file)" :ui="{ content: 'min-w-36' }">
 													<button class="w-8 h-8 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center" @click.stop>
 														<UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-stone-500" />
 													</button>
@@ -1613,6 +1697,9 @@ watch(
 								</UButton>
 								<UButton color="neutral" variant="ghost" icon="i-lucide-download" @click="downloadFileToDisk(previewFile)">
 									Download
+								</UButton>
+								<UButton v-if="canDownloadTranslatedFile" color="primary" variant="ghost" icon="i-lucide-languages" @click="downloadTranslatedFile(previewFile)">
+									Übersetzte Datei
 								</UButton>
 								<UButton color="neutral" variant="ghost" icon="i-lucide-link" @click="copyDeepLink({ folderId: previewFile.folderId, fileId: previewFile.id })">
 									Link

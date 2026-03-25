@@ -46,14 +46,28 @@ const router = useRouter();
 const localePath = useLocalePath();
 const { $currentUser } = useNuxtApp();
 const toast = useAppToast();
+const isRedirecting = ref(false);
 
 definePageMeta({
 	middleware: "is-not-logged-in",
 });
 
 watch($currentUser, (user) => {
-	if (user.uid) router.push(localePath("/profile"));
+	if (user?.uid) {
+		redirectAfterLogin();
+	}
 });
+
+async function redirectAfterLogin() {
+	if (isRedirecting.value) return;
+
+	isRedirecting.value = true;
+	try {
+		await router.replace(localePath("/"));
+	} finally {
+		isRedirecting.value = false;
+	}
+}
 
 async function loginToFirebase(method: "google" | "password", email?: string, password?: string) {
 	try {
@@ -77,6 +91,7 @@ async function loginWithGoogle() {
 	try {
 		await signInWithPopup($auth, provider);
 		toast.success(t("auth.success.login"));
+		await redirectAfterLogin();
 	} catch (e: unknown) {
 		throw new Error(e?.message || t("auth.errors.generic"));
 	}
@@ -90,6 +105,7 @@ async function loginWithApple() {
 	try {
 		await signInWithPopup($auth, provider);
 		toast.success(t("auth.success.login"));
+		await redirectAfterLogin();
 	} catch (e: unknown) {
 		throw new Error(e?.message || t("auth.errors.generic"));
 	}
@@ -103,6 +119,7 @@ async function loginWithPassword(email: string, password: string) {
 		if (!user.emailVerified) {
 			toast.add({ color: "warning", title: t("auth.warnings.emailNotVerified"), description: t("auth.warnings.emailNotVerified") });
 		}
+		await redirectAfterLogin();
 	} catch (e: unknown) {
 		throw new Error(e?.message || t("auth.errors.generic"));
 	}

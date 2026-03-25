@@ -62,6 +62,6 @@ describe("Middleware Logic (Honest Integration)", () => {
     expect(await isNotLoggedInLogic(mockNuxtApp)).toBe(true);
 
     mockNuxtApp.$currentUser.value = { uid: 'test' };
-    expect(await isNotLoggedInLogic(mockNuxtApp)).toBe('/profile');
+    expect(await isNotLoggedInLogic(mockNuxtApp)).toBe('/');
   });
 });
