@@ -42,25 +42,48 @@
 				</div>
 
 				<div class="grid gap-3">
-					<button
+					<div
 						v-for="document in group.documents"
 						:key="document.id"
-						type="button"
+						:data-owner-file-id="document.id"
 						class="flex w-full items-center gap-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-left transition hover:border-primary hover:bg-primary-50/50 dark:border-stone-700 dark:bg-stone-800/50 dark:hover:bg-primary-900/10"
 						:class="{ 'ring-2 ring-primary': highlightedFileId === document.id }"
-						@click="downloadDocument(document)"
 					>
-						<div class="rounded-xl bg-white p-3 dark:bg-stone-900">
-							<UIcon :name="getFileIcon(document.type)" class="w-5 h-5" :class="getFileIconColor(document.type)" />
+						<button
+							type="button"
+							class="flex min-w-0 flex-1 items-center gap-4 text-left"
+							@click="downloadDocument(document)"
+						>
+							<div class="rounded-xl bg-white p-3 dark:bg-stone-900">
+								<UIcon :name="getFileIcon(document.type)" class="w-5 h-5" :class="getFileIconColor(document.type)" />
+							</div>
+							<div class="min-w-0 flex-1">
+								<p class="truncate font-semibold">{{ document.name }}</p>
+								<p class="text-sm text-stone-500">
+									{{ formatFileSize(document.size) }} · {{ t("ownerDocuments.lastUpdated") }}: {{ formatDate(document) }}
+								</p>
+							</div>
+							<UIcon name="i-lucide-download" class="w-5 h-5 text-stone-400" />
+						</button>
+						<div class="flex items-center gap-2">
+							<UButton
+								variant="ghost"
+								color="neutral"
+								icon="i-lucide-link"
+								size="sm"
+								@click="copyDocumentLink(document)"
+							/>
+							<UButton
+								v-if="locale !== 'de'"
+								variant="ghost"
+								color="primary"
+								icon="i-lucide-languages"
+								size="sm"
+								:loading="downloadingTranslatedId === document.id"
+								@click="downloadTranslatedDocument(document)"
+							/>
 						</div>
-						<div class="min-w-0 flex-1">
-							<p class="truncate font-semibold">{{ document.name }}</p>
-							<p class="text-sm text-stone-500">
-								{{ formatFileSize(document.size) }} · {{ t("ownerDocuments.lastUpdated") }}: {{ formatDate(document) }}
-							</p>
-						</div>
-						<UIcon name="i-lucide-download" class="w-5 h-5 text-stone-400" />
-					</button>
+					</div>
 				</div>
 			</section>
 		</div>
@@ -90,15 +113,27 @@ const { t, locale } = useI18n();
 const localePath = useLocalePath();
 const route = useRoute();
 const { token, waitForAuth } = useAuthReady();
+const toast = useToast();
 
 const documents = ref<OwnerDocumentItem[]>([]);
 const pending = ref(true);
 const error = ref<string | null>(null);
+const downloadingTranslatedId = ref<string | null>(null);
 
 const highlightedFileId = computed(() => {
 	const fileId = route.query.fileId;
 	return typeof fileId === "string" ? fileId : "";
 });
+
+const focusHighlightedFile = async () => {
+	if (!highlightedFileId.value) return;
+
+	await nextTick();
+	const target = document.querySelector(`[data-owner-file-id="${highlightedFileId.value}"]`);
+	if (target instanceof HTMLElement) {
+		target.scrollIntoView({ block: "center", behavior: "smooth" });
+	}
+};
 
 const groupedDocuments = computed(() => {
 	const grouped = new Map<string, { homeId: string; homeName: string; documents: OwnerDocumentItem[] }>();
@@ -155,11 +190,23 @@ const fetchDocuments = async () => {
 			headers: { Authorization: `Bearer ${token.value}` },
 		});
 		documents.value = response.documents || [];
+		await focusHighlightedFile();
 	} catch (e: unknown) {
 		error.value = getFetchError(e) || t("ownerDocuments.loadError");
 	} finally {
 		pending.value = false;
 	}
+};
+
+const buildDeepLink = (document: OwnerDocumentItem) => {
+	const targetUrl = new URL(route.path || "/owner/documents", window.location.origin);
+	targetUrl.searchParams.set("fileId", document.id);
+	return targetUrl.toString();
+};
+
+const copyDocumentLink = async (document: OwnerDocumentItem) => {
+	await navigator.clipboard.writeText(buildDeepLink(document));
+	toast.add({ title: "Link kopiert", color: "success" });
 };
 
 const downloadDocument = async (document: OwnerDocumentItem) => {
@@ -172,6 +219,47 @@ const downloadDocument = async (document: OwnerDocumentItem) => {
 		error.value = getFetchError(e) || t("ownerDocuments.downloadError");
 	}
 };
+
+const downloadTranslatedDocument = async (document: OwnerDocumentItem) => {
+	if (locale.value === "de") return;
+
+	try {
+		downloadingTranslatedId.value = document.id;
+		const response = await fetch(`/api/homes/${document.homeId}/files/translated-download?fileId=${encodeURIComponent(document.id)}&locale=${encodeURIComponent(locale.value)}`, {
+			headers: { Authorization: `Bearer ${token.value}` },
+		});
+
+		if (!response.ok) {
+			throw new Error(await response.text().catch(() => ""));
+		}
+
+		const blob = await response.blob();
+		const downloadUrl = window.URL.createObjectURL(blob);
+		const disposition = response.headers.get("content-disposition") || "";
+		const fileName = disposition.match(/filename="([^"]+)"/)?.[1]
+			|| `${document.name}-${locale.value}-translated.html`;
+		const link = window.document.createElement("a");
+		link.href = downloadUrl;
+		link.download = fileName;
+		link.style.display = "none";
+		window.document.body.appendChild(link);
+		link.click();
+		setTimeout(() => {
+			window.document.body.removeChild(link);
+			window.URL.revokeObjectURL(downloadUrl);
+		}, 100);
+	} catch (e: unknown) {
+		error.value = getFetchError(e) || t("ownerDocuments.downloadError");
+	} finally {
+		downloadingTranslatedId.value = null;
+	}
+};
+
+watch(highlightedFileId, () => {
+	if (highlightedFileId.value) {
+		focusHighlightedFile();
+	}
+});
 
 onMounted(fetchDocuments);
 </script>

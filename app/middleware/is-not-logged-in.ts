@@ -3,7 +3,7 @@ import { waitForAuthInitialization } from "../composables/useAuthReady";
 
 export const isNotLoggedInLogic = async (nuxtApp: MiddlewareNuxtApp) => {
 	const { $currentUser } = nuxtApp;
-	if ($currentUser.value) return "/profile";
+	if ($currentUser.value) return "/";
 	return true;
 };
 

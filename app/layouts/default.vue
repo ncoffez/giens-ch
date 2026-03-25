@@ -9,7 +9,7 @@
 		</a>
 
 		<!-- Navigation Header -->
-		<header class="sticky top-0 z-40 py-3 md:py-5">
+		<header class="z-40 py-3 md:sticky md:top-0 md:py-5">
 			<div class="app-surface flex items-center justify-between gap-3 md:gap-6 rounded-[1.5rem] px-4 md:px-6 py-3 max-w-screen-xl mx-auto w-full">
 				<div class="flex items-center gap-4 md:gap-8 min-w-0">
 				<NuxtLink :to="localePath('/')" class="logo-link shrink-0">
