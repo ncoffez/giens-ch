@@ -70,6 +70,15 @@
       "images": "{count} Bilder",
       "files": "{count} Dateien"
     },
+    "columns": {
+      "name": "Name",
+      "type": "Typ",
+      "size": "Größe",
+      "fileDate": "Dateidatum",
+      "uploaded": "Hochgeladen",
+      "from": "Von",
+      "folder": "Ordner"
+    },
     "states": {
       "uploadingCurrent": "Lade hoch: {file}",
       "loading": "Laden...",
