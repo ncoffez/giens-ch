@@ -17,17 +17,17 @@ async function handleSubmit() {
 	if (!$currentUser?.value) return;
 
 	if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-		toast.error("Fehler", "Bitte alle Felder ausfüllen.");
+		toast.error("Fehler", "Bitte alle Felder ausfüllen.", { report: false });
 		return;
 	}
 
 	if (form.newPassword.length < 6) {
-		toast.error("Fehler", "Das Passwort muss mindestens 6 Zeichen lang sein.");
+		toast.error("Fehler", "Das Passwort muss mindestens 6 Zeichen lang sein.", { report: false });
 		return;
 	}
 
 	if (form.newPassword !== form.confirmPassword) {
-		toast.error("Fehler", "Die Passwörter stimmen nicht überein.");
+		toast.error("Fehler", "Die Passwörter stimmen nicht überein.", { report: false });
 		return;
 	}
 
@@ -48,7 +48,10 @@ async function handleSubmit() {
 		form.newPassword = "";
 		form.confirmPassword = "";
 	} catch (error: unknown) {
-		toast.error("Fehler", error.message || "Konnte Passwort nicht aktualisieren.");
+		toast.error("Fehler", error.message || "Konnte Passwort nicht aktualisieren.", {
+			report: false,
+			source: "password-change",
+		});
 	} finally {
 		loading.value = false;
 	}

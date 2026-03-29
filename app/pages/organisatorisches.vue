@@ -1,11 +1,13 @@
 <script setup lang="ts">
 const { t } = useI18n();
+const nuxtApp = useNuxtApp();
 
 definePageMeta({
 	middleware: ["is-logged-in"],
 });
 
 const organisatorischesContent = await usePageContent("organisatorisches");
+const showTranslationReadonlyNotice = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false) && !organisatorischesContent.canEdit.value);
 const { handleHashScroll } = useHashScroll();
 const contentRef = ref<HTMLElement | null>(null);
 
@@ -72,8 +74,14 @@ useHead({
 			height="h-[40vh] md:h-[50vh] min-h-[300px] md:min-h-[400px]" />
 
 		<section class="max-w-screen-lg mx-auto px-4">
+			<div
+				v-if="showTranslationReadonlyNotice"
+				class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-200"
+			>
+				Diese Inhalte werden auf Deutsch gepflegt und danach automatisch auf Franzoesisch uebersetzt. Bearbeitung ist deshalb nur in der deutschen Sprachversion moeglich.
+			</div>
 			<div class="flex items-center justify-end mb-8 gap-2">
-				<template v-if="organisatorischesContent.isAdmin.value && !organisatorischesContent.isEditing.value">
+				<template v-if="organisatorischesContent.canEdit.value && !organisatorischesContent.isEditing.value">
 					<UButton
 						color="neutral"
 						variant="outline"

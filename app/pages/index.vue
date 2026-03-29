@@ -140,33 +140,12 @@ onMounted(() => {
 					</Transition>
 				</div>
 			</div>
-
-			<div class="grid grid-cols-3 gap-3 border-t border-[var(--app-border)] bg-transparent pt-5 md:gap-4 lg:border-t-0 lg:bg-transparent lg:pt-0">
-				<div class="px-2 py-3 text-center md:px-3">
-					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">20</div>
-					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-						{{ t("home.hero.stats.houses") }}
-					</div>
-				</div>
-				<div class="border-x border-[var(--app-border)] px-2 py-3 text-center md:px-3">
-					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">15</div>
-					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-						{{ t("home.hero.stats.minutes") }}
-					</div>
-				</div>
-				<div class="px-2 py-3 text-center md:px-3">
-					<div class="display-copy text-2xl md:text-3xl font-bold text-[var(--app-text)]">Var</div>
-					<div class="mt-1 text-xs md:text-sm uppercase tracking-[0.18em] text-[var(--app-muted)]">
-						{{ t("home.hero.stats.region") }}
-					</div>
-				</div>
-			</div>
 		</section>
 
 		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
 			<UiOpenSection :subtitle="t('home.features.subtitle')" :title="t('home.features.title')">
 				<template #actions>
-					<template v-if="featureCards.isAdmin.value && !featureCards.isEditing.value">
+					<template v-if="featureCards.canEdit.value && !featureCards.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" @click="featureCards.startEditing()">
 							{{ t("editor.edit") }}
 						</UButton>
@@ -196,7 +175,7 @@ onMounted(() => {
 		<section class="mx-auto w-full max-w-screen-xl px-4 md:px-6">
 			<UiOpenSection :subtitle="t('home.miteinander.subtitle')" :title="t('home.miteinander.title')">
 				<template #actions>
-					<template v-if="miteinanderContent.isAdmin.value && !miteinanderContent.isEditing.value">
+					<template v-if="miteinanderContent.canEdit.value && !miteinanderContent.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="miteinanderContent.startEditing()">
 							{{ t("editor.edit") }}
 						</UButton>
@@ -254,7 +233,7 @@ onMounted(() => {
 					</p>
 				</div>
 				<div class="flex items-center justify-end gap-2">
-					<template v-if="stats.isAdmin.value && !stats.isEditing.value">
+					<template v-if="stats.canEdit.value && !stats.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="stats.startEditing()">
 							{{ t("editor.edit") }}
 						</UButton>
@@ -282,7 +261,7 @@ onMounted(() => {
 		<section id="geschichte" class="mx-auto w-full max-w-screen-xl scroll-mt-24 px-4 md:px-6">
 			<UiOpenSection :subtitle="t('home.timeline.subtitle')" :title="t('home.timeline.title')">
 				<template #actions>
-					<template v-if="timeline.isAdmin.value && !timeline.isEditing.value">
+					<template v-if="timeline.canEdit.value && !timeline.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="timeline.startEditing()">
 							{{ t("editor.edit") }}
 						</UButton>

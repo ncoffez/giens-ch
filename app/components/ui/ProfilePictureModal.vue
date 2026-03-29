@@ -49,7 +49,9 @@ async function selectPicture(url: string) {
 		emit("updated");
 		modelValue.value = false;
 	} catch (error: unknown) {
-		toast.error("Fehler", error.message || "Konnte Profilbild nicht aktualisieren");
+		toast.error("Fehler", error.message || "Konnte Profilbild nicht aktualisieren", {
+			source: "profile-picture-select",
+		});
 	} finally {
 		loading.value = false;
 	}
@@ -65,7 +67,7 @@ async function handleFileChange(event: Event) {
 	if (!file) return;
 
 	if (!file.type.startsWith("image/")) {
-		toast.error("Fehler", "Nur Bilder sind erlaubt");
+		toast.error("Fehler", "Nur Bilder sind erlaubt", { report: false });
 		return;
 	}
 
@@ -99,7 +101,9 @@ async function handleFileChange(event: Event) {
 			modelValue.value = false;
 		}, 500);
 	} catch (error: unknown) {
-		toast.error("Upload fehlgeschlagen", error.message);
+		toast.error("Upload fehlgeschlagen", error.message, {
+			source: "profile-picture-upload",
+		});
 	} finally {
 		uploading.value = false;
 		if (fileInput.value) fileInput.value.value = "";

@@ -6,6 +6,39 @@
       "organisatorisches": "Organisatorisches"
     }
   },
+  "error": {
+    "notFoundTitle": "Seite nicht gefunden",
+    "genericTitle": "Interner Fehler",
+    "genericDescription": "Entschuldigung, es ist ein unerwarteter Fehler aufgetreten.",
+    "backHome": "Zur Startseite",
+    "reportAction": "Fehler melden",
+    "reportTitle": "Fehler melden",
+    "addContextAction": "Details ergänzen",
+    "addContextTitle": "Zusätzliche Details senden",
+    "close": "Schliessen",
+    "reportSuccessTitle": "Fehler gemeldet",
+    "reportSuccessDescription": "Issue #{number} wurde erstellt.",
+    "reportCommentSuccessDescription": "Ihr Hinweis wurde zu Issue #{number} hinzugefügt.",
+    "reportFailureTitle": "Fehlermeldung fehlgeschlagen",
+    "reportSummaryFallback": "Fehlerbericht",
+    "autoLoggedLabel": "Automatisch protokolliert",
+    "autoLoggedDescription": "Dieser Fehler wurde bereits automatisch im System erfasst. Sie können hier nur noch zusätzlichen Kontext ergänzen.",
+    "routeLabel": "Route",
+    "sourceLabel": "Quelle",
+    "whatHappenedLabel": "Was ist passiert?",
+    "whatHappenedPlaceholder": "Optional: Ergänzen Sie kurz, was aus Ihrer Sicht passiert ist.",
+    "technicalDetails": "Technische Details anzeigen",
+    "previousRouteLabel": "Vorherige Route",
+    "referrerLabel": "Referrer",
+    "viewportLabel": "Viewport",
+    "localeLabel": "Sprache",
+    "loggedActionsLabel": "Aufgezeichnete Aktionen",
+    "issueCreated": "Issue #{number} wurde erstellt.",
+    "issueCommented": "Ihr Hinweis wurde zu Issue #{number} hinzugefügt.",
+    "submitReport": "Fehler absenden",
+    "submitComment": "Hinweis senden",
+    "notAvailable": "Nicht verfügbar"
+  },
   "nav": {
     "home": "Home",
     "about": "Über uns",
@@ -49,11 +82,6 @@
       "leads": {
         "1": "Licht, Garten und kurze Wege zum Meer. Ein Ort, der leise entschleunigt.",
         "2": "Zwischen Pinien, Salzluft und Gemeinschaft entsteht hier eine besondere Form von Sommerruhe."
-      },
-      "stats": {
-        "houses": "Häuser",
-        "minutes": "Min. zum Strand",
-        "region": "Côte d'Azur"
       }
 		},
 		"features": {

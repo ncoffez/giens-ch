@@ -6,6 +6,39 @@
       "organisatorisches": "Organisation"
     }
   },
+  "error": {
+    "notFoundTitle": "Page introuvable",
+    "genericTitle": "Erreur interne",
+    "genericDescription": "Désolé, une erreur inattendue s'est produite.",
+    "backHome": "Retour à l'accueil",
+    "reportAction": "Signaler l'erreur",
+    "reportTitle": "Signaler l'erreur",
+    "addContextAction": "Ajouter des détails",
+    "addContextTitle": "Ajouter un contexte supplémentaire",
+    "close": "Fermer",
+    "reportSuccessTitle": "Erreur signalée",
+    "reportSuccessDescription": "Issue #{number} a été créée.",
+    "reportCommentSuccessDescription": "Votre précision a été ajoutée à l'issue #{number}.",
+    "reportFailureTitle": "L'envoi du signalement a échoué",
+    "reportSummaryFallback": "Rapport d'erreur",
+    "autoLoggedLabel": "Enregistré automatiquement",
+    "autoLoggedDescription": "Cette erreur a déjà été enregistrée automatiquement. Vous pouvez seulement ajouter un contexte supplémentaire ici.",
+    "routeLabel": "Route",
+    "sourceLabel": "Source",
+    "whatHappenedLabel": "Que s'est-il passé ?",
+    "whatHappenedPlaceholder": "Optionnel : ajoutez brièvement ce que vous avez observé.",
+    "technicalDetails": "Afficher les détails techniques",
+    "previousRouteLabel": "Route précédente",
+    "referrerLabel": "Référent",
+    "viewportLabel": "Viewport",
+    "localeLabel": "Langue",
+    "loggedActionsLabel": "Actions enregistrées",
+    "issueCreated": "Issue #{number} a été créée.",
+    "issueCommented": "Votre précision a été ajoutée à l'issue #{number}.",
+    "submitReport": "Envoyer le signalement",
+    "submitComment": "Envoyer le détail",
+    "notAvailable": "Non disponible"
+  },
   "nav": {
     "home": "Accueil",
     "about": "À propos",
@@ -49,11 +82,6 @@
       "leads": {
         "1": "Lumière, jardin et mer à quelques minutes. Un lieu qui apaise sans effort.",
         "2": "Entre pins, air salin et esprit de communauté, l'été y prend un rythme plus doux."
-      },
-      "stats": {
-        "houses": "Maisons",
-        "minutes": "Min. de la plage",
-        "region": "Côte d'Azur"
       }
 		},
 		"features": {

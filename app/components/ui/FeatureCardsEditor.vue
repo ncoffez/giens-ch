@@ -31,6 +31,14 @@ const colorOptions = [
 	{ value: "cyan", label: "Cyan" },
 ];
 
+const cardCountLabel = computed(() => {
+	if (items.value.length === 1) {
+		return "1 Karte";
+	}
+
+	return `${items.value.length} Karten`;
+});
+
 const items = computed({
 	get: () => props.modelValue,
 	set: (val) => emit("update:modelValue", val),
@@ -64,60 +72,146 @@ function getColorClasses(color: string) {
 	};
 	return colors[color] || colors.blue;
 }
+
+function getPreviewTitle(item: FeatureCard) {
+	return item.title.trim() || "Titel der Karte";
+}
+
+function getPreviewDescription(item: FeatureCard) {
+	return item.description.trim() || "Hier erscheint die Beschreibung Ihrer Karte, sobald Sie Text eingeben.";
+}
 </script>
 
 <template>
 	<div class="space-y-6">
-		<div
-			v-for="(item, index) in items"
-			:key="index"
-			class="p-4 bg-stone-50 dark:bg-stone-800/50 rounded-xl border border-stone-200 dark:border-stone-700 space-y-4"
+		<div class="rounded-[1.75rem] border border-stone-200/80 bg-gradient-to-br from-white via-stone-50 to-stone-100/80 p-5 shadow-sm dark:border-stone-800 dark:from-stone-950 dark:via-stone-900 dark:to-stone-900/80"
 		>
-			<div class="flex items-center justify-between">
-				<span class="text-sm font-bold text-stone-500">Karte {{ index + 1 }}</span>
-				<UButton
-					variant="ghost"
-					size="xs"
-					color="error"
-					icon="i-lucide-trash-2"
-					@click="removeItem(index)"
-				/>
-			</div>
-
-			<div class="grid grid-cols-3 gap-4">
-				<UFormField label="Icon">
-					<USelect v-model="item.icon" :items="iconOptions" />
-				</UFormField>
-				<UFormField label="Hintergrund">
-					<USelect v-model="item.bgColor" :items="colorOptions" />
-				</UFormField>
-				<UFormField label="Icon-Farbe">
-					<USelect v-model="item.iconColor" :items="colorOptions" />
-				</UFormField>
-			</div>
-
-			<UFormField label="Titel">
-				<UInput v-model="item.title" placeholder="Titel der Karte" />
-			</UFormField>
-
-			<UFormField label="Beschreibung">
-				<UTextarea v-model="item.description" :rows="3" placeholder="Beschreibung" />
-			</UFormField>
-
-			<div class="flex items-center gap-3 p-3 rounded-lg bg-stone-100 dark:bg-stone-700">
-				<div :class="[getColorClasses(item.bgColor).bg, getColorClasses(item.iconColor).text, 'p-3 rounded-2xl']">
-					<UIcon :name="item.icon" class="w-6 h-6" />
+			<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+				<div class="space-y-1">
+					<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)]">
+						Karteneditor
+					</p>
+					<div class="flex items-center gap-3">
+						<h3 class="text-lg font-semibold text-stone-900 dark:text-white">
+							Inhalte und Vorschau auf einen Blick
+						</h3>
+						<UBadge color="neutral" variant="subtle" class="rounded-full">
+							{{ cardCountLabel }}
+						</UBadge>
+					</div>
+					<p class="max-w-2xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+						Pflegen Sie Titel, Beschreibung und Farben direkt in den Karten. Die Live-Vorschau hilft, das Ergebnis sofort einzuschätzen.
+					</p>
 				</div>
-				<span class="text-sm text-stone-500">Vorschau</span>
+				<UButton
+					variant="soft"
+					icon="i-lucide-plus"
+					class="self-start rounded-full"
+					@click="addItem"
+				>
+					Karte hinzufügen
+				</UButton>
 			</div>
 		</div>
 
-		<UButton
-			variant="outline"
-			icon="i-lucide-plus"
-			@click="addItem"
+		<div
+			v-if="!items.length"
+			class="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/70 px-6 py-10 text-center dark:border-stone-700 dark:bg-stone-900/40"
 		>
-			Karte hinzufügen
-		</UButton>
+			<div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm dark:bg-stone-800">
+				<UIcon name="i-lucide-layout-grid" class="h-6 w-6 text-[var(--app-primary)]" />
+			</div>
+			<h4 class="text-base font-semibold text-stone-900 dark:text-white">
+				Noch keine Karten angelegt
+			</h4>
+			<p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+				Legen Sie die erste Karte an, um einen neuen Eintrag mit Icon, Farben und Beschreibung vorzubereiten.
+			</p>
+		</div>
+
+		<div
+			v-for="(item, index) in items"
+			:key="index"
+			class="overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950"
+		>
+			<div class="flex flex-col gap-4 border-b border-stone-200/80 bg-stone-50/80 px-5 py-4 dark:border-stone-800 dark:bg-stone-900/70 md:flex-row md:items-center md:justify-between">
+				<div class="space-y-1">
+					<p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400 dark:text-stone-500">
+						Karte {{ index + 1 }}
+					</p>
+					<h4 class="text-base font-semibold text-stone-900 dark:text-white">
+						{{ getPreviewTitle(item) }}
+					</h4>
+				</div>
+				<UButton
+					variant="ghost"
+					size="sm"
+					color="error"
+					icon="i-lucide-trash-2"
+					class="self-start rounded-full"
+					@click="removeItem(index)"
+				>
+					Entfernen
+				</UButton>
+			</div>
+
+			<div class="grid gap-6 p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+				<div class="space-y-5">
+					<div class="grid gap-4 md:grid-cols-3">
+						<UFormField label="Icon">
+							<USelect v-model="item.icon" :items="iconOptions" />
+						</UFormField>
+						<UFormField label="Hintergrund">
+							<USelect v-model="item.bgColor" :items="colorOptions" />
+						</UFormField>
+						<UFormField label="Icon-Farbe">
+							<USelect v-model="item.iconColor" :items="colorOptions" />
+						</UFormField>
+					</div>
+
+					<UFormField label="Titel">
+						<UInput v-model="item.title" placeholder="Titel der Karte" />
+					</UFormField>
+
+					<UFormField label="Beschreibung">
+						<UTextarea v-model="item.description" :rows="4" placeholder="Beschreibung" />
+					</UFormField>
+				</div>
+
+				<div class="rounded-[1.5rem] border border-stone-200 bg-gradient-to-br from-stone-50 to-white p-5 dark:border-stone-800 dark:from-stone-900 dark:to-stone-950">
+					<div class="mb-4 flex items-center justify-between gap-3">
+						<span class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400 dark:text-stone-500">
+							Live-Vorschau
+						</span>
+						<div class="flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500">
+							<UIcon name="i-lucide-eye" class="h-4 w-4" />
+							<span>Sichtbarer Kartenstil</span>
+						</div>
+					</div>
+					<div class="rounded-[1.5rem] border border-stone-200/80 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+						<div :class="[getColorClasses(item.bgColor).bg, getColorClasses(item.iconColor).text, 'mb-4 flex h-14 w-14 items-center justify-center rounded-2xl']">
+							<UIcon :name="item.icon" class="h-7 w-7" />
+						</div>
+						<h5 class="text-lg font-semibold text-stone-900 dark:text-white">
+							{{ getPreviewTitle(item) }}
+						</h5>
+						<p class="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+							{{ getPreviewDescription(item) }}
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div v-if="items.length" class="flex justify-center">
+			<UButton
+				variant="outline"
+				icon="i-lucide-plus"
+				class="rounded-full"
+				@click="addItem"
+			>
+				Weitere Karte hinzufügen
+			</UButton>
+		</div>
 	</div>
 </template>

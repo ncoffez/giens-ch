@@ -122,6 +122,7 @@
 
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
+import { buildNavigationItems, buildPublicNavigationItems } from "../utils/navigation";
 
 const { t } = useI18n();
 const localePath = useLocalePath();
@@ -199,121 +200,33 @@ const themeItems = [
 	],
 ];
 
-const publicNavigationItems = computed<NavigationMenuItem[]>(() => [
-	{
-		label: t("nav.organisatorisches"),
-		icon: "i-lucide-clipboard-list",
-		to: localePath("/organisatorisches"),
-		active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
-	},
-	{
-		label: t("nav.travel"),
-		to: localePath("/travel"),
-		icon: "i-lucide-car",
-		active: route.path === "/travel" || route.path === "/fr/travel",
-	},
-	{
-		label: t("nav.entdecken"),
-		to: localePath("/entdecken"),
-		icon: "i-lucide-map",
-		active: route.path === "/entdecken" || route.path === "/fr/entdecken",
-	},
-]);
+const publicNavigationItems = computed<NavigationMenuItem[]>(() =>
+	buildPublicNavigationItems(t, localePath, route.path),
+);
 
-const compactPublicNavigationItems = computed<NavigationMenuItem[]>(() => [
-	{
-		label: t("nav.organisatorisches"),
-		icon: "i-lucide-clipboard-list",
-		to: localePath("/organisatorisches"),
-		active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
-	},
-	{
-		label: t("nav.travel"),
-		to: localePath("/travel"),
-		icon: "i-lucide-car",
-		active: route.path === "/travel" || route.path === "/fr/travel",
-	},
-	{
-		label: t("nav.entdecken"),
-		to: localePath("/entdecken"),
-		icon: "i-lucide-map",
-		active: route.path === "/entdecken" || route.path === "/fr/entdecken",
-	},
-]);
+const compactPublicNavigationItems = computed<NavigationMenuItem[]>(() =>
+	buildPublicNavigationItems(t, localePath, route.path),
+);
 
-const navigationItems = computed<NavigationMenuItem[]>(() => {
-	const items: NavigationMenuItem[] = [
-		{
-			label: t("nav.home"),
-			icon: "i-lucide-house",
-			to: localePath("/"),
-			active: route.path === "/" || route.path === "/fr",
-		},
-		{
-			label: t("nav.organisatorisches"),
-			icon: "i-lucide-clipboard-list",
-			to: localePath("/organisatorisches"),
-			active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
-		},
-		{
-			label: t("nav.travel"),
-			to: localePath("/travel"),
-			icon: "i-lucide-car",
-			active: route.path === "/travel" || route.path === "/fr/travel",
-		},
-		{
-			label: t("nav.entdecken"),
-			to: localePath("/entdecken"),
-			icon: "i-lucide-map",
-			active: route.path === "/entdecken" || route.path === "/fr/entdecken",
-		},
-	];
+const navigationItems = computed<NavigationMenuItem[]>(() =>
+	buildNavigationItems(
+		t,
+		localePath,
+		route.path,
+		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
+		true,
+	),
+);
 
-	if (import.meta.client && (isOwner.value || isReader.value || isPublisher.value)) {
-		items.push({
-			label: t("nav.documents"),
-			icon: "i-lucide-folder",
-			to: localePath("/documents"),
-			active: route.path.startsWith("/documents") || route.path.startsWith("/fr/documents"),
-		});
-	}
-
-	return items;
-});
-
-const compactNavigationItems = computed<NavigationMenuItem[]>(() => {
-	const items: NavigationMenuItem[] = [
-		{
-			label: t("nav.organisatorisches"),
-			icon: "i-lucide-clipboard-list",
-			to: localePath("/organisatorisches"),
-			active: route.path === "/organisatorisches" || route.path === "/fr/organisatorisches",
-		},
-		{
-			label: t("nav.travel"),
-			to: localePath("/travel"),
-			icon: "i-lucide-car",
-			active: route.path === "/travel" || route.path === "/fr/travel",
-		},
-		{
-			label: t("nav.entdecken"),
-			to: localePath("/entdecken"),
-			icon: "i-lucide-map",
-			active: route.path === "/entdecken" || route.path === "/fr/entdecken",
-		},
-	];
-
-	if (import.meta.client && (isOwner.value || isReader.value || isPublisher.value)) {
-		items.push({
-			label: t("nav.documents"),
-			icon: "i-lucide-folder",
-			to: localePath("/documents"),
-			active: route.path.startsWith("/documents") || route.path.startsWith("/fr/documents"),
-		});
-	}
-
-	return items;
-});
+const compactNavigationItems = computed<NavigationMenuItem[]>(() =>
+	buildNavigationItems(
+		t,
+		localePath,
+		route.path,
+		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
+		false,
+	),
+);
 
 const userItems = computed(() => {
 	if (!currentUser.value) {

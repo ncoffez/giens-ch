@@ -173,7 +173,7 @@ function getColorClasses(color: string) {
 			<UiTitle :subtitle="t('travel.freizeit.subtitle')" :title="t('travel.freizeit.title')" />
 
 			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="freizeitContent.isAdmin.value && !freizeitContent.isEditing.value">
+				<template v-if="freizeitContent.canEdit.value && !freizeitContent.isEditing.value">
 					<UButton
 						color="neutral"
 						variant="outline"
@@ -215,7 +215,7 @@ function getColorClasses(color: string) {
 			<div v-else-if="freizeitContent.status.value !== 'pending'">
 				<div class="prose dark:prose-invert max-w-none mb-8" v-html="freizeitContent.content.value || defaultFreizeit" />
 				<div class="flex items-center justify-end gap-2">
-					<template v-if="freizeitCards.isAdmin.value && !freizeitCards.isEditing.value">
+					<template v-if="freizeitCards.canEdit.value && !freizeitCards.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="freizeitCards.startEditing()">
 							Karten bearbeiten
 						</UButton>
@@ -254,7 +254,7 @@ function getColorClasses(color: string) {
 			<UiTitle :subtitle="t('travel.maerkte.subtitle')" :title="t('travel.maerkte.title')" />
 
 			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="maerkteContent.isAdmin.value && !maerkteContent.isEditing.value">
+				<template v-if="maerkteContent.canEdit.value && !maerkteContent.isEditing.value">
 					<UButton
 						color="neutral"
 						variant="outline"
@@ -296,7 +296,7 @@ function getColorClasses(color: string) {
 			<div v-else-if="maerkteContent.status.value !== 'pending'">
 				<div class="prose dark:prose-invert max-w-none mb-8" v-html="maerkteContent.content.value || defaultMaerkte" />
 				<div class="flex items-center justify-end gap-2">
-					<template v-if="marketItems.isAdmin.value && !marketItems.isEditing.value">
+					<template v-if="marketItems.canEdit.value && !marketItems.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="marketItems.startEditing()">
 							Märkte bearbeiten
 						</UButton>
@@ -343,7 +343,7 @@ function getColorClasses(color: string) {
 			<UiTitle :subtitle="t('travel.einkauf.subtitle')" :title="t('travel.einkauf.title')" />
 
 			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="einkaufContent.isAdmin.value && !einkaufContent.isEditing.value">
+				<template v-if="einkaufContent.canEdit.value && !einkaufContent.isEditing.value">
 					<UButton
 						color="neutral"
 						variant="outline"
@@ -385,7 +385,7 @@ function getColorClasses(color: string) {
 			<div v-else-if="einkaufContent.status.value !== 'pending'">
 				<div class="prose dark:prose-invert max-w-none mb-8" v-html="einkaufContent.content.value || defaultEinkauf" />
 				<div class="flex items-center justify-end gap-2">
-					<template v-if="shoppingCards.isAdmin.value && !shoppingCards.isEditing.value">
+					<template v-if="shoppingCards.canEdit.value && !shoppingCards.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="shoppingCards.startEditing()">
 							Einträge bearbeiten
 						</UButton>
@@ -398,7 +398,7 @@ function getColorClasses(color: string) {
 							{{ t("editor.save") }}
 						</UButton>
 					</template>
-					<template v-if="laundryCard.isAdmin.value && !laundryCard.isEditing.value">
+					<template v-if="laundryCard.canEdit.value && !laundryCard.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="laundryCard.startEditing()">
 							Wäscherei bearbeiten
 						</UButton>
@@ -456,7 +456,7 @@ function getColorClasses(color: string) {
 			<UiTitle :subtitle="t('travel.ausfluege.subtitle')" :title="t('travel.ausfluege.title')" />
 
 			<div class="flex items-center justify-end gap-2 mt-4">
-				<template v-if="ausfluegeContent.isAdmin.value && !ausfluegeContent.isEditing.value">
+				<template v-if="ausfluegeContent.canEdit.value && !ausfluegeContent.isEditing.value">
 					<UButton
 						color="neutral"
 						variant="outline"
@@ -498,7 +498,7 @@ function getColorClasses(color: string) {
 			<div v-else-if="ausfluegeContent.status.value !== 'pending'">
 				<div class="prose dark:prose-invert max-w-none mb-8" v-html="ausfluegeContent.content.value || defaultAusfluege" />
 				<div class="flex items-center justify-end gap-2">
-					<template v-if="excursionCards.isAdmin.value && !excursionCards.isEditing.value">
+					<template v-if="excursionCards.canEdit.value && !excursionCards.isEditing.value">
 						<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="excursionCards.startEditing()">
 							Karten bearbeiten
 						</UButton>
