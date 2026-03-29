@@ -70,6 +70,15 @@
       "images": "{count} images",
       "files": "{count} fichiers"
     },
+    "columns": {
+      "name": "Nom",
+      "type": "Type",
+      "size": "Taille",
+      "fileDate": "Date du fichier",
+      "uploaded": "Téléversé",
+      "from": "Par",
+      "folder": "Dossier"
+    },
     "states": {
       "uploadingCurrent": "Téléchargement : {file}",
       "loading": "Chargement...",

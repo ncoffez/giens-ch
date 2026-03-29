@@ -1491,12 +1491,12 @@ useHead({
 													<UIcon v-else-if="isSomeSelected" name="i-lucide-minus" class="w-4 h-4 text-white" />
 												</button>
 											</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400">Name</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">Typ</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden sm:table-cell">Größe</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">Dateidatum</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">Hochgeladen</th>
-											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">Von</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400">{{ t("documents.columns.name") }}</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">{{ t("documents.columns.type") }}</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden sm:table-cell">{{ t("documents.columns.size") }}</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">{{ t("documents.columns.fileDate") }}</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden md:table-cell">{{ t("documents.columns.uploaded") }}</th>
+											<th class="py-3 px-2 font-medium text-stone-600 dark:text-stone-400 hidden lg:table-cell">{{ t("documents.columns.from") }}</th>
 											<th class="py-3 px-2 w-10"></th>
 										</tr>
 									</thead>
@@ -1534,10 +1534,10 @@ useHead({
 												</button>
 											</td>
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">
-												<template v-if="folderImageCount(folder.id) > 0">{{ folderImageCount(folder.id) }} Bilder</template>
+												<template v-if="folderImageCount(folder.id) > 0">{{ t("documents.count.images", { count: folderImageCount(folder.id) }) }}</template>
 												<template v-if="folderImageCount(folder.id) > 0 && folderFileCount(folder.id) > 0">, </template>
-												<template v-if="folderFileCount(folder.id) > 0">{{ folderFileCount(folder.id) }} Dateien</template>
-												<template v-if="folderImageCount(folder.id) === 0 && folderFileCount(folder.id) === 0">Ordner</template>
+												<template v-if="folderFileCount(folder.id) > 0">{{ t("documents.count.files", { count: folderFileCount(folder.id) }) }}</template>
+												<template v-if="folderImageCount(folder.id) === 0 && folderFileCount(folder.id) === 0">{{ t("documents.columns.folder") }}</template>
 											</td>
 											<td class="py-3 px-2 hidden sm:table-cell text-stone-500">—</td>
 											<td class="py-3 px-2 hidden lg:table-cell text-stone-500">—</td>
