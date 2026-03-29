@@ -24,6 +24,11 @@ const emit = defineEmits<{
 	"update:modelValue": [value: JourneyStep[]];
 }>();
 
+const textareaUi = {
+	root: "w-full",
+	base: "w-full min-h-32 resize-y rounded-2xl px-4 py-3 leading-relaxed",
+};
+
 const items = computed({
 	get: () => props.modelValue,
 	set: (value) => emit("update:modelValue", value),
@@ -84,7 +89,12 @@ function moveDown(index: number) {
 			</UFormField>
 
 			<UFormField :label="detailLabel">
-				<UTextarea v-model="item.detail" :rows="2" :placeholder="detailPlaceholder" />
+				<UTextarea
+					v-model="item.detail"
+					:rows="4"
+					:ui="textareaUi"
+					:placeholder="detailPlaceholder"
+				/>
 			</UFormField>
 		</div>
 

@@ -39,13 +39,14 @@ const defaultFreizeitCards: FeatureCard[] = [
 ];
 
 const defaultMarketItems: MarketItem[] = [
-	{ dayKey: "tue", label: "Giens", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Giens" },
-	{ dayKey: "wed", label: "L'Ayguade", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+L%27Ayguade" },
-	{ dayKey: "thu", label: "Carqueiranne", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Carqueiranne" },
-	{ dayKey: "fri", label: "La Capte", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+La+Capte" },
-	{ dayKey: "sat", label: "Hyères", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Hy%C3%A8res" },
-	{ dayKey: "sun", label: "Hyères-Port", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+Hy%C3%A8res+Port", isHighlighted: true },
-	{ dayKey: "sun", label: "La Londe", href: "https://www.google.com/maps/search/?api=1&query=March%C3%A9+de+La+Londe-les-Maures", compactLabel: true },
+	{ dayKey: "tue", label: "Giens", description: "Bio-Produkte, Blumen, regionale Spezialitäten und typische Erzeugerware aus der Provence." },
+	{ dayKey: "wed", label: "L'Ayguade", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte sowie Fleisch- und Wurstwaren." },
+	{ dayKey: "thu", label: "Carqueiranne", description: "Obst, Gemüse, Fisch, regionale Produkte, Blumen sowie etwas Mode und Accessoires." },
+	{ dayKey: "fri", label: "La Capte", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte, Blumen und etwas Textilware." },
+	{ dayKey: "sat", label: "Hyères", description: "Produzentenware, Obst, Gemüse, Käse, Bio-Produkte, Fisch und Blumen." },
+	{ dayKey: "sun", label: "Hyères-Port", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte und regionale Spezialitäten am Hafen." },
+	{ dayKey: "sun", label: "La Londe", description: "Obst, Gemüse, Käse, Bio- und Regionalprodukte, Fisch und Blumen." },
+	{ dayKey: "sun", label: "Flohmarkt (Marché aux Puces) in La Capte", description: "Trödel, Vintage-Stücke, Deko, Haushaltswaren und wechselnde Fundstücke." },
 ];
 
 const defaultShoppingCards: FeatureCard[] = [
@@ -111,6 +112,9 @@ const marketItems = publicPageBundle.createDataSection<MarketItem[]>("travel-mar
 const shoppingCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-shopping-cards", defaultShoppingCards);
 const laundryCard = publicPageBundle.createDataSection<FeatureCard[]>("travel-laundry-card", defaultLaundryCard);
 const excursionCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-excursion-cards", defaultExcursionCards);
+const hoveredMarketKey = ref<string | null>(null);
+const expandedMarketKey = ref<string | null>(null);
+const marketDescriptionMaxLength = 160;
 
 function getColorClasses(color: string) {
 	const colors: Record<string, { bg: string; text: string; border: string; gradient: string }> = {
@@ -153,6 +157,45 @@ function getColorClasses(color: string) {
 	};
 
 	return colors[color] || colors.blue;
+}
+
+function marketCardKey(market: MarketItem) {
+	return `${market.dayKey}-${market.label}`;
+}
+
+function toggleMarketDescription(market: MarketItem) {
+	const key = marketCardKey(market);
+	expandedMarketKey.value = expandedMarketKey.value === key ? null : key;
+}
+
+const activeMarket = computed(() => {
+	const allMarkets = marketItems.data.value || [];
+
+	if (!allMarkets.length) {
+		return null;
+	}
+
+	const activeKey = hoveredMarketKey.value || expandedMarketKey.value;
+
+	if (!activeKey) {
+		return allMarkets[0];
+	}
+
+	return allMarkets.find((market) => marketCardKey(market) === activeKey) || allMarkets[0];
+});
+
+function isMarketActive(market: MarketItem) {
+	return activeMarket.value ? marketCardKey(activeMarket.value) === marketCardKey(market) : false;
+}
+
+function getMarketDescription(market: MarketItem | null) {
+	if (!market?.description) {
+		return "";
+	}
+
+	return market.description.length > marketDescriptionMaxLength
+		? `${market.description.slice(0, marketDescriptionMaxLength).trim()}…`
+		: market.description;
 }
 </script>
 
@@ -229,10 +272,7 @@ function getColorClasses(color: string) {
 						</UButton>
 					</template>
 				</div>
-				<ClientOnly v-if="freizeitCards.isEditing.value">
-					<UiLazyFeatureCardsEditor v-model="freizeitCards.data.value" />
-				</ClientOnly>
-				<div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+				<div class="grid grid-cols-1 gap-6 mt-8 md:grid-cols-3">
 					<div
 						v-for="card in freizeitCards.data.value"
 						:key="card.title"
@@ -247,6 +287,11 @@ function getColorClasses(color: string) {
 						</p>
 					</div>
 				</div>
+				<ClientOnly v-if="freizeitCards.isEditing.value">
+					<div class="mt-8">
+						<UiLazyFeatureCardsEditor v-model="freizeitCards.data.value" />
+					</div>
+				</ClientOnly>
 			</div>
 		</section>
 
@@ -313,29 +358,36 @@ function getColorClasses(color: string) {
 				<ClientOnly v-if="marketItems.isEditing.value">
 					<UiLazyMarketItemsEditor v-model="marketItems.data.value" />
 				</ClientOnly>
-				<div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mt-8">
-					<a
-						v-for="market in marketItems.data.value"
-						:key="`${market.dayKey}-${market.label}`"
-						:href="market.href"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="group p-4 rounded-xl border text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-						:class="market.isHighlighted
-							? 'bg-primary/10 border-primary/30 hover:border-primary/50'
-							: 'bg-stone-50 dark:bg-stone-900 border-stone-100 dark:border-stone-800 hover:border-primary/40'"
-					>
-						<div class="text-xs font-bold text-primary uppercase tracking-wider mb-1">{{ t(`travel.maerkte.days.${market.dayKey}`) }}</div>
-						<div class="font-bold" :class="market.compactLabel ? 'text-sm' : ''">{{ market.label }}</div>
-						<div class="mt-2 flex items-center justify-center gap-1 text-[11px] text-stone-400 transition-colors group-hover:text-primary">
-							<UIcon name="i-lucide-map-pin" class="w-3.5 h-3.5" />
-							<span>Karte</span>
+				<div v-else>
+					<div class="mt-8 flex flex-wrap gap-3">
+						<button
+							v-for="market in marketItems.data.value"
+							:key="marketCardKey(market)"
+							type="button"
+							class="w-[9.75rem] rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-left transition-colors duration-200 hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 dark:border-stone-800 dark:bg-stone-900 dark:hover:bg-primary/10"
+							:class="isMarketActive(market) ? 'border-primary/50 bg-primary/5 text-primary dark:bg-primary/10' : 'text-stone-700 dark:text-stone-200'"
+							@mouseenter="hoveredMarketKey = marketCardKey(market)"
+							@mouseleave="hoveredMarketKey = null"
+							@click="toggleMarketDescription(market)"
+						>
+							<div class="text-[11px] font-bold uppercase tracking-wider text-primary">
+								{{ t(`travel.maerkte.days.${market.dayKey}`) }}
+							</div>
+							<div class="mt-1 font-semibold">
+								{{ market.label }}
+							</div>
+						</button>
+					</div>
+
+					<div v-if="activeMarket" class="mt-5 max-w-3xl min-h-[5.5rem]">
+						<div class="mb-1 text-sm font-medium text-stone-700 dark:text-stone-300">
+							{{ activeMarket.label }}
 						</div>
-					</a>
+						<p class="text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+							{{ getMarketDescription(activeMarket) }}
+						</p>
+					</div>
 				</div>
-				<p class="text-stone-500 text-sm mt-4 text-center">
-					{{ t("travel.maerkte.fleaMarket") }}
-				</p>
 			</div>
 		</section>
 
@@ -414,29 +466,21 @@ function getColorClasses(color: string) {
 				</div>
 				<div class="grid md:grid-cols-2 gap-8 mt-8">
 					<div class="space-y-4">
-						<ClientOnly v-if="shoppingCards.isEditing.value">
-							<UiLazyFeatureCardsEditor v-model="shoppingCards.data.value" />
-						</ClientOnly>
-						<template v-else>
-							<div
-								v-for="card in shoppingCards.data.value"
-								:key="card.title"
-								class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 flex items-start gap-4"
-							>
-								<UIcon :name="card.icon" :class="[getColorClasses(card.iconColor).text, 'w-5 h-5 mt-0.5']" />
-								<div>
-									<h4 class="font-bold">{{ card.title }}</h4>
-									<p class="text-stone-500 text-sm">{{ card.description }}</p>
-								</div>
+						<div
+							v-for="card in shoppingCards.data.value"
+							:key="card.title"
+							class="p-4 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 flex items-start gap-4"
+						>
+							<UIcon :name="card.icon" :class="[getColorClasses(card.iconColor).text, 'w-5 h-5 mt-0.5']" />
+							<div>
+								<h4 class="font-bold">{{ card.title }}</h4>
+								<p class="text-stone-500 text-sm">{{ card.description }}</p>
 							</div>
-						</template>
+						</div>
 					</div>
 					<div>
-						<ClientOnly v-if="laundryCard.isEditing.value">
-							<UiLazyFeatureCardsEditor v-model="laundryCard.data.value" />
-						</ClientOnly>
 						<div
-							v-else-if="laundryCard.data.value[0]"
+							v-if="laundryCard.data.value[0]"
 							class="p-6 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/20"
 						>
 							<div class="flex items-center gap-3 mb-4">
@@ -449,6 +493,22 @@ function getColorClasses(color: string) {
 						</div>
 					</div>
 				</div>
+				<ClientOnly v-if="shoppingCards.isEditing.value || laundryCard.isEditing.value">
+					<div class="mt-8 space-y-8">
+						<div v-if="shoppingCards.isEditing.value" class="space-y-3">
+							<p class="text-sm font-semibold text-stone-900 dark:text-white">
+								Einkaufseinträge bearbeiten
+							</p>
+							<UiLazyFeatureCardsEditor v-model="shoppingCards.data.value" />
+						</div>
+						<div v-if="laundryCard.isEditing.value" class="space-y-3">
+							<p class="text-sm font-semibold text-stone-900 dark:text-white">
+								Wäscherei bearbeiten
+							</p>
+							<UiLazyFeatureCardsEditor v-model="laundryCard.data.value" />
+						</div>
+					</div>
+				</ClientOnly>
 			</div>
 		</section>
 
@@ -512,10 +572,7 @@ function getColorClasses(color: string) {
 						</UButton>
 					</template>
 				</div>
-				<ClientOnly v-if="excursionCards.isEditing.value">
-					<UiLazyFeatureCardsEditor v-model="excursionCards.data.value" />
-				</ClientOnly>
-				<div v-else class="grid md:grid-cols-3 gap-6 mt-8">
+				<div class="grid gap-6 mt-8 md:grid-cols-3">
 					<div
 						v-for="card in excursionCards.data.value"
 						:key="card.title"
@@ -528,6 +585,11 @@ function getColorClasses(color: string) {
 						</p>
 					</div>
 				</div>
+				<ClientOnly v-if="excursionCards.isEditing.value">
+					<div class="mt-8">
+						<UiLazyFeatureCardsEditor v-model="excursionCards.data.value" />
+					</div>
+				</ClientOnly>
 			</div>
 		</section>
 	</div>

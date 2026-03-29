@@ -11,15 +11,15 @@ const emit = defineEmits<{
 
 const iconOptions = [
 	{ value: "i-lucide-home", label: "Home" },
-	{ value: "i-lucide-sun", label: "Sun" },
+	{ value: "i-lucide-sun", label: "Sonne" },
 	{ value: "i-lucide-heart-handshake", label: "Handshake" },
-	{ value: "i-lucide-trees", label: "Trees" },
-	{ value: "i-lucide-car", label: "Car" },
-	{ value: "i-lucide-wifi", label: "WiFi" },
-	{ value: "i-lucide-utensils", label: "Utensils" },
-	{ value: "i-lucide-bike", label: "Bike" },
-	{ value: "i-lucide-waves", label: "Waves" },
-	{ value: "i-lucide-mountain", label: "Mountain" },
+	{ value: "i-lucide-trees", label: "Bäume" },
+	{ value: "i-lucide-car", label: "Auto" },
+	{ value: "i-lucide-wifi", label: "WLAN" },
+	{ value: "i-lucide-utensils", label: "Besteck" },
+	{ value: "i-lucide-bike", label: "Velo" },
+	{ value: "i-lucide-waves", label: "Wellen" },
+	{ value: "i-lucide-mountain", label: "Berg" },
 ];
 
 const colorOptions = [
@@ -30,6 +30,16 @@ const colorOptions = [
 	{ value: "purple", label: "Lila" },
 	{ value: "cyan", label: "Cyan" },
 ];
+
+const textareaUi = {
+	root: "w-full",
+	base: "w-full min-h-24 resize-y rounded-2xl px-4 py-3 leading-relaxed",
+};
+
+const fieldUi = {
+	container: "w-full",
+	label: "font-medium text-stone-700 dark:text-stone-200",
+};
 
 const cardCountLabel = computed(() => {
 	if (items.value.length === 1) {
@@ -61,57 +71,56 @@ function removeItem(index: number) {
 	items.value = items.value.filter((_, i) => i !== index);
 }
 
-function getColorClasses(color: string) {
-	const colors: Record<string, { bg: string; text: string }> = {
-		blue: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },
-		amber: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-600 dark:text-amber-400" },
-		rose: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-600 dark:text-rose-400" },
-		emerald: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-600 dark:text-emerald-400" },
-		purple: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
-		cyan: { bg: "bg-cyan-100 dark:bg-cyan-900/30", text: "text-cyan-600 dark:text-cyan-400" },
+function updateItem(index: number, patch: Partial<FeatureCard>) {
+	items.value = items.value.map((item, itemIndex) => {
+		if (itemIndex !== index) {
+			return item;
+		}
+
+		return {
+			...item,
+			...patch,
+		};
+	});
+}
+
+function getColorPillClass(color: string) {
+	const colors: Record<string, string> = {
+		blue: "bg-blue-500",
+		amber: "bg-amber-500",
+		rose: "bg-rose-500",
+		emerald: "bg-emerald-500",
+		purple: "bg-purple-500",
+		cyan: "bg-cyan-500",
 	};
-	return colors[color] || colors.blue;
+
+	return colors[color] || "bg-stone-400";
 }
 
 function getPreviewTitle(item: FeatureCard) {
 	return item.title.trim() || "Titel der Karte";
 }
-
-function getPreviewDescription(item: FeatureCard) {
-	return item.description.trim() || "Hier erscheint die Beschreibung Ihrer Karte, sobald Sie Text eingeben.";
-}
 </script>
 
 <template>
 	<div class="space-y-6">
-		<div class="rounded-[1.75rem] border border-stone-200/80 bg-gradient-to-br from-white via-stone-50 to-stone-100/80 p-5 shadow-sm dark:border-stone-800 dark:from-stone-950 dark:via-stone-900 dark:to-stone-900/80"
-		>
-			<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-				<div class="space-y-1">
-					<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)]">
-						Karteneditor
-					</p>
-					<div class="flex items-center gap-3">
-						<h3 class="text-lg font-semibold text-stone-900 dark:text-white">
-							Inhalte und Vorschau auf einen Blick
-						</h3>
-						<UBadge color="neutral" variant="subtle" class="rounded-full">
-							{{ cardCountLabel }}
-						</UBadge>
-					</div>
-					<p class="max-w-2xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-						Pflegen Sie Titel, Beschreibung und Farben direkt in den Karten. Die Live-Vorschau hilft, das Ergebnis sofort einzuschätzen.
-					</p>
-				</div>
-				<UButton
-					variant="soft"
-					icon="i-lucide-plus"
-					class="self-start rounded-full"
-					@click="addItem"
-				>
-					Karte hinzufügen
-				</UButton>
+		<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+			<div class="flex items-center gap-3">
+				<p class="text-base font-semibold text-stone-900 dark:text-white">
+					Karteneditor
+				</p>
+				<UBadge color="neutral" variant="subtle" class="rounded-full">
+					{{ cardCountLabel }}
+				</UBadge>
 			</div>
+			<UButton
+				variant="soft"
+				icon="i-lucide-plus"
+				class="self-start rounded-full"
+				@click="addItem"
+			>
+				Karte hinzufügen
+			</UButton>
 		</div>
 
 		<div
@@ -135,13 +144,12 @@ function getPreviewDescription(item: FeatureCard) {
 			class="overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950"
 		>
 			<div class="flex flex-col gap-4 border-b border-stone-200/80 bg-stone-50/80 px-5 py-4 dark:border-stone-800 dark:bg-stone-900/70 md:flex-row md:items-center md:justify-between">
-				<div class="space-y-1">
-					<p class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400 dark:text-stone-500">
+				<div class="flex items-center gap-2 text-base font-semibold text-stone-900 dark:text-white">
+					<span class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-400 dark:text-stone-500">
 						Karte {{ index + 1 }}
-					</p>
-					<h4 class="text-base font-semibold text-stone-900 dark:text-white">
-						{{ getPreviewTitle(item) }}
-					</h4>
+					</span>
+					<span class="text-stone-300 dark:text-stone-600">-</span>
+					<span>{{ getPreviewTitle(item) }}</span>
 				</div>
 				<UButton
 					variant="ghost"
@@ -155,59 +163,107 @@ function getPreviewDescription(item: FeatureCard) {
 				</UButton>
 			</div>
 
-			<div class="grid gap-6 p-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
-				<div class="space-y-5">
-					<div class="grid gap-4 md:grid-cols-3">
-						<UFormField label="Icon">
-							<USelect v-model="item.icon" :items="iconOptions" />
-						</UFormField>
-						<UFormField label="Hintergrund">
-							<USelect v-model="item.bgColor" :items="colorOptions" />
-						</UFormField>
-						<UFormField label="Icon-Farbe">
-							<USelect v-model="item.iconColor" :items="colorOptions" />
-						</UFormField>
-					</div>
-
-					<UFormField label="Titel">
-						<UInput v-model="item.title" placeholder="Titel der Karte" />
+			<div class="space-y-5 p-5">
+				<div class="grid gap-4 xl:grid-cols-4">
+					<UFormField label="Titel" :ui="fieldUi">
+						<UInput
+							:model-value="item.title"
+							placeholder="Titel der Karte"
+							class="w-full"
+							@update:model-value="updateItem(index, { title: String($event ?? '') })"
+						/>
 					</UFormField>
-
-					<UFormField label="Beschreibung">
-						<UTextarea v-model="item.description" :rows="4" placeholder="Beschreibung" />
+					<UFormField label="Icon" :ui="fieldUi">
+						<div class="w-full">
+							<USelect
+								:model-value="item.icon"
+								:items="iconOptions"
+								class="w-full"
+								:ui="{ content: 'min-w-56', item: 'items-center gap-2' }"
+								@update:model-value="updateItem(index, { icon: String($event ?? '') })"
+							>
+								<template #default="{ modelValue }">
+									<div class="flex items-center gap-2">
+										<UIcon :name="String(modelValue)" class="h-4 w-4 shrink-0" />
+										<span>{{ iconOptions.find((option) => option.value === modelValue)?.label || "Icon wählen" }}</span>
+									</div>
+								</template>
+								<template #item-label="{ item: iconOption }">
+									<div class="flex items-center gap-2">
+										<UIcon :name="iconOption.value" class="h-4 w-4 shrink-0" />
+										<span>{{ iconOption.label }}</span>
+									</div>
+								</template>
+							</USelect>
+						</div>
+					</UFormField>
+					<UFormField label="Hintergrund" :ui="fieldUi">
+						<USelect
+							:model-value="item.bgColor"
+							:items="colorOptions"
+							class="w-full"
+							:ui="{ content: 'min-w-48', item: 'items-center gap-2' }"
+							@update:model-value="updateItem(index, { bgColor: String($event ?? '') })"
+						>
+							<template #default="{ modelValue }">
+								<div class="flex items-center gap-2">
+									<div :class="[getColorPillClass(String(modelValue)), 'h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/8 dark:ring-white/10']" />
+									<span>{{ colorOptions.find((option) => option.value === modelValue)?.label || "Farbe wählen" }}</span>
+								</div>
+							</template>
+							<template #item-label="{ item: colorOption }">
+								<div class="flex items-center gap-2">
+									<div :class="[getColorPillClass(colorOption.value), 'h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/8 dark:ring-white/10']" />
+									<span>{{ colorOption.label }}</span>
+								</div>
+							</template>
+						</USelect>
+					</UFormField>
+					<UFormField label="Icon-Farbe" :ui="fieldUi">
+						<USelect
+							:model-value="item.iconColor"
+							:items="colorOptions"
+							class="w-full"
+							:ui="{ content: 'min-w-48', item: 'items-center gap-2' }"
+							@update:model-value="updateItem(index, { iconColor: String($event ?? '') })"
+						>
+							<template #default="{ modelValue }">
+								<div class="flex items-center gap-2">
+									<div :class="[getColorPillClass(String(modelValue)), 'h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/8 dark:ring-white/10']" />
+									<span>{{ colorOptions.find((option) => option.value === modelValue)?.label || "Farbe wählen" }}</span>
+								</div>
+							</template>
+							<template #item-label="{ item: colorOption }">
+								<div class="flex items-center gap-2">
+									<div :class="[getColorPillClass(colorOption.value), 'h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/8 dark:ring-white/10']" />
+									<span>{{ colorOption.label }}</span>
+								</div>
+							</template>
+						</USelect>
 					</UFormField>
 				</div>
 
-				<div class="rounded-[1.5rem] border border-stone-200 bg-gradient-to-br from-stone-50 to-white p-5 dark:border-stone-800 dark:from-stone-900 dark:to-stone-950">
-					<div class="mb-4 flex items-center justify-between gap-3">
-						<span class="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400 dark:text-stone-500">
-							Live-Vorschau
-						</span>
-						<div class="flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500">
-							<UIcon name="i-lucide-eye" class="h-4 w-4" />
-							<span>Sichtbarer Kartenstil</span>
-						</div>
-					</div>
-					<div class="rounded-[1.5rem] border border-stone-200/80 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-						<div :class="[getColorClasses(item.bgColor).bg, getColorClasses(item.iconColor).text, 'mb-4 flex h-14 w-14 items-center justify-center rounded-2xl']">
-							<UIcon :name="item.icon" class="h-7 w-7" />
-						</div>
-						<h5 class="text-lg font-semibold text-stone-900 dark:text-white">
-							{{ getPreviewTitle(item) }}
-						</h5>
-						<p class="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-							{{ getPreviewDescription(item) }}
-						</p>
-					</div>
-				</div>
+				<UFormField label="Beschreibung" :ui="fieldUi">
+					<UTextarea
+						:model-value="item.description"
+						:rows="3"
+						:ui="textareaUi"
+						placeholder="Beschreibung"
+						@update:model-value="updateItem(index, { description: String($event ?? '') })"
+					/>
+				</UFormField>
 			</div>
 		</div>
 
-		<div v-if="items.length" class="flex justify-center">
+		<div
+			v-if="items.length"
+			class="flex items-center justify-center border-t border-stone-200/70 pt-2 dark:border-stone-800/80"
+		>
 			<UButton
-				variant="outline"
+				variant="ghost"
+				color="neutral"
 				icon="i-lucide-plus"
-				class="rounded-full"
+				class="rounded-full text-stone-600 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
 				@click="addItem"
 			>
 				Weitere Karte hinzufügen

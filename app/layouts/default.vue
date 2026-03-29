@@ -60,7 +60,7 @@
 					<div class="hidden lg:block">
 						<template v-if="!currentUser">
 							<UButton
-								:to="localePath('/login')"
+								:to="loginPath"
 								icon="i-lucide-circle-user"
 								color="neutral"
 								variant="ghost"
@@ -68,30 +68,35 @@
 								<span class="hidden 2xl:inline">{{ t("nav.login") }}</span>
 							</UButton>
 						</template>
-							<template v-else>
-								<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
-									<UButton
-										color="neutral"
-										variant="ghost"
-										trailing-icon="i-lucide-chevron-down"
-										:class="`${headerActionButtonClass} max-w-[3.25rem] 2xl:max-w-[15rem]`">
+						<template v-else>
+							<UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
+								<UButton
+									color="neutral"
+									variant="ghost"
+									:class="profileMenuButtonClass"
+								>
+									<span class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--app-surface-strong)] ring-1 ring-black/6 transition-all dark:ring-white/8">
 										<img
 											v-if="userPhotoUrl"
 											:src="userPhotoUrl"
 											:alt="userDisplayName"
-											class="h-7 w-7 shrink-0 rounded-full object-cover"
+											class="h-full w-full rounded-full object-cover"
 										/>
 										<UIcon
 											v-else
 											name="i-lucide-circle-user"
-											class="h-5 w-5 shrink-0"
+											class="h-5 w-5 text-[var(--app-text)]"
 										/>
-										<span class="hidden 2xl:inline truncate">
-											{{ userDisplayName }}
-										</span>
-									</UButton>
-								</UDropdownMenu>
-							</template>
+									</span>
+									<span class="hidden 2xl:inline min-w-0 truncate text-sm font-medium">
+										{{ userDisplayName }}
+									</span>
+									<span class="hidden 2xl:flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/4 text-[var(--app-muted)] dark:bg-white/6">
+										<UIcon name="i-lucide-ellipsis" class="h-4 w-4" />
+									</span>
+								</UButton>
+							</UDropdownMenu>
+						</template>
 					</div>
 				</div>
 			</ClientOnly>
@@ -113,7 +118,7 @@
 
 		<!-- Footer -->
 		<footer class="py-8 md:py-12">
-			<div class="max-w-screen-xl mx-auto px-1 py-2 flex flex-col md:flex-row justify-between items-center gap-4 text-sm app-muted md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:px-6 md:py-6 md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
+			<div class="mx-auto flex max-w-screen-xl flex-col items-center justify-between gap-4 border-t border-[var(--app-border)] px-1 pt-6 text-sm app-muted md:flex-row md:px-0 md:pt-8">
 				<p>{{ t("footer.copyright", { year: new Date().getFullYear() }) }}</p>
 			</div>
 		</footer>
@@ -123,6 +128,7 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { buildNavigationItems, buildPublicNavigationItems } from "../utils/navigation";
+import { sanitizeRedirectPath } from "../utils/redirect";
 
 const { t } = useI18n();
 const localePath = useLocalePath();
@@ -145,6 +151,7 @@ const userPhotoUrl = computed(() => currentUser.value?.photoURL || "");
 
 const hasLoadedUserFlags = ref(false);
 const headerActionButtonClass = "rounded-full border border-transparent bg-transparent px-3 text-[var(--app-text)] hover:border-[var(--app-border)] hover:bg-black/5 dark:hover:bg-white/6";
+const profileMenuButtonClass = "rounded-full border border-transparent bg-transparent px-1.5 py-1 text-[var(--app-text)] hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[var(--app-primary)]/25 dark:hover:bg-white/6 2xl:px-2.5";
 const headerNavigationProps = {
 	variant: "link" as const,
 	highlight: true,
@@ -228,13 +235,20 @@ const compactNavigationItems = computed<NavigationMenuItem[]>(() =>
 	),
 );
 
+const loginPath = computed(() => ({
+	path: localePath("/login"),
+	query: {
+		redirect: sanitizeRedirectPath(route.fullPath, localePath("/")),
+	},
+}));
+
 const userItems = computed(() => {
 	if (!currentUser.value) {
 		return [
 			{
 				label: t("nav.login"),
 				icon: "i-lucide-circle-user",
-				to: localePath("/login"),
+				to: loginPath.value,
 			},
 		];
 	}

@@ -19,7 +19,7 @@ describe("FeatureCardsEditor", () => {
 		expect(updates?.[0]?.[0]).toHaveLength(1);
 	});
 
-	it("renders the live preview content for existing cards", async () => {
+	it("renders the editing-focused layout for existing cards", async () => {
 		const component = await mountSuspended(FeatureCardsEditor, {
 			props: {
 				modelValue: [
@@ -34,9 +34,13 @@ describe("FeatureCardsEditor", () => {
 			},
 		});
 
-		expect(component.text()).toContain("Live-Vorschau");
+		expect(component.text()).toContain("Karteneditor");
+		expect(component.text()).toContain("Icon");
+		expect(component.text()).toContain("Hintergrund");
+		expect(component.text()).toContain("Icon-Farbe");
+		expect(component.text()).toContain("Titel");
+		expect(component.text()).toContain("Beschreibung");
 		expect(component.text()).toContain("Sonnenplatz");
-		expect(component.text()).toContain("Ein ruhiger Platz am Morgen.");
 		expect(component.text()).toContain("1 Karte");
 	});
 });

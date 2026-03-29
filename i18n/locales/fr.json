@@ -53,6 +53,110 @@
     "logout": "Déconnexion",
     "search": "Rechercher"
   },
+  "documents": {
+    "title": "Documents partagés",
+    "subtitle": "Fichiers, dossiers et téléchargements importants pour les propriétaires et l'administration.",
+    "maxFileSize": "max. 50MB",
+    "sort": {
+      "label": "Trier :",
+      "name": "Nom",
+      "date": "Date",
+      "size": "Taille"
+    },
+    "selection": {
+      "summary": "{selected} sur {total} sélectionnés"
+    },
+    "count": {
+      "images": "{count} images",
+      "files": "{count} fichiers"
+    },
+    "states": {
+      "uploadingCurrent": "Téléchargement : {file}",
+      "loading": "Chargement...",
+      "loadingMore": "Chargement supplémentaire...",
+      "loadError": "Erreur lors du chargement",
+      "emptyTitle": "Aucun fichier",
+      "emptyHint": "Glissez des fichiers ici ou cliquez sur « Télécharger » (max. 50MB)"
+    },
+    "actions": {
+      "newFolder": "Nouveau dossier",
+      "upload": "Télécharger",
+      "retry": "Réessayer",
+      "download": "Télécharger",
+      "rename": "Renommer",
+      "move": "Déplacer",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "copyLink": "Copier le lien",
+      "view": "Afficher",
+      "play": "Lire",
+      "open": "Ouvrir",
+      "translatedFile": "Fichier traduit",
+      "link": "Lien",
+      "moveHere": "Déplacer ici",
+      "moveToRoot": "Déplacer à la racine"
+    },
+    "preview": {
+      "selectedFile": "Fichier sélectionné",
+      "pdfTitle": "Aperçu PDF",
+      "documentTitle": "Aperçu du document",
+      "notAvailable": "Aucun aperçu direct n'est disponible pour ce type de fichier.",
+      "selectHint": "Sélectionnez un fichier pour voir un aperçu et les métadonnées principales à droite."
+    },
+    "meta": {
+      "type": "Type",
+      "size": "Taille",
+      "uploaded": "Téléversé",
+      "fileDate": "Date du fichier"
+    },
+    "processing": {
+      "title": "Contenu du document",
+      "loading": "Le document est en cours d'analyse...",
+      "unavailable": "Extraction de texte indisponible",
+      "noText": "Aucun texte extrait disponible.",
+      "noContent": "Aucun contenu extrait ou traduit n'est encore disponible pour ce fichier.",
+      "noAutoTranslation": "Aucune traduction automatique",
+      "originalLanguage": "Langue d'origine",
+      "translationLabel": "Traduction : {locale}",
+      "noTranslationForLanguage": "Aucune traduction pour cette langue"
+    },
+    "modals": {
+      "renameTitle": "Renommer le fichier",
+      "renameLabel": "Nouveau nom de fichier",
+      "renamePlaceholder": "Nom du fichier...",
+      "moveTitle": "Déplacer des éléments",
+      "moveDescription": "Déplacer {count} élément(s) vers un dossier cible :",
+      "noSubfolders": "Aucun sous-dossier disponible",
+      "noMoreSubfolders": "Aucun autre sous-dossier"
+    },
+    "confirm": {
+      "deleteFile": "Supprimer vraiment « {name} » ?",
+      "deleteSelection": "Supprimer vraiment {count} élément(s) ?",
+      "deleteSelectionNested": "{files} fichier(s) et {folders} sous-dossier(s) seront également supprimés.",
+      "deleteFolder": "Supprimer vraiment « {name} » ?",
+      "deleteFolderNested": "{files} fichier(s) et {folders} sous-dossier(s) seront également supprimés."
+    },
+    "toasts": {
+      "linkCopied": "Lien copié",
+      "translatedUnavailable": "Fichier traduit indisponible",
+      "previewUnavailable": "Aperçu indisponible",
+      "loadMoreError": "Erreur lors du chargement de fichiers supplémentaires",
+      "folderCreated": "Dossier créé",
+      "folderRenamed": "Dossier renommé",
+      "saveError": "Erreur lors de l'enregistrement",
+      "openError": "Erreur lors de l'ouverture",
+      "downloadError": "Erreur lors du téléchargement",
+      "fileDeleted": "Fichier supprimé",
+      "deleteError": "Erreur lors de la suppression",
+      "deleteNamedError": "Erreur lors de la suppression de {name}",
+      "selectionDeleted": "{count} élément(s) supprimé(s)",
+      "folderDeletedDetail": "{files} fichier(s) et {folders} sous-dossier(s) supprimés.",
+      "fileRenamed": "Fichier renommé",
+      "renameError": "Erreur lors du renommage",
+      "moveNamedError": "Erreur lors du déplacement de {name}",
+      "itemsMoved": "{count} élément(s) déplacé(s)"
+    }
+  },
   "hero": {
     "welcome": {
       "title": "Bienvenue au Beausoleil",
@@ -104,9 +208,59 @@
       "subtitle": "Impressions",
       "title": "La beauté de Giens"
     },
+    "discover": {
+      "kicker": "Autour de Giens",
+      "subtitle": "Marchés, excursions et conseils pratiques autour de Giens."
+    },
     "organisatorisches": {
+      "kicker": "Bien préparé",
       "title": "Organisation",
       "subtitle": "Informations importantes sur la Résidence"
+    },
+    "defaults": {
+      "miteinander": "Au cœur de notre communauté de 20 copropriétaires se trouvent la solidarité, le respect mutuel et l'engagement commun. Au printemps et en automne, nous entretenons et embellissons ensemble la résidence.",
+      "stats": {
+        "houses": "Maisons",
+        "years": "Ans",
+        "spirit": "Esprit"
+      },
+      "features": {
+        "comfort": {
+          "title": "Confort de vie",
+          "description": "40 m² habitables avec cuisine ouverte, séjour et deux chambres. Galerie à l'étage avec salle de bain. Chauffage électrique pour les jours plus frais."
+        },
+        "terrace": {
+          "title": "Terrasse & parking",
+          "description": "Terrasse privée plein sud, idéale pour le petit-déjeuner et les couchers de soleil. Une place de parking réservée par maison."
+        },
+        "shared": {
+          "title": "Biens communs",
+          "description": "Des vélos, des jeux de plage et une bibliothèque en allemand et en français sont à la disposition de tous. Deux espaces barbecue invitent à cuisiner ensemble."
+        },
+        "garden": {
+          "title": "Jardin & environs",
+          "description": "Résidence arborée avec des coins ombragés. À seulement 1 km de l'embarcadère et à quelques minutes des plages et sentiers."
+        }
+      },
+      "timeline": {
+        "foundation": {
+          "title": "Création de la résidence",
+          "description": "Les familles Hertoux et Tellier construisent la Résidence Beausoleil avec 20 maisons au total et possèdent chacune la moitié du domaine."
+        },
+        "sales": {
+          "title": "Premières ventes",
+          "description": "La famille Tellier commence à vendre ses 10 maisons. Huit maisons sont reprises par la coopérative suisse de vacances et de ski des cheminots, deux restent privées."
+        },
+        "privateOwnership": {
+          "title": "Entièrement privatisée",
+          "description": "Avec la vente des dernières maisons de la coopérative, les 20 maisons sont désormais toutes en propriété privée."
+        },
+        "today": {
+          "date": "Aujourd'hui",
+          "title": "Communauté vivante",
+          "description": "Les 20 propriétaires se réunissent chaque année en assemblée et entretiennent ensemble la résidence au printemps et en automne."
+        }
+      }
     }
   },
   "about": {
