@@ -9,6 +9,7 @@ const { t } = useI18n();
 const runtimeConfig = useRuntimeConfig();
 const token = computed(() => route.params.token as string);
 const activePhoto = ref(0);
+const lightboxIndex = ref<number | null>(null);
 const showWifiPassword = ref(false);
 const ssidCopied = ref(false);
 const passwordCopied = ref(false);
@@ -18,6 +19,13 @@ const { data, pending: loading, error } = await useAsyncData(
 );
 const home = computed(() => data.value?.home || null);
 const contacts = computed(() => data.value?.contacts || []);
+const lightboxPhoto = computed(() => {
+	if (lightboxIndex.value === null) {
+		return null;
+	}
+
+	return home.value?.photos?.[lightboxIndex.value] || null;
+});
 const errorMessage = computed(() => getFetchError(error.value) || "Fehler beim Laden");
 const siteUrl = runtimeConfig.public.SITE_URL;
 const defaultShareImage = buildAbsoluteSiteUrl("/photos/giens-hauser.jpeg", siteUrl);
@@ -58,6 +66,55 @@ const downloadFile = async (fileId: string) => {
 	window.open(response.url, "_blank", "noopener,noreferrer");
 };
 
+const openLightbox = (index: number) => {
+	activePhoto.value = index;
+	lightboxIndex.value = index;
+};
+
+const closeLightbox = () => {
+	lightboxIndex.value = null;
+};
+
+const showPreviousPhoto = () => {
+	if (!home.value?.photos?.length || lightboxIndex.value === null) {
+		return;
+	}
+
+	const nextIndex = (lightboxIndex.value - 1 + home.value.photos.length) % home.value.photos.length;
+	lightboxIndex.value = nextIndex;
+	activePhoto.value = nextIndex;
+};
+
+const showNextPhoto = () => {
+	if (!home.value?.photos?.length || lightboxIndex.value === null) {
+		return;
+	}
+
+	const nextIndex = (lightboxIndex.value + 1) % home.value.photos.length;
+	lightboxIndex.value = nextIndex;
+	activePhoto.value = nextIndex;
+};
+
+const handleLightboxKeydown = (event: KeyboardEvent) => {
+	if (lightboxIndex.value === null) {
+		return;
+	}
+
+	if (event.key === "Escape") {
+		closeLightbox();
+		return;
+	}
+
+	if (event.key === "ArrowLeft") {
+		showPreviousPhoto();
+		return;
+	}
+
+	if (event.key === "ArrowRight") {
+		showNextPhoto();
+	}
+};
+
 const formatFileSize = (bytes: number) => {
 	if (bytes < 1024) return `${bytes} B`;
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -87,6 +144,18 @@ useHead(() => ({
 		},
 	],
 }));
+
+onMounted(() => {
+	if (import.meta.client) {
+		window.addEventListener("keydown", handleLightboxKeydown);
+	}
+});
+
+onBeforeUnmount(() => {
+	if (import.meta.client) {
+		window.removeEventListener("keydown", handleLightboxKeydown);
+	}
+});
 </script>
 
 <template>
@@ -121,7 +190,8 @@ useHead(() => ({
 								v-if="home.photos?.length"
 								:src="home.photos[activePhoto]"
 								:alt="`${home.name} Foto ${activePhoto + 1}`"
-								class="absolute inset-0 h-full w-full object-cover"
+								class="absolute inset-0 h-full w-full cursor-zoom-in object-cover"
+								@click="openLightbox(activePhoto)"
 							/>
 							<div v-else class="absolute inset-0 bg-gradient-to-br from-[var(--app-primary)]/35 to-[var(--app-accent)]/35" />
 							<div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.66)_100%)] p-6 md:p-8 flex flex-col justify-end">
@@ -160,7 +230,7 @@ useHead(() => ({
 									<button
 										v-for="(photo, index) in home.photos"
 										:key="index"
-										@click="activePhoto = index"
+										@click="openLightbox(index)"
 										class="shrink-0 w-16 h-16 rounded-2xl overflow-hidden ring-2 transition-all"
 										:class="index === activePhoto ? 'ring-[var(--app-primary)] scale-[1.02]' : 'ring-transparent opacity-80 hover:opacity-100'"
 									>
@@ -300,5 +370,44 @@ useHead(() => ({
 				</section>
 			</div>
 		</template>
+
+		<div
+			v-if="lightboxPhoto"
+			class="fixed inset-0 z-[80] flex items-center justify-center bg-black/92 p-4 md:p-8"
+			@click="closeLightbox"
+		>
+			<button
+				class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+				:aria-label="t('share.closeImage')"
+				@click.stop="closeLightbox"
+			>
+				<UIcon name="i-lucide-x" class="h-5 w-5" />
+			</button>
+
+			<button
+				v-if="home?.photos?.length && home.photos.length > 1"
+				class="absolute left-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+				:aria-label="t('share.previousImage')"
+				@click.stop="showPreviousPhoto"
+			>
+				<UIcon name="i-lucide-chevron-left" class="h-5 w-5" />
+			</button>
+
+			<img
+				:src="lightboxPhoto"
+				:alt="`${home?.name || 'Home'} Foto ${(lightboxIndex ?? 0) + 1}`"
+				class="max-h-[92vh] max-w-[92vw] rounded-[1.5rem] object-contain shadow-2xl"
+				@click.stop
+			/>
+
+			<button
+				v-if="home?.photos?.length && home.photos.length > 1"
+				class="absolute right-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+				:aria-label="t('share.nextImage')"
+				@click.stop="showNextPhoto"
+			>
+				<UIcon name="i-lucide-chevron-right" class="h-5 w-5" />
+			</button>
+		</div>
 	</div>
 </template>

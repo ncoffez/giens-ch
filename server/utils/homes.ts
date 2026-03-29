@@ -20,14 +20,15 @@ export async function getHomeById(homeId: string): Promise<Home | null> {
 	return { id: doc.id, ...doc.data() } as Home;
 }
 
-export async function createHome(name: string, ownerId: string): Promise<Home> {
+export async function createHome(name: string, ownerIds: string[] = []): Promise<Home> {
 	const homeId = crypto.randomUUID();
 	const now = new Date().toISOString();
+	const normalizedOwnerIds = ownerIds.filter((ownerId) => typeof ownerId === "string" && ownerId.trim().length > 0);
 
 	const home: Home = {
 		id: homeId,
 		name,
-		ownerIds: [ownerId],
+		ownerIds: normalizedOwnerIds,
 		photos: [],
 		files: [],
 		privateFiles: [],

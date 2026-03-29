@@ -16,9 +16,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const isAdmin = !!claims.admin;
 	const owner = await isHomeOwner(homeId, claims.uid);
-	if (!isAdmin && !owner) {
+	if (!owner) {
 		throw createError({ statusCode: 403, message: "Forbidden" });
 	}
 

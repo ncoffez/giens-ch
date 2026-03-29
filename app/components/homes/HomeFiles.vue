@@ -13,6 +13,7 @@ const emit = defineEmits<{
 
 const { token } = useAuthReady();
 const toast = useToast();
+const { t } = useI18n();
 const isPrivate = computed(() => props.privacy === "private");
 const visibleFiles = computed(() => isPrivate.value ? (props.home.privateFiles || []) : (props.home.files || []));
 
@@ -36,7 +37,7 @@ const uploadFiles = async (event: Event) => {
 
 	const oversizedFiles = fileArray.filter(f => f.size > 50 * 1024 * 1024);
 	if (oversizedFiles.length > 0) {
-		toast.add({ title: "Datei zu gross (max. 50MB)", color: "error" });
+		toast.add({ title: t("homes.files.toasts.maxSize"), color: "error" });
 		return;
 	}
 
@@ -85,7 +86,7 @@ const uploadFiles = async (event: Event) => {
 
 	if (successCount > 0) {
 		toast.add({
-			title: `${successCount} Datei${successCount > 1 ? "en" : ""} hochgeladen`,
+			title: t("homes.files.toasts.uploaded", { count: successCount }),
 			color: "success",
 		});
 		emit("refresh");
@@ -93,14 +94,14 @@ const uploadFiles = async (event: Event) => {
 
 	if (errorCount > 0) {
 		toast.add({
-			title: `${errorCount} Upload${errorCount > 1 ? "s" : ""} fehlgeschlagen`,
+			title: t("homes.files.toasts.uploadFailed", { count: errorCount }),
 			color: "error",
 		});
 	}
 };
 
 const deleteFile = async (file: HomeFile) => {
-	if (!confirm(`"${file.name}" wirklich löschen?`)) return;
+	if (!confirm(t("homes.files.confirmDelete", { name: file.name }))) return;
 
 	try {
 		await $fetch(`/api/homes/${props.home.id}/files/delete`, {
@@ -108,10 +109,10 @@ const deleteFile = async (file: HomeFile) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id, private: isPrivate.value },
 		});
-		toast.add({ title: "Datei gelöscht", color: "success" });
+		toast.add({ title: t("homes.files.toasts.deleted"), color: "success" });
 		emit("refresh");
 	} catch (e: unknown) {
-		toast.add({ title: "Löschen fehlgeschlagen", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.files.toasts.deleteFailed"), description: getFetchError(e), color: "error" });
 	}
 };
 
@@ -138,7 +139,7 @@ const downloadFile = async (file: HomeFile) => {
 				<div v-if="uploading" class="space-y-3">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
 					<p class="text-stone-600 dark:text-stone-400">
-						Hochladen... {{ uploadCurrent }}/{{ uploadTotal }}
+						{{ t("homes.files.uploading", { current: uploadCurrent, total: uploadTotal }) }}
 					</p>
 					<div class="w-full max-w-xs mx-auto">
 						<UProgress :value="uploadProgress" color="primary" size="sm" />
@@ -146,10 +147,10 @@ const downloadFile = async (file: HomeFile) => {
 				</div>
 				<div v-else class="space-y-3">
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
-					<p class="text-stone-600 dark:text-stone-400 font-medium">Klicken zum Hochladen</p>
-					<p class="text-sm text-stone-400">PDF, DOC, XLS und mehr (max. 50MB)</p>
+					<p class="text-stone-600 dark:text-stone-400 font-medium">{{ t("homes.files.clickToUpload") }}</p>
+					<p class="text-sm text-stone-400">{{ t("homes.files.supportedFormats") }}</p>
 					<p class="text-xs text-stone-400">
-						{{ isPrivate ? "Nur für Eigentümer und Administratoren sichtbar" : "Mehrere Dateien möglich" }}
+						{{ isPrivate ? t("homes.files.privateHint") : t("homes.files.multiUpload") }}
 					</p>
 				</div>
 			</div>
@@ -180,9 +181,9 @@ const downloadFile = async (file: HomeFile) => {
 		<!-- Empty state -->
 		<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
 			<UIcon name="i-lucide-folder" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
-			<p class="text-stone-500">Keine Dateien</p>
+			<p class="text-stone-500">{{ t("homes.files.emptyTitle") }}</p>
 			<p class="text-sm text-stone-400">
-				{{ isPrivate ? "Laden Sie interne Dokumente nur für Eigentümer hoch" : "Laden Sie Dokumente hoch, die Mieter herunterladen können" }}
+				{{ isPrivate ? t("homes.files.privateEmptyDescription") : t("homes.files.sharedEmptyDescription") }}
 			</p>
 		</div>
 	</div>

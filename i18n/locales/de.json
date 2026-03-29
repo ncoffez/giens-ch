@@ -53,6 +53,169 @@
     "logout": "Logout",
     "search": "Suchen"
   },
+  "homes": {
+    "edit": {
+      "eyebrow": "Mein Haus",
+      "preview": "Vorschau",
+      "loading": "Laden...",
+      "retry": "Erneut versuchen",
+      "actions": {
+        "save": "Speichern",
+        "cancel": "Abbrechen"
+      },
+      "sections": {
+        "links": "Links",
+        "photos": "Fotos",
+        "wifi": "WLAN",
+        "contacts": "Kontakte",
+        "instructions": "Anleitung",
+        "files": "Dateien"
+      },
+      "links": {
+        "title": "Links verwalten",
+        "description": "Erstellen Sie Links, die Sie mit Mietern teilen können."
+      },
+      "photos": {
+        "title": "Fotos",
+        "description": "Laden Sie Fotos hoch, die Mieter sehen können."
+      },
+      "wifi": {
+        "title": "WLAN-Zugang",
+        "description": "Teilen Sie die WLAN-Daten mit Ihren Mietern.",
+        "ssidLabel": "Netzwerkname (SSID)",
+        "ssidPlaceholder": "z.B. MeinWLAN",
+        "passwordLabel": "Passwort",
+        "passwordPlaceholder": "WLAN-Passwort"
+      },
+      "contacts": {
+        "title": "Kontakte",
+        "description": "Pflegen Sie Eigentümer- und Zusatzkontakte, damit Gäste die richtigen Ansprechpartner erreichen.",
+        "add": "Kontakt hinzufügen",
+        "emptyTitle": "Keine Kontakte vorhanden",
+        "emptyAction": "Ersten Kontakt hinzufügen",
+        "ownerTitle": "Eigentümer",
+        "ownerDescription": "Name und Profil bleiben erhalten, E-Mail, Telefon und Hinweise können hier hausbezogen ergänzt werden.",
+        "additionalTitle": "Weitere Kontakte",
+        "additionalDescription": "Hauswartung, Nachbarschaft oder lokale Hilfeleistungen lassen sich hier separat pflegen.",
+        "additionalEmpty": "Noch keine zusätzlichen Kontakte vorhanden.",
+        "show": "Anzeigen",
+        "hide": "Verstecken"
+      },
+      "instructions": {
+        "title": "Anleitung",
+        "description": "Hinterlegen Sie die wichtigsten Hinweise für Ankunft, Aufenthalt und Abreise in einer klaren, gut lesbaren Struktur.",
+        "cardTitle": "Hinweise für Gäste",
+        "cardDescription": "Der Editor bringt bereits seine eigene Oberfläche mit. Die Abschnittskarte bleibt deshalb bewusst schlank."
+      },
+      "files": {
+        "title": "Dateien",
+        "description": "Laden Sie Dokumente hoch, die Mieter herunterladen können.",
+        "sharedTitle": "Für Besucher freigegeben",
+        "sharedDescription": "Diese Dateien sind über aktive Haus-Links sichtbar.",
+        "privateTitle": "Privat für Eigentümer",
+        "privateDescription": "Diese Dateien bleiben intern und erscheinen nie im Besucherzugriff."
+      },
+      "contactModal": {
+        "createTitle": "Neuer Kontakt",
+        "editTitle": "Kontakt bearbeiten",
+        "ownerTitle": "Eigentümerkontakt ergänzen",
+        "nameLabel": "Name",
+        "namePlaceholder": "Vorname Nachname",
+        "ownerHint": "Der Name kommt aus dem Eigentümerprofil. Hier ergänzen Sie nur die Kontaktdaten für dieses Haus.",
+        "emailLabel": "E-Mail",
+        "emailPlaceholder": "name.beispiel.ch",
+        "phoneLabel": "Telefon",
+        "phonePlaceholder": "+41 79 123 45 67",
+        "notesLabel": "Notizen",
+        "notesPlaceholder": "z.B. Hausverwaltung, Nachbar",
+        "hiddenLabel": "Versteckt",
+        "hiddenHint": "Versteckte Kontakte werden Mietern nicht angezeigt."
+      },
+      "toasts": {
+        "loadError": "Fehler beim Laden",
+        "saved": "Gespeichert",
+        "saveError": "Fehler beim Speichern",
+        "contactsSaved": "Kontakte gespeichert",
+        "nameRequired": "Name erforderlich",
+        "ownerDeleteForbiddenTitle": "Eigentümer können nicht gelöscht werden",
+        "ownerDeleteForbiddenDescription": "Sie können sie stattdessen verstecken.",
+        "noActiveLinkTitle": "Kein aktiver Link",
+        "noActiveLinkDescription": "Erstellen Sie zuerst einen Link."
+      }
+    },
+    "shareLinks": {
+      "createTitle": "Neuen Link erstellen",
+      "durationLabel": "Gültigkeitsdauer",
+      "customDaysPlaceholder": "Anzahl Tage",
+      "days": "Tage",
+      "expiresOn": "Läuft ab am:",
+      "createAction": "Link erstellen",
+      "activeTitle": "Aktive Links",
+      "expiresAt": "Läuft ab:",
+      "accessCount": "{count} Aufrufe",
+      "emptyTitle": "Keine aktiven Links",
+      "emptyDescription": "Erstellen Sie einen Link, um ihn mit Mietern zu teilen",
+      "archivedToggle": "{count} abgelaufene/widerrufene Links anzeigen",
+      "revoked": "Widerrufen",
+      "expired": "Abgelaufen",
+      "onDate": "am",
+      "confirmRevoke": "Link wirklich widerrufen?",
+      "duration": {
+        "7": "7 Tage",
+        "30": "30 Tage",
+        "unlimited": "Unbegrenzt (10 Jahre)",
+        "custom": "Benutzerdefiniert"
+      },
+      "toasts": {
+        "created": "Link erstellt",
+        "copiedToClipboard": "Link in Zwischenablage kopiert",
+        "copied": "Link kopiert",
+        "revoked": "Link widerrufen",
+        "error": "Fehler"
+      }
+    },
+    "photos": {
+      "clickToUpload": "Klicken zum Hochladen",
+      "count": "{current} / {max} Fotos",
+      "multiUpload": "Mehrere Dateien möglich",
+      "uploading": "Hochladen... {current}/{total}",
+      "photoAlt": "Foto {index}",
+      "emptyTitle": "Keine Fotos",
+      "emptyDescription": "Laden Sie Fotos hoch, die Mieter sehen können",
+      "confirmDelete": "Foto wirklich löschen?",
+      "toasts": {
+        "maxPhotos": "Maximal {count} Fotos erlaubt",
+        "imagesOnly": "Nur Bilddateien erlaubt",
+        "maxSize": "Datei zu gross (max. 10MB)",
+        "uploaded": "{count} Foto(s) hochgeladen",
+        "uploadFailed": "{count} Upload(s) fehlgeschlagen",
+        "deleted": "Foto gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen"
+      }
+    },
+    "files": {
+      "clickToUpload": "Klicken zum Hochladen",
+      "supportedFormats": "PDF, DOC, XLS und mehr (max. 50MB)",
+      "multiUpload": "Mehrere Dateien möglich",
+      "privateHint": "Nur für Eigentümer und Administratoren sichtbar",
+      "uploading": "Hochladen... {current}/{total}",
+      "emptyTitle": "Keine Dateien",
+      "sharedEmptyDescription": "Laden Sie Dokumente hoch, die Mieter herunterladen können",
+      "privateEmptyDescription": "Laden Sie interne Dokumente nur für Eigentümer hoch",
+      "confirmDelete": "\"{name}\" wirklich löschen?",
+      "toasts": {
+        "maxSize": "Datei zu gross (max. 50MB)",
+        "uploaded": "{count} Datei(en) hochgeladen",
+        "uploadFailed": "{count} Upload(s) fehlgeschlagen",
+        "deleted": "Datei gelöscht",
+        "deleteFailed": "Löschen fehlgeschlagen"
+      }
+    },
+    "contactCard": {
+      "owner": "Eigentümer",
+      "hidden": "Versteckt"
+    }
+  },
   "documents": {
     "title": "Gemeinsame Unterlagen",
     "subtitle": "Wichtige Dateien, Ordner und Downloads für Eigentümer und Administration.",
@@ -573,6 +736,9 @@
     "filesTitle": "Dokumente",
     "filesSubtitle": "Unterlagen und nützliche Informationen zum Download.",
     "download": "Download",
+    "closeImage": "Bild schließen",
+    "previousImage": "Vorheriges Bild",
+    "nextImage": "Nächstes Bild",
     "summary": {
       "photos": "Fotos",
       "photosValue": "Eindrücke aus dem Haus",
