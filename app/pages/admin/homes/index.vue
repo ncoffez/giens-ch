@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-    middleware: ["is-admin"],
-    render: 'client'
+	middleware: ["is-admin"],
+	render: "client",
 });
 
 const { waitForAuth, token } = useAuthReady();
@@ -16,6 +16,9 @@ const error = ref<string | null>(null);
 const showDisabled = ref(false);
 const cleaning = ref(false);
 const bootstrapSectionVisible = ref(false);
+const showCreateModal = ref(false);
+const createName = ref("");
+const creating = ref(false);
 
 const totalActive = computed(() => allHomes.value.filter((h) => h.enabled).length);
 const totalDisabled = computed(() => allHomes.value.filter((h) => !h.enabled).length);
@@ -40,8 +43,6 @@ const getOwnerInitials = (displayName: string) => {
 };
 
 const sortedHomes = computed(() => {
-	const extractedNumbers = new Map();
-
 	return [...(homes.value || [])].sort((a, b) => {
 		if (a.enabled !== b.enabled) {
 			return b.enabled ? 1 : -1;
@@ -53,6 +54,21 @@ const sortedHomes = computed(() => {
 		};
 		return extractNumber(a.name) - extractNumber(b.name);
 	});
+});
+
+const nextSuggestedName = computed(() => {
+	const extractedNumbers = allHomes.value
+		.map((home) => {
+			const match = home.name?.match(/Haus\s*(\d+)/i);
+			return match ? parseInt(match[1], 10) : null;
+		})
+		.filter((value): value is number => typeof value === "number");
+
+	if (!extractedNumbers.length) {
+		return "Haus 1";
+	}
+
+	return `Haus ${Math.max(...extractedNumbers) + 1}`;
 });
 
 const fetchHomes = async () => {
@@ -89,6 +105,51 @@ const deleteHome = async (homeId: string) => {
 			title: getFetchError(e) || "Failed to delete home",
 			color: "error",
 		});
+	}
+};
+
+const openCreateModal = () => {
+	createName.value = nextSuggestedName.value;
+	showCreateModal.value = true;
+};
+
+const createHomeRecord = async () => {
+	const trimmedName = createName.value.trim();
+
+	if (!trimmedName) {
+		toast.add({
+			title: "Name erforderlich",
+			description: "Bitte geben Sie einen Namen fuer das neue Haus ein.",
+			color: "warning",
+		});
+		return;
+	}
+
+	try {
+		await waitForAuth();
+		creating.value = true;
+		const createdHome = await $fetch<{ id: string; name: string }>("/api/admin/homes/create", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+			body: { name: trimmedName },
+		});
+
+		showCreateModal.value = false;
+		toast.add({
+			title: "Haus erstellt",
+			description: `${createdHome.name} wurde angelegt und kann jetzt zugewiesen werden.`,
+			color: "success",
+		});
+
+		await fetchHomes();
+		await navigateTo(localePath(`/admin/homes/${createdHome.id}/edit`));
+	} catch (e: unknown) {
+		toast.add({
+			title: getFetchError(e) || "Haus konnte nicht erstellt werden",
+			color: "error",
+		});
+	} finally {
+		creating.value = false;
 	}
 };
 
@@ -162,14 +223,24 @@ watchEffect(() => {
 				<h1 class="display-copy text-4xl font-bold tracking-[-0.04em]">Häuser verwalten</h1>
 				<p class="app-muted mt-2">Behalten Sie Aktivstatus, Eigentümer und Bearbeitungszugänge übersichtlich im Blick.</p>
 			</div>
-			<div class="grid grid-cols-2 gap-3">
-				<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
-					<p class="text-xs uppercase tracking-[0.18em] app-muted">Aktiv</p>
-					<p class="display-copy text-2xl font-bold">{{ totalActive }}</p>
-				</div>
-				<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
-					<p class="text-xs uppercase tracking-[0.18em] app-muted">Deaktiviert</p>
-					<p class="display-copy text-2xl font-bold">{{ totalDisabled }}</p>
+			<div class="flex flex-col items-stretch gap-3 md:items-end">
+				<UButton
+					icon="i-lucide-house-plus"
+					size="lg"
+					class="justify-center md:min-w-[13rem]"
+					@click="openCreateModal"
+				>
+					Neues Haus
+				</UButton>
+				<div class="grid grid-cols-2 gap-3">
+					<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
+						<p class="text-xs uppercase tracking-[0.18em] app-muted">Aktiv</p>
+						<p class="display-copy text-2xl font-bold">{{ totalActive }}</p>
+					</div>
+					<div class="rounded-2xl border border-stone-200/70 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-900/50 md:border-[var(--app-border)] md:bg-[var(--app-surface)] md:shadow-[var(--app-shadow)] md:backdrop-blur-[20px]">
+						<p class="text-xs uppercase tracking-[0.18em] app-muted">Deaktiviert</p>
+						<p class="display-copy text-2xl font-bold">{{ totalDisabled }}</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -293,5 +364,50 @@ watchEffect(() => {
 				</template>
 			</UTable>
 		</div>
+
+		<UModal
+			v-model:open="showCreateModal"
+			title="Neues Haus erstellen"
+			description="Legen Sie ein neues Haus an und weisen Sie die Eigentümer anschliessend in der Bearbeitung zu."
+			:ui="{ content: 'sm:max-w-lg' }"
+		>
+			<template #body>
+				<div class="space-y-4">
+					<UFormField
+						label="Hausname"
+						description="Sie koennen den Namen spaeter jederzeit anpassen."
+						required
+					>
+						<UInput
+							v-model="createName"
+							size="lg"
+							class="w-full"
+							placeholder="z.B. Haus 11"
+							autofocus
+							@keyup.enter="createHomeRecord"
+						/>
+					</UFormField>
+				</div>
+			</template>
+
+			<template #footer>
+				<div class="flex w-full items-center justify-end gap-3">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						@click="showCreateModal = false"
+					>
+						Abbrechen
+					</UButton>
+					<UButton
+						icon="i-lucide-house-plus"
+						:loading="creating"
+						@click="createHomeRecord"
+					>
+						Haus erstellen
+					</UButton>
+				</div>
+			</template>
+		</UModal>
 	</div>
 </template>

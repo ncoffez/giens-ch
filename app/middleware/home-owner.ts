@@ -7,11 +7,7 @@ export const homeOwnerLogic = async (
 	homeId: string,
 	options?: { loginPath?: string; redirectPath?: string },
 ) => {
-	const { $isAdmin, $token } = nuxtApp;
-
-	if ($isAdmin?.value) {
-		return true;
-	}
+	const { $token } = nuxtApp;
 
 	const token = $token?.value;
 	if (!token) {

@@ -11,6 +11,7 @@ const { waitForAuth, token } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 const localePath = useLocalePath();
+const { t } = useI18n();
 
 const homeId = computed(() => route.params.id as string);
 const home = ref<Home | null>(null);
@@ -46,6 +47,23 @@ const contactForm = ref({
 const ownerContacts = computed(() => formContacts.value.filter((contact) => contact.isOwner));
 const additionalContacts = computed(() => formContacts.value.filter((contact) => !contact.isOwner));
 const isEditingOwnerContact = computed(() => Boolean(editingContact.value?.isOwner));
+const sectionItems = computed(() => [
+	{ id: "links", label: t("homes.edit.sections.links"), icon: "i-lucide-link" },
+	{ id: "photos", label: t("homes.edit.sections.photos"), icon: "i-lucide-image" },
+	{ id: "wifi", label: t("homes.edit.sections.wifi"), icon: "i-lucide-wifi" },
+	{ id: "contacts", label: t("homes.edit.sections.contacts"), icon: "i-lucide-users" },
+	{ id: "instructions", label: t("homes.edit.sections.instructions"), icon: "i-lucide-file-text" },
+	{ id: "files", label: t("homes.edit.sections.files"), icon: "i-lucide-folder" },
+]);
+const contactModalTitle = computed(() => {
+	if (!editingContact.value) {
+		return t("homes.edit.contactModal.createTitle");
+	}
+
+	return isEditingOwnerContact.value
+		? t("homes.edit.contactModal.ownerTitle")
+		: t("homes.edit.contactModal.editTitle");
+});
 
 const fetchHome = async () => {
 	try {
@@ -82,7 +100,7 @@ const fetchHome = async () => {
 		console.log("[edit-home] Home loaded:", home.value.name);
 	} catch (e: unknown) {
 		console.error("[edit-home] Error fetching home:", e);
-		error.value = getFetchError(e) || "Fehler beim Laden";
+		error.value = getFetchError(e) || t("homes.edit.toasts.loadError");
 	} finally {
 		loading.value = false;
 	}
@@ -101,10 +119,10 @@ const saveBasicInfo = async () => {
 				instructions: formInstructions.value,
 			},
 		});
-		toast.add({ title: "Gespeichert", color: "success" });
+		toast.add({ title: t("homes.edit.toasts.saved"), color: "success" });
 		await fetchHome();
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Speichern", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.edit.toasts.saveError"), description: getFetchError(e), color: "error" });
 	} finally {
 		saving.value = false;
 	}
@@ -120,10 +138,10 @@ const saveContacts = async () => {
 				contacts: formContacts.value,
 			},
 		});
-		toast.add({ title: "Kontakte gespeichert", color: "success" });
+		toast.add({ title: t("homes.edit.toasts.contactsSaved"), color: "success" });
 		await fetchHome();
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Speichern", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.edit.toasts.saveError"), description: getFetchError(e), color: "error" });
 	} finally {
 		saving.value = false;
 	}
@@ -154,7 +172,7 @@ const openContactModal = (contact?: HomeContact) => {
 
 const saveContact = () => {
 	if (!contactForm.value.name.trim()) {
-		toast.add({ title: "Name erforderlich", color: "warning" });
+		toast.add({ title: t("homes.edit.toasts.nameRequired"), color: "warning" });
 		return;
 	}
 
@@ -192,7 +210,11 @@ const saveContact = () => {
 const deleteContact = (contactId: string) => {
 	const contact = formContacts.value.find(c => c.id === contactId);
 	if (contact?.isOwner) {
-		toast.add({ title: "Eigentümer können nicht gelöscht werden", description: "Sie können sie stattdessen verstecken.", color: "warning" });
+		toast.add({
+			title: t("homes.edit.toasts.ownerDeleteForbiddenTitle"),
+			description: t("homes.edit.toasts.ownerDeleteForbiddenDescription"),
+			color: "warning",
+		});
 		return;
 	}
 
@@ -215,7 +237,11 @@ const openPreview = () => {
 	if (previewUrl.value) {
 		window.open(previewUrl.value, "_blank");
 	} else {
-		toast.add({ title: "Kein aktiver Link", description: "Erstellen Sie zuerst einen Link.", color: "warning" });
+		toast.add({
+			title: t("homes.edit.toasts.noActiveLinkTitle"),
+			description: t("homes.edit.toasts.noActiveLinkDescription"),
+			color: "warning",
+		});
 	}
 };
 
@@ -235,7 +261,7 @@ onMounted(fetchHome);
 						@click="navigateTo(localePath('/my-homes'))"
 					/>
 					<div v-if="home">
-						<p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)]">Mein Haus</p>
+						<p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)]">{{ t("homes.edit.eyebrow") }}</p>
 						<h1 class="display-copy font-bold text-xl">{{ home.name }}</h1>
 					</div>
 				</div>
@@ -247,7 +273,7 @@ onMounted(fetchHome);
 						@click="openPreview"
 						:disabled="!previewUrl"
 					>
-						Vorschau
+						{{ t("homes.edit.preview") }}
 					</UButton>
 				</div>
 			</div>
@@ -258,7 +284,7 @@ onMounted(fetchHome);
 			<div v-if="loading" class="flex items-center justify-center py-20">
 				<div class="text-center space-y-4">
 					<div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-					<p class="text-stone-500">Laden...</p>
+					<p class="text-stone-500">{{ t("homes.edit.loading") }}</p>
 				</div>
 			</div>
 
@@ -268,7 +294,7 @@ onMounted(fetchHome);
 					<UIcon name="i-lucide-alert-circle" class="w-8 h-8 text-red-500" />
 				</div>
 				<p class="text-red-600 font-medium mb-4">{{ error }}</p>
-				<UButton color="neutral" variant="soft" @click="fetchHome">Erneut versuchen</UButton>
+				<UButton color="neutral" variant="soft" @click="fetchHome">{{ t("homes.edit.retry") }}</UButton>
 			</div>
 
 			<!-- Main Content -->
@@ -279,14 +305,7 @@ onMounted(fetchHome);
 						<div class="app-card rounded-[1.75rem] p-4 lg:sticky lg:top-24">
 						<nav class="space-y-1">
 							<button
-								v-for="section in [
-									{ id: 'links', label: 'Links', icon: 'i-lucide-link' },
-									{ id: 'photos', label: 'Fotos', icon: 'i-lucide-image' },
-									{ id: 'wifi', label: 'WLAN', icon: 'i-lucide-wifi' },
-									{ id: 'contacts', label: 'Kontakte', icon: 'i-lucide-users' },
-									{ id: 'instructions', label: 'Anleitung', icon: 'i-lucide-file-text' },
-									{ id: 'files', label: 'Dateien', icon: 'i-lucide-folder' },
-								]"
+								v-for="section in sectionItems"
 								:key="section.id"
 								@click="activeSection = section.id as any"
 								class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
@@ -306,8 +325,8 @@ onMounted(fetchHome);
 						<!-- Share Links Section -->
 						<div v-if="activeSection === 'links'" class="space-y-6">
 							<div>
-								<h2 class="text-2xl font-black mb-2">Links verwalten</h2>
-								<p class="text-stone-500">Erstellen Sie Links, die Sie mit Mietern teilen können.</p>
+								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.links.title") }}</h2>
+								<p class="text-stone-500">{{ t("homes.edit.links.description") }}</p>
 							</div>
 							<HomeShareLinks :home-id="homeId" :shares="shares" @refresh="fetchHome" />
 						</div>
@@ -315,8 +334,8 @@ onMounted(fetchHome);
 						<!-- Photos Section -->
 						<div v-else-if="activeSection === 'photos'" class="space-y-6">
 							<div>
-								<h2 class="text-2xl font-black mb-2">Fotos</h2>
-								<p class="text-stone-500">Laden Sie Fotos hoch, die Mieter sehen können.</p>
+								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.photos.title") }}</h2>
+								<p class="text-stone-500">{{ t("homes.edit.photos.description") }}</p>
 							</div>
 							<HomePhotos :home="home" @refresh="fetchHome" />
 						</div>
@@ -324,24 +343,24 @@ onMounted(fetchHome);
 						<!-- WiFi Section -->
 						<div v-else-if="activeSection === 'wifi'" class="space-y-6">
 							<div>
-								<h2 class="text-2xl font-black mb-2">WLAN-Zugang</h2>
-								<p class="text-stone-500">Teilen Sie die WLAN-Daten mit Ihren Mietern.</p>
+								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.wifi.title") }}</h2>
+								<p class="text-stone-500">{{ t("homes.edit.wifi.description") }}</p>
 							</div>
 							<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6 space-y-6">
-								<UFormField label="Netzwerkname (SSID)">
+								<UFormField :label="t('homes.edit.wifi.ssidLabel')">
 									<UInput
 										v-model="formWifiSSID"
-										placeholder="z.B. MeinWLAN"
+										:placeholder="t('homes.edit.wifi.ssidPlaceholder')"
 										size="xl"
 									/>
 								</UFormField>
 
-								<UFormField label="Passwort">
+								<UFormField :label="t('homes.edit.wifi.passwordLabel')">
 									<div class="flex gap-2">
 										<UInput
 											v-model="formWifiPassword"
 											:type="showWifi ? 'text' : 'password'"
-											placeholder="WLAN-Passwort"
+											:placeholder="t('homes.edit.wifi.passwordPlaceholder')"
 											size="xl"
 											class="flex-1"
 										/>
@@ -357,7 +376,7 @@ onMounted(fetchHome);
 
 								<div class="flex justify-end">
 									<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
-										Speichern
+										{{ t("homes.edit.actions.save") }}
 									</UButton>
 								</div>
 							</div>
@@ -367,30 +386,30 @@ onMounted(fetchHome);
 						<div v-else-if="activeSection === 'contacts'" class="space-y-6">
 							<div class="flex items-center justify-between">
 								<div>
-									<h2 class="text-2xl font-black mb-2">Kontakte</h2>
-									<p class="text-stone-500">Pflegen Sie Eigentümer- und Zusatzkontakte, damit Gäste die richtigen Ansprechpartner erreichen.</p>
+									<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.contacts.title") }}</h2>
+									<p class="text-stone-500">{{ t("homes.edit.contacts.description") }}</p>
 								</div>
 								<UButton
 									icon="i-lucide-plus"
 									@click="openContactModal()"
 								>
-									Kontakt hinzufügen
+									{{ t("homes.edit.contacts.add") }}
 								</UButton>
 							</div>
 
 							<div v-if="formContacts.length === 0" class="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700">
 								<UIcon name="i-lucide-users" class="w-12 h-12 text-stone-300 mx-auto mb-4" />
-								<p class="text-stone-500">Keine Kontakte vorhanden</p>
+								<p class="text-stone-500">{{ t("homes.edit.contacts.emptyTitle") }}</p>
 								<UButton class="mt-4" @click="openContactModal()">
-									Ersten Kontakt hinzufügen
+									{{ t("homes.edit.contacts.emptyAction") }}
 								</UButton>
 							</div>
 
 							<div v-else class="space-y-6">
 								<section v-if="ownerContacts.length > 0" class="space-y-4">
 									<div class="space-y-1">
-										<h3 class="text-lg font-bold">Eigentümer</h3>
-										<p class="text-sm text-stone-500">Name und Profil bleiben erhalten, E-Mail, Telefon und Hinweise können hier hausbezogen ergänzt werden.</p>
+										<h3 class="text-lg font-bold">{{ t("homes.edit.contacts.ownerTitle") }}</h3>
+										<p class="text-sm text-stone-500">{{ t("homes.edit.contacts.ownerDescription") }}</p>
 									</div>
 									<div class="grid gap-4 xl:grid-cols-2">
 										<ContactCard
@@ -405,7 +424,7 @@ onMounted(fetchHome);
 													variant="ghost"
 													size="sm"
 													@click="toggleContactHidden(contact.id)"
-													:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
+													:title="contact.hidden ? t('homes.edit.contacts.show') : t('homes.edit.contacts.hide')"
 												/>
 												<UButton
 													icon="i-lucide-pencil"
@@ -421,11 +440,11 @@ onMounted(fetchHome);
 
 								<section class="space-y-4">
 									<div class="space-y-1">
-										<h3 class="text-lg font-bold">Weitere Kontakte</h3>
-										<p class="text-sm text-stone-500">Hauswartung, Nachbarschaft oder lokale Hilfeleistungen lassen sich hier separat pflegen.</p>
+										<h3 class="text-lg font-bold">{{ t("homes.edit.contacts.additionalTitle") }}</h3>
+										<p class="text-sm text-stone-500">{{ t("homes.edit.contacts.additionalDescription") }}</p>
 									</div>
 									<div v-if="additionalContacts.length === 0" class="rounded-2xl border border-dashed border-stone-200 bg-white/70 px-6 py-8 text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-800/60">
-										Noch keine zusätzlichen Kontakte vorhanden.
+										{{ t("homes.edit.contacts.additionalEmpty") }}
 									</div>
 									<div v-else class="grid gap-4 xl:grid-cols-2">
 										<ContactCard
@@ -440,7 +459,7 @@ onMounted(fetchHome);
 													variant="ghost"
 													size="sm"
 													@click="toggleContactHidden(contact.id)"
-													:title="contact.hidden ? 'Anzeigen' : 'Verstecken'"
+													:title="contact.hidden ? t('homes.edit.contacts.show') : t('homes.edit.contacts.hide')"
 												/>
 												<UButton
 													icon="i-lucide-pencil"
@@ -466,16 +485,16 @@ onMounted(fetchHome);
 						<!-- Instructions Section -->
 						<div v-else-if="activeSection === 'instructions'" class="space-y-6">
 							<div>
-								<h2 class="text-2xl font-black mb-2">Anleitung</h2>
-								<p class="text-stone-500">Hinterlegen Sie die wichtigsten Hinweise für Ankunft, Aufenthalt und Abreise in einer klaren, gut lesbaren Struktur.</p>
+								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.instructions.title") }}</h2>
+								<p class="text-stone-500">{{ t("homes.edit.instructions.description") }}</p>
 							</div>
 							<div class="flex items-start justify-between gap-4 rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4">
 								<div class="space-y-1">
-									<p class="text-sm font-semibold text-[var(--app-text)]">Hinweise für Gäste</p>
-									<p class="text-sm text-[var(--app-muted)]">Der Editor bringt bereits seine eigene Oberfläche mit. Die Abschnittskarte bleibt deshalb bewusst schlank.</p>
+									<p class="text-sm font-semibold text-[var(--app-text)]">{{ t("homes.edit.instructions.cardTitle") }}</p>
+									<p class="text-sm text-[var(--app-muted)]">{{ t("homes.edit.instructions.cardDescription") }}</p>
 								</div>
 								<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
-									Speichern
+									{{ t("homes.edit.actions.save") }}
 								</UButton>
 							</div>
 							<TiptapEditor v-model="formInstructions" />
@@ -484,21 +503,21 @@ onMounted(fetchHome);
 						<!-- Files Section -->
 						<div v-else-if="activeSection === 'files'" class="space-y-6">
 							<div>
-								<h2 class="text-2xl font-black mb-2">Dateien</h2>
-								<p class="text-stone-500">Laden Sie Dokumente hoch, die Mieter herunterladen können.</p>
+								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.files.title") }}</h2>
+								<p class="text-stone-500">{{ t("homes.edit.files.description") }}</p>
 							</div>
 							<div class="grid gap-6 xl:grid-cols-2">
 								<div class="space-y-4">
 									<div>
-										<h3 class="text-lg font-bold">Für Besucher freigegeben</h3>
-										<p class="text-sm text-stone-500">Diese Dateien sind über aktive Haus-Links sichtbar.</p>
+										<h3 class="text-lg font-bold">{{ t("homes.edit.files.sharedTitle") }}</h3>
+										<p class="text-sm text-stone-500">{{ t("homes.edit.files.sharedDescription") }}</p>
 									</div>
 									<HomeFiles :home="home" @refresh="fetchHome" />
 								</div>
 								<div class="space-y-4">
 									<div>
-										<h3 class="text-lg font-bold">Privat für Eigentümer</h3>
-										<p class="text-sm text-stone-500">Diese Dateien bleiben intern und erscheinen nie im Besucherzugriff.</p>
+										<h3 class="text-lg font-bold">{{ t("homes.edit.files.privateTitle") }}</h3>
+										<p class="text-sm text-stone-500">{{ t("homes.edit.files.privateDescription") }}</p>
 									</div>
 									<HomeFiles :home="home" privacy="private" @refresh="fetchHome" />
 								</div>
@@ -514,41 +533,41 @@ onMounted(fetchHome);
 			<template #content>
 				<div class="p-6">
 					<h3 class="text-lg font-bold mb-4">
-						{{ editingContact ? (isEditingOwnerContact ? "Eigentümerkontakt ergänzen" : "Kontakt bearbeiten") : "Neuer Kontakt" }}
+						{{ contactModalTitle }}
 					</h3>
 
 					<div class="space-y-4">
-						<UFormField label="Name" required>
-							<UInput v-model="contactForm.name" placeholder="Vorname Nachname" size="xl" :disabled="isEditingOwnerContact" />
+						<UFormField :label="t('homes.edit.contactModal.nameLabel')" required>
+							<UInput v-model="contactForm.name" :placeholder="t('homes.edit.contactModal.namePlaceholder')" size="xl" :disabled="isEditingOwnerContact" />
 							<p v-if="isEditingOwnerContact" class="mt-1 text-xs text-stone-500">
-								Der Name kommt aus dem Eigentümerprofil. Hier ergänzen Sie nur die Kontaktdaten für dieses Haus.
+								{{ t("homes.edit.contactModal.ownerHint") }}
 							</p>
 						</UFormField>
 
-						<UFormField label="E-Mail">
-							<UInput v-model="contactForm.email" type="email" placeholder="email@beispiel.ch" size="xl" />
+						<UFormField :label="t('homes.edit.contactModal.emailLabel')">
+							<UInput v-model="contactForm.email" type="email" :placeholder="t('homes.edit.contactModal.emailPlaceholder')" size="xl" />
 						</UFormField>
 
-						<UFormField label="Telefon">
-							<UInput v-model="contactForm.phone" type="tel" placeholder="+41 79 123 45 67" size="xl" />
+						<UFormField :label="t('homes.edit.contactModal.phoneLabel')">
+							<UInput v-model="contactForm.phone" type="tel" :placeholder="t('homes.edit.contactModal.phonePlaceholder')" size="xl" />
 						</UFormField>
 
-						<UFormField label="Notizen">
-							<UInput v-model="contactForm.notes" placeholder="z.B. Hausverwaltung, Nachbar" size="xl" />
+						<UFormField :label="t('homes.edit.contactModal.notesLabel')">
+							<UInput v-model="contactForm.notes" :placeholder="t('homes.edit.contactModal.notesPlaceholder')" size="xl" />
 						</UFormField>
 
-						<UFormField label="Versteckt">
+						<UFormField :label="t('homes.edit.contactModal.hiddenLabel')">
 							<USwitch v-model="contactForm.hidden" />
-							<p class="text-xs text-stone-500 mt-1">Versteckte Kontakte werden Mietern nicht angezeigt.</p>
+							<p class="text-xs text-stone-500 mt-1">{{ t("homes.edit.contactModal.hiddenHint") }}</p>
 						</UFormField>
 					</div>
 
 					<div class="flex justify-end gap-2 mt-6">
 						<UButton color="neutral" variant="ghost" @click="showContactModal = false">
-							Abbrechen
+							{{ t("homes.edit.actions.cancel") }}
 						</UButton>
 						<UButton @click="saveContact">
-							Speichern
+							{{ t("homes.edit.actions.save") }}
 						</UButton>
 					</div>
 				</div>

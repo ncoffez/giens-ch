@@ -11,6 +11,7 @@ const emit = defineEmits<{
 
 const { token } = useAuthReady();
 const toast = useToast();
+const { t } = useI18n();
 
 const uploading = ref(false);
 const uploadProgress = ref(0);
@@ -27,19 +28,19 @@ const uploadPhotos = async (event: Event) => {
 	const currentCount = props.home.photos?.length || 0;
 
 	if (currentCount + fileArray.length > MAX_PHOTOS) {
-		toast.add({ title: `Maximal ${MAX_PHOTOS} Fotos erlaubt`, color: "error" });
+		toast.add({ title: t("homes.photos.toasts.maxPhotos", { count: MAX_PHOTOS }), color: "error" });
 		return;
 	}
 
 	const invalidFiles = fileArray.filter(f => !f.type.startsWith("image/"));
 	if (invalidFiles.length > 0) {
-		toast.add({ title: "Nur Bilddateien erlaubt", color: "error" });
+		toast.add({ title: t("homes.photos.toasts.imagesOnly"), color: "error" });
 		return;
 	}
 
 	const oversizedFiles = fileArray.filter(f => f.size > 10 * 1024 * 1024);
 	if (oversizedFiles.length > 0) {
-		toast.add({ title: "Datei zu gross (max. 10MB)", color: "error" });
+		toast.add({ title: t("homes.photos.toasts.maxSize"), color: "error" });
 		return;
 	}
 
@@ -81,7 +82,7 @@ const uploadPhotos = async (event: Event) => {
 
 	if (successCount > 0) {
 		toast.add({
-			title: `${successCount} Foto${successCount > 1 ? "s" : ""} hochgeladen`,
+			title: t("homes.photos.toasts.uploaded", { count: successCount }),
 			color: "success",
 		});
 		emit("refresh");
@@ -89,14 +90,14 @@ const uploadPhotos = async (event: Event) => {
 
 	if (errorCount > 0) {
 		toast.add({
-			title: `${errorCount} Upload${errorCount > 1 ? "s" : ""} fehlgeschlagen`,
+			title: t("homes.photos.toasts.uploadFailed", { count: errorCount }),
 			color: "error",
 		});
 	}
 };
 
 const deletePhoto = async (photoUrl: string) => {
-	if (!confirm("Foto wirklich löschen?")) return;
+	if (!confirm(t("homes.photos.confirmDelete"))) return;
 
 	try {
 		await $fetch(`/api/homes/${props.home.id}/photos/delete`, {
@@ -104,10 +105,10 @@ const deletePhoto = async (photoUrl: string) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { photoUrl },
 		});
-		toast.add({ title: "Foto gelöscht", color: "success" });
+		toast.add({ title: t("homes.photos.toasts.deleted"), color: "success" });
 		emit("refresh");
 	} catch (e: unknown) {
-		toast.add({ title: "Löschen fehlgeschlagen", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.photos.toasts.deleteFailed"), description: getFetchError(e), color: "error" });
 	}
 };
 </script>
@@ -125,7 +126,7 @@ const deletePhoto = async (photoUrl: string) => {
 				<div v-if="uploading" class="space-y-3">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
 					<p class="text-stone-600 dark:text-stone-400">
-						Hochladen... {{ uploadCurrent }}/{{ uploadTotal }}
+						{{ t("homes.photos.uploading", { current: uploadCurrent, total: uploadTotal }) }}
 					</p>
 					<div class="w-full max-w-xs mx-auto">
 						<UProgress :value="uploadProgress" color="primary" size="sm" />
@@ -133,9 +134,9 @@ const deletePhoto = async (photoUrl: string) => {
 				</div>
 				<div v-else class="space-y-3">
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
-					<p class="text-stone-600 dark:text-stone-400 font-medium">Klicken zum Hochladen</p>
-					<p class="text-sm text-stone-400">{{ home.photos?.length || 0 }} / {{ MAX_PHOTOS }} Fotos</p>
-					<p class="text-xs text-stone-400">Mehrere Dateien möglich</p>
+					<p class="text-stone-600 dark:text-stone-400 font-medium">{{ t("homes.photos.clickToUpload") }}</p>
+					<p class="text-sm text-stone-400">{{ t("homes.photos.count", { current: home.photos?.length || 0, max: MAX_PHOTOS }) }}</p>
+					<p class="text-xs text-stone-400">{{ t("homes.photos.multiUpload") }}</p>
 				</div>
 			</div>
 			<input type="file" accept="image/*" multiple class="hidden" :disabled="uploading" @change="uploadPhotos" />
@@ -148,7 +149,7 @@ const deletePhoto = async (photoUrl: string) => {
 				:key="index"
 				class="relative group aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800"
 			>
-				<img :src="photo" :alt="`Foto ${index + 1}`" class="w-full h-full object-cover" />
+				<img :src="photo" :alt="t('homes.photos.photoAlt', { index: index + 1 })" class="w-full h-full object-cover" />
 				<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 					<UButton
 						color="error"
@@ -156,9 +157,7 @@ const deletePhoto = async (photoUrl: string) => {
 						size="sm"
 						icon="i-lucide-trash-2"
 						@click="deletePhoto(photo)"
-					>
-						Löschen
-					</UButton>
+					>{{ t("documents.actions.delete") }}</UButton>
 				</div>
 			</div>
 		</div>
@@ -166,8 +165,8 @@ const deletePhoto = async (photoUrl: string) => {
 		<!-- Empty state -->
 		<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
 			<UIcon name="i-lucide-image" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
-			<p class="text-stone-500">Keine Fotos</p>
-			<p class="text-sm text-stone-400">Laden Sie Fotos hoch, die Mieter sehen können</p>
+			<p class="text-stone-500">{{ t("homes.photos.emptyTitle") }}</p>
+			<p class="text-sm text-stone-400">{{ t("homes.photos.emptyDescription") }}</p>
 		</div>
 	</div>
 </template>

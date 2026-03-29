@@ -7,63 +7,79 @@ import { isOwnerLogic } from "../../app/middleware/is-owner.ts";
 import { isPublisherLogic } from "../../app/middleware/is-publisher.ts";
 import { isLoggedInLogic } from "../../app/middleware/is-logged-in.ts";
 import { isNotLoggedInLogic } from "../../app/middleware/is-not-logged-in.ts";
+import { homeOwnerLogic } from "../../app/middleware/home-owner.ts";
 
 // Mutable mock state
 const mockNuxtApp = {
-  $isAdmin: ref(false),
-  $isOwner: ref(false),
-  $isPublisher: ref(false),
-  $currentUser: ref(null as any),
-  $authInitialized: ref(true),
+	$isAdmin: ref(false),
+	$isOwner: ref(false),
+	$isPublisher: ref(false),
+	$currentUser: ref(null as any),
+	$authInitialized: ref(true),
+	$token: ref("test-token"),
 };
 
 describe("Middleware Logic (Honest Integration)", () => {
-  beforeEach(() => {
-    mockNuxtApp.$isAdmin.value = false;
-    mockNuxtApp.$isOwner.value = false;
-    mockNuxtApp.$isPublisher.value = false;
-    mockNuxtApp.$currentUser.value = null;
-  });
+	beforeEach(() => {
+		mockNuxtApp.$isAdmin.value = false;
+		mockNuxtApp.$isOwner.value = false;
+		mockNuxtApp.$isPublisher.value = false;
+		mockNuxtApp.$currentUser.value = null;
+		mockNuxtApp.$token.value = "test-token";
+		vi.unstubAllGlobals();
+	});
 
-  it("isAdminLogic: allows admin, redirects non-admin", async () => {
-    mockNuxtApp.$isAdmin.value = true;
-    expect(await isAdminLogic(mockNuxtApp)).toBe(true);
+	it("isAdminLogic: allows admin, redirects non-admin", async () => {
+		mockNuxtApp.$isAdmin.value = true;
+		expect(await isAdminLogic(mockNuxtApp)).toBe(true);
 
-    mockNuxtApp.$isAdmin.value = false;
-    expect(await isAdminLogic(mockNuxtApp)).toBe('/');
-  });
+		mockNuxtApp.$isAdmin.value = false;
+		expect(await isAdminLogic(mockNuxtApp)).toBe("/");
+	});
 
-  it("isOwnerLogic: allows owner, redirects non-owner", async () => {
-    mockNuxtApp.$currentUser.value = { uid: "test" };
-    mockNuxtApp.$isOwner.value = true;
-    expect(await isOwnerLogic(mockNuxtApp)).toBe(true);
+	it("isOwnerLogic: allows owner, redirects non-owner", async () => {
+		mockNuxtApp.$currentUser.value = { uid: "test" };
+		mockNuxtApp.$isOwner.value = true;
+		expect(await isOwnerLogic(mockNuxtApp)).toBe(true);
 
-    mockNuxtApp.$currentUser.value = { uid: "test" };
-    mockNuxtApp.$isOwner.value = false;
-    expect(await isOwnerLogic(mockNuxtApp)).toBe('/');
-  });
+		mockNuxtApp.$currentUser.value = { uid: "test" };
+		mockNuxtApp.$isOwner.value = false;
+		expect(await isOwnerLogic(mockNuxtApp)).toBe("/");
+	});
 
-  it("isPublisherLogic: allows publisher, redirects non-publisher", async () => {
-    mockNuxtApp.$isPublisher.value = true;
-    expect(await isPublisherLogic(mockNuxtApp)).toBe(true);
+	it("homeOwnerLogic: does not allow admins to bypass home ownership", async () => {
+		mockNuxtApp.$isAdmin.value = true;
+		vi.stubGlobal("$fetch", vi.fn().mockRejectedValue({
+			response: { status: 403 },
+		}));
 
-    mockNuxtApp.$isPublisher.value = false;
-    expect(await isPublisherLogic(mockNuxtApp)).toBe('/');
-  });
+		await expect(homeOwnerLogic(mockNuxtApp, "home-1")).resolves.toEqual({
+			redirect: "/",
+			reason: "not_owner",
+		});
+	});
 
-  it("isLoggedInLogic: allows logged in, redirects not logged in", async () => {
-    mockNuxtApp.$currentUser.value = { uid: 'test' };
-    expect(await isLoggedInLogic(mockNuxtApp)).toBe(true);
+	it("isPublisherLogic: allows publisher, redirects non-publisher", async () => {
+		mockNuxtApp.$isPublisher.value = true;
+		expect(await isPublisherLogic(mockNuxtApp)).toBe(true);
 
-    mockNuxtApp.$currentUser.value = null;
-    expect(await isLoggedInLogic(mockNuxtApp, { redirectPath: "/documents?folder=abc&fileId=123" })).toBe('/login?redirect=%2Fdocuments%3Ffolder%3Dabc%26fileId%3D123');
-  });
+		mockNuxtApp.$isPublisher.value = false;
+		expect(await isPublisherLogic(mockNuxtApp)).toBe("/");
+	});
 
-  it("isNotLoggedInLogic: allows not logged in, redirects logged in", async () => {
-    mockNuxtApp.$currentUser.value = null;
-    expect(await isNotLoggedInLogic(mockNuxtApp)).toBe(true);
+	it("isLoggedInLogic: allows logged in, redirects not logged in", async () => {
+		mockNuxtApp.$currentUser.value = { uid: "test" };
+		expect(await isLoggedInLogic(mockNuxtApp)).toBe(true);
 
-    mockNuxtApp.$currentUser.value = { uid: 'test' };
-    expect(await isNotLoggedInLogic(mockNuxtApp, "/documents?fileId=123")).toBe('/documents?fileId=123');
-  });
+		mockNuxtApp.$currentUser.value = null;
+		expect(await isLoggedInLogic(mockNuxtApp, { redirectPath: "/documents?folder=abc&fileId=123" })).toBe("/login?redirect=%2Fdocuments%3Ffolder%3Dabc%26fileId%3D123");
+	});
+
+	it("isNotLoggedInLogic: allows not logged in, redirects logged in", async () => {
+		mockNuxtApp.$currentUser.value = null;
+		expect(await isNotLoggedInLogic(mockNuxtApp)).toBe(true);
+
+		mockNuxtApp.$currentUser.value = { uid: "test" };
+		expect(await isNotLoggedInLogic(mockNuxtApp, "/documents?fileId=123")).toBe("/documents?fileId=123");
+	});
 });

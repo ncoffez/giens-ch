@@ -19,10 +19,9 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const isAdmin = !!claims.admin;
 	const isOwner = await isHomeOwner(homeId, claims.uid);
 
-	if (!isAdmin && !isOwner) {
+	if (!isOwner) {
 		throw createError({
 			statusCode: 403,
 			message: "Forbidden: You cannot delete photos from this home",

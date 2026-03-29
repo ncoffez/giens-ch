@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { HomeContact } from "~/types";
+const localePath = useLocalePath();
+const { t } = useI18n();
 
 interface Props {
 	contact: HomeContact;
@@ -16,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 		<div class="flex items-start gap-4">
 			<NuxtLink
 				v-if="contact.isOwner"
-				:to="`/profile/${contact.id.replace('owner-', '')}`"
+				:to="localePath(`/profile/${contact.id.replace('owner-', '')}`)"
 				class="shrink-0 hover:opacity-80 transition-opacity"
 			>
 				<UAvatar
@@ -40,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 						<div class="flex flex-wrap items-center gap-2">
 							<NuxtLink
 								v-if="contact.isOwner"
-								:to="`/profile/${contact.id.replace('owner-', '')}`"
+								:to="localePath(`/profile/${contact.id.replace('owner-', '')}`)"
 								class="font-medium hover:text-primary transition-colors"
 							>
 								{{ contact.name }}
@@ -48,10 +50,10 @@ const props = withDefaults(defineProps<Props>(), {
 							<p v-else class="font-medium">{{ contact.name }}</p>
 
 							<span v-if="contact.isOwner" class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">
-								Eigentümer
+								{{ t("homes.contactCard.owner") }}
 							</span>
 							<span v-else-if="showHiddenBadge && contact.hidden" class="text-xs bg-stone-100 dark:bg-stone-700 text-stone-500 px-2 py-0.5 rounded-full">
-								Versteckt
+								{{ t("homes.contactCard.hidden") }}
 							</span>
 						</div>
 

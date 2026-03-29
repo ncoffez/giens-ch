@@ -29,6 +29,30 @@ describe("Admin Homes Page", () => {
 
 		const component = await mountSuspended(AdminHomesPage);
 		expect(component.text()).toContain("Häuser verwalten");
+		expect(component.text()).toContain("Neues Haus");
+	});
+
+	it("opens the create-home dialog from the admin overview", async () => {
+		registerEndpoint("/api/admin/homes", {
+			method: "GET",
+			handler: () => mockHomes,
+		});
+		registerEndpoint("/api/users/owners", {
+			method: "GET",
+			handler: () => mockOwners,
+		});
+
+		const component = await mountSuspended(AdminHomesPage);
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		const createButton = component.findAll("button").find((button) => button.text().includes("Neues Haus"));
+		expect(createButton).toBeTruthy();
+
+		await createButton!.trigger("click");
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		expect(document.body.textContent || "").toContain("Neues Haus erstellen");
+		expect(document.body.textContent || "").toContain("Hausname");
 	});
 
 	it("fetches and displays homes from API", async () => {

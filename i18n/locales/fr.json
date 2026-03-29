@@ -53,6 +53,169 @@
     "logout": "Déconnexion",
     "search": "Rechercher"
   },
+  "homes": {
+    "edit": {
+      "eyebrow": "Ma maison",
+      "preview": "Aperçu",
+      "loading": "Chargement...",
+      "retry": "Réessayer",
+      "actions": {
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      },
+      "sections": {
+        "links": "Liens",
+        "photos": "Photos",
+        "wifi": "Wi-Fi",
+        "contacts": "Contacts",
+        "instructions": "Consignes",
+        "files": "Fichiers"
+      },
+      "links": {
+        "title": "Gérer les liens",
+        "description": "Créez des liens que vous pouvez partager avec les locataires."
+      },
+      "photos": {
+        "title": "Photos",
+        "description": "Téléchargez des photos visibles par les locataires."
+      },
+      "wifi": {
+        "title": "Accès Wi-Fi",
+        "description": "Partagez les informations Wi-Fi avec vos locataires.",
+        "ssidLabel": "Nom du réseau (SSID)",
+        "ssidPlaceholder": "par ex. MonWifi",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Mot de passe Wi-Fi"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "description": "Gérez les contacts des propriétaires et les contacts complémentaires afin que les hôtes trouvent les bons interlocuteurs.",
+        "add": "Ajouter un contact",
+        "emptyTitle": "Aucun contact",
+        "emptyAction": "Ajouter le premier contact",
+        "ownerTitle": "Propriétaires",
+        "ownerDescription": "Le nom et le profil restent liés au compte propriétaire. Vous complétez ici uniquement les coordonnées propres à cette maison.",
+        "additionalTitle": "Autres contacts",
+        "additionalDescription": "Entretien, voisinage ou aides locales peuvent être gérés ici séparément.",
+        "additionalEmpty": "Aucun contact supplémentaire pour le moment.",
+        "show": "Afficher",
+        "hide": "Masquer"
+      },
+      "instructions": {
+        "title": "Consignes",
+        "description": "Déposez les informations essentielles pour l'arrivée, le séjour et le départ dans une structure claire et agréable à lire.",
+        "cardTitle": "Informations pour les hôtes",
+        "cardDescription": "L'éditeur dispose déjà de sa propre interface. Cette carte de section reste donc volontairement discrète."
+      },
+      "files": {
+        "title": "Fichiers",
+        "description": "Téléchargez des documents que les locataires pourront récupérer.",
+        "sharedTitle": "Partagé avec les visiteurs",
+        "sharedDescription": "Ces fichiers sont visibles via les liens actifs de la maison.",
+        "privateTitle": "Privé pour les propriétaires",
+        "privateDescription": "Ces fichiers restent internes et n'apparaissent jamais côté visiteurs."
+      },
+      "contactModal": {
+        "createTitle": "Nouveau contact",
+        "editTitle": "Modifier le contact",
+        "ownerTitle": "Compléter le contact du propriétaire",
+        "nameLabel": "Nom",
+        "namePlaceholder": "Prénom Nom",
+        "ownerHint": "Le nom provient du profil propriétaire. Vous complétez ici uniquement les coordonnées pour cette maison.",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "nom.exemple.ch",
+        "phoneLabel": "Téléphone",
+        "phonePlaceholder": "+41 79 123 45 67",
+        "notesLabel": "Notes",
+        "notesPlaceholder": "par ex. gestion de la maison, voisin",
+        "hiddenLabel": "Masqué",
+        "hiddenHint": "Les contacts masqués ne sont pas visibles pour les locataires."
+      },
+      "toasts": {
+        "loadError": "Erreur lors du chargement",
+        "saved": "Enregistré",
+        "saveError": "Erreur lors de l'enregistrement",
+        "contactsSaved": "Contacts enregistrés",
+        "nameRequired": "Le nom est requis",
+        "ownerDeleteForbiddenTitle": "Les propriétaires ne peuvent pas être supprimés",
+        "ownerDeleteForbiddenDescription": "Vous pouvez les masquer à la place.",
+        "noActiveLinkTitle": "Aucun lien actif",
+        "noActiveLinkDescription": "Créez d'abord un lien."
+      }
+    },
+    "shareLinks": {
+      "createTitle": "Créer un nouveau lien",
+      "durationLabel": "Durée de validité",
+      "customDaysPlaceholder": "Nombre de jours",
+      "days": "jours",
+      "expiresOn": "Expire le :",
+      "createAction": "Créer le lien",
+      "activeTitle": "Liens actifs",
+      "expiresAt": "Expire le :",
+      "accessCount": "{count} vues",
+      "emptyTitle": "Aucun lien actif",
+      "emptyDescription": "Créez un lien pour le partager avec les locataires",
+      "archivedToggle": "Afficher {count} lien(s) expiré(s) ou révoqué(s)",
+      "revoked": "Révoqué",
+      "expired": "Expiré",
+      "onDate": "le",
+      "confirmRevoke": "Révoquer vraiment ce lien ?",
+      "duration": {
+        "7": "7 jours",
+        "30": "30 jours",
+        "unlimited": "Illimité (10 ans)",
+        "custom": "Personnalisé"
+      },
+      "toasts": {
+        "created": "Lien créé",
+        "copiedToClipboard": "Lien copié dans le presse-papiers",
+        "copied": "Lien copié",
+        "revoked": "Lien révoqué",
+        "error": "Erreur"
+      }
+    },
+    "photos": {
+      "clickToUpload": "Cliquer pour téléverser",
+      "count": "{current} / {max} photos",
+      "multiUpload": "Plusieurs fichiers possibles",
+      "uploading": "Téléchargement... {current}/{total}",
+      "photoAlt": "Photo {index}",
+      "emptyTitle": "Aucune photo",
+      "emptyDescription": "Téléchargez des photos visibles par les locataires",
+      "confirmDelete": "Supprimer vraiment la photo ?",
+      "toasts": {
+        "maxPhotos": "Maximum {count} photos autorisées",
+        "imagesOnly": "Seuls les fichiers image sont autorisés",
+        "maxSize": "Fichier trop volumineux (max. 10MB)",
+        "uploaded": "{count} photo(s) téléchargée(s)",
+        "uploadFailed": "{count} téléchargement(s) échoué(s)",
+        "deleted": "Photo supprimée",
+        "deleteFailed": "La suppression a échoué"
+      }
+    },
+    "files": {
+      "clickToUpload": "Cliquer pour téléverser",
+      "supportedFormats": "PDF, DOC, XLS et autres (max. 50MB)",
+      "multiUpload": "Plusieurs fichiers possibles",
+      "privateHint": "Visible uniquement par les propriétaires et les administrateurs",
+      "uploading": "Téléchargement... {current}/{total}",
+      "emptyTitle": "Aucun fichier",
+      "sharedEmptyDescription": "Téléchargez des documents que les locataires pourront récupérer",
+      "privateEmptyDescription": "Téléchargez des documents internes réservés aux propriétaires",
+      "confirmDelete": "Supprimer vraiment « {name} » ?",
+      "toasts": {
+        "maxSize": "Fichier trop volumineux (max. 50MB)",
+        "uploaded": "{count} fichier(s) téléchargé(s)",
+        "uploadFailed": "{count} téléchargement(s) échoué(s)",
+        "deleted": "Fichier supprimé",
+        "deleteFailed": "La suppression a échoué"
+      }
+    },
+    "contactCard": {
+      "owner": "Propriétaire",
+      "hidden": "Masqué"
+    }
+  },
   "documents": {
     "title": "Documents partagés",
     "subtitle": "Fichiers, dossiers et téléchargements importants pour les propriétaires et l'administration.",
@@ -75,7 +238,7 @@
       "type": "Type",
       "size": "Taille",
       "fileDate": "Date du fichier",
-      "uploaded": "Téléversé",
+      "uploaded": "Téléchargé",
       "from": "Par",
       "folder": "Dossier"
     },
@@ -115,7 +278,7 @@
     "meta": {
       "type": "Type",
       "size": "Taille",
-      "uploaded": "Téléversé",
+      "uploaded": "Téléchargé",
       "fileDate": "Date du fichier"
     },
     "processing": {
@@ -442,12 +605,12 @@
     "edit": "Modifier",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "upload": "Téléverser",
-    "uploading": "Téléversement du fichier...",
+    "upload": "Télécharger",
+    "uploading": "Téléchargement du fichier...",
     "dropFile": "Déposez le fichier ici",
     "demoText": "Texte de démonstration",
     "placeholder": "Écrivez quelque chose...",
-    "uploadFailed": "Échec du téléversement",
+    "uploadFailed": "Échec du téléchargement",
     "unknownError": "Erreur inconnue",
     "saving": "Enregistrement...",
     "saved": "Enregistré",
@@ -551,7 +714,7 @@
     "subtitle": "Tous les fichiers de vos maisons au même endroit.",
     "lastUpdated": "Dernière mise à jour",
     "emptyTitle": "Aucun document pour le moment",
-    "emptyText": "Téléversez des fichiers dans l’une de vos maisons pour les voir ici.",
+    "emptyText": "Téléchargez des fichiers dans l’une de vos maisons pour les voir ici.",
     "loadError": "Impossible de charger les documents.",
     "downloadError": "Impossible d’ouvrir le document.",
     "manageHome": "Gérer la maison",
@@ -573,6 +736,9 @@
     "filesTitle": "Documents",
     "filesSubtitle": "Téléchargez ici les fichiers utiles à votre séjour.",
     "download": "Télécharger",
+    "closeImage": "Fermer l'image",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante",
     "summary": {
       "photos": "Photos",
       "photosValue": "aperçus de la maison",

@@ -12,6 +12,7 @@ const emit = defineEmits<{
 
 const { token } = useAuthReady();
 const toast = useToast();
+const { t, locale } = useI18n();
 
 const creating = ref(false);
 const durationPreset = ref<"7" | "30" | "unlimited" | "custom">("7");
@@ -30,7 +31,7 @@ const daysToExpire = computed(() => {
 const expirationDate = computed(() => {
 	const date = new Date();
 	date.setDate(date.getDate() + daysToExpire.value);
-	return date.toLocaleDateString("de-CH", { 
+	return date.toLocaleDateString(locale.value === "fr" ? "fr-CH" : "de-CH", {
 		day: "2-digit", 
 		month: "2-digit", 
 		year: "numeric" 
@@ -54,14 +55,14 @@ const createShare = async () => {
 			body: { daysToExpire: daysToExpire.value },
 		});
 
-		toast.add({ title: "Link erstellt", color: "success" });
+		toast.add({ title: t("homes.shareLinks.toasts.created"), color: "success" });
 		emit("refresh");
 
 		// Copy to clipboard
 		await navigator.clipboard.writeText(result.shareUrl);
-		toast.add({ title: "Link in Zwischenablage kopiert", color: "success" });
+		toast.add({ title: t("homes.shareLinks.toasts.copiedToClipboard"), color: "success" });
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.shareLinks.toasts.error"), description: getFetchError(e), color: "error" });
 	} finally {
 		creating.value = false;
 	}
@@ -69,11 +70,11 @@ const createShare = async () => {
 
 const copyLink = async (url: string) => {
 	await navigator.clipboard.writeText(url);
-	toast.add({ title: "Link kopiert", color: "success" });
+	toast.add({ title: t("homes.shareLinks.toasts.copied"), color: "success" });
 };
 
 const revokeShare = async (shareId: string) => {
-	if (!confirm("Link wirklich widerrufen?")) return;
+	if (!confirm(t("homes.shareLinks.confirmRevoke"))) return;
 
 	try {
 		await $fetch(`/api/homes/${props.homeId}/share/revoke`, {
@@ -81,15 +82,15 @@ const revokeShare = async (shareId: string) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { shareId },
 		});
-		toast.add({ title: "Link widerrufen", color: "success" });
+		toast.add({ title: t("homes.shareLinks.toasts.revoked"), color: "success" });
 		emit("refresh");
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler", description: getFetchError(e), color: "error" });
+		toast.add({ title: t("homes.shareLinks.toasts.error"), description: getFetchError(e), color: "error" });
 	}
 };
 
 const formatDate = (date: string) => {
-	return new Date(date).toLocaleDateString("de-CH", {
+	return new Date(date).toLocaleDateString(locale.value === "fr" ? "fr-CH" : "de-CH", {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
@@ -99,10 +100,10 @@ const formatDate = (date: string) => {
 };
 
 const durationOptions = [
-	{ value: "7", label: "7 Tage" },
-	{ value: "30", label: "30 Tage" },
-	{ value: "unlimited", label: "Unbegrenzt (10 Jahre)" },
-	{ value: "custom", label: "Benutzerdefiniert" },
+	{ value: "7", label: "homes.shareLinks.duration.7" },
+	{ value: "30", label: "homes.shareLinks.duration.30" },
+	{ value: "unlimited", label: "homes.shareLinks.duration.unlimited" },
+	{ value: "custom", label: "homes.shareLinks.duration.custom" },
 ];
 </script>
 
@@ -110,12 +111,12 @@ const durationOptions = [
 	<div class="space-y-6">
 		<!-- Create new share -->
 		<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6">
-			<h3 class="font-bold mb-4">Neuen Link erstellen</h3>
+			<h3 class="font-bold mb-4">{{ t("homes.shareLinks.createTitle") }}</h3>
 			
 			<div class="space-y-4">
 				<!-- Duration options -->
 				<div class="space-y-2">
-					<p class="text-sm font-medium text-stone-700 dark:text-stone-300">Gültigkeitsdauer</p>
+					<p class="text-sm font-medium text-stone-700 dark:text-stone-300">{{ t("homes.shareLinks.durationLabel") }}</p>
 					<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
 						<button
 							v-for="option in durationOptions"
@@ -126,7 +127,7 @@ const durationOptions = [
 								? 'border-primary bg-primary-50 dark:bg-primary-900/20 text-primary font-medium'
 								: 'border-stone-200 dark:border-stone-700 hover:border-primary text-stone-600 dark:text-stone-400'"
 						>
-							{{ option.label }}
+							{{ t(option.label) }}
 						</button>
 					</div>
 				</div>
@@ -138,29 +139,29 @@ const durationOptions = [
 						type="number"
 						min="1"
 						max="3650"
-						placeholder="Anzahl Tage"
+						:placeholder="t('homes.shareLinks.customDaysPlaceholder')"
 						size="lg"
 						class="w-32"
 					/>
-					<span class="text-sm text-stone-500">Tage</span>
+					<span class="text-sm text-stone-500">{{ t("homes.shareLinks.days") }}</span>
 				</div>
 
 				<!-- Expiration preview -->
 				<div class="flex items-center gap-2 text-sm text-stone-500">
 					<UIcon name="i-lucide-calendar" class="w-4 h-4" />
-					<span>Läuft ab am: <strong class="text-stone-700 dark:text-stone-300">{{ expirationDate }}</strong></span>
+					<span>{{ t("homes.shareLinks.expiresOn") }} <strong class="text-stone-700 dark:text-stone-300">{{ expirationDate }}</strong></span>
 				</div>
 
 				<!-- Create button -->
 				<UButton :loading="creating" icon="i-lucide-link" size="lg" @click="createShare">
-					Link erstellen
+					{{ t("homes.shareLinks.createAction") }}
 				</UButton>
 			</div>
 		</div>
 
 		<!-- Active shares -->
 		<div v-if="activeShares.length > 0" class="space-y-3">
-			<h3 class="font-bold text-lg">Aktive Links</h3>
+			<h3 class="font-bold text-lg">{{ t("homes.shareLinks.activeTitle") }}</h3>
 			<div
 				v-for="share in activeShares"
 				:key="share.id"
@@ -170,9 +171,9 @@ const durationOptions = [
 					<div class="flex-1 min-w-0">
 						<div class="flex items-center gap-2 text-sm text-stone-500 mb-2">
 							<UIcon name="i-lucide-clock" class="w-4 h-4" />
-							<span>Läuft ab: {{ formatDate(share.expiresAt) }}</span>
+							<span>{{ t("homes.shareLinks.expiresAt") }} {{ formatDate(share.expiresAt) }}</span>
 							<span class="text-stone-300">|</span>
-							<span>{{ share.accessCount }} Aufrufe</span>
+							<span>{{ t("homes.shareLinks.accessCount", { count: share.accessCount }) }}</span>
 						</div>
 						<code class="block text-xs p-2 bg-stone-50 dark:bg-stone-900 rounded-lg truncate">
 							{{ (share as any).shareUrl }}
@@ -201,14 +202,14 @@ const durationOptions = [
 		<!-- No active shares -->
 		<div v-else class="text-center py-8 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
 			<UIcon name="i-lucide-link" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
-			<p class="text-stone-500">Keine aktiven Links</p>
-			<p class="text-sm text-stone-400">Erstellen Sie einen Link, um ihn mit Mietern zu teilen</p>
+			<p class="text-stone-500">{{ t("homes.shareLinks.emptyTitle") }}</p>
+			<p class="text-sm text-stone-400">{{ t("homes.shareLinks.emptyDescription") }}</p>
 		</div>
 
 		<!-- Expired/Revoked shares -->
 		<details v-if="expiredOrRevokedShares.length > 0" class="group">
 			<summary class="cursor-pointer text-sm text-stone-500 hover:text-stone-700 dark:hover:text-stone-300">
-				{{ expiredOrRevokedShares.length }} abgelaufene/widerrufene Links anzeigen
+				{{ t("homes.shareLinks.archivedToggle", { count: expiredOrRevokedShares.length }) }}
 			</summary>
 			<div class="mt-3 space-y-2">
 				<div
@@ -216,9 +217,9 @@ const durationOptions = [
 					:key="share.id"
 					class="bg-stone-50 dark:bg-stone-800/50 rounded-lg p-3 text-sm text-stone-400"
 				>
-					<span v-if="share.revoked">Widerrufen</span>
-					<span v-else>Abgelaufen</span>
-					am {{ formatDate(share.revoked ? share.expiresAt : share.expiresAt) }}
+					<span v-if="share.revoked">{{ t("homes.shareLinks.revoked") }}</span>
+					<span v-else>{{ t("homes.shareLinks.expired") }}</span>
+					{{ t("homes.shareLinks.onDate") }} {{ formatDate(share.revoked ? share.expiresAt : share.expiresAt) }}
 				</div>
 			</div>
 		</details>
