@@ -8,7 +8,7 @@ definePageMeta({ middleware: ["is-logged-in"] });
 
 const { $isAdmin } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const toast = useToast();
 const route = useRoute();
 
@@ -103,13 +103,14 @@ const previewBodyText = computed(() => {
 	return activeTranslation.value?.searchText || documentProcessing.value.localizedText || documentProcessing.value.searchText;
 });
 const translationStatusLabel = computed(() => {
-	if (!documentProcessing.value?.translationLanguages?.length) return "Keine automatische Übersetzung";
-	if (activePreviewLocale.value === "de") return "Originalsprache";
+	if (!documentProcessing.value?.translationLanguages?.length) return t("documents.processing.noAutoTranslation");
+	if (activePreviewLocale.value === "de") return t("documents.processing.originalLanguage");
 	return documentProcessing.value.translationLanguages.includes(activePreviewLocale.value)
-		? `Übersetzung: ${activePreviewLocale.value.toUpperCase()}`
-		: "Keine Übersetzung für diese Sprache";
+		? t("documents.processing.translationLabel", { locale: activePreviewLocale.value.toUpperCase() })
+		: t("documents.processing.noTranslationForLanguage");
 });
 const canDownloadTranslatedFile = computed(() => !!activeTranslation.value?.searchText && !!previewFile.value);
+const dateLocale = computed(() => locale.value === "fr" ? "fr-FR" : "de-CH");
 
 const currentFolder = computed(() => {
 	if (!currentFolderId.value) return null;
@@ -261,7 +262,7 @@ const formatFileSize = (bytes: number) => {
 
 const formatDate = (dateString: string) => {
 	const date = new Date(dateString);
-	return date.toLocaleDateString("de-CH", {
+	return date.toLocaleDateString(dateLocale.value, {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
@@ -270,7 +271,7 @@ const formatDate = (dateString: string) => {
 
 const formatTimestamp = (timestamp: number) => {
 	const date = new Date(timestamp);
-	return date.toLocaleDateString("de-CH", {
+	return date.toLocaleDateString(dateLocale.value, {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
@@ -307,7 +308,7 @@ const buildDeepLinkPath = (params: { folderId?: string | null; fileId?: string |
 
 const copyDeepLink = async (params: { folderId?: string | null; fileId?: string | null }) => {
 	await navigator.clipboard.writeText(buildDeepLinkPath(params));
-	toast.add({ title: "Link kopiert", color: "success" });
+	toast.add({ title: t("documents.toasts.linkCopied"), color: "success" });
 };
 
 const downloadTranslatedFile = async (file: GlobalFile) => {
@@ -339,7 +340,7 @@ const downloadTranslatedFile = async (file: GlobalFile) => {
 		}, 100);
 	} catch (e: unknown) {
 		toast.add({
-			title: "Übersetzte Datei nicht verfügbar",
+			title: t("documents.toasts.translatedUnavailable"),
 			description: getErrorMessage(e),
 			color: "error",
 		});
@@ -379,7 +380,7 @@ const loadDocumentProcessing = async (file: GlobalFile | null) => {
 		});
 		documentProcessing.value = response.processing || null;
 	} catch (e: unknown) {
-		processingError.value = getFetchError(e) || "Texterkennung nicht verfügbar";
+		processingError.value = getFetchError(e) || t("documents.processing.unavailable");
 	} finally {
 		processingLoading.value = false;
 	}
@@ -402,7 +403,7 @@ const loadPreview = async (file: GlobalFile | null) => {
 		});
 		previewUrl.value = response.url;
 	} catch (e: unknown) {
-		toast.add({ title: "Vorschau nicht verfügbar", description: getErrorMessage(e), color: "warning" });
+		toast.add({ title: t("documents.toasts.previewUnavailable"), description: getErrorMessage(e), color: "warning" });
 	} finally {
 		previewLoading.value = false;
 	}
@@ -446,7 +447,7 @@ const fetchData = async (folderId: string | null = null) => {
 		);
 		viewMode.value = hasImages ? "grid" : "list";
 	} catch (e: unknown) {
-		error.value = getFetchError(e) || "Fehler beim Laden";
+		error.value = getFetchError(e) || t("documents.states.loadError");
 	} finally {
 		loading.value = false;
 	}
@@ -474,7 +475,7 @@ const loadMore = async () => {
 		hasMore.value = data.hasMore || false;
 	} catch (e: unknown) {
 		toast.add({ 
-			title: "Fehler beim Laden weiterer Dateien", 
+			title: t("documents.toasts.loadMoreError"), 
 			description: getFetchError(e), 
 			color: "error" 
 		});
@@ -622,7 +623,7 @@ const createFolderInline = () => {
 	const tempId = `temp-${Date.now()}`;
 	const newFolder: GlobalFolder = {
 		id: tempId,
-		name: "Neuer Ordner",
+		name: t("documents.actions.newFolder"),
 		parentId: currentFolderId.value,
 		createdAt: new Date().toISOString(),
 		createdBy: "",
@@ -630,7 +631,7 @@ const createFolderInline = () => {
 	
 	tempFolders.value.push(newFolder);
 	editingFolderId.value = tempId;
-	editingFolderName.value = "Neuer Ordner";
+	editingFolderName.value = t("documents.actions.newFolder");
 	
 	nextTick(() => {
 		const input = document.querySelector('.folder-name-input') as HTMLInputElement;
@@ -657,7 +658,7 @@ const saveFolderName = async (folderId: string) => {
 				},
 			});
 			tempFolders.value = tempFolders.value.filter(f => f.id !== folderId);
-			toast.add({ title: "Ordner erstellt", color: "success" });
+			toast.add({ title: t("documents.toasts.folderCreated"), color: "success" });
 		} else {
 			await $fetch("/api/folders/rename", {
 				method: "POST",
@@ -667,13 +668,13 @@ const saveFolderName = async (folderId: string) => {
 					newName: editingFolderName.value.trim(),
 				},
 			});
-			toast.add({ title: "Ordner umbenannt", color: "success" });
+			toast.add({ title: t("documents.toasts.folderRenamed"), color: "success" });
 		}
 		
 		editingFolderId.value = null;
 		await fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Speichern", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.saveError"), description: getErrorMessage(e), color: "error" });
 	}
 };
 
@@ -764,7 +765,7 @@ const downloadFile = async (file: GlobalFile) => {
 			document.body.removeChild(a);
 		}, 100);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Öffnen", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.openError"), description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -788,7 +789,7 @@ const downloadFileToDisk = async (file: GlobalFile) => {
 			document.body.removeChild(a);
 		}, 100);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Download", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.downloadError"), description: getErrorMessage(e), color: "error" });
 	} finally {
 		downloadingFileId.value = null;
 	}
@@ -802,7 +803,7 @@ const downloadSelectedFiles = async () => {
 };
 
 const deleteFile = async (file: GlobalFile) => {
-	if (!confirm(`"${file.name}" wirklich löschen?`)) return;
+	if (!confirm(t("documents.confirm.deleteFile", { name: file.name }))) return;
 
 	try {
 		await $fetch("/api/files/delete", {
@@ -810,24 +811,24 @@ const deleteFile = async (file: GlobalFile) => {
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { fileId: file.id },
 		});
-		toast.add({ title: "Datei gelöscht", color: "success" });
+		toast.add({ title: t("documents.toasts.fileDeleted"), color: "success" });
 		selectedFiles.value = selectedFiles.value.filter(f => f.id !== file.id);
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.deleteError"), description: getErrorMessage(e), color: "error" });
 	}
 };
 
 const deleteSelectedItems = async () => {
 	const total = selectedFiles.value.length + selectedFolders.value.length;
-	let warningText = `${total} Element(e) wirklich löschen?`;
+	let warningText = t("documents.confirm.deleteSelection", { count: total });
 
 	if (selectedFolders.value.length > 0) {
 		const summaries = await Promise.all(selectedFolders.value.map(folder => getFolderDeleteSummary(folder.id)));
 		const nestedFiles = summaries.reduce((sum, summary) => sum + summary.fileCount, 0);
 		const nestedFolders = summaries.reduce((sum, summary) => sum + summary.folderCount, 0);
 		if (nestedFiles > 0 || nestedFolders > 0) {
-			warningText += `\n\nDabei werden auch ${nestedFiles} Datei(en) und ${nestedFolders} Unterordner gelöscht.`;
+			warningText += `\n\n${t("documents.confirm.deleteSelectionNested", { files: nestedFiles, folders: nestedFolders })}`;
 		}
 	}
 
@@ -844,7 +845,7 @@ const deleteSelectedItems = async () => {
 			});
 			deletedCount += 1 + result.folderCount + result.fileCount;
 		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Löschen von ${folder.name}`, description: getFetchError(e), color: "error" });
+			toast.add({ title: t("documents.toasts.deleteNamedError", { name: folder.name }), description: getFetchError(e), color: "error" });
 		}
 	}
 
@@ -857,12 +858,12 @@ const deleteSelectedItems = async () => {
 			});
 			deletedCount++;
 		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Löschen von ${file.name}`, description: getFetchError(e), color: "error" });
+			toast.add({ title: t("documents.toasts.deleteNamedError", { name: file.name }), description: getFetchError(e), color: "error" });
 		}
 	}
 
 	if (deletedCount > 0) {
-		toast.add({ title: `${deletedCount} Element(e) gelöscht`, color: "success" });
+		toast.add({ title: t("documents.toasts.selectionDeleted", { count: deletedCount }), color: "success" });
 	}
 	selectedFiles.value = [];
 	selectedFolders.value = [];
@@ -871,9 +872,9 @@ const deleteSelectedItems = async () => {
 
 const deleteFolder = async (folder: GlobalFolder) => {
 	const summary = await getFolderDeleteSummary(folder.id);
-	let warningText = `"${folder.name}" wirklich löschen?`;
+	let warningText = t("documents.confirm.deleteFolder", { name: folder.name });
 	if (summary.fileCount > 0 || summary.folderCount > 0) {
-		warningText += `\n\nDabei werden auch ${summary.fileCount} Datei(en) und ${summary.folderCount} Unterordner gelöscht.`;
+		warningText += `\n\n${t("documents.confirm.deleteFolderNested", { files: summary.fileCount, folders: summary.folderCount })}`;
 	}
 
 	if (!confirm(warningText)) return;
@@ -887,20 +888,20 @@ const deleteFolder = async (folder: GlobalFolder) => {
 		toast.add({
 			title: "Ordner gelöscht",
 			description: result.fileCount > 0 || result.folderCount > 0
-				? `${result.fileCount} Datei(en) und ${result.folderCount} Unterordner entfernt.`
+				? t("documents.toasts.folderDeletedDetail", { files: result.fileCount, folders: result.folderCount })
 				: undefined,
 			color: "success",
 		});
 		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Löschen", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.deleteError"), description: getErrorMessage(e), color: "error" });
 	}
 };
 
 const getFolderMenuItems = (folder: GlobalFolder) => {
 	const items = [[{
-		label: "Link kopieren",
+		label: t("documents.actions.copyLink"),
 		icon: "i-lucide-link",
 		onSelect: () => copyDeepLink({ folderId: folder.id }),
 	}]];
@@ -911,7 +912,7 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 
 	return [
 		[{
-			label: "Umbenennen",
+			label: t("documents.actions.rename"),
 			icon: "i-lucide-pencil",
 			onSelect: () => {
 				editingFolderId.value = folder.id;
@@ -923,7 +924,7 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 				});
 			},
 		}, {
-			label: "Verschieben",
+			label: t("documents.actions.move"),
 			icon: "i-lucide-folder-input",
 			onSelect: () => {
 				selectedFolders.value = [folder];
@@ -933,7 +934,7 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 		}],
 		...items,
 		[{
-			label: "Löschen",
+			label: t("documents.actions.delete"),
 			icon: "i-lucide-trash-2",
 			onSelect: () => deleteFolder(folder),
 		}],
@@ -942,16 +943,22 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 
 const getFileMenuItems = (file: GlobalFile) => {
 	const items = [[{
-		label: file.type.startsWith("image/") ? "Anzeigen" : file.type === "video/mp4" ? "Abspielen" : file.type === "application/pdf" ? "Öffnen" : "Download",
+		label: file.type.startsWith("image/")
+			? t("documents.actions.view")
+			: file.type === "video/mp4"
+				? t("documents.actions.play")
+				: file.type === "application/pdf"
+					? t("documents.actions.open")
+					: t("documents.actions.download"),
 		icon: file.type.startsWith("image/") ? "i-lucide-eye" : file.type === "video/mp4" ? "i-lucide-play" : file.type === "application/pdf" ? "i-lucide-external-link" : "i-lucide-download",
 		onSelect: () => handleFileClick(file),
 	}],
 	[{
-		label: "Download",
+		label: t("documents.actions.download"),
 		icon: "i-lucide-download",
 		onSelect: () => downloadFileToDisk(file),
 	}, {
-		label: "Link kopieren",
+		label: t("documents.actions.copyLink"),
 		icon: "i-lucide-link",
 		onSelect: () => copyDeepLink({ folderId: file.folderId, fileId: file.id }),
 	}]];
@@ -963,7 +970,7 @@ const getFileMenuItems = (file: GlobalFile) => {
 	return [
 		...items,
 		[{
-			label: "Umbenennen",
+			label: t("documents.actions.rename"),
 			icon: "i-lucide-pencil",
 			onSelect: () => {
 				selectedFiles.value = [file];
@@ -971,7 +978,7 @@ const getFileMenuItems = (file: GlobalFile) => {
 				openRenameModal();
 			},
 		}, {
-			label: "Verschieben",
+			label: t("documents.actions.move"),
 			icon: "i-lucide-folder-input",
 			onSelect: () => {
 				selectedFiles.value = [file];
@@ -980,7 +987,7 @@ const getFileMenuItems = (file: GlobalFile) => {
 			},
 		}],
 		[{
-			label: "Löschen",
+			label: t("documents.actions.delete"),
 			icon: "i-lucide-trash-2",
 			onSelect: () => deleteFile(file),
 		}],
@@ -1007,12 +1014,12 @@ const renameFile = async () => {
 				newName: renameValue.value.trim(),
 			},
 		});
-		toast.add({ title: "Datei umbenannt", color: "success" });
+		toast.add({ title: t("documents.toasts.fileRenamed"), color: "success" });
 		isRenameModalOpen.value = false;
 		selectedFiles.value = [];
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: "Fehler beim Umbenennen", description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.renameError"), description: getErrorMessage(e), color: "error" });
 	} finally {
 		isSaving.value = false;
 	}
@@ -1036,7 +1043,7 @@ const moveItems = async (targetFolderId: string | null) => {
 			});
 			successCount++;
 		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Verschieben von ${file.name}`, description: getErrorMessage(e), color: "error" });
+			toast.add({ title: t("documents.toasts.moveNamedError", { name: file.name }), description: getErrorMessage(e), color: "error" });
 		}
 	}
 
@@ -1052,13 +1059,12 @@ const moveItems = async (targetFolderId: string | null) => {
 			});
 			successCount++;
 		} catch (e: unknown) {
-			toast.add({ title: `Fehler beim Verschieben von ${folder.name}`, description: getErrorMessage(e), color: "error" });
+			toast.add({ title: t("documents.toasts.moveNamedError", { name: folder.name }), description: getErrorMessage(e), color: "error" });
 		}
 	}
 	
 	if (successCount > 0) {
-		const itemWord = successCount === 1 ? "Element" : "Elemente";
-		toast.add({ title: `${successCount} ${itemWord} verschoben`, color: "success" });
+		toast.add({ title: t("documents.toasts.itemsMoved", { count: successCount }), color: "success" });
 	}
 	isMoveModalOpen.value = false;
 	selectedFiles.value = [];
@@ -1158,6 +1164,10 @@ watch(
 		}
 	},
 );
+
+useHead({
+	title: t("nav.documents"),
+});
 </script>
 
 <template>
@@ -1165,9 +1175,9 @@ watch(
 		<div class="max-w-screen-xl mx-auto px-4 py-6 md:py-8">
 			<div class="flex items-center justify-between mb-6 md:mb-8 gap-4">
 				<div>
-					<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-2">Dokumente</p>
-					<h1 class="display-copy text-3xl md:text-4xl font-bold tracking-[-0.04em]">Gemeinsame Unterlagen</h1>
-					<p class="app-muted text-sm md:text-base mt-2 hidden sm:block">Wichtige Dateien, Ordner und Downloads für Eigentümer und Administration.</p>
+					<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-2">{{ t("nav.documents") }}</p>
+					<h1 class="display-copy text-3xl md:text-4xl font-bold tracking-[-0.04em]">{{ t("documents.title") }}</h1>
+					<p class="app-muted text-sm md:text-base mt-2 hidden sm:block">{{ t("documents.subtitle") }}</p>
 				</div>
 				<div v-if="$isAdmin" class="flex items-center gap-2 shrink-0">
 					<UButton
@@ -1176,7 +1186,7 @@ watch(
 						icon="i-lucide-folder-plus"
 						@click="createFolderInline"
 					>
-						<span class="hidden sm:inline">Neuer Ordner</span>
+						<span class="hidden sm:inline">{{ t("documents.actions.newFolder") }}</span>
 					</UButton>
 					<label class="cursor-pointer">
 						<UButton
@@ -1185,11 +1195,11 @@ watch(
 							icon="i-lucide-upload"
 							:loading="uploadQueue.isUploading"
 						>
-							<span class="hidden sm:inline">Hochladen</span>
+							<span class="hidden sm:inline">{{ t("documents.actions.upload") }}</span>
 						</UButton>
 						<input type="file" multiple accept="image/*,video/mp4,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar" class="hidden" @change="handleFileSelect" />
 					</label>
-					<span class="text-xs text-stone-400 hidden sm:inline">max. 50MB</span>
+					<span class="text-xs text-stone-400 hidden sm:inline">{{ t("documents.maxFileSize") }}</span>
 				</div>
 			</div>
 
@@ -1198,7 +1208,7 @@ watch(
 					<div class="flex-1">
 						<div class="flex items-center justify-between mb-2">
 							<span class="text-sm font-medium text-stone-700 dark:text-stone-300">
-								Lade hoch: {{ uploadQueue.currentFile }}
+								{{ t("documents.states.uploadingCurrent", { file: uploadQueue.currentFile }) }}
 							</span>
 							<span class="text-sm text-stone-500">
 								{{ uploadQueue.completed }}/{{ uploadQueue.total }}
@@ -1217,7 +1227,7 @@ watch(
 			<div v-if="loading" class="flex items-center justify-center py-20">
 				<div class="text-center space-y-4">
 					<div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-					<p class="text-stone-500 font-medium">Laden...</p>
+					<p class="text-stone-500 font-medium">{{ t("documents.states.loading") }}</p>
 				</div>
 			</div>
 
@@ -1226,7 +1236,7 @@ watch(
 					<UIcon name="i-lucide-alert-circle" class="w-10 h-10 text-red-500" />
 				</div>
 				<h2 class="text-xl font-bold text-red-600 mb-4">{{ error }}</h2>
-				<UButton color="neutral" variant="soft" @click="fetchData">Erneut versuchen</UButton>
+				<UButton color="neutral" variant="soft" @click="fetchData">{{ t("documents.actions.retry") }}</UButton>
 			</div>
 
 			<template v-else>
@@ -1246,7 +1256,7 @@ watch(
 								class="flex items-center gap-1 text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 								:class="{ 'text-primary font-bold': !currentFolderId }"
 							>
-								<span>Dokumente</span>
+								<span>{{ t("nav.documents") }}</span>
 							</button>
 							<template v-for="(folder, index) in breadcrumbs" :key="folder.id">
 								<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400" />
@@ -1281,14 +1291,14 @@ watch(
 							</div>
 						</div>
 						<div class="flex items-center gap-2 text-xs">
-							<span class="text-stone-500 hidden sm:inline">Sortieren:</span>
+							<span class="text-stone-500 hidden sm:inline">{{ t("documents.sort.label") }}</span>
 							<UFieldGroup size="xs">
 								<UButton
 									:variant="sortBy === 'name' ? 'soft' : 'ghost'"
 									color="neutral"
 									@click="toggleSort('name')"
 								>
-									Name
+									{{ t("documents.sort.name") }}
 									<UIcon v-if="sortBy === 'name'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
 								</UButton>
 								<UButton
@@ -1296,7 +1306,7 @@ watch(
 									color="neutral"
 									@click="toggleSort('date')"
 								>
-									Datum
+									{{ t("documents.sort.date") }}
 									<UIcon v-if="sortBy === 'date'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
 								</UButton>
 								<UButton
@@ -1304,7 +1314,7 @@ watch(
 									color="neutral"
 									@click="toggleSort('size')"
 								>
-									Größe
+									{{ t("documents.sort.size") }}
 									<UIcon v-if="sortBy === 'size'" :name="sortOrder === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3 h-3 ml-1" />
 								</UButton>
 							</UFieldGroup>
@@ -1314,21 +1324,21 @@ watch(
 					<div v-if="hasSelection && $isAdmin" class="flex flex-wrap items-center gap-2 px-4 md:px-6 py-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-200 dark:border-primary-800">
 						<UIcon name="i-lucide-files" class="w-5 h-5 text-primary shrink-0" />
 						<span class="text-sm font-medium text-primary">
-							{{ selectedFiles.length + selectedFolders.length }} von {{ totalItemsInFolder }} ausgewählt
+							{{ t("documents.selection.summary", { selected: selectedFiles.length + selectedFolders.length, total: totalItemsInFolder }) }}
 						</span>
 						<div class="flex-1" />
 						<div class="flex items-center gap-1">
 							<UButton v-if="selectedFiles.length > 0" size="sm" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
-								<span class="hidden md:inline">Download</span>
+								<span class="hidden md:inline">{{ t("documents.actions.download") }}</span>
 							</UButton>
 							<UButton v-if="selectedFiles.length === 1 && selectedFolders.length === 0" size="sm" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
-								<span class="hidden md:inline">Umbenennen</span>
+								<span class="hidden md:inline">{{ t("documents.actions.rename") }}</span>
 							</UButton>
 							<UButton size="sm" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
-								<span class="hidden md:inline">Verschieben</span>
+								<span class="hidden md:inline">{{ t("documents.actions.move") }}</span>
 							</UButton>
 							<UButton size="sm" variant="ghost" color="error" @click="deleteSelectedItems" icon="i-lucide-trash-2">
-								<span class="hidden md:inline">Löschen</span>
+								<span class="hidden md:inline">{{ t("documents.actions.delete") }}</span>
 							</UButton>
 							<UButton size="sm" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearSelection" />
 						</div>
@@ -1343,8 +1353,8 @@ watch(
 					>
 						<div v-if="sortedSubfolders.length === 0 && sortedFiles.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-stone-400">
 							<UIcon name="i-lucide-folder-open" class="w-12 h-12 md:w-16 md:h-16 mb-4" />
-							<p class="font-medium text-base md:text-lg">Keine Dateien</p>
-							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">Ziehen Sie Dateien hierher oder klicken Sie auf "Hochladen" (max. 50MB)</p>
+							<p class="font-medium text-base md:text-lg">{{ t("documents.states.emptyTitle") }}</p>
+							<p v-if="$isAdmin" class="text-xs md:text-sm mt-2 text-center px-4">{{ t("documents.states.emptyHint") }}</p>
 						</div>
 
 						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">
@@ -1395,9 +1405,9 @@ watch(
 									</div>
 									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
 									<p class="text-[10px] text-stone-400 mt-0.5">
-										<template v-if="folderImageCount(folder.id) > 0">{{ folderImageCount(folder.id) }} Bilder</template>
+										<template v-if="folderImageCount(folder.id) > 0">{{ t("documents.count.images", { count: folderImageCount(folder.id) }) }}</template>
 										<template v-if="folderImageCount(folder.id) > 0 && folderFileCount(folder.id) > 0"> · </template>
-										<template v-if="folderFileCount(folder.id) > 0">{{ folderFileCount(folder.id) }} Dateien</template>
+										<template v-if="folderFileCount(folder.id) > 0">{{ t("documents.count.files", { count: folderFileCount(folder.id) }) }}</template>
 									</p>
 								</button>
 							</div>
@@ -1461,7 +1471,7 @@ watch(
 							<div ref="sentinelRef" class="col-span-full flex justify-center py-4">
 								<div v-if="isLoadingMore" class="flex items-center gap-2 text-stone-500">
 									<div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-									<span class="text-sm">Lade weitere...</span>
+									<span class="text-sm">{{ t("documents.states.loadingMore") }}</span>
 								</div>
 							</div>
 						</div>
@@ -1605,7 +1615,7 @@ watch(
 						v-if="previewFile"
 						class="overflow-hidden rounded-2xl border border-stone-200/80 bg-stone-50/80 dark:border-stone-800 dark:bg-stone-900/50 md:rounded-[1.75rem] md:border-[var(--app-border)] md:bg-[var(--app-surface-strong)] md:shadow-[var(--app-shadow)]">
 						<div class="border-b border-[var(--app-border)] px-5 py-4">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">Ausgewählte Datei</p>
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[var(--app-primary)]">{{ t("documents.preview.selectedFile") }}</p>
 							<h2 class="mt-2 text-lg font-semibold text-[var(--app-text)] break-words">{{ previewFile.name }}</h2>
 						</div>
 						<div class="border-b border-[var(--app-border)] bg-white/75 p-4 dark:bg-white/[0.02] md:bg-black/3">
@@ -1627,44 +1637,44 @@ watch(
 									v-else-if="previewUrl && isPdfFile(previewFile)"
 									:src="previewUrl"
 									class="h-[320px] w-full bg-white"
-									title="PDF Vorschau" />
+									:title="t('documents.preview.pdfTitle')" />
 								<iframe
 									v-else-if="officePreviewUrl"
 									:src="officePreviewUrl"
 									class="h-[320px] w-full bg-white"
-									title="Dokument Vorschau" />
+									:title="t('documents.preview.documentTitle')" />
 								<div
 									v-else
 									class="flex h-[220px] flex-col items-center justify-center gap-3 px-6 text-center text-stone-500 dark:text-stone-400">
 									<UIcon :name="getFileIcon(previewFile.type)" class="h-10 w-10" :class="getFileIconColor(previewFile.type)" />
 									<p class="font-medium text-[var(--app-text)]">{{ previewFile.name }}</p>
-									<p class="text-sm">Für diesen Dateityp ist keine direkte Vorschau verfügbar.</p>
+									<p class="text-sm">{{ t("documents.preview.notAvailable") }}</p>
 								</div>
 							</div>
 						</div>
 						<div class="space-y-4 px-5 py-4">
 							<div class="grid grid-cols-2 gap-3 text-sm">
 								<div>
-									<p class="text-stone-400">Typ</p>
+									<p class="text-stone-400">{{ t("documents.meta.type") }}</p>
 									<p class="font-medium text-[var(--app-text)]">{{ getFileTypeName(previewFile.type) }}</p>
 								</div>
 								<div>
-									<p class="text-stone-400">Größe</p>
+									<p class="text-stone-400">{{ t("documents.meta.size") }}</p>
 									<p class="font-medium text-[var(--app-text)]">{{ formatFileSize(previewFile.size) }}</p>
 								</div>
 								<div>
-									<p class="text-stone-400">Hochgeladen</p>
+									<p class="text-stone-400">{{ t("documents.meta.uploaded") }}</p>
 									<p class="font-medium text-[var(--app-text)]">{{ formatDate(previewFile.uploadedAt) }}</p>
 								</div>
 								<div>
-									<p class="text-stone-400">Dateidatum</p>
+									<p class="text-stone-400">{{ t("documents.meta.fileDate") }}</p>
 									<p class="font-medium text-[var(--app-text)]">{{ previewFile.lastModified ? formatTimestamp(previewFile.lastModified) : "—" }}</p>
 								</div>
 							</div>
 							<div class="rounded-[1.25rem] border border-[var(--app-border)] bg-white/75 p-4 dark:bg-[var(--app-surface)]/80">
 								<div class="flex items-start justify-between gap-3">
 									<div>
-										<p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--app-primary)]">Dokumentinhalt</p>
+										<p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--app-primary)]">{{ t("documents.processing.title") }}</p>
 										<p class="mt-1 text-sm text-[var(--app-muted)]">{{ translationStatusLabel }}</p>
 									</div>
 									<div v-if="documentProcessing" class="flex flex-wrap justify-end gap-2 text-[11px] text-stone-500">
@@ -1674,7 +1684,7 @@ watch(
 								</div>
 								<div v-if="processingLoading" class="flex items-center gap-3 py-5 text-sm text-[var(--app-muted)]">
 									<div class="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-									<span>Dokument wird analysiert...</span>
+									<span>{{ t("documents.processing.loading") }}</span>
 								</div>
 								<div v-else-if="processingError" class="py-3 text-sm text-red-600">
 									{{ processingError }}
@@ -1684,25 +1694,25 @@ watch(
 										{{ previewSummaryText }}
 									</p>
 									<div class="max-h-72 overflow-auto rounded-2xl bg-stone-50 p-3 text-sm leading-6 text-[var(--app-text)] dark:bg-stone-900/60">
-										<pre class="whitespace-pre-wrap font-sans">{{ previewBodyText || "Kein extrahierter Text verfügbar." }}</pre>
+										<pre class="whitespace-pre-wrap font-sans">{{ previewBodyText || t("documents.processing.noText") }}</pre>
 									</div>
 								</div>
 								<div v-else class="py-3 text-sm text-[var(--app-muted)]">
-									Für diese Datei liegt noch kein extrahierter oder übersetzter Inhalt vor.
+									{{ t("documents.processing.noContent") }}
 								</div>
 							</div>
 							<div class="flex flex-wrap gap-2">
 								<UButton color="neutral" variant="soft" icon="i-lucide-eye" @click="handleFileClick(previewFile)">
-									Öffnen
+									{{ t("documents.actions.open") }}
 								</UButton>
 								<UButton color="neutral" variant="ghost" icon="i-lucide-download" @click="downloadFileToDisk(previewFile)">
-									Download
+									{{ t("documents.actions.download") }}
 								</UButton>
 								<UButton v-if="canDownloadTranslatedFile" color="primary" variant="ghost" icon="i-lucide-languages" @click="downloadTranslatedFile(previewFile)">
-									Übersetzte Datei
+									{{ t("documents.actions.translatedFile") }}
 								</UButton>
 								<UButton color="neutral" variant="ghost" icon="i-lucide-link" @click="copyDeepLink({ folderId: previewFile.folderId, fileId: previewFile.id })">
-									Link
+									{{ t("documents.actions.link") }}
 								</UButton>
 							</div>
 						</div>
@@ -1710,30 +1720,30 @@ watch(
 					<div
 						v-else
 						class="hidden rounded-[1.75rem] border border-dashed border-[var(--app-border)] px-5 py-6 text-sm text-[var(--app-muted)] xl:block">
-						Wählen Sie eine Datei aus, um rechts eine Vorschau und die wichtigsten Metadaten zu sehen.
+						{{ t("documents.preview.selectHint") }}
 					</div>
 				</aside>
 				</div>
 
-				<UModal v-model:open="isRenameModalOpen" title="Datei umbenennen">
+				<UModal v-model:open="isRenameModalOpen" :title="t('documents.modals.renameTitle')">
 					<template #body>
 						<div class="p-6 space-y-4">
-							<UFormField label="Neuer Dateiname">
-								<UInput v-model="renameValue" placeholder="Dateiname..." class="w-full" @keyup.enter="renameFile" />
+							<UFormField :label="t('documents.modals.renameLabel')">
+								<UInput v-model="renameValue" :placeholder="t('documents.modals.renamePlaceholder')" class="w-full" @keyup.enter="renameFile" />
 							</UFormField>
 							<div class="flex justify-end gap-3">
-								<UButton variant="ghost" color="neutral" @click="isRenameModalOpen = false">Abbrechen</UButton>
-								<UButton :loading="isSaving" @click="renameFile">Umbenennen</UButton>
+								<UButton variant="ghost" color="neutral" @click="isRenameModalOpen = false">{{ t("documents.actions.cancel") }}</UButton>
+								<UButton :loading="isSaving" @click="renameFile">{{ t("documents.actions.rename") }}</UButton>
 							</div>
 						</div>
 					</template>
 				</UModal>
 
-				<UModal v-model:open="isMoveModalOpen" title="Elemente verschieben">
+				<UModal v-model:open="isMoveModalOpen" :title="t('documents.modals.moveTitle')">
 					<template #body>
 						<div class="p-6 space-y-4">
 							<p class="text-sm text-stone-500">
-								Verschiebe <strong>{{ selectedFiles.length + selectedFolders.length }} Element(e)</strong> in einen Zielordner:
+								{{ t("documents.modals.moveDescription", { count: selectedFiles.length + selectedFolders.length }) }}
 							</p>
 							
 							<div class="bg-stone-50 dark:bg-stone-800 rounded-xl p-3 space-y-2">
@@ -1743,7 +1753,7 @@ watch(
 										class="text-stone-600 dark:text-stone-400 hover:text-primary transition-colors"
 										:class="{ 'text-primary font-bold': !moveBrowseFolderId }"
 									>
-										Dokumente
+										{{ t("nav.documents") }}
 									</button>
 									<template v-for="(folder, index) in moveBrowseBreadcrumbs" :key="folder.id">
 										<UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-stone-400" />
@@ -1779,17 +1789,17 @@ watch(
 									</button>
 									
 									<p v-if="moveBrowseSubfolders.length === 0 && !moveBrowseFolderId" class="text-sm text-stone-400 text-center py-4">
-										Keine Unterordner vorhanden
+										{{ t("documents.modals.noSubfolders") }}
 									</p>
 									<p v-if="moveBrowseSubfolders.length === 0 && moveBrowseFolderId" class="text-sm text-stone-400 text-center py-4">
-										Keine weiteren Unterordner
+										{{ t("documents.modals.noMoreSubfolders") }}
 									</p>
 								</div>
 							</div>
 							
 							<div class="flex items-center justify-between gap-3 pt-2">
 								<UButton variant="ghost" color="neutral" @click="isMoveModalOpen = false">
-									Abbrechen
+									{{ t("documents.actions.cancel") }}
 								</UButton>
 								<UButton
 									color="primary"
@@ -1798,7 +1808,7 @@ watch(
 									@click="moveItems(moveBrowseFolderId)"
 								>
 									<UIcon name="i-lucide-folder-input" class="w-4 h-4 mr-1" />
-									{{ moveBrowseFolderId ? 'Hierher verschieben' : 'Ins Stammverzeichnis verschieben' }}
+									{{ moveBrowseFolderId ? t("documents.actions.moveHere") : t("documents.actions.moveToRoot") }}
 								</UButton>
 							</div>
 						</div>

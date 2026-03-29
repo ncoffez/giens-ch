@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { CommandPaletteItem } from "@nuxt/ui";
+import { sanitizeRedirectPath } from "../../utils/redirect";
 
 const { open, closeSearch } = useSearchModal();
 const localePath = useLocalePath();
@@ -10,6 +11,7 @@ const { loadDocuments, searchAll, searchResults, getRecommendations, getDocument
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
+const route = useRoute();
 
 const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
 const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
@@ -31,6 +33,13 @@ type SearchPaletteItem = CommandPaletteItem & {
 };
 
 const staticPageItems = computed<SearchPaletteItem[]>(() => {
+	const loginPath = {
+		path: localePath("/login"),
+		query: {
+			redirect: sanitizeRedirectPath(route.fullPath, localePath("/")),
+		},
+	};
+
 	const items: SearchPaletteItem[] = [
 		{
 			label: t("nav.home"),
@@ -170,7 +179,7 @@ const staticPageItems = computed<SearchPaletteItem[]>(() => {
 		items.push({
 			label: t("nav.login"),
 			icon: "i-lucide-log-in",
-			to: localePath("/login"),
+			to: loginPath,
 			searchResult: {
 				id: "page-login",
 				label: t("nav.login"),

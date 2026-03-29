@@ -8,68 +8,68 @@ const localePath = useLocalePath();
 const defaultFeatureCards: FeatureCard[] = [
 	{
 		icon: "i-lucide-home",
-		title: "Wohnkomfort",
-		description: "40 m² Wohnfläche mit offener Küche, Wohnbereich und zwei Schlafzimmern. Galerie im Obergeschoss mit Badezimmer. Elektroheizung für kühlere Tage.",
+		title: t("home.defaults.features.comfort.title"),
+		description: t("home.defaults.features.comfort.description"),
 		bgColor: "blue",
 		iconColor: "blue",
 	},
 	{
 		icon: "i-lucide-sun",
-		title: "Terrasse & Parkplatz",
-		description: "Private Sonnenterrasse auf der Südseite – ideal für Frühstück und Sonnenuntergänge. Ein reservierter Parkplatz pro Haus.",
+		title: t("home.defaults.features.terrace.title"),
+		description: t("home.defaults.features.terrace.description"),
 		bgColor: "amber",
 		iconColor: "amber",
 	},
 	{
 		icon: "i-lucide-heart-handshake",
-		title: "Gemeinschaftsgut",
-		description: "Fahrräder, Strandspielzeug und eine Bibliothek (DE/FR) stehen allen zur Verfügung. Zwei Grillplätze laden zum gemeinsamen Kochen ein.",
+		title: t("home.defaults.features.shared.title"),
+		description: t("home.defaults.features.shared.description"),
 		bgColor: "rose",
 		iconColor: "rose",
 	},
 	{
 		icon: "i-lucide-trees",
-		title: "Garten & Umgebung",
-		description: "Reich bepflanzte Anlage mit schattigen Plätzen. Nur 1 km zum Fährhafen, wenige Minuten zu den Stränden und Wanderwegen.",
+		title: t("home.defaults.features.garden.title"),
+		description: t("home.defaults.features.garden.description"),
 		bgColor: "emerald",
 		iconColor: "emerald",
 	},
 ];
 
 const defaultStats: StatItem[] = [
-	{ value: "20", label: "Häuser" },
-	{ value: "40+", label: "Jahre" },
-	{ value: "1", label: "Spirit" },
+	{ value: "20", label: t("home.defaults.stats.houses") },
+	{ value: "40+", label: t("home.defaults.stats.years") },
+	{ value: "1", label: t("home.defaults.stats.spirit") },
 ];
 
 const defaultTimeline: AppTimelineItem[] = [
 	{
 		date: "1979/1980",
-		title: "Gründung der Résidence",
-		description: "Die Familien Hertoux und Tellier erstellen die Résidence Beausoleil mit insgesamt 20 Häusern. Die beiden Familien besitzen je die Hälfte der Liegenschaft.",
+		title: t("home.defaults.timeline.foundation.title"),
+		description: t("home.defaults.timeline.foundation.description"),
 		icon: "i-lucide-home",
 	},
 	{
 		date: "1989",
-		title: "Erste Verkäufe",
-		description: "Die Familie Tellier beginnt mit dem Verkauf ihrer 10 Häuser. Acht Häuser gehen an die Schweizer Ferien- und Skihausgenossenschaft der Eisenbahner (FSG), zwei in Privatbesitz. Auch die Familie Hertoux beginnt mit dem schrittweisen Verkauf.",
+		title: t("home.defaults.timeline.sales.title"),
+		description: t("home.defaults.timeline.sales.description"),
 		icon: "i-lucide-circle-dollar-sign",
 	},
 	{
 		date: "2006",
-		title: "Vollständig privatisiert",
-		description: "Mit dem Verkauf der verbliebenen FSG-Häuser befinden sich nun alle 20 Häuser im Privatbesitz. Die Eigentümer aus Frankreich und der Schweiz nutzen die Häuser als Zweitwohnsitze.",
+		title: t("home.defaults.timeline.privateOwnership.title"),
+		description: t("home.defaults.timeline.privateOwnership.description"),
 		icon: "i-lucide-users",
 	},
 	{
-		date: "Heute",
-		title: "Lebendige Gemeinschaft",
-		description: "Die 20 Eigentümer treffen sich jährlich zur Eigentümerversammlung und arbeiten im Frühling und Herbst gemeinsam an der Pflege und Verschönerung der Siedlung.",
+		date: t("home.defaults.timeline.today.date"),
+		title: t("home.defaults.timeline.today.title"),
+		description: t("home.defaults.timeline.today.description"),
 		icon: "i-lucide-heart-handshake",
 	},
 ];
 
-const defaultMiteinanderContent = `<p>Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement. Im Frühling und Herbst arbeiten wir gemeinsam an der Pflege und Verschönerung der Siedlung.</p>`;
+const defaultMiteinanderContent = `<p>${t("home.defaults.miteinander")}</p>`;
 
 const publicPageBundle = await usePublicPageBundle("home");
 const featureCards = publicPageBundle.createDataSection<FeatureCard[]>("index-features", defaultFeatureCards);
@@ -164,10 +164,12 @@ onMounted(() => {
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 				</div>
 				<template v-else>
+					<UiFeatureCards :cards="featureCards.data.value" />
 					<ClientOnly v-if="featureCards.isEditing.value">
-						<UiLazyFeatureCardsEditor v-model="featureCards.data.value" />
+						<div class="mt-8">
+							<UiLazyFeatureCardsEditor v-model="featureCards.data.value" />
+						</div>
 					</ClientOnly>
-					<UiFeatureCards v-else :cards="featureCards.data.value" />
 				</template>
 			</UiOpenSection>
 		</section>
@@ -279,14 +281,17 @@ onMounted(() => {
 				<div v-if="timeline.status.value === 'pending'" class="flex justify-center py-12">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 				</div>
-				<ClientOnly v-if="timeline.isEditing.value && timeline.status.value !== 'pending'">
-					<UiLazyTimelineEditor v-model="timeline.data.value" />
-				</ClientOnly>
-				<UTimeline
-					v-else-if="timeline.status.value !== 'pending'"
-					:default-value="3"
-					:items="timelineItems"
-					class="max-w-3xl" />
+				<template v-else-if="timeline.status.value !== 'pending'">
+					<UTimeline
+						:default-value="3"
+						:items="timelineItems"
+						class="max-w-3xl" />
+					<ClientOnly v-if="timeline.isEditing.value">
+						<div class="mt-8">
+							<UiLazyTimelineEditor v-model="timeline.data.value" />
+						</div>
+					</ClientOnly>
+				</template>
 			</UiOpenSection>
 		</section>
 
@@ -306,9 +311,9 @@ onMounted(() => {
 				>
 					<div class="flex items-start justify-between gap-4">
 						<div class="space-y-3">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-accent)]">Rund um Giens</p>
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-accent)]">{{ t("home.discover.kicker") }}</p>
 							<h3 class="display-copy text-3xl tracking-[-0.03em] text-[var(--app-text)]">{{ t("nav.entdecken") }}</h3>
-							<p class="max-w-md text-sm leading-relaxed text-[var(--app-muted)]">Märkte, Ausflüge und praktische Tipps rund um Giens.</p>
+							<p class="max-w-md text-sm leading-relaxed text-[var(--app-muted)]">{{ t("home.discover.subtitle") }}</p>
 						</div>
 						<UIcon name="i-lucide-arrow-right" class="mt-2 h-5 w-5 shrink-0 text-[var(--app-accent)] transition-transform group-hover:translate-x-1" />
 					</div>
@@ -320,7 +325,7 @@ onMounted(() => {
 				>
 					<div class="flex items-start justify-between gap-4">
 						<div class="space-y-3">
-							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">Gut vorbereitet</p>
+							<p class="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[var(--app-primary)]">{{ t("home.organisatorisches.kicker") }}</p>
 							<h3 class="display-copy text-3xl tracking-[-0.03em] text-[var(--app-text)]">{{ t("home.organisatorisches.title") }}</h3>
 							<p class="max-w-md text-sm leading-relaxed text-[var(--app-muted)]">{{ t("home.organisatorisches.subtitle") }}</p>
 						</div>

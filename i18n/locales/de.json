@@ -53,6 +53,110 @@
     "logout": "Logout",
     "search": "Suchen"
   },
+  "documents": {
+    "title": "Gemeinsame Unterlagen",
+    "subtitle": "Wichtige Dateien, Ordner und Downloads für Eigentümer und Administration.",
+    "maxFileSize": "max. 50MB",
+    "sort": {
+      "label": "Sortieren:",
+      "name": "Name",
+      "date": "Datum",
+      "size": "Größe"
+    },
+    "selection": {
+      "summary": "{selected} von {total} ausgewählt"
+    },
+    "count": {
+      "images": "{count} Bilder",
+      "files": "{count} Dateien"
+    },
+    "states": {
+      "uploadingCurrent": "Lade hoch: {file}",
+      "loading": "Laden...",
+      "loadingMore": "Lade weitere...",
+      "loadError": "Fehler beim Laden",
+      "emptyTitle": "Keine Dateien",
+      "emptyHint": "Ziehen Sie Dateien hierher oder klicken Sie auf \"Hochladen\" (max. 50MB)"
+    },
+    "actions": {
+      "newFolder": "Neuer Ordner",
+      "upload": "Hochladen",
+      "retry": "Erneut versuchen",
+      "download": "Download",
+      "rename": "Umbenennen",
+      "move": "Verschieben",
+      "delete": "Löschen",
+      "cancel": "Abbrechen",
+      "copyLink": "Link kopieren",
+      "view": "Anzeigen",
+      "play": "Abspielen",
+      "open": "Öffnen",
+      "translatedFile": "Übersetzte Datei",
+      "link": "Link",
+      "moveHere": "Hierher verschieben",
+      "moveToRoot": "Ins Stammverzeichnis verschieben"
+    },
+    "preview": {
+      "selectedFile": "Ausgewählte Datei",
+      "pdfTitle": "PDF Vorschau",
+      "documentTitle": "Dokument Vorschau",
+      "notAvailable": "Für diesen Dateityp ist keine direkte Vorschau verfügbar.",
+      "selectHint": "Wählen Sie eine Datei aus, um rechts eine Vorschau und die wichtigsten Metadaten zu sehen."
+    },
+    "meta": {
+      "type": "Typ",
+      "size": "Größe",
+      "uploaded": "Hochgeladen",
+      "fileDate": "Dateidatum"
+    },
+    "processing": {
+      "title": "Dokumentinhalt",
+      "loading": "Dokument wird analysiert...",
+      "unavailable": "Texterkennung nicht verfügbar",
+      "noText": "Kein extrahierter Text verfügbar.",
+      "noContent": "Für diese Datei liegt noch kein extrahierter oder übersetzter Inhalt vor.",
+      "noAutoTranslation": "Keine automatische Übersetzung",
+      "originalLanguage": "Originalsprache",
+      "translationLabel": "Übersetzung: {locale}",
+      "noTranslationForLanguage": "Keine Übersetzung für diese Sprache"
+    },
+    "modals": {
+      "renameTitle": "Datei umbenennen",
+      "renameLabel": "Neuer Dateiname",
+      "renamePlaceholder": "Dateiname...",
+      "moveTitle": "Elemente verschieben",
+      "moveDescription": "Verschiebe {count} Element(e) in einen Zielordner:",
+      "noSubfolders": "Keine Unterordner vorhanden",
+      "noMoreSubfolders": "Keine weiteren Unterordner"
+    },
+    "confirm": {
+      "deleteFile": "\"{name}\" wirklich löschen?",
+      "deleteSelection": "{count} Element(e) wirklich löschen?",
+      "deleteSelectionNested": "Dabei werden auch {files} Datei(en) und {folders} Unterordner gelöscht.",
+      "deleteFolder": "\"{name}\" wirklich löschen?",
+      "deleteFolderNested": "Dabei werden auch {files} Datei(en) und {folders} Unterordner gelöscht."
+    },
+    "toasts": {
+      "linkCopied": "Link kopiert",
+      "translatedUnavailable": "Übersetzte Datei nicht verfügbar",
+      "previewUnavailable": "Vorschau nicht verfügbar",
+      "loadMoreError": "Fehler beim Laden weiterer Dateien",
+      "folderCreated": "Ordner erstellt",
+      "folderRenamed": "Ordner umbenannt",
+      "saveError": "Fehler beim Speichern",
+      "openError": "Fehler beim Öffnen",
+      "downloadError": "Fehler beim Download",
+      "fileDeleted": "Datei gelöscht",
+      "deleteError": "Fehler beim Löschen",
+      "deleteNamedError": "Fehler beim Löschen von {name}",
+      "selectionDeleted": "{count} Element(e) gelöscht",
+      "folderDeletedDetail": "{files} Datei(en) und {folders} Unterordner entfernt.",
+      "fileRenamed": "Datei umbenannt",
+      "renameError": "Fehler beim Umbenennen",
+      "moveNamedError": "Fehler beim Verschieben von {name}",
+      "itemsMoved": "{count} Element(e) verschoben"
+    }
+  },
   "hero": {
     "welcome": {
       "title": "Willkommen im Beausoleil",
@@ -104,9 +208,59 @@
       "subtitle": "Impressionen",
       "title": "Die Schönheit von Giens"
     },
+    "discover": {
+      "kicker": "Rund um Giens",
+      "subtitle": "Märkte, Ausflüge und praktische Tipps rund um Giens."
+    },
     "organisatorisches": {
+      "kicker": "Gut vorbereitet",
       "title": "Organisatorisches",
       "subtitle": "Wichtige Informationen zur Résidence"
+    },
+    "defaults": {
+      "miteinander": "Im Zentrum unserer Gemeinschaft aus 20 Miteigentümern stehen Zusammenhalt, gegenseitiger Respekt und das gemeinsame Engagement. Im Frühling und Herbst arbeiten wir gemeinsam an der Pflege und Verschönerung der Siedlung.",
+      "stats": {
+        "houses": "Häuser",
+        "years": "Jahre",
+        "spirit": "Spirit"
+      },
+      "features": {
+        "comfort": {
+          "title": "Wohnkomfort",
+          "description": "40 m² Wohnfläche mit offener Küche, Wohnbereich und zwei Schlafzimmern. Galerie im Obergeschoss mit Badezimmer. Elektroheizung für kühlere Tage."
+        },
+        "terrace": {
+          "title": "Terrasse & Parkplatz",
+          "description": "Private Sonnenterrasse auf der Südseite, ideal für Frühstück und Sonnenuntergänge. Ein reservierter Parkplatz pro Haus."
+        },
+        "shared": {
+          "title": "Gemeinschaftsgut",
+          "description": "Fahrräder, Strandspielzeug und eine Bibliothek auf Deutsch und Französisch stehen allen zur Verfügung. Zwei Grillplätze laden zum gemeinsamen Kochen ein."
+        },
+        "garden": {
+          "title": "Garten & Umgebung",
+          "description": "Reich bepflanzte Anlage mit schattigen Plätzen. Nur 1 km bis zum Fährhafen und wenige Minuten zu Stränden und Wanderwegen."
+        }
+      },
+      "timeline": {
+        "foundation": {
+          "title": "Gründung der Résidence",
+          "description": "Die Familien Hertoux und Tellier erstellen die Résidence Beausoleil mit insgesamt 20 Häusern und halten je die Hälfte der Liegenschaft."
+        },
+        "sales": {
+          "title": "Erste Verkäufe",
+          "description": "Die Familie Tellier beginnt mit dem Verkauf ihrer 10 Häuser. Acht Häuser gehen an die Schweizer Ferien- und Skihausgenossenschaft der Eisenbahner, zwei in Privatbesitz."
+        },
+        "privateOwnership": {
+          "title": "Vollständig privatisiert",
+          "description": "Mit dem Verkauf der verbliebenen FSG-Häuser befinden sich nun alle 20 Häuser im Privatbesitz."
+        },
+        "today": {
+          "date": "Heute",
+          "title": "Lebendige Gemeinschaft",
+          "description": "Die 20 Eigentümer treffen sich jährlich zur Eigentümerversammlung und pflegen die Siedlung im Frühling und Herbst gemeinsam."
+        }
+      }
     }
   },
   "about": {

@@ -128,6 +128,16 @@ function getColorClasses(color: string) {
 			text: "text-emerald-600 dark:text-emerald-400",
 			border: "border-emerald-100 dark:border-emerald-900",
 		},
+		purple: {
+			bg: "bg-purple-100 dark:bg-purple-900/30",
+			text: "text-purple-600 dark:text-purple-400",
+			border: "border-purple-100 dark:border-purple-900",
+		},
+		cyan: {
+			bg: "bg-cyan-100 dark:bg-cyan-900/30",
+			text: "text-cyan-600 dark:text-cyan-400",
+			border: "border-cyan-100 dark:border-cyan-900",
+		},
 	};
 
 	return colors[color] || colors.blue;
@@ -242,10 +252,7 @@ useHead({
 						</template>
 					</div>
 
-					<ClientOnly v-if="planningPillars.isEditing.value">
-						<UiLazyFeatureCardsEditor v-model="planningPillars.data.value" />
-					</ClientOnly>
-					<div v-else class="grid gap-4 md:grid-cols-3">
+					<div class="grid gap-4 md:grid-cols-3">
 						<div
 							v-for="pillar in planningPillars.data.value"
 							:key="pillar.title"
@@ -258,6 +265,11 @@ useHead({
 							<p class="mt-2 text-sm leading-relaxed text-[var(--app-muted)]">{{ pillar.description }}</p>
 						</div>
 					</div>
+					<ClientOnly v-if="planningPillars.isEditing.value">
+						<div class="mt-6">
+							<UiLazyFeatureCardsEditor v-model="planningPillars.data.value" />
+						</div>
+					</ClientOnly>
 				</div>
 
 				<div class="rounded-[1.75rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
@@ -727,13 +739,7 @@ useHead({
 						</div>
 					</div>
 
-					<ClientOnly v-if="flightFacts.isEditing.value">
-						<UiLazyFeatureCardsEditor v-model="flightFacts.data.value" />
-					</ClientOnly>
-					<div
-						v-else
-						class="grid gap-4"
-					>
+					<div class="grid gap-4">
 						<div
 							v-for="item in flightFacts.data.value"
 							:key="item.title"
@@ -750,6 +756,11 @@ useHead({
 							</div>
 						</div>
 					</div>
+					<ClientOnly v-if="flightFacts.isEditing.value">
+						<div class="mt-6">
+							<UiLazyFeatureCardsEditor v-model="flightFacts.data.value" />
+						</div>
+					</ClientOnly>
 				</div>
 			</div>
 		</section>

@@ -65,10 +65,37 @@ async function redirectAfterLogin() {
 
 	isRedirecting.value = true;
 	try {
-		const redirectTarget = sanitizeRedirectPath(route.query.redirect, localePath("/"));
+		const redirectTarget = sanitizeRedirectPath(route.query.redirect, getLoginFallbackRedirect());
 		await router.replace(redirectTarget);
 	} finally {
 		isRedirecting.value = false;
+	}
+}
+
+function getLoginFallbackRedirect() {
+	if (!import.meta.client) {
+		return localePath("/");
+	}
+
+	const referrer = document.referrer;
+
+	if (!referrer) {
+		return localePath("/");
+	}
+
+	try {
+		const referrerUrl = new URL(referrer);
+
+		if (referrerUrl.origin !== window.location.origin) {
+			return localePath("/");
+		}
+
+		return sanitizeRedirectPath(
+			`${referrerUrl.pathname}${referrerUrl.search}${referrerUrl.hash}`,
+			localePath("/"),
+		);
+	} catch {
+		return localePath("/");
 	}
 }
 
