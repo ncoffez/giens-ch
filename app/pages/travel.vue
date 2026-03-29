@@ -227,7 +227,7 @@ useHead({
 					</p>
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="planningPillars.isAdmin.value && !planningPillars.isEditing.value">
+						<template v-if="planningPillars.canEdit.value && !planningPillars.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="planningPillars.startEditing()">
 								Elemente bearbeiten
 							</UButton>
@@ -266,7 +266,7 @@ useHead({
 							{{ t("travel.intro.factsTitle") }}
 						</p>
 						<div class="flex items-center gap-2">
-							<template v-if="routeFacts.isAdmin.value && !routeFacts.isEditing.value">
+							<template v-if="routeFacts.canEdit.value && !routeFacts.isEditing.value">
 								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="routeFacts.startEditing()">
 									Fakten bearbeiten
 								</UButton>
@@ -322,7 +322,7 @@ useHead({
 					<UiTitle :subtitle="t('travel.lage.subtitle')" :title="t('travel.lage.title')" />
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="lageContent.isAdmin.value && !lageContent.isEditing.value">
+						<template v-if="lageContent.canEdit.value && !lageContent.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="lageContent.startEditing()">
 								{{ t("editor.edit") }}
 							</UButton>
@@ -381,7 +381,7 @@ useHead({
 					</div>
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="locationFacts.isAdmin.value && !locationFacts.isEditing.value">
+						<template v-if="locationFacts.canEdit.value && !locationFacts.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="locationFacts.startEditing()">
 								Fakten bearbeiten
 							</UButton>
@@ -466,7 +466,7 @@ useHead({
 					<UiTitle :subtitle="t('travel.auto.subtitle')" :title="t('travel.auto.title')" />
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="autoContent.isAdmin.value && !autoContent.isEditing.value">
+						<template v-if="autoContent.canEdit.value && !autoContent.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="autoContent.startEditing()">
 								{{ t("editor.edit") }}
 							</UButton>
@@ -513,7 +513,7 @@ useHead({
 							{{ t("travel.auto.routeTitle") }}
 						</p>
 						<div class="flex items-center gap-2">
-							<template v-if="autoSteps.isAdmin.value && !autoSteps.isEditing.value">
+							<template v-if="autoSteps.canEdit.value && !autoSteps.isEditing.value">
 								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="autoSteps.startEditing()">
 									Stops bearbeiten
 								</UButton>
@@ -569,7 +569,7 @@ useHead({
 					<UiTitle :subtitle="t('travel.zug.subtitle')" :title="t('travel.zug.title')" />
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="zugContent.isAdmin.value && !zugContent.isEditing.value">
+						<template v-if="zugContent.canEdit.value && !zugContent.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="zugContent.startEditing()">
 								{{ t("editor.edit") }}
 							</UButton>
@@ -603,7 +603,7 @@ useHead({
 							{{ t("travel.zug.title") }}
 						</p>
 						<div class="flex items-center gap-2">
-							<template v-if="trainSteps.isAdmin.value && !trainSteps.isEditing.value">
+							<template v-if="trainSteps.canEdit.value && !trainSteps.isEditing.value">
 								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="trainSteps.startEditing()">
 									Etappen bearbeiten
 								</UButton>
@@ -677,7 +677,7 @@ useHead({
 					<UiTitle :subtitle="t('travel.flugzeug.subtitle')" :title="t('travel.flugzeug.title')" />
 
 					<div class="flex items-center justify-end gap-2">
-						<template v-if="flugzeugContent.isAdmin.value && !flugzeugContent.isEditing.value">
+						<template v-if="flugzeugContent.canEdit.value && !flugzeugContent.isEditing.value">
 							<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="flugzeugContent.startEditing()">
 								{{ t("editor.edit") }}
 							</UButton>
@@ -711,7 +711,7 @@ useHead({
 							{{ t("travel.flugzeug.title") }}
 						</p>
 						<div class="flex items-center gap-2">
-							<template v-if="flightFacts.isAdmin.value && !flightFacts.isEditing.value">
+							<template v-if="flightFacts.canEdit.value && !flightFacts.isEditing.value">
 								<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="flightFacts.startEditing()">
 									Infos bearbeiten
 								</UButton>

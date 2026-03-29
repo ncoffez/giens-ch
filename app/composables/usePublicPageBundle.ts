@@ -1,4 +1,5 @@
 import type { PageContent, LocalizedContent } from "../../types";
+import { isSourceEditableLocale } from "../utils/contentEditing";
 
 type PublicPageKey = "home" | "travel" | "entdecken";
 
@@ -39,12 +40,14 @@ function parseLocalizedJson<T>(data: PageContent | null | undefined, locale: str
 
 export async function usePublicPageBundle(page: PublicPageKey) {
 	const nuxtApp = useNuxtApp();
-	const { token } = useAuthReady();
+	const { getFreshToken } = useAuthReady();
+	const { authorizedFetch } = useApi();
 	const toast = useAppToast();
 	const i18n = useI18n();
 	const sections = ref<Record<string, PageContent>>({});
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
 	const activeLocale = computed(() => i18n.locale?.value || "de");
+	const canEdit = computed(() => isAdmin.value && isSourceEditableLocale(activeLocale.value));
 
 	const fetchKey = computed(() => `public-page-content:${page}:${activeLocale.value}`);
 	const { data, status, refresh, error } = await useFetch<PublicPageBundleResponse>(() => `/api/page-content/${page}`, {
@@ -65,11 +68,12 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 	});
 
 	const saveSection = async (contentId: string, content: string) => {
-		if (!token.value) return;
+		const token = await getFreshToken();
+		if (!token) return;
 
-		await $fetch(`/api/content/${contentId}`, {
+		await authorizedFetch(`/api/content/${contentId}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			forceRefresh: true,
 			body: { content },
 		});
 	};
@@ -94,7 +98,9 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 			isAdmin,
 			isEditing,
 			isSaving,
+			canEdit,
 			startEditing: () => {
+				if (!canEdit.value) return;
 				originalContent.value = content.value;
 				isEditing.value = true;
 			},
@@ -103,8 +109,7 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 				isEditing.value = false;
 			},
 			save: async () => {
-				if (!token.value) return;
-
+				if (!canEdit.value) return;
 				isSaving.value = true;
 				try {
 					await saveSection(contentId, content.value);
@@ -112,7 +117,9 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 					isEditing.value = false;
 					await refresh();
 				} catch (e: unknown) {
-					toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen");
+					toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen", {
+						source: `public-page-content-save:${contentId}`,
+					});
 				} finally {
 					isSaving.value = false;
 				}
@@ -142,7 +149,9 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 			isAdmin,
 			isEditing,
 			isSaving,
+			canEdit,
 			startEditing: () => {
+				if (!canEdit.value) return;
 				originalData.value = cloneDefault(sectionData.value);
 				isEditing.value = true;
 			},
@@ -151,8 +160,7 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 				isEditing.value = false;
 			},
 			save: async () => {
-				if (!token.value) return;
-
+				if (!canEdit.value) return;
 				isSaving.value = true;
 				try {
 					await saveSection(contentId, JSON.stringify(sectionData.value));
@@ -160,7 +168,9 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 					isEditing.value = false;
 					await refresh();
 				} catch (e: unknown) {
-					toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen");
+					toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen", {
+						source: `public-page-data-save:${contentId}`,
+					});
 				} finally {
 					isSaving.value = false;
 				}

@@ -77,12 +77,15 @@ async function loginToFirebase(method: "google" | "password", email?: string, pa
 		if (method === "google") {
 			await loginWithGoogle();
 		} else if (method === "password" && (!password || !email)) {
-			toast.error(t("auth.errors.generic"), t("auth.errors.emailRequired"));
+			toast.error(t("auth.errors.generic"), t("auth.errors.emailRequired"), { report: false });
 		} else if (method === "password" && password && email) {
 			await loginWithPassword(email, password);
 		}
 	} catch (e: unknown) {
-		toast.error(t("auth.errors.generic"), e?.message || t("auth.errors.generic"));
+		toast.error(t("auth.errors.generic"), e?.message || t("auth.errors.generic"), {
+			report: false,
+			source: "login",
+		});
 	}
 }
 

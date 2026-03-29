@@ -1,8 +1,10 @@
 import type { PageContent, LocalizedContent } from "../../types";
+import { isSourceEditableLocale } from "../utils/contentEditing";
 
 export async function usePageData<T>(contentId: string, defaultData: T) {
 	const nuxtApp = useNuxtApp();
-	const { token } = useAuthReady();
+	const { getFreshToken } = useAuthReady();
+	const { authorizedFetch } = useApi();
 	const toast = useAppToast();
 	const i18n = useI18n();
 
@@ -12,6 +14,7 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 	const data = ref<T>(JSON.parse(JSON.stringify(defaultData))) as Ref<T>;
 	const originalData = ref<T>(JSON.parse(JSON.stringify(defaultData))) as Ref<T>;
 	const activeLocale = computed(() => i18n.locale?.value || "de");
+	const canEdit = computed(() => isAdmin.value && isSourceEditableLocale(activeLocale.value));
 	const fetchKey = computed(() => `content-data:${contentId}:${activeLocale.value}`);
 
 	const { data: responseData, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {
@@ -60,6 +63,7 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 	});
 
 	const startEditing = () => {
+		if (!canEdit.value) return;
 		originalData.value = JSON.parse(JSON.stringify(data.value));
 		isEditing.value = true;
 	};
@@ -70,20 +74,24 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 	};
 
 	const save = async () => {
-		if (!token.value) return;
+		if (!canEdit.value) return;
+		const token = await getFreshToken();
+		if (!token) return;
 
 		isSaving.value = true;
 		try {
-			await $fetch(`/api/content/${contentId}`, {
+			await authorizedFetch(`/api/content/${contentId}`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
+				forceRefresh: true,
 				body: { content: JSON.stringify(data.value) },
 			});
 			toast.success("Gespeichert", "Inhalt wurde erfolgreich gespeichert");
 			isEditing.value = false;
 			await refresh();
 		} catch (e: unknown) {
-			toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen");
+			toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen", {
+				source: "page-data-save",
+			});
 		} finally {
 			isSaving.value = false;
 		}
@@ -94,6 +102,7 @@ export async function usePageData<T>(contentId: string, defaultData: T) {
 		status,
 		error,
 		isAdmin,
+		canEdit,
 		isEditing,
 		isSaving,
 		startEditing,

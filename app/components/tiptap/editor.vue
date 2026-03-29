@@ -214,7 +214,9 @@ const processFile = async (file: File) => {
 	} catch (e: unknown) {
 		console.error("Upload failed", e);
 		const message = getFetchError(e) || t("editor.unknownError");
-		toast.error(t("editor.uploadFailed"), message);
+		toast.error(t("editor.uploadFailed"), message, {
+			source: "editor-upload",
+		});
 	} finally {
 		setTimeout(() => {
 			uploading.value = false;

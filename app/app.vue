@@ -3,6 +3,9 @@
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>
+		<ClientOnly>
+			<UiErrorReportCenter />
+		</ClientOnly>
 	</UApp>
 </template>
 

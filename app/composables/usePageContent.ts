@@ -1,8 +1,10 @@
 import type { PageContent } from "../../types";
+import { isSourceEditableLocale } from "../utils/contentEditing";
 
 export async function usePageContent(contentId: string) {
 	const nuxtApp = useNuxtApp();
-	const { token } = useAuthReady();
+	const { getFreshToken } = useAuthReady();
+	const { authorizedFetch } = useApi();
 	const toast = useAppToast();
 	const i18n = useI18n();
 
@@ -12,6 +14,7 @@ export async function usePageContent(contentId: string) {
 	const content = ref("");
 	const originalContent = ref("");
 	const activeLocale = computed(() => i18n.locale?.value || "de");
+	const canEdit = computed(() => isAdmin.value && isSourceEditableLocale(activeLocale.value));
 	const fetchKey = computed(() => `content:${contentId}:${activeLocale.value}`);
 
 	const { data, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {
@@ -56,6 +59,7 @@ export async function usePageContent(contentId: string) {
 	});
 
 	const startEditing = () => {
+		if (!canEdit.value) return;
 		originalContent.value = content.value;
 		isEditing.value = true;
 	};
@@ -66,20 +70,24 @@ export async function usePageContent(contentId: string) {
 	};
 
 	const save = async () => {
-		if (!token.value) return;
+		if (!canEdit.value) return;
+		const token = await getFreshToken();
+		if (!token) return;
 
 		isSaving.value = true;
 		try {
-			await $fetch(`/api/content/${contentId}`, {
+			await authorizedFetch(`/api/content/${contentId}`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
+				forceRefresh: true,
 				body: { content: content.value },
 			});
 			toast.success("Gespeichert", "Inhalt wurde erfolgreich gespeichert");
 			isEditing.value = false;
 			await refresh();
 		} catch (e: unknown) {
-			toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen");
+			toast.error("Fehler", getFetchError(e) || "Speichern fehlgeschlagen", {
+				source: "page-content-save",
+			});
 		} finally {
 			isSaving.value = false;
 		}
@@ -90,6 +98,7 @@ export async function usePageContent(contentId: string) {
 		status,
 		error,
 		isAdmin,
+		canEdit,
 		isEditing,
 		isSaving,
 		startEditing,

@@ -51,6 +51,7 @@ export default defineNuxtConfig({
 			FIREBASE_FRONTEND_KEY: process.env.FIREBASE_FRONTEND_KEY,
 			TEST_VARIABLE: process.env.TEST_VARIABLE,
 			SITE_URL: process.env.SITE_URL || "https://giens-ch.web.app",
+			GITHUB_REPO: process.env.GITHUB_REPO || "ncoffez/giens-ch",
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
 		TEST_SECRET: process.env.TEST_SECRET,
@@ -58,6 +59,7 @@ export default defineNuxtConfig({
 		GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 		GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash",
 		DOCUMENT_TRANSLATION_LANGUAGES: process.env.DOCUMENT_TRANSLATION_LANGUAGES || "fr",
+		GITHUB_ISSUES_TOKEN: process.env.GITHUB_ISSUES_TOKEN,
 	},
 	nitro: {
 		preset: "firebase",
