@@ -198,6 +198,15 @@
       "supportedFormats": "PDF, DOC, XLS und mehr (max. 50MB)",
       "multiUpload": "Mehrere Dateien möglich",
       "privateHint": "Nur für Eigentümer und Administratoren sichtbar",
+      "dragHint": "Dateien können auch per Drag-and-drop nach {target} verschoben werden.",
+      "destinations": {
+        "shared": "öffentlich",
+        "private": "privat"
+      },
+      "actions": {
+        "moveToShared": "Öffentlich machen",
+        "moveToPrivate": "Privat machen"
+      },
       "uploading": "Hochladen... {current}/{total}",
       "emptyTitle": "Keine Dateien",
       "sharedEmptyDescription": "Laden Sie Dokumente hoch, die Mieter herunterladen können",
@@ -208,7 +217,9 @@
         "uploaded": "{count} Datei(en) hochgeladen",
         "uploadFailed": "{count} Upload(s) fehlgeschlagen",
         "deleted": "Datei gelöscht",
-        "deleteFailed": "Löschen fehlgeschlagen"
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "moved": "Datei nach {target} verschoben",
+        "moveFailed": "Datei konnte nicht verschoben werden"
       }
     },
     "contactCard": {

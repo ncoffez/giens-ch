@@ -7,7 +7,7 @@ import HomePhotos from "~/components/homes/HomePhotos.vue";
 import HomeShareLinks from "~/components/homes/HomeShareLinks.vue";
 import ContactCard from "~/components/homes/ContactCard.vue";
 
-const { waitForAuth, token } = useAuthReady();
+const { waitForAuth, getFreshToken } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 const localePath = useLocalePath();
@@ -70,14 +70,15 @@ const fetchHome = async () => {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
+		const authToken = await getFreshToken();
 		console.log("[edit-home] Fetching home:", homeId.value);
 
 		const [homeData, sharesData] = await Promise.all([
 			$fetch(`/api/homes/${homeId.value}`, {
-				headers: { Authorization: `Bearer ${token.value}` },
+				headers: { Authorization: `Bearer ${authToken}` },
 			}),
 			$fetch(`/api/homes/${homeId.value}/share/list`, {
-				headers: { Authorization: `Bearer ${token.value}` },
+				headers: { Authorization: `Bearer ${authToken}` },
 			}),
 		]);
 
@@ -111,7 +112,7 @@ const saveBasicInfo = async () => {
 		saving.value = true;
 		await $fetch(`/api/homes/${homeId.value}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: {
 				name: formName.value,
 				wifiSSID: formWifiSSID.value,
@@ -133,7 +134,7 @@ const saveContacts = async () => {
 		saving.value = true;
 		await $fetch(`/api/homes/${homeId.value}`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: {
 				contacts: formContacts.value,
 			},

@@ -1,4 +1,5 @@
 import { db, auth } from "../../../../useFirebaseAdmin";
+import { cleanContact, syncHomeContacts } from "../../../../utils/homeContacts";
 
 async function syncOwnerClaims() {
 	try {
@@ -128,6 +129,17 @@ export default defineEventHandler(async (event) => {
 		Object.assign(updates, otherFields);
 
 		await homeRef.update(updates);
+
+		if (ownerIds !== undefined) {
+			const refreshedDoc = await homeRef.get();
+			const refreshedHome = { id: refreshedDoc.id, ...refreshedDoc.data() } as any;
+			const syncedContacts = await syncHomeContacts(refreshedHome);
+			await homeRef.update({
+				contacts: syncedContacts.map(cleanContact),
+				updatedAt: new Date().toISOString(),
+			});
+		}
+
 		await syncOwnerClaims();
 
 		const updated = await homeRef.get();

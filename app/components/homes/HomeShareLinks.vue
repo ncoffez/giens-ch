@@ -10,7 +10,7 @@ const emit = defineEmits<{
 	refresh: [];
 }>();
 
-const { token } = useAuthReady();
+const { getFreshToken } = useAuthReady();
 const toast = useToast();
 const { t, locale } = useI18n();
 
@@ -51,7 +51,7 @@ const createShare = async () => {
 		creating.value = true;
 		const result = await $fetch<{ shareUrl: string }>(`/api/homes/${props.homeId}/share/create`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: { daysToExpire: daysToExpire.value },
 		});
 
@@ -79,7 +79,7 @@ const revokeShare = async (shareId: string) => {
 	try {
 		await $fetch(`/api/homes/${props.homeId}/share/revoke`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: { shareId },
 		});
 		toast.add({ title: t("homes.shareLinks.toasts.revoked"), color: "success" });
