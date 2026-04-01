@@ -1,5 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { canManageGlobalDocuments } from "../../utils/globalDocuments";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -7,8 +8,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.admin) {
-		throw createError({ statusCode: 403, message: "Only admins can create folders" });
+	if (!canManageGlobalDocuments(claims)) {
+		throw createError({ statusCode: 403, message: "Only admins and owners can create folders" });
 	}
 
 	const body = await readBody(event);

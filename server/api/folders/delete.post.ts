@@ -1,14 +1,15 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import {
+	canDeleteGlobalFolder,
+	collectGlobalFolderTree,
+	getGlobalFolderDeletionError,
+} from "../../utils/globalDocuments";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!claims.admin) {
-		throw createError({ statusCode: 403, message: "Only admins can delete folders" });
 	}
 
 	const body = await readBody(event);
@@ -18,34 +19,47 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Folder ID is required" });
 	}
 
-	const collectFolderIds = async (rootFolderId: string) => {
-		const descendants: string[] = [rootFolderId];
-		const queue: string[] = [rootFolderId];
+	const rootFolderDoc = await db.collection("globalFolders").doc(folderId).get();
+	if (!rootFolderDoc.exists) {
+		throw createError({ statusCode: 404, message: "Folder not found" });
+	}
 
-		while (queue.length > 0) {
-			const currentId = queue.shift();
-			if (!currentId) continue;
+	if (!canDeleteGlobalFolder(claims, rootFolderDoc.data())) {
+		throw createError({ statusCode: 403, message: "You can only delete your own folders" });
+	}
 
-			const childrenSnapshot = await db.collection("globalFolders").where("parentId", "==", currentId).get();
-			for (const childDoc of childrenSnapshot.docs) {
-				descendants.push(childDoc.id);
-				queue.push(childDoc.id);
-			}
-		}
-
-		return descendants;
-	};
-
-	const folderIds = await collectFolderIds(folderId);
+	const folderIds = await collectGlobalFolderTree(folderId);
+	const ownedFolderIds = new Set<string>([folderId]);
+	const descendantFolderRecords = [];
 	const activeFileDocs = [];
 
 	for (const currentFolderId of folderIds) {
+		if (currentFolderId !== folderId) {
+			const folderDoc = await db.collection("globalFolders").doc(currentFolderId).get();
+			if (!folderDoc.exists) {
+				continue;
+			}
+			descendantFolderRecords.push(folderDoc.data());
+			ownedFolderIds.add(currentFolderId);
+		}
+
 		const filesSnapshot = await db.collection("globalFiles").where("folderId", "==", currentFolderId).get();
 		for (const fileDoc of filesSnapshot.docs) {
 			if (!fileDoc.data().deletedAt) {
 				activeFileDocs.push(fileDoc);
 			}
 		}
+	}
+
+	const deletionError = getGlobalFolderDeletionError({
+		claims,
+		rootFolder: rootFolderDoc.data(),
+		descendantFolders: descendantFolderRecords,
+		activeFiles: activeFileDocs.map(fileDoc => fileDoc.data()),
+	});
+
+	if (deletionError) {
+		throw createError({ statusCode: 403, message: deletionError });
 	}
 
 	if (dryRun) {
@@ -64,7 +78,9 @@ export default defineEventHandler(async (event) => {
 	}
 
 	for (const currentFolderId of [...folderIds].reverse()) {
-		await db.collection("globalFolders").doc(currentFolderId).delete();
+		if (ownedFolderIds.has(currentFolderId)) {
+			await db.collection("globalFolders").doc(currentFolderId).delete();
+		}
 	}
 
 	return {
