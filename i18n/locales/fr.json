@@ -198,6 +198,15 @@
       "supportedFormats": "PDF, DOC, XLS et autres (max. 50MB)",
       "multiUpload": "Plusieurs fichiers possibles",
       "privateHint": "Visible uniquement par les propriétaires et les administrateurs",
+      "dragHint": "Les fichiers peuvent aussi être déplacés par glisser-déposer vers {target}.",
+      "destinations": {
+        "shared": "la zone partagée",
+        "private": "la zone privée"
+      },
+      "actions": {
+        "moveToShared": "Rendre public",
+        "moveToPrivate": "Rendre privé"
+      },
       "uploading": "Téléchargement... {current}/{total}",
       "emptyTitle": "Aucun fichier",
       "sharedEmptyDescription": "Téléchargez des documents que les locataires pourront récupérer",
@@ -208,7 +217,9 @@
         "uploaded": "{count} fichier(s) téléchargé(s)",
         "uploadFailed": "{count} téléchargement(s) échoué(s)",
         "deleted": "Fichier supprimé",
-        "deleteFailed": "La suppression a échoué"
+        "deleteFailed": "La suppression a échoué",
+        "moved": "Fichier déplacé vers {target}",
+        "moveFailed": "Le fichier n'a pas pu être déplacé"
       }
     },
     "contactCard": {

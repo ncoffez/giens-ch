@@ -11,11 +11,14 @@ const emit = defineEmits<{
 	refresh: [];
 }>();
 
-const { token } = useAuthReady();
+const { getFreshToken } = useAuthReady();
 const toast = useToast();
 const { t } = useI18n();
 const isPrivate = computed(() => props.privacy === "private");
 const visibleFiles = computed(() => isPrivate.value ? (props.home.privateFiles || []) : (props.home.files || []));
+const targetPrivacy = computed<"shared" | "private">(() => isPrivate.value ? "shared" : "private");
+const dragOverZone = ref(false);
+const movingFileId = ref<string | null>(null);
 
 const uploading = ref(false);
 const uploadProgress = ref(0);
@@ -28,13 +31,13 @@ const formatFileSize = (bytes: number) => {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const uploadFiles = async (event: Event) => {
-	const target = event.target as HTMLInputElement;
-	const files = target.files;
-	if (!files || files.length === 0) return;
+const getMoveActionLabel = (nextVisibility: "shared" | "private") => {
+	return nextVisibility === "private"
+		? t("homes.files.actions.moveToPrivate")
+		: t("homes.files.actions.moveToShared");
+};
 
-	const fileArray = Array.from(files);
-
+const uploadFileList = async (fileArray: File[]) => {
 	const oversizedFiles = fileArray.filter(f => f.size > 50 * 1024 * 1024);
 	if (oversizedFiles.length > 0) {
 		toast.add({ title: t("homes.files.toasts.maxSize"), color: "error" });
@@ -45,6 +48,7 @@ const uploadFiles = async (event: Event) => {
 	uploadTotal.value = fileArray.length;
 	uploadCurrent.value = 0;
 	uploadProgress.value = 0;
+	const authToken = await getFreshToken();
 
 	let successCount = 0;
 	let errorCount = 0;
@@ -64,7 +68,7 @@ const uploadFiles = async (event: Event) => {
 
 			await $fetch(`/api/homes/${props.home.id}/files/upload`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
+				headers: { Authorization: `Bearer ${authToken}` },
 				body: {
 					file: base64,
 					name: file.name,
@@ -82,7 +86,6 @@ const uploadFiles = async (event: Event) => {
 	}
 
 	uploading.value = false;
-	target.value = "";
 
 	if (successCount > 0) {
 		toast.add({
@@ -100,13 +103,87 @@ const uploadFiles = async (event: Event) => {
 	}
 };
 
+const uploadFiles = async (event: Event) => {
+	const target = event.target as HTMLInputElement;
+	const files = target.files;
+	if (!files || files.length === 0) return;
+
+	await uploadFileList(Array.from(files));
+	target.value = "";
+};
+
+const moveFile = async (file: HomeFile, nextVisibility: "shared" | "private") => {
+	if ((file.visibility || "shared") === nextVisibility) return;
+
+	try {
+		movingFileId.value = file.id;
+		await $fetch(`/api/homes/${props.home.id}/files/move`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
+			body: {
+				fileId: file.id,
+				targetVisibility: nextVisibility,
+			},
+		});
+		toast.add({
+			title: t("homes.files.toasts.moved", {
+				target: nextVisibility === "private"
+					? t("homes.files.destinations.private")
+					: t("homes.files.destinations.shared"),
+			}),
+			color: "success",
+		});
+		emit("refresh");
+	} catch (e: unknown) {
+		toast.add({ title: t("homes.files.toasts.moveFailed"), description: getFetchError(e), color: "error" });
+	} finally {
+		movingFileId.value = null;
+	}
+};
+
+const handleDragStart = (event: DragEvent, file: HomeFile) => {
+	if (!event.dataTransfer) return;
+	event.dataTransfer.effectAllowed = "move";
+	event.dataTransfer.setData("application/x-home-file", JSON.stringify({
+		fileId: file.id,
+		visibility: file.visibility || (isPrivate.value ? "private" : "shared"),
+	}));
+};
+
+const handleDrop = async (event: DragEvent) => {
+	dragOverZone.value = false;
+
+	const droppedFiles = event.dataTransfer?.files;
+	if (droppedFiles && droppedFiles.length > 0) {
+		await uploadFileList(Array.from(droppedFiles));
+		return;
+	}
+
+	const payload = event.dataTransfer?.getData("application/x-home-file");
+	if (!payload) return;
+
+	try {
+		const parsed = JSON.parse(payload) as { fileId?: string; visibility?: "shared" | "private" };
+		if (!parsed.fileId || !parsed.visibility || parsed.visibility === (isPrivate.value ? "private" : "shared")) {
+			return;
+		}
+
+		const file = [...(props.home.files || []), ...(props.home.privateFiles || [])].find((entry) => entry.id === parsed.fileId);
+		if (!file) return;
+
+		await moveFile(file, isPrivate.value ? "private" : "shared");
+	} catch {
+		// Ignore malformed drag payloads.
+	}
+};
+
 const deleteFile = async (file: HomeFile) => {
 	if (!confirm(t("homes.files.confirmDelete", { name: file.name }))) return;
 
 	try {
 		await $fetch(`/api/homes/${props.home.id}/files/delete`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: { fileId: file.id, private: isPrivate.value },
 		});
 		toast.add({ title: t("homes.files.toasts.deleted"), color: "success" });
@@ -118,7 +195,7 @@ const deleteFile = async (file: HomeFile) => {
 
 const downloadFile = async (file: HomeFile) => {
 	const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files/download`, {
-		headers: { Authorization: `Bearer ${token.value}` },
+		headers: { Authorization: `Bearer ${await getFreshToken()}` },
 		query: { fileId: file.id, private: isPrivate.value ? "true" : "false" },
 	});
 
@@ -132,9 +209,12 @@ const downloadFile = async (file: HomeFile) => {
 		<label class="block cursor-pointer">
 			<div
 				class="border-2 border-dashed rounded-2xl p-8 text-center transition-all"
-				:class="uploading
+				:class="uploading || dragOverZone
 					? 'border-primary bg-primary-50 dark:bg-primary-900/20'
 					: 'border-stone-200 dark:border-stone-700 hover:border-primary'"
+				@dragover.prevent="dragOverZone = true"
+				@dragleave.prevent="dragOverZone = false"
+				@drop.prevent="handleDrop"
 			>
 				<div v-if="uploading" class="space-y-3">
 					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
@@ -152,6 +232,9 @@ const downloadFile = async (file: HomeFile) => {
 					<p class="text-xs text-stone-400">
 						{{ isPrivate ? t("homes.files.privateHint") : t("homes.files.multiUpload") }}
 					</p>
+					<p class="text-xs text-stone-400">
+						{{ t("homes.files.dragHint", { target: isPrivate ? t("homes.files.destinations.private") : t("homes.files.destinations.shared") }) }}
+					</p>
 				</div>
 			</div>
 			<input type="file" multiple class="hidden" :disabled="uploading" @change="uploadFiles" />
@@ -162,6 +245,8 @@ const downloadFile = async (file: HomeFile) => {
 			<div
 				v-for="file in visibleFiles"
 				:key="file.id"
+				draggable="true"
+				@dragstart="handleDragStart($event, file)"
 				class="flex items-center gap-4 p-4 bg-white dark:bg-stone-800 rounded-xl border border-stone-100 dark:border-stone-700 group"
 			>
 				<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg">
@@ -173,6 +258,16 @@ const downloadFile = async (file: HomeFile) => {
 				</div>
 				<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
 					<UButton variant="ghost" color="neutral" icon="i-lucide-download" size="sm" @click="downloadFile(file)" />
+					<UButton
+						variant="ghost"
+						color="neutral"
+						:icon="isPrivate ? 'i-lucide-lock-open' : 'i-lucide-lock'"
+						size="sm"
+						:loading="movingFileId === file.id"
+						:title="getMoveActionLabel(targetPrivacy)"
+						:aria-label="getMoveActionLabel(targetPrivacy)"
+						@click="moveFile(file, targetPrivacy)"
+					/>
 					<UButton variant="ghost" color="error" icon="i-lucide-trash-2" size="sm" @click="deleteFile(file)" />
 				</div>
 			</div>

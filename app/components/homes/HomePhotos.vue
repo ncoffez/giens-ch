@@ -9,7 +9,7 @@ const emit = defineEmits<{
 	refresh: [];
 }>();
 
-const { token } = useAuthReady();
+const { getFreshToken } = useAuthReady();
 const toast = useToast();
 const { t } = useI18n();
 
@@ -48,6 +48,7 @@ const uploadPhotos = async (event: Event) => {
 	uploadTotal.value = fileArray.length;
 	uploadCurrent.value = 0;
 	uploadProgress.value = 0;
+	const authToken = await getFreshToken();
 
 	let successCount = 0;
 	let errorCount = 0;
@@ -67,7 +68,7 @@ const uploadPhotos = async (event: Event) => {
 
 			await $fetch(`/api/homes/${props.home.id}/photos/upload`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${token.value}` },
+				headers: { Authorization: `Bearer ${authToken}` },
 				body: { file: base64, type: file.type },
 			});
 			successCount++;
@@ -102,7 +103,7 @@ const deletePhoto = async (photoUrl: string) => {
 	try {
 		await $fetch(`/api/homes/${props.home.id}/photos/delete`, {
 			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
 			body: { photoUrl },
 		});
 		toast.add({ title: t("homes.photos.toasts.deleted"), color: "success" });

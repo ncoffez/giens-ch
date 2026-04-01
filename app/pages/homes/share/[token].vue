@@ -347,24 +347,21 @@ onBeforeUnmount(() => {
 							v-for="file in home.files"
 							:key="file.id"
 							@click="downloadFile(file.id)"
-							class="w-full flex items-center gap-4 p-4 rounded-2xl border border-[var(--app-border)] bg-white/60 dark:bg-white/3 hover:border-[var(--app-primary)] hover:bg-[var(--app-primary)]/6 transition-all text-left"
+							class="w-full grid grid-cols-[auto,minmax(0,1fr),auto] items-center gap-4 p-4 rounded-2xl border border-[var(--app-border)] bg-white/60 dark:bg-white/3 hover:border-[var(--app-primary)] hover:bg-[var(--app-primary)]/6 transition-all text-left"
 						>
-							<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg">
+							<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg shrink-0">
 								<UIcon :name="getFileIcon(file.type)" class="w-5 h-5 text-stone-500" />
 							</div>
 							<div class="flex-1 min-w-0">
 								<p class="font-medium truncate">{{ file.name }}</p>
 								<p class="text-sm text-stone-500">{{ formatFileSize(file.size) }}</p>
 							</div>
-							<UButton
-								icon="i-lucide-download"
-								color="neutral"
-								variant="soft"
-								size="sm"
-								class="rounded-full"
+							<span
+								class="inline-flex shrink-0 items-center gap-2 rounded-full bg-black/8 px-4 py-2 text-sm font-medium text-[var(--app-text)] dark:bg-white/8"
 							>
+								<UIcon name="i-lucide-download" class="h-4 w-4" />
 								{{ t("share.download") }}
-							</UButton>
+							</span>
 						</button>
 					</div>
 				</section>
