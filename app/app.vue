@@ -25,15 +25,27 @@ useHead(() => ({
 		lang: activeLocale.value,
 	},
 	link: [
+		// SVG first: modern browsers prefer it and it stays crisp at any size.
+		// The dark variant flips the palette so the mark stays legible on dark browser chrome.
 		{
 			rel: "icon",
 			type: "image/svg+xml",
 			href: "/favicon.svg",
+			media: "(prefers-color-scheme: light)",
 		},
 		{
-			rel: "alternate icon",
-			href: "/favicon.ico",
+			rel: "icon",
+			type: "image/svg+xml",
+			href: "/favicon-dark.svg",
+			media: "(prefers-color-scheme: dark)",
 		},
+		// PNG fallback for browsers that ignore SVG icons.
+		{ rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
+		{ rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
+		// Multi-resolution ICO (16/32/48) for legacy and for the Windows taskbar.
+		{ rel: "alternate icon", href: "/favicon.ico" },
+		// iOS home screen. Square by design: iOS applies its own rounded mask.
+		{ rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
 	],
 }));
 
