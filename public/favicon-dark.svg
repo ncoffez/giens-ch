@@ -3,8 +3,8 @@
 &#x9;<desc id="d">Sonne über dem Meer.</desc>
 &#x9;<defs><clipPath id="c"><rect width="64" height="64" rx="14"></rect></clipPath></defs>
 &#x9;<g clip-path="url(#c)">
-&#x9;&#x9;<rect width="64" height="64" fill="#226E78"></rect>
-&#x9;&#x9;<circle cx="32" cy="29" r="16" fill="#F4F0E6"></circle>
-&#x9;&#x9;<rect y="50" width="64" height="14" fill="#F4F0E6"></rect>
+&#x9;&#x9;<rect width="64" height="64" fill="#F4F0E6"></rect>
+&#x9;&#x9;<circle cx="32" cy="29" r="16" fill="#226E78"></circle>
+&#x9;&#x9;<rect y="50" width="64" height="14" fill="#226E78"></rect>
 &#x9;</g>
 </svg>
