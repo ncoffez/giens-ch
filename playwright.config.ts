@@ -41,5 +41,8 @@ export default defineConfig({
 		command: process.env.PLAYWRIGHT_PREVIEW ? "npm run preview:prod" : "npm run dev -- --host 127.0.0.1 --port 3000",
 		url: "http://127.0.0.1:3000",
 		reuseExistingServer: !process.env.CI,
+		// A cold Nuxt dev start (first Vite dep optimisation after a clean install)
+		// exceeds Playwright's 60s default. Measured ~50s warm, longer cold.
+		timeout: 180_000,
 	},
 });

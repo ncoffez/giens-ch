@@ -29,7 +29,7 @@ test.describe("Critical User Flows", () => {
 	test("mobile navigation works on small screen", async ({ page }) => {
 		await page.goto("/");
 		await page.setViewportSize({ width: 375, height: 667 });
-		const mobileNav = page.locator("nav.fixed.bottom-0");
+		const mobileNav = page.locator("[data-mobile-nav]");
 		const hasMobileNav = await mobileNav.count() > 0;
 
 		if (hasMobileNav) {

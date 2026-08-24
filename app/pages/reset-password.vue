@@ -92,7 +92,7 @@ async function resetPassword() {
 		toast.add({
 			color: "error",
 			title: t("auth.errors.generic"),
-			description: error.message || t("auth.errors.generic"),
+			description: (error instanceof Error && error.message) || t("auth.errors.generic"),
 		});
 	} finally {
 		loading.value = false;

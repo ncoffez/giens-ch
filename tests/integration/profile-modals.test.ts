@@ -6,6 +6,7 @@ import PasswordChangeModal from "../../app/components/ui/PasswordChangeModal.vue
 
 // Mock global dependencies
 vi.mock("#app", () => ({
+	defineNuxtPlugin: (plugin: unknown) => plugin,
 	useNuxtApp: () => ({
 		$token: { value: "test-token" },
 		$currentUser: { value: { uid: "test-uid", photoURL: "http://test.com/pic.jpg", email: "test@test.com" } }

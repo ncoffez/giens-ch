@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ref } from "vue";
 
+const fetchMock = vi.hoisted(() => vi.fn());
+
+vi.mock("#build/fetch.mjs", () => ({
+	$fetch: fetchMock,
+}));
+
+vi.mock("#imports", () => ({
+	$fetch: fetchMock,
+}));
+
 // Import the LOGIC functions directly for honest testing
 import { isAdminLogic } from "../../app/middleware/is-admin.ts";
 import { isOwnerLogic } from "../../app/middleware/is-owner.ts";
@@ -26,6 +36,7 @@ describe("Middleware Logic (Honest Integration)", () => {
 		mockNuxtApp.$isPublisher.value = false;
 		mockNuxtApp.$currentUser.value = null;
 		mockNuxtApp.$token.value = "test-token";
+		fetchMock.mockReset();
 		vi.unstubAllGlobals();
 	});
 
@@ -49,9 +60,10 @@ describe("Middleware Logic (Honest Integration)", () => {
 
 	it("homeOwnerLogic: does not allow admins to bypass home ownership", async () => {
 		mockNuxtApp.$isAdmin.value = true;
-		vi.stubGlobal("$fetch", vi.fn().mockRejectedValue({
+		fetchMock.mockRejectedValue({
 			response: { status: 403 },
-		}));
+		});
+		vi.stubGlobal("$fetch", fetchMock);
 
 		await expect(homeOwnerLogic(mockNuxtApp, "home-1")).resolves.toEqual({
 			redirect: "/",

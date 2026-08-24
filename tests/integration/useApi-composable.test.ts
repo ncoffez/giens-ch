@@ -1,12 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getAuthTokenMock = vi.fn();
-const fetchMock = vi.fn();
+const getAuthTokenMock = vi.hoisted(() => vi.fn());
+const fetchMock = vi.hoisted(() => vi.fn());
 
 vi.mock("#app", () => ({
+	defineNuxtPlugin: (plugin: unknown) => plugin,
 	useNuxtApp: () => ({
 		$getAuthToken: getAuthTokenMock,
 	}),
+}));
+
+vi.mock("#build/fetch.mjs", () => ({
+	$fetch: fetchMock,
+}));
+
+vi.mock("#imports", () => ({
+	$fetch: fetchMock,
 }));
 
 describe("useApi Composable", () => {
