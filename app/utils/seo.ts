@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = "https://giens-ch.web.app";
+const DEFAULT_SITE_URL = "https://giens.ch";
 
 export function getSiteUrl(siteUrl?: string): string {
 	return (siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, "");

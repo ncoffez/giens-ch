@@ -23,8 +23,7 @@ test.describe("Site Integrity", () => {
 		const logo = page.locator("#logo");
 		const initialBox = await logo.boundingBox();
 		
-		// Open language switcher - button shows locale name (Deutsch)
-		const langButton = page.locator("header").getByRole("button", { name: /Deutsch|Français/ });
+		const langButton = page.locator("header").getByRole("button", { name: /^(DE|FR)$/ });
 		await langButton.click();
 		
 		// Capture position after opening
@@ -36,14 +35,14 @@ test.describe("Site Integrity", () => {
 	test("bottom navigation should be visible on mobile", async ({ page, isMobile }) => {
 		if (!isMobile) return;
 		await page.goto("/");
-		const mobileNav = page.locator("nav.fixed.bottom-0");
+		const mobileNav = page.locator("[data-mobile-nav]");
 		await expect(mobileNav).toBeVisible();
 	});
 
 	test("should navigate to travel page and show Google Maps button", async ({ page }) => {
 		await page.goto("/travel");
 		
-		const mapsButton = page.getByRole("link", { name: "Route planen" });
+		const mapsButton = page.getByRole("link", { name: "Route planen & Verkehrslage" }).first();
 		await expect(mapsButton).toBeVisible();
 		await expect(mapsButton).toHaveAttribute("href", /google\.com\/maps/);
 	});

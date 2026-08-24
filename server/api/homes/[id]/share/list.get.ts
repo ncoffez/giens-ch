@@ -25,11 +25,14 @@ export default defineEventHandler(async (event) => {
 
 	const shares = await getShareLinksForHome(homeId);
 
+	const siteUrl = useRuntimeConfig().public.SITE_URL || "https://giens.ch";
+
 	// Add share URLs
 	const sharesWithUrls = shares.map((share) => ({
 		...share,
-		shareUrl: `https://giens-ch.web.app/homes/share/${share.id}`,
+		shareUrl: `${siteUrl}/homes/share/${share.id}`,
 	}));
+
 
 	return sharesWithUrls;
 });

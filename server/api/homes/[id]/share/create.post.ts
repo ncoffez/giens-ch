@@ -28,7 +28,8 @@ export default defineEventHandler(async (event) => {
 	const share = await createShareLink(homeId, claims.uid, daysToExpire);
 
 	// Generate the full share URL
-	const shareUrl = `https://giens-ch.web.app/homes/share/${share.id}`;
+	const siteUrl = useRuntimeConfig().public.SITE_URL || "https://giens.ch";
+	const shareUrl = `${siteUrl}/homes/share/${share.id}`;
 
 	return { share, shareUrl };
 });

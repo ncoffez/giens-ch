@@ -34,6 +34,7 @@ export default defineVitestConfig({
 		],
 		coverage: {
 			provider: "v8",
+			all: false,
 			reporter: ["text", "json", "html", "lcov"],
 			exclude: [
 				"**/coverage/**",
@@ -41,8 +42,10 @@ export default defineVitestConfig({
 				"**/*.d.ts",
 				"**/*.config.js",
 				"**/*.config.ts",
+				"**/*.{css,json}",
 				"**/tests/**",
-
+				"app/assets/**",
+				"i18n/**",
 				"**/.nuxt/**",
 				"**/.output/**",
 				"**/.data/**",

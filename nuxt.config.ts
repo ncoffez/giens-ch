@@ -49,12 +49,10 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			FIREBASE_FRONTEND_KEY: process.env.FIREBASE_FRONTEND_KEY,
-			TEST_VARIABLE: process.env.TEST_VARIABLE,
-			SITE_URL: process.env.SITE_URL || "https://giens-ch.web.app",
+			SITE_URL: process.env.SITE_URL || "https://giens.ch",
 			GITHUB_REPO: process.env.GITHUB_REPO || "ncoffez/giens-ch",
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
-		TEST_SECRET: process.env.TEST_SECRET,
 		UNSPLASH_API_KEY: process.env.UNSPLASH_API_KEY,
 		GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 		GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash",
@@ -65,6 +63,7 @@ export default defineNuxtConfig({
 		preset: "firebase",
 		firebase: {
 			gen: 2,
+			nodeVersion: "22",
 			httpsOptions: {
 				region: "europe-west6",
 				maxInstances: 5,
@@ -75,6 +74,11 @@ export default defineNuxtConfig({
 	routeRules: {
 		"/about": { redirect: "/" },
 		"/fr/about": { redirect: "/fr" },
+		// i18n strategy is "prefix_except_default" with defaultLocale "de",
+		// so German lives at "/" and "/de" is not a route at all (issue #4).
+		// It is the most guessable URL for a German site, so redirect instead of 404.
+		"/de": { redirect: "/" },
+		"/de/**": { redirect: "/**" },
 	},
 	hooks: {
 		'nitro:config': (config) => {

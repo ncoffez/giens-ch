@@ -25,6 +25,11 @@ coverage/
 .fleet
 .idea
 
+# Secrets — service account keys, never commit
+.secrets/
+*firebase-adminsdk*.json
+*-service-account*.json
+
 # Local env files
 .env
 .env.*

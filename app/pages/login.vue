@@ -2,13 +2,12 @@
 	<section
 		class="relative overflow-hidden flex flex-col items-center p-8 border-neutral-200 bg-white dark:bg-neutral-800 shadow-lg rounded-3xl my-16 mx-auto w-fit">
 		<h3 class="font-bold text-2xl mb-4 text-neutral-800 dark:text-neutral-200">{{ t("auth.loginTitle") }}</h3>
-		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
+		<UForm :state="state" class="flex flex-col gap-2 min-w-72" @submit="submitPasswordLogin">
 			<UiInput type="email" :label="t('auth.email')" v-model="state.email"></UiInput>
 			<UiInput type="password" :label="t('auth.password')" v-model="state.password"></UiInput>
 			<NuxtLink :to="localePath('/reset-password')" class="text-right text-xs leading-relaxed mb-1 text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400">{{ t("auth.forgotPassword") }}</NuxtLink>
 			<UButton
 				type="submit"
-				@click="loginToFirebase('password', state.email, state.password)"
 				class="justify-center text-white font-semibold w-full"
 				loading-auto
 				>{{ t("auth.loginButton") }}</UButton
@@ -97,6 +96,10 @@ function getLoginFallbackRedirect() {
 	} catch {
 		return localePath("/");
 	}
+}
+
+async function submitPasswordLogin() {
+	await loginToFirebase("password", state.email, state.password);
 }
 
 async function loginToFirebase(method: "google" | "password", email?: string, password?: string) {

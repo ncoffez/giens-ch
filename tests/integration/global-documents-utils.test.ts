@@ -1,4 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../../server/useFirebaseAdmin", () => ({
+	auth: {},
+	db: {},
+	storage: {},
+}));
+
 import {
 	canDeleteGlobalFile,
 	canDeleteGlobalFolder,

@@ -5,14 +5,13 @@
 		<p class="text-sm text-stone-500 dark:text-stone-400 mb-6 text-center max-w-xs">
 			{{ t("auth.registerSubtitle") }}
 		</p>
-		<UForm :state="state" class="flex flex-col gap-2 min-w-72">
+		<UForm :state="state" class="flex flex-col gap-2 min-w-72" @submit="register">
 			<UiInput type="text" :label="t('auth.name')" v-model="state.name"></UiInput>
 			<UiInput type="email" :label="t('auth.email')" v-model="state.email"></UiInput>
 			<UiInput type="password" :label="t('auth.password')" v-model="state.password"></UiInput>
 			<UiInput type="password" :label="t('auth.passwordConfirm')" v-model="state.confirmPassword"></UiInput>
 			<UButton
 				type="submit"
-				@click="register"
 				class="justify-center text-white font-semibold w-full"
 				:loading="loading">
 				{{ t("auth.registerButton") }}
@@ -100,7 +99,7 @@ async function register() {
 		toast.add({
 			color: "error",
 			title: t("auth.errors.generic"),
-			description: error.message || t("auth.errors.generic"),
+			description: (error instanceof Error && error.message) || t("auth.errors.generic"),
 		});
 	} finally {
 		loading.value = false;
