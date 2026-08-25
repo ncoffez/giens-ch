@@ -2,10 +2,6 @@
 const { t } = useI18n();
 const nuxtApp = useNuxtApp();
 
-definePageMeta({
-	middleware: ["is-logged-in"],
-});
-
 const organisatorischesContent = await usePageContent("organisatorisches");
 const showTranslationReadonlyNotice = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false) && !organisatorischesContent.canEdit.value);
 const { handleHashScroll } = useHashScroll();
