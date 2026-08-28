@@ -192,8 +192,8 @@ onMounted(() => {
 					</template>
 				</template>
 
-				<div class="grid gap-10 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center">
-					<div class="space-y-6">
+				<div class="space-y-8">
+					<div class="max-w-3xl space-y-6">
 						<div v-if="miteinanderContent.status.value === 'pending'" class="flex justify-center py-6">
 							<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
 						</div>
@@ -207,21 +207,24 @@ onMounted(() => {
 						/>
 					</div>
 
-					<div class="grid gap-5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+					<!-- Bilder nebeneinander unter dem Text: in einer schmalen Seitenspalte
+					     würden zwei Querformate übereinander die Sektion ~950px hoch machen.
+					     So bleiben die Gruppenaufnahmen gross genug, um Gesichter zu erkennen. -->
+					<div class="grid gap-5 sm:grid-cols-2">
 						<img
-							src="/giens/giensgarten.webp"
-							alt="Gartenansicht"
-							width="700"
-							height="900"
+							src="/giens/giens-terrassenbau.webp"
+							alt="Miteigentümer verlegen gemeinsam eine Holzterrasse"
+							width="1000"
+							height="666"
 							loading="lazy"
-							class="aspect-[4/5] w-full object-cover" />
+							class="aspect-[3/2] w-full rounded-2xl object-cover" />
 						<img
-							src="/giens/giensschaukeln.webp"
-							alt="Schaukeln"
-							width="600"
-							height="700"
+							src="/giens/giens-grabarbeiten.webp"
+							alt="Gemeinsame Grabarbeiten in der Siedlung"
+							width="1000"
+							height="666"
 							loading="lazy"
-							class="mt-0 aspect-[4/5] w-full object-cover sm:mt-12" />
+							class="aspect-[3/2] w-full rounded-2xl object-cover" />
 					</div>
 				</div>
 			</UiOpenSection>

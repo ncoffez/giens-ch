@@ -1,7 +1,7 @@
 {
-	"generatedAt": "2026-08-24T21:30:01.473Z",
-	"totalJsBytes": 2233626,
-	"totalJsKilobytes": 2181.28,
+	"generatedAt": "2026-08-25T10:48:58.839Z",
+	"totalJsBytes": 2233479,
+	"totalJsKilobytes": 2181.13,
 	"topClientChunks": [
 		{
 			"file": "BNt0vRak.js",
@@ -14,9 +14,9 @@
 			"kilobytes": 385.19
 		},
 		{
-			"file": "CxBdxCYi.js",
-			"bytes": 238963,
-			"kilobytes": 233.36
+			"file": "BB_x5YYv.js",
+			"bytes": 238887,
+			"kilobytes": 233.29
 		},
 		{
 			"file": "Ib1jYPSS.js",
