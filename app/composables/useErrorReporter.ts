@@ -8,6 +8,8 @@ interface CaptureErrorInput {
 	stack?: string;
 }
 
+const MANUAL_REPORT_MESSAGE = "Manuelle Rueckmeldung";
+
 function nowIso() {
 	return new Date().toISOString();
 }
@@ -37,6 +39,7 @@ export function useErrorReporter() {
 	});
 	const actions = useState<ErrorReportAction[]>("error-report-actions", () => []);
 	const activeReport = useState<ErrorReportPayload | null>("error-report-active", () => null);
+	const manualReport = useState<ErrorReportPayload | null>("error-report-manual", () => null);
 	const previousRoute = useState<string | null>("error-report-previous-route", () => null);
 	const isDialogOpen = useState<boolean>("error-report-dialog-open", () => false);
 	const lastSignature = useState<string>("error-report-signature", () => "");
@@ -154,15 +157,34 @@ export function useErrorReporter() {
 
 	function clearReport() {
 		activeReport.value = null;
+		manualReport.value = null;
 		isDialogOpen.value = false;
 	}
 
+	/**
+	 * The report shown in the dialog: a captured error takes precedence, otherwise
+	 * a snapshot created when the user opens the form on their own initiative.
+	 */
+	const dialogReport = computed(() => activeReport.value || manualReport.value);
+	const hasActiveError = computed(() => Boolean(activeReport.value));
+
 	function openDialog() {
+		if (!activeReport.value) {
+			// Opened from the always-visible button: capture the same context an
+			// automatic report would carry, but do not submit anything yet and do
+			// not flag the UI as if the app had crashed.
+			manualReport.value = getSnapshot({
+				message: MANUAL_REPORT_MESSAGE,
+				source: "manual-report",
+			});
+		}
+
 		isDialogOpen.value = true;
 	}
 
 	function closeDialog() {
 		isDialogOpen.value = false;
+		manualReport.value = null;
 	}
 
 	function trackClick(target: HTMLElement) {
@@ -193,6 +215,9 @@ export function useErrorReporter() {
 	return {
 		actions,
 		activeReport,
+		manualReport,
+		dialogReport,
+		hasActiveError,
 		canCreateIssue,
 		isDialogOpen,
 		recordAction,

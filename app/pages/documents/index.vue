@@ -2,7 +2,7 @@
 import type { GlobalFile, GlobalFolder } from "../../../types";
 import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
-import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg } from "~/utils/fileTypes";
+import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg, truncateFileName } from "~/utils/fileTypes";
 
 definePageMeta({ middleware: ["is-logged-in"] });
 
@@ -1428,7 +1428,7 @@ useHead({
 									<div class="aspect-[4/3] rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-2 md:mb-3">
 										<UIcon name="i-lucide-folder" class="w-8 h-8 md:w-12 md:h-12 text-primary group-hover:scale-110 transition-transform" />
 									</div>
-									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ folder.name }}</p>
+									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate" :title="folder.name">{{ truncateFileName(folder.name) }}</p>
 									<p class="text-[10px] text-stone-400 mt-0.5">
 										<template v-if="folderImageCount(folder.id) > 0">{{ t("documents.count.images", { count: folderImageCount(folder.id) }) }}</template>
 										<template v-if="folderImageCount(folder.id) > 0 && folderFileCount(folder.id) > 0"> · </template>
@@ -1488,7 +1488,7 @@ useHead({
 											<span class="px-2 py-1 text-xs font-medium bg-white/90 rounded-lg text-stone-700">{{ getFileTypeName(file.type) }}</span>
 										</div>
 									</div>
-									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{{ file.name }}</p>
+									<p class="text-xs md:text-sm font-medium text-stone-700 dark:text-stone-300 truncate" :title="file.name">{{ truncateFileName(file.name) }}</p>
 									<p class="text-[10px] md:text-xs text-stone-400 mt-0.5">{{ formatDate(file.uploadedAt) }}</p>
 								</button>
 							</div>
@@ -1555,7 +1555,7 @@ useHead({
 												</div>
 												<button v-else class="flex items-center gap-2 text-left w-full hover:text-primary transition-colors" @click="navigateToFolder(folder.id)">
 													<UIcon name="i-lucide-folder" class="w-5 h-5 text-primary shrink-0" />
-													<span class="font-medium truncate">{{ folder.name }}</span>
+													<span class="font-medium truncate" :title="folder.name">{{ truncateFileName(folder.name) }}</span>
 												</button>
 											</td>
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500">
@@ -1605,7 +1605,7 @@ useHead({
 													<div v-else class="w-8 h-8 rounded flex items-center justify-center shrink-0" :class="getFileIconBg(file.type)">
 														<UIcon :name="getFileIcon(file.type)" class="w-4 h-4" :class="getFileIconColor(file.type)" />
 													</div>
-													<span class="font-medium truncate">{{ file.name }}</span>
+													<span class="font-medium truncate" :title="file.name">{{ truncateFileName(file.name) }}</span>
 												</button>
 											</td>
 											<td class="py-3 px-2 hidden md:table-cell text-stone-500 truncate">{{ getFileTypeName(file.type) }}</td>

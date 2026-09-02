@@ -154,6 +154,7 @@ import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
+import { FileAttachment } from "~/utils/tiptap/fileAttachment";
 import { watchDeep } from "@vueuse/core";
 
 const model = defineModel({ default: "" });
@@ -204,10 +205,19 @@ const processFile = async (file: File) => {
 				.setImage({ src: response.url, alt: response.filename })
 				.run();
 		} else {
-			const html = `<a href="${response.url}" target="_blank" rel="noopener noreferrer" class="document-link" data-type="${file.type}">
-				<span>${file.name}</span>
-			</a>`;
-			editor.value?.chain().focus().insertContent(html).run();
+			// Inserted as one atomic node, so the attachment is selected and deleted
+			// as a whole instead of character by character.
+			editor.value?.chain().focus().insertContent([
+				{
+					type: "fileAttachment",
+					attrs: {
+						href: response.url,
+						name: file.name,
+						type: file.type,
+					},
+				},
+				{ type: "text", text: " " },
+			]).run();
 		}
 
 		uploadProgress.value = 100;
@@ -295,6 +305,7 @@ onMounted(() => {
 			Image,
 			TaskList,
 			TaskItem,
+			FileAttachment,
 		],
 
 		onUpdate: ({ editor }) => {

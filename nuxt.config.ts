@@ -2,6 +2,14 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
+	experimental: {
+		// Nuxt rewrites the entry chunk to the bare specifier "#entry" and resolves it
+		// through an <script type="importmap">. Safari only supports import maps from
+		// iOS/iPadOS 16.4, so older iPads/iPhones crash with
+		// 'Module specifier, "#entry" does not start with "/", "./", or "../"'.
+		// Keep the plain relative entry filename instead.
+		entryImportMap: false,
+	},
 	modules: ["@nuxt/ui", "@nuxtjs/i18n"],
 	icon: process.env.NODE_ENV !== 'test'
 		? {

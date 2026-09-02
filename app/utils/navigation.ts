@@ -58,8 +58,9 @@ export function buildNavigationItems(
 
 	items.push(...buildPublicNavigationItems(t, localePath, routePath));
 
+	// Documents closes the menu: Home > Anreise > Entdecken > Organisatorisches > Dokumente.
 	if (canAccessDocuments) {
-		items.splice(2 + Number(includeHome), 0, createPrimaryNavigationItem(
+		items.push(createPrimaryNavigationItem(
 			t("nav.documents"),
 			localePath("/documents"),
 			"i-lucide-folder",

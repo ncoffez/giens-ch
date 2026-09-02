@@ -37,7 +37,11 @@
     "issueCommented": "Ihr Hinweis wurde zu Issue #{number} hinzugefügt.",
     "submitReport": "Fehler absenden",
     "submitComment": "Hinweis senden",
-    "notAvailable": "Nicht verfügbar"
+    "notAvailable": "Nicht verfügbar",
+    "manualReportLabel": "Rückmeldung",
+    "manualReportSummary": "Sie melden ein Problem oder einen Verbesserungsvorschlag.",
+    "manualReportDescription": "Beschreiben Sie kurz, was nicht funktioniert hat. Angaben zur Seite und zu Ihren letzten Schritten werden automatisch mitgeschickt.",
+    "manualWhatHappenedPlaceholder": "Beschreiben Sie, was nicht funktioniert hat oder was Sie sich anders wünschen."
   },
   "nav": {
     "home": "Home",
@@ -54,6 +58,12 @@
     "search": "Suchen"
   },
   "homes": {
+    "preview": {
+      "title": "Vorschau",
+      "banner": "Vorschau der Gästeansicht – nur für Sie sichtbar.",
+      "backToEdit": "Zurück zur Bearbeitung",
+      "loadError": "Haus konnte nicht geladen werden"
+    },
     "edit": {
       "eyebrow": "Mein Haus",
       "preview": "Vorschau",
@@ -105,7 +115,18 @@
         "title": "Anleitung",
         "description": "Hinterlegen Sie die wichtigsten Hinweise für Ankunft, Aufenthalt und Abreise in einer klaren, gut lesbaren Struktur.",
         "cardTitle": "Hinweise für Gäste",
-        "cardDescription": "Der Editor bringt bereits seine eigene Oberfläche mit. Die Abschnittskarte bleibt deshalb bewusst schlank."
+        "cardDescription": "Der Editor bringt bereits seine eigene Oberfläche mit. Die Abschnittskarte bleibt deshalb bewusst schlank.",
+        "translationHint": "Sie pflegen die Anleitung in einer Sprache; die andere wird beim Speichern automatisch übersetzt und bleibt trotzdem bearbeitbar.",
+        "sourceLanguageLabel": "Originalsprache",
+        "sourceLanguageHint": "Sie schreiben auf {source}; {target} wird automatisch ergänzt.",
+        "originalBadge": "Original",
+        "autoBadge": "Automatisch übersetzt",
+        "editedBadge": "Manuell angepasst",
+        "retranslate": "Neu übersetzen",
+        "languages": {
+          "de": "Deutsch",
+          "fr": "Französisch"
+        }
       },
       "files": {
         "title": "Dateien",
@@ -183,6 +204,10 @@
       "emptyTitle": "Keine Fotos",
       "emptyDescription": "Laden Sie Fotos hoch, die Mieter sehen können",
       "confirmDelete": "Foto wirklich löschen?",
+      "reorderHint": "Reihenfolge per Drag-and-drop oder mit den Pfeilen anpassen.",
+      "moveEarlier": "Nach vorne verschieben",
+      "moveLater": "Nach hinten verschieben",
+      "orderSaving": "wird gespeichert",
       "toasts": {
         "maxPhotos": "Maximal {count} Fotos erlaubt",
         "imagesOnly": "Nur Bilddateien erlaubt",
@@ -190,7 +215,9 @@
         "uploaded": "{count} Foto(s) hochgeladen",
         "uploadFailed": "{count} Upload(s) fehlgeschlagen",
         "deleted": "Foto gelöscht",
-        "deleteFailed": "Löschen fehlgeschlagen"
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "orderSaved": "Reihenfolge gespeichert",
+        "orderFailed": "Reihenfolge konnte nicht gespeichert werden"
       }
     },
     "files": {
@@ -205,12 +232,24 @@
       },
       "actions": {
         "moveToShared": "Öffentlich machen",
-        "moveToPrivate": "Privat machen"
+        "moveToPrivate": "Privat machen",
+        "preview": "Vorschau",
+        "rename": "Umbenennen",
+        "download": "Herunterladen"
       },
       "uploading": "Hochladen... {current}/{total}",
       "emptyTitle": "Keine Dateien",
       "sharedEmptyDescription": "Laden Sie Dokumente hoch, die Mieter herunterladen können",
       "privateEmptyDescription": "Laden Sie interne Dokumente nur für Eigentümer hoch",
+      "rename": {
+        "title": "Datei umbenennen",
+        "label": "Neuer Dateiname",
+        "submit": "Umbenennen"
+      },
+      "preview": {
+        "title": "Vorschau",
+        "unsupported": "Für diesen Dateityp ist keine Vorschau möglich. Laden Sie die Datei herunter, um sie zu öffnen."
+      },
       "confirmDelete": "\"{name}\" wirklich löschen?",
       "toasts": {
         "maxSize": "Datei zu gross (max. 50MB)",
@@ -219,7 +258,11 @@
         "deleted": "Datei gelöscht",
         "deleteFailed": "Löschen fehlgeschlagen",
         "moved": "Datei nach {target} verschoben",
-        "moveFailed": "Datei konnte nicht verschoben werden"
+        "moveFailed": "Datei konnte nicht verschoben werden",
+        "renamed": "Datei umbenannt",
+        "renameFailed": "Datei konnte nicht umbenannt werden",
+        "previewFailed": "Vorschau konnte nicht geladen werden",
+        "downloadFailed": "Download konnte nicht gestartet werden"
       }
     },
     "contactCard": {
@@ -663,6 +706,8 @@
     "email": "E-Mail",
     "password": "Passwort",
     "forgotPassword": "Passwort vergessen?",
+    "rememberMe": "Angemeldet bleiben",
+    "rememberMeHint": "Ihre E-Mail-Adresse wird auf diesem Gerät gespeichert.",
     "noAccount": "Noch kein Konto?",
     "hasAccount": "Bereits ein Konto?",
     "loginTitle": "Anmelden",
@@ -728,6 +773,7 @@
     "emptyText": "Laden Sie Dateien in einem Ihrer Häuser hoch, damit sie hier erscheinen.",
     "loadError": "Dokumente konnten nicht geladen werden.",
     "downloadError": "Dokument konnte nicht geöffnet werden.",
+    "copyLink": "Link kopieren",
     "manageHome": "Haus verwalten",
     "fileCount": "{count} Dokumente"
   },
@@ -735,6 +781,7 @@
     "welcome": "Willkommen",
     "guestIntro": "Alle wichtigen Informationen, Kontakte und Unterlagen für Ihren Aufenthalt auf einen Blick.",
     "gallery": "Galerie",
+    "quickAccess": "Schnellzugriff",
     "contacts": "Kontaktpersonen",
     "wifiTitle": "WLAN",
     "wifiSubtitle": "Schnell griffbereit für Ihre Ankunft.",
@@ -752,11 +799,8 @@
     "nextImage": "Nächstes Bild",
     "summary": {
       "photos": "Fotos",
-      "photosValue": "Eindrücke aus dem Haus",
       "documents": "Dokumente",
-      "documentsValue": "Dateien zum Download",
-      "contacts": "Kontakte",
-      "contactsValue": "Ansprechpartner"
+      "contacts": "Kontakte"
     }
   },
   "footer": {

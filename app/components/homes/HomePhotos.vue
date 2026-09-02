@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Home } from "~/types";
+import { isSameOrder, movePhoto } from "~/utils/photoOrder";
 
 const props = defineProps<{
 	home: Home;
@@ -43,6 +44,8 @@ const uploadPhotos = async (event: Event) => {
 		toast.add({ title: t("homes.photos.toasts.maxSize"), color: "error" });
 		return;
 	}
+
+	await flushPendingOrder();
 
 	uploading.value = true;
 	uploadTotal.value = fileArray.length;
@@ -97,8 +100,130 @@ const uploadPhotos = async (event: Event) => {
 	}
 };
 
+/* -------------------------------- Ordering -------------------------------- */
+
+// The grid renders from this local copy, keyed by photo URL, so reordering only
+// moves existing DOM nodes: no refetch, no image reload, no scroll jump. The
+// server is updated in the background and the parent is never asked to refresh,
+// because a refresh would tear the grid down and reload every image.
+const orderedPhotos = ref<string[]>([...(props.home.photos || [])]);
+const draggedIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
+
+type OrderStatus = "idle" | "saving" | "saved";
+const orderStatus = ref<OrderStatus>("idle");
+
+const SAVE_DEBOUNCE_MS = 700;
+const SAVED_BADGE_MS = 2000;
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let savedBadgeTimer: ReturnType<typeof setTimeout> | null = null;
+// The last order the server acknowledged; used to roll back a failed save.
+let confirmedOrder = [...(props.home.photos || [])];
+
+const hasUnsavedOrder = () => saveTimer !== null || orderStatus.value === "saving";
+
+watch(() => props.home.photos, (photos) => {
+	// Ignore incoming props while our own order is still in flight, otherwise a
+	// parent refresh triggered by an upload or delete would revert the drag.
+	if (hasUnsavedOrder()) return;
+
+	const next = [...(photos || [])];
+	if (isSameOrder(next, orderedPhotos.value)) return;
+
+	orderedPhotos.value = next;
+	confirmedOrder = next;
+}, { deep: true });
+
+const flushOrder = async () => {
+	saveTimer = null;
+	const nextOrder = [...orderedPhotos.value];
+
+	if (isSameOrder(nextOrder, confirmedOrder)) {
+		orderStatus.value = "idle";
+		return;
+	}
+
+	const rollbackTo = [...confirmedOrder];
+
+	try {
+		orderStatus.value = "saving";
+		await $fetch(`/api/homes/${props.home.id}`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
+			body: { photos: nextOrder },
+		});
+
+		confirmedOrder = nextOrder;
+		orderStatus.value = "saved";
+
+		if (savedBadgeTimer) clearTimeout(savedBadgeTimer);
+		savedBadgeTimer = setTimeout(() => {
+			if (orderStatus.value === "saved") orderStatus.value = "idle";
+		}, SAVED_BADGE_MS);
+	} catch (e: unknown) {
+		orderedPhotos.value = rollbackTo;
+		orderStatus.value = "idle";
+		toast.add({ title: t("homes.photos.toasts.orderFailed"), description: getFetchError(e), color: "error" });
+	}
+};
+
+/** Sends a pending reorder now, so uploads and deletes never race with it. */
+const flushPendingOrder = async () => {
+	if (!saveTimer) return;
+
+	clearTimeout(saveTimer);
+	await flushOrder();
+};
+
+/** Applies the move immediately and coalesces rapid moves into a single save. */
+const applyOrder = (nextOrder: string[]) => {
+	if (isSameOrder(nextOrder, orderedPhotos.value)) return;
+
+	orderedPhotos.value = nextOrder;
+
+	if (saveTimer) clearTimeout(saveTimer);
+	saveTimer = setTimeout(() => { void flushOrder(); }, SAVE_DEBOUNCE_MS);
+};
+
+const movePhotoTo = (from: number, to: number) => applyOrder(movePhoto(orderedPhotos.value, from, to));
+
+const handleDragStart = (index: number) => {
+	draggedIndex.value = index;
+};
+
+const handleDragOver = (index: number) => {
+	if (draggedIndex.value === null) return;
+	dragOverIndex.value = index;
+};
+
+const handleDrop = (index: number) => {
+	const from = draggedIndex.value;
+	draggedIndex.value = null;
+	dragOverIndex.value = null;
+
+	if (from === null || from === index) return;
+	movePhotoTo(from, index);
+};
+
+const handleDragEnd = () => {
+	draggedIndex.value = null;
+	dragOverIndex.value = null;
+};
+
+// Never leave a pending reorder behind when the section is closed.
+onBeforeUnmount(() => {
+	if (savedBadgeTimer) clearTimeout(savedBadgeTimer);
+	if (!saveTimer) return;
+
+	clearTimeout(saveTimer);
+	void flushOrder();
+});
+
 const deletePhoto = async (photoUrl: string) => {
 	if (!confirm(t("homes.photos.confirmDelete"))) return;
+
+	await flushPendingOrder();
 
 	try {
 		await $fetch(`/api/homes/${props.home.id}/photos/delete`, {
@@ -144,21 +269,81 @@ const deletePhoto = async (photoUrl: string) => {
 		</label>
 
 		<!-- Photo grid -->
-		<div v-if="home.photos?.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-			<div
-				v-for="(photo, index) in home.photos"
-				:key="index"
-				class="relative group aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800"
-			>
-				<img :src="photo" :alt="t('homes.photos.photoAlt', { index: index + 1 })" class="w-full h-full object-cover" />
-				<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-					<UButton
-						color="error"
-						variant="solid"
-						size="sm"
-						icon="i-lucide-trash-2"
-						@click="deletePhoto(photo)"
-					>{{ t("documents.actions.delete") }}</UButton>
+		<div v-if="orderedPhotos.length" class="space-y-3">
+			<div class="flex items-center gap-2 text-sm text-stone-500">
+				<UIcon name="i-lucide-move" class="w-4 h-4" />
+				<span>{{ t("homes.photos.reorderHint") }}</span>
+				<!-- Quiet inline status instead of a toast per move. -->
+				<span
+					v-if="orderStatus !== 'idle'"
+					class="inline-flex items-center gap-1.5 transition-opacity"
+					:class="orderStatus === 'saved' ? 'text-emerald-600 dark:text-emerald-400' : ''"
+				>
+					<UIcon
+						:name="orderStatus === 'saving' ? 'i-lucide-loader-circle' : 'i-lucide-check'"
+						class="w-4 h-4"
+						:class="orderStatus === 'saving' ? 'animate-spin' : ''"
+					/>
+					{{ orderStatus === "saving" ? t("homes.photos.orderSaving") : t("homes.photos.toasts.orderSaved") }}
+				</span>
+			</div>
+
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+				<div
+					v-for="(photo, index) in orderedPhotos"
+					:key="photo"
+					draggable="true"
+					class="relative group aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 transition-all"
+					:class="{
+						'opacity-40': draggedIndex === index,
+						'ring-2 ring-primary ring-offset-2 dark:ring-offset-stone-900': dragOverIndex === index && draggedIndex !== index,
+					}"
+					@dragstart="handleDragStart(index)"
+					@dragover.prevent="handleDragOver(index)"
+					@drop.prevent="handleDrop(index)"
+					@dragend="handleDragEnd"
+				>
+					<img :src="photo" :alt="t('homes.photos.photoAlt', { index: index + 1 })" class="w-full h-full object-cover" />
+
+					<!-- Position badge -->
+					<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-xs font-semibold">
+						{{ index + 1 }}
+					</span>
+
+					<!-- Arrow controls stay visible on touch devices, where dragging is awkward. -->
+					<div class="absolute inset-x-0 bottom-0 flex items-center justify-between p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+						<UButton
+							color="neutral"
+							variant="solid"
+							size="xs"
+							icon="i-lucide-chevron-left"
+							:disabled="index === 0"
+							:title="t('homes.photos.moveEarlier')"
+							:aria-label="t('homes.photos.moveEarlier')"
+							@click="movePhotoTo(index, index - 1)"
+						/>
+						<UButton
+							color="neutral"
+							variant="solid"
+							size="xs"
+							icon="i-lucide-chevron-right"
+							:disabled="index === orderedPhotos.length - 1"
+							:title="t('homes.photos.moveLater')"
+							:aria-label="t('homes.photos.moveLater')"
+							@click="movePhotoTo(index, index + 1)"
+						/>
+					</div>
+
+					<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+						<UButton
+							color="error"
+							variant="solid"
+							size="sm"
+							icon="i-lucide-trash-2"
+							class="pointer-events-auto"
+							@click="deletePhoto(photo)"
+						>{{ t("documents.actions.delete") }}</UButton>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -4,8 +4,8 @@
 			:id="label"
 			:type="type"
 			v-model="value"
-			:data-filled="value.length > 0"
-			autocomplete="off"
+			:data-filled="String(value ?? '').length > 0"
+			:autocomplete="autocomplete"
 			class="w-full rounded-md py-3 px-4 text-sm peer border border-neutral-600" />
 		<label
 			ref="labelObject"
@@ -20,8 +20,12 @@ import type { InputTypeHTMLAttribute } from "vue";
 const labelObject: Ref<HTMLLabelElement | null> = ref(null);
 const value: Ref<any> = defineModel();
 
-defineProps<{
+withDefaults(defineProps<{
 	type: InputTypeHTMLAttribute;
 	label: string;
-}>();
+	/** Off by default; login and registration opt in so the browser can remember the user. */
+	autocomplete?: string;
+}>(), {
+	autocomplete: "off",
+});
 </script>
