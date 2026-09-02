@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Home, HomeFile } from "~/types";
 import { canPreviewFile, getFileIcon, getFileIconColor, truncateFileName } from "~/utils/fileTypes";
+import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
 import FilePreviewModal from "~/components/documents/FilePreviewModal.vue";
 
 const props = defineProps<{
@@ -205,8 +206,7 @@ const requestFileUrl = async (file: HomeFile) => {
 
 const downloadFile = async (file: HomeFile) => {
 	try {
-		const url = await requestFileUrl(file);
-		window.open(url, "_blank", "noopener,noreferrer");
+		await openAfterAsyncNavigation(() => requestFileUrl(file));
 	} catch (e: unknown) {
 		toast.add({ title: t("homes.files.toasts.downloadFailed"), description: getFetchError(e), color: "error" });
 	}
