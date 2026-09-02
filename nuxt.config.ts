@@ -61,7 +61,6 @@ export default defineNuxtConfig({
 			GITHUB_REPO: process.env.GITHUB_REPO || "ncoffez/giens-ch",
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
-		UNSPLASH_API_KEY: process.env.UNSPLASH_API_KEY,
 		GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 		GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash",
 		DOCUMENT_TRANSLATION_LANGUAGES: process.env.DOCUMENT_TRANSLATION_LANGUAGES || "fr",
