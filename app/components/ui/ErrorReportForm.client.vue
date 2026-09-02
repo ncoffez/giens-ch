@@ -68,7 +68,7 @@ async function submitReport() {
 		);
 		emit("submitted");
 	} catch (error: unknown) {
-		toast.error(t("error.reportFailureTitle"), getFetchError(error));
+		toast.error(t("error.reportFailureTitle"), getFetchError(error), { report: false });
 	} finally {
 		isSubmitting.value = false;
 	}
