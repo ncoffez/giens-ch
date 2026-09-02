@@ -285,3 +285,168 @@ const closePreview = () => {
 	previewUrl.value = "";
 };
 </script>
+
+<template>
+	<div class="space-y-6">
+		<!-- Upload area -->
+		<label class="block cursor-pointer">
+			<div
+				class="border-2 border-dashed rounded-2xl p-8 text-center transition-all"
+				:class="uploading || dragOverZone
+					? 'border-primary bg-primary-50 dark:bg-primary-900/20'
+					: 'border-stone-200 dark:border-stone-700 hover:border-primary'"
+				@dragover.prevent="dragOverZone = true"
+				@dragleave.prevent="dragOverZone = false"
+				@drop.prevent="handleDrop"
+			>
+				<div v-if="uploading" class="space-y-3">
+					<div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+					<p class="text-stone-600 dark:text-stone-400">
+						{{ t("homes.files.uploading", { current: uploadCurrent, total: uploadTotal }) }}
+					</p>
+					<div class="w-full max-w-xs mx-auto">
+						<UProgress :value="uploadProgress" color="primary" size="sm" />
+					</div>
+				</div>
+				<div v-else class="space-y-3">
+					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
+					<p class="text-stone-600 dark:text-stone-400 font-medium">{{ t("homes.files.clickToUpload") }}</p>
+					<p class="text-sm text-stone-400">{{ t("homes.files.supportedFormats") }}</p>
+					<p class="text-xs text-stone-400">
+						{{ isPrivate ? t("homes.files.privateHint") : t("homes.files.multiUpload") }}
+					</p>
+					<p class="text-xs text-stone-400">
+						{{ t("homes.files.dragHint", { target: isPrivate ? t("homes.files.destinations.private") : t("homes.files.destinations.shared") }) }}
+					</p>
+				</div>
+			</div>
+			<input type="file" multiple class="hidden" :disabled="uploading" @change="uploadFiles" />
+		</label>
+
+		<!-- File list -->
+		<div v-if="visibleFiles.length" class="space-y-3">
+			<div
+				v-for="file in visibleFiles"
+				:key="file.id"
+				draggable="true"
+				@dragstart="handleDragStart($event, file)"
+				class="flex items-center gap-4 p-4 bg-white dark:bg-stone-800 rounded-xl border border-stone-100 dark:border-stone-700 group"
+			>
+				<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg">
+					<UIcon :name="getFileIcon(file.type)" class="w-6 h-6" :class="getFileIconColor(file.type)" />
+				</div>
+				<button
+					v-if="canPreview(file)"
+					class="flex-1 min-w-0 text-left"
+					:title="file.name"
+					@click="openPreview(file)"
+				>
+					<p class="font-medium truncate hover:text-primary transition-colors">{{ truncateFileName(file.name) }}</p>
+					<p class="text-sm text-stone-500">{{ formatFileSize(file.size) }}</p>
+				</button>
+				<div v-else class="flex-1 min-w-0" :title="file.name">
+					<p class="font-medium truncate">{{ truncateFileName(file.name) }}</p>
+					<p class="text-sm text-stone-500">{{ formatFileSize(file.size) }}</p>
+				</div>
+				<!-- Always visible on touch devices, revealed on hover from md upwards. -->
+				<div class="flex items-center gap-1 sm:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+					<UButton
+						v-if="canPreview(file)"
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-eye"
+						size="sm"
+						:title="t('homes.files.actions.preview')"
+						:aria-label="t('homes.files.actions.preview')"
+						@click="openPreview(file)"
+					/>
+					<UButton
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-pencil"
+						size="sm"
+						:title="t('homes.files.actions.rename')"
+						:aria-label="t('homes.files.actions.rename')"
+						@click="openRename(file)"
+					/>
+					<UButton
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-download"
+						size="sm"
+						:title="t('homes.files.actions.download')"
+						:aria-label="t('homes.files.actions.download')"
+						@click="downloadFile(file)"
+					/>
+					<UButton
+						variant="ghost"
+						color="neutral"
+						:icon="isPrivate ? 'i-lucide-lock-open' : 'i-lucide-lock'"
+						size="sm"
+						:loading="movingFileId === file.id"
+						:title="getMoveActionLabel(targetPrivacy)"
+						:aria-label="getMoveActionLabel(targetPrivacy)"
+						@click="moveFile(file, targetPrivacy)"
+					/>
+					<UButton
+						variant="ghost"
+						color="error"
+						icon="i-lucide-trash-2"
+						size="sm"
+						:title="t('documents.actions.delete')"
+						:aria-label="t('documents.actions.delete')"
+						@click="deleteFile(file)"
+					/>
+				</div>
+			</div>
+		</div>
+
+		<!-- Empty state -->
+		<div v-else class="text-center py-12 bg-stone-50 dark:bg-stone-800/50 rounded-2xl border border-dashed border-stone-200 dark:border-stone-700">
+			<UIcon name="i-lucide-folder" class="w-10 h-10 mx-auto text-stone-300 mb-3" />
+			<p class="text-stone-500">{{ t("homes.files.emptyTitle") }}</p>
+			<p class="text-sm text-stone-400">
+				{{ isPrivate ? t("homes.files.privateEmptyDescription") : t("homes.files.sharedEmptyDescription") }}
+			</p>
+		</div>
+
+		<!-- Rename -->
+		<UModal v-model:open="isRenameModalOpen" :title="t('homes.files.rename.title')">
+			<template #body>
+				<UFormField :label="t('homes.files.rename.label')">
+					<UInput
+						v-model="renameValue"
+						class="w-full"
+						autofocus
+						:placeholder="renameTarget?.name"
+						@keydown.enter.prevent="submitRename()"
+					/>
+				</UFormField>
+			</template>
+			<template #footer>
+				<div class="flex w-full justify-end gap-2">
+					<UButton variant="ghost" color="neutral" @click="isRenameModalOpen = false">
+						{{ t("editor.cancel") }}
+					</UButton>
+					<UButton
+						color="primary"
+						:disabled="!canSubmitRename"
+						:loading="isRenaming"
+						@click="submitRename()"
+					>
+						{{ t("homes.files.rename.submit") }}
+					</UButton>
+				</div>
+			</template>
+		</UModal>
+
+		<!-- Preview -->
+		<FilePreviewModal
+			:file="previewFile"
+			:url="previewUrl"
+			:loading="previewLoading"
+			@close="closePreview()"
+			@download="previewFile && downloadFile(previewFile)"
+		/>
+	</div>
+</template>
