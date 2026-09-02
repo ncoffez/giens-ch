@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "giens-ch"
+  },
   "targets": {},
   "etags": {
     "giens-ch": {
