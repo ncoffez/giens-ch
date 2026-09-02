@@ -81,7 +81,18 @@ export interface Home {
 	folders: HomeFolder[];
 	wifiSSID?: string;
 	wifiPassword?: string;
+	/** The source-language text; mirrors instructionsByLocale[instructionsSourceLocale]. */
 	instructions?: string;
+	/** Which language the owner writes the Anleitung in ("de" or "fr"). */
+	instructionsSourceLocale?: "de" | "fr";
+	/** The Anleitung per locale: the source text plus its counterpart. */
+	instructionsByLocale?: Partial<Record<"de" | "fr", string>>;
+	/** Per locale: whether the text is machine-generated and what it was made from. */
+	instructionsMeta?: Partial<Record<"de" | "fr", {
+		auto: boolean;
+		sourceHash?: string;
+		translatedAt?: string;
+	}>>;
 	enabled: boolean;
 	createdAt: string;
 	updatedAt: string;

@@ -2,9 +2,13 @@
 import type { ErrorReportPayload } from "../../utils/errorReporting";
 import { getFetchError } from "../../utils/error";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	report: ErrorReportPayload | null;
-}>();
+	/** True when an error was captured automatically, false for user-initiated reports. */
+	autoLogged?: boolean;
+}>(), {
+	autoLogged: true,
+});
 
 const emit = defineEmits<{
 	submitted: [];
@@ -75,10 +79,10 @@ async function submitReport() {
 	<div class="space-y-5">
 		<div class="rounded-2xl border border-stone-200 bg-stone-50/80 p-4 dark:border-stone-800 dark:bg-stone-900/70">
 			<p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-primary)]">
-				{{ t("error.autoLoggedLabel") }}
+				{{ autoLogged ? t("error.autoLoggedLabel") : t("error.manualReportLabel") }}
 			</p>
 			<p class="text-sm font-semibold text-stone-900 dark:text-white">
-				{{ report?.message || t("error.reportSummaryFallback") }}
+				{{ autoLogged ? (report?.message || t("error.reportSummaryFallback")) : t("error.manualReportSummary") }}
 			</p>
 			<p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
 				{{ t("error.routeLabel") }}: <span class="font-medium text-stone-700 dark:text-stone-200">{{ report?.routePath || "-" }}</span>
@@ -87,7 +91,7 @@ async function submitReport() {
 				{{ t("error.sourceLabel") }}: <span class="font-medium text-stone-700 dark:text-stone-200">{{ report?.source || "-" }}</span>
 			</p>
 			<p class="mt-2 text-sm text-stone-500 dark:text-stone-400">
-				{{ t("error.autoLoggedDescription") }}
+				{{ autoLogged ? t("error.autoLoggedDescription") : t("error.manualReportDescription") }}
 			</p>
 		</div>
 
@@ -96,7 +100,7 @@ async function submitReport() {
 				v-model="userNotes"
 				:rows="4"
 				:ui="textareaUi"
-				:placeholder="t('error.whatHappenedPlaceholder')"
+				:placeholder="autoLogged ? t('error.whatHappenedPlaceholder') : t('error.manualWhatHappenedPlaceholder')"
 			/>
 		</UFormField>
 
@@ -127,7 +131,7 @@ async function submitReport() {
 					:loading="isSubmitting"
 					@click="submitReport"
 				>
-					{{ t("error.submitComment") }}
+					{{ autoLogged ? t("error.submitComment") : t("error.submitReport") }}
 				</UButton>
 			</div>
 		</div>

@@ -52,25 +52,50 @@
 						<button
 							type="button"
 							class="flex min-w-0 flex-1 items-center gap-4 text-left"
-							@click="downloadDocument(document)"
+							:title="document.name"
+							@click="handleDocumentClick(document)"
 						>
 							<div class="rounded-xl bg-stone-100 p-3 dark:bg-stone-900">
 								<UIcon :name="getFileIcon(document.type)" class="w-5 h-5" :class="getFileIconColor(document.type)" />
 							</div>
 							<div class="min-w-0 flex-1">
-								<p class="truncate font-semibold">{{ document.name }}</p>
+								<p class="truncate font-semibold">{{ truncateFileName(document.name) }}</p>
 								<p class="text-sm text-stone-500">
 									{{ formatFileSize(document.size) }} · {{ t("ownerDocuments.lastUpdated") }}: {{ formatDate(document) }}
 								</p>
 							</div>
-							<UIcon name="i-lucide-download" class="w-5 h-5 text-stone-400" />
+							<UIcon
+								:name="canPreview(document) ? 'i-lucide-eye' : 'i-lucide-download'"
+								class="w-5 h-5 text-stone-400"
+							/>
 						</button>
 						<div class="flex items-center gap-2">
+							<UButton
+								v-if="canPreview(document)"
+								variant="ghost"
+								color="neutral"
+								icon="i-lucide-eye"
+								size="sm"
+								:title="t('homes.files.actions.preview')"
+								:aria-label="t('homes.files.actions.preview')"
+								@click="openPreview(document)"
+							/>
+							<UButton
+								variant="ghost"
+								color="neutral"
+								icon="i-lucide-download"
+								size="sm"
+								:title="t('homes.files.actions.download')"
+								:aria-label="t('homes.files.actions.download')"
+								@click="downloadDocument(document)"
+							/>
 							<UButton
 								variant="ghost"
 								color="neutral"
 								icon="i-lucide-link"
 								size="sm"
+								:title="t('ownerDocuments.copyLink')"
+								:aria-label="t('ownerDocuments.copyLink')"
 								@click="copyDocumentLink(document)"
 							/>
 							<UButton
@@ -87,11 +112,20 @@
 				</div>
 			</section>
 		</div>
+
+		<FilePreviewModal
+			:file="previewDocument"
+			:url="previewUrl"
+			:loading="previewLoading"
+			@close="closePreview()"
+			@download="previewDocument && downloadDocument(previewDocument)"
+		/>
 	</div>
 </template>
 
 <script lang="ts" setup>
-import { getFileIcon, getFileIconColor } from "~/utils/fileTypes";
+import { canPreviewFile, getFileIcon, getFileIconColor, truncateFileName } from "~/utils/fileTypes";
+import FilePreviewModal from "~/components/documents/FilePreviewModal.vue";
 
 definePageMeta({ middleware: ["is-owner"] });
 
@@ -207,6 +241,51 @@ const buildDeepLink = (document: OwnerDocumentItem) => {
 const copyDocumentLink = async (document: OwnerDocumentItem) => {
 	await navigator.clipboard.writeText(buildDeepLink(document));
 	toast.add({ title: "Link kopiert", color: "success" });
+};
+
+/* --------------------------------- Preview --------------------------------- */
+
+const previewDocument = ref<OwnerDocumentItem | null>(null);
+const previewUrl = ref("");
+const previewLoading = ref(false);
+
+const canPreview = (document: OwnerDocumentItem) => canPreviewFile(document.type);
+
+const requestDocumentUrl = async (document: OwnerDocumentItem) => {
+	const response = await $fetch<{ url: string }>(document.downloadPath, {
+		headers: { Authorization: `Bearer ${token.value}` },
+	});
+
+	return response.url;
+};
+
+const openPreview = async (document: OwnerDocumentItem) => {
+	previewDocument.value = document;
+	previewUrl.value = "";
+	previewLoading.value = true;
+
+	try {
+		previewUrl.value = await requestDocumentUrl(document);
+	} catch (e: unknown) {
+		previewDocument.value = null;
+		toast.add({ title: t("homes.files.toasts.previewFailed"), description: getFetchError(e), color: "error" });
+	} finally {
+		previewLoading.value = false;
+	}
+};
+
+const closePreview = () => {
+	previewDocument.value = null;
+	previewUrl.value = "";
+};
+
+/** Preview when the browser can render it, otherwise fall back to a download. */
+const handleDocumentClick = (document: OwnerDocumentItem) => {
+	if (canPreview(document)) {
+		return openPreview(document);
+	}
+
+	return downloadDocument(document);
 };
 
 const downloadDocument = async (document: OwnerDocumentItem) => {

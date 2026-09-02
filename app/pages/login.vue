@@ -3,8 +3,15 @@
 		class="relative overflow-hidden flex flex-col items-center p-8 border-neutral-200 bg-white dark:bg-neutral-800 shadow-lg rounded-3xl my-16 mx-auto w-fit">
 		<h3 class="font-bold text-2xl mb-4 text-neutral-800 dark:text-neutral-200">{{ t("auth.loginTitle") }}</h3>
 		<UForm :state="state" class="flex flex-col gap-2 min-w-72" @submit="submitPasswordLogin">
-			<UiInput type="email" :label="t('auth.email')" v-model="state.email"></UiInput>
-			<UiInput type="password" :label="t('auth.password')" v-model="state.password"></UiInput>
+			<UiInput type="email" :label="t('auth.email')" v-model="state.email" autocomplete="username"></UiInput>
+			<UiInput type="password" :label="t('auth.password')" v-model="state.password" autocomplete="current-password"></UiInput>
+			<UCheckbox
+				v-model="rememberMe"
+				name="remember-me"
+				class="mt-2"
+				:label="t('auth.rememberMe')"
+				:description="t('auth.rememberMeHint')"
+			/>
 			<NuxtLink :to="localePath('/reset-password')" class="text-right text-xs leading-relaxed mb-1 text-stone-500 dark:text-stone-400 hover:text-primary-600 dark:hover:text-primary-400">{{ t("auth.forgotPassword") }}</NuxtLink>
 			<UButton
 				type="submit"
@@ -34,8 +41,18 @@
 	</section>
 </template>
 <script lang="ts" setup>
-import { GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import {
+	GoogleAuthProvider,
+	OAuthProvider,
+	browserLocalPersistence,
+	browserSessionPersistence,
+	setPersistence,
+	signInWithPopup,
+	signInWithEmailAndPassword,
+	type Auth,
+} from "firebase/auth";
 import { sanitizeRedirectPath } from "~/utils/redirect";
+import { persistRememberedLogin, readRememberedLogin } from "~/utils/rememberedLogin";
 
 const { t } = useI18n();
 const state = reactive({
@@ -48,6 +65,43 @@ const { $currentUser } = useNuxtApp();
 const toast = useAppToast();
 const isRedirecting = ref(false);
 const route = useRoute();
+const rememberMe = ref(true);
+
+function loginStorage() {
+	return import.meta.client ? window.localStorage : null;
+}
+
+onMounted(() => {
+	const remembered = readRememberedLogin(loginStorage());
+	rememberMe.value = remembered.rememberMe;
+	if (remembered.email) {
+		state.email = remembered.email;
+	}
+});
+
+/**
+ * "Angemeldet bleiben" keeps the Firebase session in local storage across browser
+ * restarts; unchecking it limits the session to the current tab.
+ */
+async function applyPersistence(auth: Auth) {
+	try {
+		await setPersistence(auth, rememberMe.value ? browserLocalPersistence : browserSessionPersistence);
+	} catch (e: unknown) {
+		// Persistence is unavailable (private mode, blocked storage). Sign-in itself
+		// still works, so this must not abort the login.
+		console.warn("Could not apply auth persistence:", e);
+	}
+}
+
+function rememberLogin(email?: string) {
+	persistRememberedLogin(loginStorage(), { email, rememberMe: rememberMe.value });
+}
+
+// Unchecking the box must forget the stored address immediately, not only on the
+// next successful sign-in.
+watch(rememberMe, (value) => {
+	persistRememberedLogin(loginStorage(), { email: value ? state.email : "", rememberMe: value });
+});
 
 definePageMeta({
 	middleware: "is-not-logged-in",
@@ -122,11 +176,13 @@ async function loginToFirebase(method: "google" | "password", email?: string, pa
 async function loginWithGoogle() {
 	const { $ensureAuth } = useNuxtApp();
 	const auth = await $ensureAuth();
+	await applyPersistence(auth);
 	const provider = new GoogleAuthProvider();
 	provider.addScope("email");
 	provider.addScope("profile");
 	try {
-		await signInWithPopup(auth, provider);
+		const { user } = await signInWithPopup(auth, provider);
+		rememberLogin(user.email || undefined);
 		toast.success(t("auth.success.login"));
 		await redirectAfterLogin();
 	} catch (e: unknown) {
@@ -137,11 +193,13 @@ async function loginWithGoogle() {
 async function loginWithApple() {
 	const { $ensureAuth } = useNuxtApp();
 	const auth = await $ensureAuth();
+	await applyPersistence(auth);
 	const provider = new OAuthProvider("apple.com");
 	provider.addScope("email");
 	provider.addScope("name");
 	try {
-		await signInWithPopup(auth, provider);
+		const { user } = await signInWithPopup(auth, provider);
+		rememberLogin(user.email || undefined);
 		toast.success(t("auth.success.login"));
 		await redirectAfterLogin();
 	} catch (e: unknown) {
@@ -154,7 +212,9 @@ async function loginWithPassword(email: string, password: string) {
 	if (!email || !password) throw new Error("Email and password are required for password login.");
 	try {
 		const auth = await $ensureAuth();
+		await applyPersistence(auth);
 		const { user } = await signInWithEmailAndPassword(auth, email, password);
+		rememberLogin(email);
 		if (!user.emailVerified) {
 			toast.add({ color: "warning", title: t("auth.warnings.emailNotVerified"), description: t("auth.warnings.emailNotVerified") });
 		}

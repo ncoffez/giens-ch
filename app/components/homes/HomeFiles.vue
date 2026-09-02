@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Home, HomeFile } from "~/types";
-import { getFileIcon, getFileIconColor } from "~/utils/fileTypes";
+import { canPreviewFile, getFileIcon, getFileIconColor, truncateFileName } from "~/utils/fileTypes";
+import FilePreviewModal from "~/components/documents/FilePreviewModal.vue";
 
 const props = defineProps<{
 	home: Home;
@@ -193,13 +194,95 @@ const deleteFile = async (file: HomeFile) => {
 	}
 };
 
-const downloadFile = async (file: HomeFile) => {
+const requestFileUrl = async (file: HomeFile) => {
 	const response = await $fetch<{ url: string }>(`/api/homes/${props.home.id}/files/download`, {
 		headers: { Authorization: `Bearer ${await getFreshToken()}` },
 		query: { fileId: file.id, private: isPrivate.value ? "true" : "false" },
 	});
 
-	window.open(response.url, "_blank", "noopener,noreferrer");
+	return response.url;
+};
+
+const downloadFile = async (file: HomeFile) => {
+	try {
+		const url = await requestFileUrl(file);
+		window.open(url, "_blank", "noopener,noreferrer");
+	} catch (e: unknown) {
+		toast.add({ title: t("homes.files.toasts.downloadFailed"), description: getFetchError(e), color: "error" });
+	}
+};
+
+/* ---------------------------------- Rename --------------------------------- */
+
+const renameTarget = ref<HomeFile | null>(null);
+const renameValue = ref("");
+const isRenaming = ref(false);
+
+const isRenameModalOpen = computed({
+	get: () => renameTarget.value !== null,
+	set: (open: boolean) => {
+		if (!open) renameTarget.value = null;
+	},
+});
+
+const canSubmitRename = computed(() => {
+	const value = renameValue.value.trim();
+	return value.length > 0 && value !== renameTarget.value?.name;
+});
+
+const openRename = (file: HomeFile) => {
+	renameTarget.value = file;
+	renameValue.value = file.name;
+};
+
+const submitRename = async () => {
+	const file = renameTarget.value;
+	if (!file || !canSubmitRename.value) return;
+
+	try {
+		isRenaming.value = true;
+		await $fetch(`/api/homes/${props.home.id}/files/rename`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
+			body: { fileId: file.id, name: renameValue.value.trim() },
+		});
+		toast.add({ title: t("homes.files.toasts.renamed"), color: "success" });
+		renameTarget.value = null;
+		emit("refresh");
+	} catch (e: unknown) {
+		toast.add({ title: t("homes.files.toasts.renameFailed"), description: getFetchError(e), color: "error" });
+	} finally {
+		isRenaming.value = false;
+	}
+};
+
+/* --------------------------------- Preview --------------------------------- */
+
+const previewFile = ref<HomeFile | null>(null);
+const previewUrl = ref("");
+const previewLoading = ref(false);
+
+/** Types the browser can render inline; everything else offers a download instead. */
+const canPreview = (file: HomeFile) => canPreviewFile(file.type);
+
+const openPreview = async (file: HomeFile) => {
+	previewFile.value = file;
+	previewUrl.value = "";
+	previewLoading.value = true;
+
+	try {
+		previewUrl.value = await requestFileUrl(file);
+	} catch (e: unknown) {
+		previewFile.value = null;
+		toast.add({ title: t("homes.files.toasts.previewFailed"), description: getFetchError(e), color: "error" });
+	} finally {
+		previewLoading.value = false;
+	}
+};
+
+const closePreview = () => {
+	previewFile.value = null;
+	previewUrl.value = "";
 };
 </script>
 
@@ -252,12 +335,49 @@ const downloadFile = async (file: HomeFile) => {
 				<div class="p-2 bg-stone-50 dark:bg-stone-700 rounded-lg">
 					<UIcon :name="getFileIcon(file.type)" class="w-6 h-6" :class="getFileIconColor(file.type)" />
 				</div>
-				<div class="flex-1 min-w-0">
-					<p class="font-medium truncate">{{ file.name }}</p>
+				<button
+					v-if="canPreview(file)"
+					class="flex-1 min-w-0 text-left"
+					:title="file.name"
+					@click="openPreview(file)"
+				>
+					<p class="font-medium truncate hover:text-primary transition-colors">{{ truncateFileName(file.name) }}</p>
+					<p class="text-sm text-stone-500">{{ formatFileSize(file.size) }}</p>
+				</button>
+				<div v-else class="flex-1 min-w-0" :title="file.name">
+					<p class="font-medium truncate">{{ truncateFileName(file.name) }}</p>
 					<p class="text-sm text-stone-500">{{ formatFileSize(file.size) }}</p>
 				</div>
-				<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-					<UButton variant="ghost" color="neutral" icon="i-lucide-download" size="sm" @click="downloadFile(file)" />
+				<!-- Always visible on touch devices, revealed on hover from md upwards. -->
+				<div class="flex items-center gap-1 sm:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+					<UButton
+						v-if="canPreview(file)"
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-eye"
+						size="sm"
+						:title="t('homes.files.actions.preview')"
+						:aria-label="t('homes.files.actions.preview')"
+						@click="openPreview(file)"
+					/>
+					<UButton
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-pencil"
+						size="sm"
+						:title="t('homes.files.actions.rename')"
+						:aria-label="t('homes.files.actions.rename')"
+						@click="openRename(file)"
+					/>
+					<UButton
+						variant="ghost"
+						color="neutral"
+						icon="i-lucide-download"
+						size="sm"
+						:title="t('homes.files.actions.download')"
+						:aria-label="t('homes.files.actions.download')"
+						@click="downloadFile(file)"
+					/>
 					<UButton
 						variant="ghost"
 						color="neutral"
@@ -268,7 +388,15 @@ const downloadFile = async (file: HomeFile) => {
 						:aria-label="getMoveActionLabel(targetPrivacy)"
 						@click="moveFile(file, targetPrivacy)"
 					/>
-					<UButton variant="ghost" color="error" icon="i-lucide-trash-2" size="sm" @click="deleteFile(file)" />
+					<UButton
+						variant="ghost"
+						color="error"
+						icon="i-lucide-trash-2"
+						size="sm"
+						:title="t('documents.actions.delete')"
+						:aria-label="t('documents.actions.delete')"
+						@click="deleteFile(file)"
+					/>
 				</div>
 			</div>
 		</div>
@@ -281,5 +409,44 @@ const downloadFile = async (file: HomeFile) => {
 				{{ isPrivate ? t("homes.files.privateEmptyDescription") : t("homes.files.sharedEmptyDescription") }}
 			</p>
 		</div>
+
+		<!-- Rename -->
+		<UModal v-model:open="isRenameModalOpen" :title="t('homes.files.rename.title')">
+			<template #body>
+				<UFormField :label="t('homes.files.rename.label')">
+					<UInput
+						v-model="renameValue"
+						class="w-full"
+						autofocus
+						:placeholder="renameTarget?.name"
+						@keydown.enter.prevent="submitRename()"
+					/>
+				</UFormField>
+			</template>
+			<template #footer>
+				<div class="flex w-full justify-end gap-2">
+					<UButton variant="ghost" color="neutral" @click="isRenameModalOpen = false">
+						{{ t("editor.cancel") }}
+					</UButton>
+					<UButton
+						color="primary"
+						:disabled="!canSubmitRename"
+						:loading="isRenaming"
+						@click="submitRename()"
+					>
+						{{ t("homes.files.rename.submit") }}
+					</UButton>
+				</div>
+			</template>
+		</UModal>
+
+		<!-- Preview -->
+		<FilePreviewModal
+			:file="previewFile"
+			:url="previewUrl"
+			:loading="previewLoading"
+			@close="closePreview()"
+			@download="previewFile && downloadFile(previewFile)"
+		/>
 	</div>
 </template>
