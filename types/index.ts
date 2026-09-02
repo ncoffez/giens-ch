@@ -151,23 +151,6 @@ export interface GlobalFolder {
 	createdByName?: string;
 }
 
-export interface UnsplashImage {
-	id: string;
-	url: string;
-	thumb: string;
-	description: string;
-	author: string;
-	authorUrl: string;
-	downloadUrl: string;
-}
-
-export interface UnsplashSearchResult {
-	images: UnsplashImage[];
-	total: number;
-	totalPages: number;
-	currentPage: number;
-}
-
 export interface LocalizedContent {
 	de: string;
 	fr: string;
