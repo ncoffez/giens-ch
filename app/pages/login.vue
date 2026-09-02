@@ -29,13 +29,6 @@
 			>
 				<UIcon name="fa-brands:google" class="size-6" />
 			</button>
-			<button 
-				@click.prevent="loginWithApple" 
-				:aria-label="t('auth.login') + ' Apple'" 
-				class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
-			>
-				<UIcon name="fa-brands:apple" class="size-6" />
-			</button>
 		</div>
 		<div class="text-xs text-stone-500 dark:text-stone-400">{{ t("auth.noAccount") }} <NuxtLink :to="localePath('/register')" class="underline hover:text-primary-600 dark:hover:text-primary-400">{{ t("auth.register") }}</NuxtLink></div>
 	</section>
@@ -43,7 +36,6 @@
 <script lang="ts" setup>
 import {
 	GoogleAuthProvider,
-	OAuthProvider,
 	browserLocalPersistence,
 	browserSessionPersistence,
 	setPersistence,
@@ -180,23 +172,6 @@ async function loginWithGoogle() {
 	const provider = new GoogleAuthProvider();
 	provider.addScope("email");
 	provider.addScope("profile");
-	try {
-		const { user } = await signInWithPopup(auth, provider);
-		rememberLogin(user.email || undefined);
-		toast.success(t("auth.success.login"));
-		await redirectAfterLogin();
-	} catch (e: unknown) {
-		throw new Error(e?.message || t("auth.errors.generic"));
-	}
-}
-
-async function loginWithApple() {
-	const { $ensureAuth } = useNuxtApp();
-	const auth = await $ensureAuth();
-	await applyPersistence(auth);
-	const provider = new OAuthProvider("apple.com");
-	provider.addScope("email");
-	provider.addScope("name");
 	try {
 		const { user } = await signInWithPopup(auth, provider);
 		rememberLogin(user.email || undefined);
