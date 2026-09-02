@@ -2,6 +2,7 @@
 import type { Home, HomeShare, HomeContact } from "~/types";
 import HomeShareView from "~/components/homes/HomeShareView.vue";
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
+import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
 
 const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
@@ -31,11 +32,13 @@ const shareDescription = computed(() => {
 });
 
 const downloadFile = async (fileId: string) => {
-	const response = await $fetch<{ url: string }>(`/api/homes/share/${token.value}/files/download`, {
-		query: { fileId },
-	});
+	await openAfterAsyncNavigation(async () => {
+		const response = await $fetch<{ url: string }>(`/api/homes/share/${token.value}/files/download`, {
+			query: { fileId },
+		});
 
-	window.open(response.url, "_blank", "noopener,noreferrer");
+		return response.url;
+	});
 };
 
 useSeoMeta({

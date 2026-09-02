@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Home } from "~/types";
 import HomeShareView from "~/components/homes/HomeShareView.vue";
+import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
 
 /**
  * Owner-only preview of the guest view. Unlike /homes/share/[token] this does not
@@ -55,12 +56,14 @@ const fetchHome = async () => {
 
 const downloadFile = async (fileId: string) => {
 	try {
-		const response = await $fetch<{ url: string }>(`/api/homes/${homeId.value}/files/download`, {
-			headers: { Authorization: `Bearer ${await getFreshToken()}` },
-			query: { fileId, private: "false" },
-		});
+		await openAfterAsyncNavigation(async () => {
+			const response = await $fetch<{ url: string }>(`/api/homes/${homeId.value}/files/download`, {
+				headers: { Authorization: `Bearer ${await getFreshToken()}` },
+				query: { fileId, private: "false" },
+			});
 
-		window.open(response.url, "_blank", "noopener,noreferrer");
+			return response.url;
+		});
 	} catch (e: unknown) {
 		toast.add({ title: t("homes.files.toasts.downloadFailed"), description: getFetchError(e), color: "error" });
 	}
