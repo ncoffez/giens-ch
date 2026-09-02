@@ -51,6 +51,8 @@ jobs:
         env:
           FIREBASE_FRONTEND_KEY: ${{ secrets.FIREBASE_FRONTEND_KEY }}
           FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_ISSUES_TOKEN: ${{ secrets.GH_ISSUES_TOKEN }}
           WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
           DEPLOY_KEY: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
@@ -58,6 +60,8 @@ jobs:
           missing=()
           [ -n "$FIREBASE_FRONTEND_KEY" ] || missing+=("secret FIREBASE_FRONTEND_KEY")
           [ -n "$FIREBASE_ADMIN_KEY" ] || missing+=("secret FIREBASE_ADMIN_KEY")
+          [ -n "$GEMINI_API_KEY" ] || missing+=("secret GEMINI_API_KEY (document extraction, search text and Anleitung translation silently do nothing without it)")
+          [ -n "$GH_ISSUES_TOKEN" ] || missing+=("secret GH_ISSUES_TOKEN (error reports answer 503 without it)")
 
           if [ -z "$DEPLOY_KEY" ] && { [ -z "$WIF_PROVIDER" ] || [ -z "$WIF_SERVICE_ACCOUNT" ]; }; then
             missing+=("a deploy credential: either vars GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_DEPLOY_SERVICE_ACCOUNT, or secret FIREBASE_DEPLOY_SERVICE_ACCOUNT")
@@ -70,6 +74,15 @@ jobs:
             exit 1
           fi
 
+      # Presence is not enough: a value pasted with quotes, or with the private
+      # key's newlines flattened, deploys green and then 500s on every request.
+      - name: Validate credential shape
+        if: github.event_name != 'pull_request'
+        env:
+          FIREBASE_FRONTEND_KEY: ${{ secrets.FIREBASE_FRONTEND_KEY }}
+          FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
+        run: node scripts/check-runtime-credentials.mjs
+
       # nuxt.config.ts reads these through runtimeConfig, so they are baked into
       # the bundle at build time — the deployed function has no other source.
       - name: Build
@@ -79,7 +92,6 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL || 'https://giens.ch' }}
           GITHUB_REPO: ${{ vars.GH_REPO || github.repository }}
           STORAGE_BUCKET: ${{ vars.STORAGE_BUCKET }}
-          UNSPLASH_API_KEY: ${{ secrets.UNSPLASH_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           DOCUMENT_TRANSLATION_LANGUAGES: ${{ vars.DOCUMENT_TRANSLATION_LANGUAGES }}
@@ -108,3 +120,28 @@ jobs:
             --project "$FIREBASE_PROJECT" \
             --only firestore,functions,hosting \
             --non-interactive
+
+      # The only check that proves the runtime credentials actually work: an SSR
+      # request goes through the function, which loads the admin key at import.
+      - name: Smoke test the deployed site
+        if: github.event_name != 'pull_request'
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://giens.ch' }}
+        run: |
+          status=000
+          for attempt in 1 2 3 4 5 6; do
+            status=$(curl -sS -o /tmp/smoke.html -w "%{http_code}" --max-time 30 "$SITE_URL/" || echo 000)
+
+            if [ "$status" = "200" ] && grep -q "__nuxt" /tmp/smoke.html; then
+              echo "$SITE_URL answered 200 with a rendered page (attempt $attempt)."
+              exit 0
+            fi
+
+            echo "Attempt $attempt: HTTP $status — retrying in 15s (cold start or propagation)"
+            sleep 15
+          done
+
+          echo "::error::$SITE_URL did not serve a rendered page after the deploy (last status $status)"
+          echo "First 400 bytes of the response:"
+          head -c 400 /tmp/smoke.html || true
+          exit 1
