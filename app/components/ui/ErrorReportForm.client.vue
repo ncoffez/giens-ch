@@ -68,7 +68,10 @@ async function submitReport() {
 		);
 		emit("submitted");
 	} catch (error: unknown) {
-		toast.error(t("error.reportFailureTitle"), getFetchError(error));
+		// report: false — a failure of the reporting system must not be captured as
+		// a new error, or the dialog replaces the user's actual report with the
+		// submit failure and the two keep chasing each other.
+		toast.error(t("error.reportFailureTitle"), getFetchError(error), { report: false });
 	} finally {
 		isSubmitting.value = false;
 	}
