@@ -1,3 +1,50 @@
+export type FilePreviewKind = "image" | "video" | "audio" | "pdf" | "text" | "unsupported";
+
+/** How a file can be rendered inline, if at all. */
+export function getFilePreviewKind(type: string | undefined): FilePreviewKind {
+	const value = type || "";
+
+	if (value.startsWith("image/")) return "image";
+	if (value.startsWith("video/")) return "video";
+	if (value.startsWith("audio/")) return "audio";
+	if (value === "application/pdf") return "pdf";
+	if (value.startsWith("text/")) return "text";
+
+	return "unsupported";
+}
+
+/** True when the browser can show the file without downloading it first. */
+export function canPreviewFile(type: string | undefined): boolean {
+	return getFilePreviewKind(type) !== "unsupported";
+}
+
+export const FILE_NAME_DISPLAY_LIMIT = 30;
+
+/**
+ * Shortens long file names for display while keeping the extension readable.
+ * The full name is expected to stay available through a title/aria-label so it
+ * can still be revealed on hover.
+ */
+export function truncateFileName(name: string | undefined, limit: number = FILE_NAME_DISPLAY_LIMIT): string {
+	const value = (name || "").trim();
+	if (!value || value.length <= limit) return value;
+
+	const lastDot = value.lastIndexOf(".");
+	const hasUsableExtension = lastDot > 0 && lastDot > value.length - 12 && lastDot < value.length - 1;
+	const extension = hasUsableExtension ? value.slice(lastDot) : "";
+	const base = hasUsableExtension ? value.slice(0, lastDot) : value;
+
+	// Reserve room for the ellipsis and the extension, then keep the head and
+	// the tail of the base name so similar names stay distinguishable.
+	const available = Math.max(limit - extension.length - 1, 4);
+	const headLength = Math.ceil(available / 2);
+	const tailLength = Math.floor(available / 2);
+
+	if (base.length <= available) return `${base}${extension}`;
+
+	return `${base.slice(0, headLength)}…${base.slice(base.length - tailLength)}${extension}`;
+}
+
 export function getFileTypeName(type: string | undefined): string {
 	if (!type) return "Unbekannt";
 	

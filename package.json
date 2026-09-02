@@ -9,7 +9,7 @@
     "npm": ">=12.0.0"
   },
   "scripts": {
-    "build": "nuxt build && node scripts/prepare-functions.mjs && node scripts/report-client-bundle.mjs",
+    "build": "nuxt build && node scripts/check-bare-module-specifiers.mjs && node scripts/prepare-functions.mjs && node scripts/report-client-bundle.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

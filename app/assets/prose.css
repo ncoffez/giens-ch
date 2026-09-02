@@ -169,25 +169,36 @@
 }
 
 /* Document Links */
+/*
+ * A document is one object in the text, not a run of characters: the editor
+ * inserts it as an atomic node (app/utils/tiptap/fileAttachment.ts) and this
+ * renders it as a pill. The name never wraps — it ellipsises — so a long file
+ * name can never break the line box.
+ */
 .prose .document-link {
 	display: inline-flex !important;
 	align-items: center;
-	line-height: 1.25;
 	justify-content: center;
 	vertical-align: middle;
-	padding: .4rem .7rem !important;
+	max-width: min(100%, 22rem);
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	line-height: 1.25;
+	padding: .35rem .75rem !important;
 	background-color: var(--color-neutral-100) !important;
 	border: 1px solid var(--color-neutral-200) !important;
 	border-radius: 2rem !important;
 	text-decoration: none !important;
 	color: var(--color-neutral-700) !important;
-	margin: 0 0.5rem !important;
+	margin: 0 .25rem !important;
 	font-weight: 600 !important;
-	transition: all 0.2s;
-	gap: 0.35rem;
 	font-size: 0.85rem;
-	white-space: normal;
+	gap: 0.4rem;
+	transition: all 0.2s;
 	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	cursor: pointer;
+	user-select: none;
 }
 
 .dark .prose .document-link {
@@ -207,6 +218,13 @@
 .dark .prose .document-link:hover {
 	background-color: var(--color-neutral-700) !important;
 	border-color: var(--color-neutral-600) !important;
+}
+
+/* ProseMirror marks the selected atom: show that it is one object. */
+.prose .document-link.ProseMirror-selectednode {
+	outline: 2px solid var(--color-primary-500, #3b82f6);
+	outline-offset: 2px;
+	background-color: var(--color-neutral-200) !important;
 }
 
 .prose .document-link::before {
