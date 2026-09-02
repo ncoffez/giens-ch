@@ -37,7 +37,11 @@
     "issueCommented": "Votre précision a été ajoutée à l'issue #{number}.",
     "submitReport": "Envoyer le signalement",
     "submitComment": "Envoyer le détail",
-    "notAvailable": "Non disponible"
+    "notAvailable": "Non disponible",
+    "manualReportLabel": "Retour",
+    "manualReportSummary": "Vous signalez un problème ou une suggestion d'amélioration.",
+    "manualReportDescription": "Décrivez brièvement ce qui n'a pas fonctionné. Les informations sur la page et sur vos dernières actions sont transmises automatiquement.",
+    "manualWhatHappenedPlaceholder": "Décrivez ce qui n'a pas fonctionné ou ce que vous souhaiteriez voir différemment."
   },
   "nav": {
     "home": "Accueil",
@@ -54,6 +58,12 @@
     "search": "Rechercher"
   },
   "homes": {
+    "preview": {
+      "title": "Aperçu",
+      "banner": "Aperçu de la vue invité – visible uniquement pour vous.",
+      "backToEdit": "Retour à l'édition",
+      "loadError": "Le logement n'a pas pu être chargé"
+    },
     "edit": {
       "eyebrow": "Ma maison",
       "preview": "Aperçu",
@@ -105,7 +115,18 @@
         "title": "Consignes",
         "description": "Déposez les informations essentielles pour l'arrivée, le séjour et le départ dans une structure claire et agréable à lire.",
         "cardTitle": "Informations pour les hôtes",
-        "cardDescription": "L'éditeur dispose déjà de sa propre interface. Cette carte de section reste donc volontairement discrète."
+        "cardDescription": "L'éditeur dispose déjà de sa propre interface. Cette carte de section reste donc volontairement discrète.",
+        "translationHint": "Vous rédigez les consignes dans une langue; l'autre est traduite automatiquement lors de l'enregistrement et reste modifiable.",
+        "sourceLanguageLabel": "Langue d'origine",
+        "sourceLanguageHint": "Vous écrivez en {source}; {target} est complété automatiquement.",
+        "originalBadge": "Original",
+        "autoBadge": "Traduit automatiquement",
+        "editedBadge": "Modifié manuellement",
+        "retranslate": "Traduire à nouveau",
+        "languages": {
+          "de": "allemand",
+          "fr": "français"
+        }
       },
       "files": {
         "title": "Fichiers",
@@ -183,6 +204,10 @@
       "emptyTitle": "Aucune photo",
       "emptyDescription": "Téléchargez des photos visibles par les locataires",
       "confirmDelete": "Supprimer vraiment la photo ?",
+      "reorderHint": "Réorganisez les photos par glisser-déposer ou avec les flèches.",
+      "moveEarlier": "Déplacer vers l'avant",
+      "moveLater": "Déplacer vers l'arrière",
+      "orderSaving": "enregistrement en cours",
       "toasts": {
         "maxPhotos": "Maximum {count} photos autorisées",
         "imagesOnly": "Seuls les fichiers image sont autorisés",
@@ -190,7 +215,9 @@
         "uploaded": "{count} photo(s) téléchargée(s)",
         "uploadFailed": "{count} téléchargement(s) échoué(s)",
         "deleted": "Photo supprimée",
-        "deleteFailed": "La suppression a échoué"
+        "deleteFailed": "La suppression a échoué",
+        "orderSaved": "Ordre enregistré",
+        "orderFailed": "L'ordre n'a pas pu être enregistré"
       }
     },
     "files": {
@@ -205,12 +232,24 @@
       },
       "actions": {
         "moveToShared": "Rendre public",
-        "moveToPrivate": "Rendre privé"
+        "moveToPrivate": "Rendre privé",
+        "preview": "Aperçu",
+        "rename": "Renommer",
+        "download": "Télécharger"
       },
       "uploading": "Téléchargement... {current}/{total}",
       "emptyTitle": "Aucun fichier",
       "sharedEmptyDescription": "Téléchargez des documents que les locataires pourront récupérer",
       "privateEmptyDescription": "Téléchargez des documents internes réservés aux propriétaires",
+      "rename": {
+        "title": "Renommer le fichier",
+        "label": "Nouveau nom de fichier",
+        "submit": "Renommer"
+      },
+      "preview": {
+        "title": "Aperçu",
+        "unsupported": "Aucun aperçu n'est disponible pour ce type de fichier. Téléchargez-le pour l'ouvrir."
+      },
       "confirmDelete": "Supprimer vraiment « {name} » ?",
       "toasts": {
         "maxSize": "Fichier trop volumineux (max. 50MB)",
@@ -219,7 +258,11 @@
         "deleted": "Fichier supprimé",
         "deleteFailed": "La suppression a échoué",
         "moved": "Fichier déplacé vers {target}",
-        "moveFailed": "Le fichier n'a pas pu être déplacé"
+        "moveFailed": "Le fichier n'a pas pu être déplacé",
+        "renamed": "Fichier renommé",
+        "renameFailed": "Le fichier n'a pas pu être renommé",
+        "previewFailed": "L'aperçu n'a pas pu être chargé",
+        "downloadFailed": "Le téléchargement n'a pas pu démarrer"
       }
     },
     "contactCard": {
@@ -663,6 +706,8 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Rester connecté",
+    "rememberMeHint": "Votre adresse e-mail est enregistrée sur cet appareil.",
     "noAccount": "Pas encore de compte ?",
     "hasAccount": "Déjà un compte ?",
     "loginTitle": "Se connecter",
@@ -728,6 +773,7 @@
     "emptyText": "Téléchargez des fichiers dans l’une de vos maisons pour les voir ici.",
     "loadError": "Impossible de charger les documents.",
     "downloadError": "Impossible d’ouvrir le document.",
+    "copyLink": "Copier le lien",
     "manageHome": "Gérer la maison",
     "fileCount": "{count} documents"
   },
@@ -735,6 +781,7 @@
     "welcome": "Bienvenue",
     "guestIntro": "Toutes les informations utiles, les contacts et les documents importants de votre séjour réunis au même endroit.",
     "gallery": "Galerie",
+    "quickAccess": "Accès rapide",
     "contacts": "Contacts",
     "wifiTitle": "Wi-Fi",
     "wifiSubtitle": "Les accès essentiels, prêts dès votre arrivée.",
@@ -752,11 +799,8 @@
     "nextImage": "Image suivante",
     "summary": {
       "photos": "Photos",
-      "photosValue": "aperçus de la maison",
       "documents": "Documents",
-      "documentsValue": "fichiers à télécharger",
-      "contacts": "Contacts",
-      "contactsValue": "interlocuteurs"
+      "contacts": "Contacts"
     }
   },
   "footer": {

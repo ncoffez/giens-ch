@@ -22,17 +22,17 @@ describe("navigation helpers", () => {
 		expect(items[0]?.active).toBe(true);
 	});
 
-	it("places documents before organisatorisches for authenticated navigation", () => {
+	it("places documents last for authenticated navigation", () => {
 		const items = buildNavigationItems(t, localePath, "/documents", true, true);
 
 		expect(items.map((item) => item.label)).toEqual([
 			"Home",
 			"Anreise",
 			"Entdecken",
-			"Dokumente",
 			"Organisatorisches",
+			"Dokumente",
 		]);
-		expect(items[3]?.active).toBe(true);
+		expect(items[4]?.active).toBe(true);
 	});
 
 	it("keeps compact navigation in the same order without home", () => {
@@ -41,8 +41,8 @@ describe("navigation helpers", () => {
 		expect(items.map((item) => item.label)).toEqual([
 			"Anreise",
 			"Entdecken",
-			"Dokumente",
 			"Organisatorisches",
+			"Dokumente",
 		]);
 		expect(items[1]?.active).toBe(true);
 	});

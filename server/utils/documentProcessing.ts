@@ -183,7 +183,7 @@ const canUseGeminiExtraction = (type: string) => {
 	return type === "application/pdf" || SUPPORTED_IMAGE_TYPES.has(type);
 };
 
-const callGemini = async (
+export const callGemini = async (
 	apiKey: string,
 	model: string,
 	body: Record<string, unknown>,

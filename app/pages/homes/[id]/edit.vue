@@ -24,7 +24,22 @@ const error = ref<string | null>(null);
 const formName = ref("");
 const formWifiSSID = ref("");
 const formWifiPassword = ref("");
-const formInstructions = ref("");
+// The Anleitung exists per language: the owner writes one, the other is filled in
+// automatically and stays editable.
+const formInstructions = reactive<{ de: string; fr: string }>({ de: "", fr: "" });
+const instructionsSourceLocale = ref<"de" | "fr">("de");
+const activeInstructionsLocale = ref<"de" | "fr">("de");
+const instructionsMeta = ref<Partial<Record<"de" | "fr", { auto: boolean; translatedAt?: string }>>>({});
+const retranslating = ref(false);
+
+const instructionsLocaleOptions = computed(() => [
+	{ value: "de" as const, label: t("homes.edit.instructions.languages.de") },
+	{ value: "fr" as const, label: t("homes.edit.instructions.languages.fr") },
+]);
+
+const targetInstructionsLocale = computed<"de" | "fr">(() => instructionsSourceLocale.value === "de" ? "fr" : "de");
+const isViewingSourceLocale = computed(() => activeInstructionsLocale.value === instructionsSourceLocale.value);
+const activeInstructionsIsAuto = computed(() => instructionsMeta.value[activeInstructionsLocale.value]?.auto === true);
 const formContacts = ref<HomeContact[]>([]);
 const showWifi = ref(false);
 
@@ -89,7 +104,12 @@ const fetchHome = async () => {
 		formName.value = home.value.name;
 		formWifiSSID.value = home.value.wifiSSID || "";
 		formWifiPassword.value = home.value.wifiPassword || "";
-		formInstructions.value = home.value.instructions || "";
+		const byLocale = home.value.instructionsByLocale || {};
+		instructionsSourceLocale.value = home.value.instructionsSourceLocale || "de";
+		activeInstructionsLocale.value = instructionsSourceLocale.value;
+		formInstructions.de = byLocale.de ?? (instructionsSourceLocale.value === "de" ? home.value.instructions || "" : "");
+		formInstructions.fr = byLocale.fr ?? (instructionsSourceLocale.value === "fr" ? home.value.instructions || "" : "");
+		instructionsMeta.value = home.value.instructionsMeta || {};
 		formContacts.value = [...(home.value.contacts || [])];
 
 		// Get latest active share for preview
@@ -107,7 +127,7 @@ const fetchHome = async () => {
 	}
 };
 
-const saveBasicInfo = async () => {
+const saveBasicInfo = async (options?: { forceTranslate?: boolean }) => {
 	try {
 		saving.value = true;
 		await $fetch(`/api/homes/${homeId.value}`, {
@@ -117,7 +137,9 @@ const saveBasicInfo = async () => {
 				name: formName.value,
 				wifiSSID: formWifiSSID.value,
 				wifiPassword: formWifiPassword.value,
-				instructions: formInstructions.value,
+				instructionsByLocale: { de: formInstructions.de, fr: formInstructions.fr },
+				instructionsSourceLocale: instructionsSourceLocale.value,
+				forceTranslateInstructions: options?.forceTranslate === true,
 			},
 		});
 		toast.add({ title: t("homes.edit.toasts.saved"), color: "success" });
@@ -234,15 +256,24 @@ const toggleContactHidden = (contactId: string) => {
 	}
 };
 
+/** Overwrites the generated version, even if it was edited by hand. */
+const retranslateInstructions = async () => {
+	try {
+		retranslating.value = true;
+		await saveBasicInfo({ forceTranslate: true });
+		activeInstructionsLocale.value = targetInstructionsLocale.value;
+	} finally {
+		retranslating.value = false;
+	}
+};
+
+// The guest view is always previewable, with or without an active share link:
+// an active link opens the real thing, otherwise the owner-only preview route.
 const openPreview = () => {
 	if (previewUrl.value) {
 		window.open(previewUrl.value, "_blank");
 	} else {
-		toast.add({
-			title: t("homes.edit.toasts.noActiveLinkTitle"),
-			description: t("homes.edit.toasts.noActiveLinkDescription"),
-			color: "warning",
-		});
+		window.open(localePath(`/homes/${homeId.value}/preview`), "_blank");
 	}
 };
 
@@ -272,7 +303,6 @@ onMounted(fetchHome);
 						color="neutral"
 						icon="i-lucide-eye"
 						@click="openPreview"
-						:disabled="!previewUrl"
 					>
 						{{ t("homes.edit.preview") }}
 					</UButton>
@@ -376,7 +406,7 @@ onMounted(fetchHome);
 								</UFormField>
 
 								<div class="flex justify-end">
-									<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
+									<UButton :loading="saving" @click="saveBasicInfo()" icon="i-lucide-save">
 										{{ t("homes.edit.actions.save") }}
 									</UButton>
 								</div>
@@ -488,17 +518,94 @@ onMounted(fetchHome);
 							<div>
 								<h2 class="text-2xl font-black mb-2">{{ t("homes.edit.instructions.title") }}</h2>
 								<p class="text-stone-500">{{ t("homes.edit.instructions.description") }}</p>
+								<p class="mt-2 flex items-center gap-2 text-sm text-[var(--app-muted)]">
+									<UIcon name="i-lucide-languages" class="w-4 h-4 shrink-0" />
+									{{ t("homes.edit.instructions.translationHint") }}
+								</p>
+							</div>
+
+							<!-- Which language the owner writes in decides the translation direction. -->
+							<div class="flex flex-wrap items-center gap-3 rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4">
+								<span class="text-sm font-semibold text-[var(--app-text)]">
+									{{ t("homes.edit.instructions.sourceLanguageLabel") }}
+								</span>
+								<UButton
+									v-for="option in instructionsLocaleOptions"
+									:key="option.value"
+									size="sm"
+									:variant="instructionsSourceLocale === option.value ? 'solid' : 'outline'"
+									:color="instructionsSourceLocale === option.value ? 'primary' : 'neutral'"
+									@click="instructionsSourceLocale = option.value"
+								>
+									{{ option.label }}
+								</UButton>
+								<span class="text-sm text-[var(--app-muted)]">
+									{{ t("homes.edit.instructions.sourceLanguageHint", {
+										source: t(`homes.edit.instructions.languages.${instructionsSourceLocale}`),
+										target: t(`homes.edit.instructions.languages.${targetInstructionsLocale}`),
+									}) }}
+								</span>
 							</div>
 							<div class="flex items-start justify-between gap-4 rounded-[1.5rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4">
 								<div class="space-y-1">
 									<p class="text-sm font-semibold text-[var(--app-text)]">{{ t("homes.edit.instructions.cardTitle") }}</p>
 									<p class="text-sm text-[var(--app-muted)]">{{ t("homes.edit.instructions.cardDescription") }}</p>
 								</div>
-								<UButton :loading="saving" @click="saveBasicInfo" icon="i-lucide-save">
+								<UButton :loading="saving" @click="saveBasicInfo()" icon="i-lucide-save">
 									{{ t("homes.edit.actions.save") }}
 								</UButton>
 							</div>
-							<TiptapEditor v-model="formInstructions" />
+							<!-- One tab per language: the source is written, the other is generated
+							     but stays editable, and an edited version is never overwritten. -->
+							<div class="space-y-3">
+								<div class="flex flex-wrap items-center justify-between gap-3">
+									<div class="flex items-center gap-2">
+										<UButton
+											v-for="option in instructionsLocaleOptions"
+											:key="option.value"
+											size="sm"
+											:variant="activeInstructionsLocale === option.value ? 'soft' : 'ghost'"
+											:color="activeInstructionsLocale === option.value ? 'primary' : 'neutral'"
+											@click="activeInstructionsLocale = option.value"
+										>
+											{{ option.label }}
+											<UBadge
+												v-if="option.value === instructionsSourceLocale"
+												size="xs"
+												variant="subtle"
+												color="neutral"
+											>
+												{{ t("homes.edit.instructions.originalBadge") }}
+											</UBadge>
+										</UButton>
+									</div>
+
+									<div v-if="!isViewingSourceLocale" class="flex items-center gap-3">
+										<span class="flex items-center gap-1.5 text-sm text-[var(--app-muted)]">
+											<UIcon
+												:name="activeInstructionsIsAuto ? 'i-lucide-sparkles' : 'i-lucide-pencil'"
+												class="w-4 h-4"
+											/>
+											{{ activeInstructionsIsAuto
+												? t("homes.edit.instructions.autoBadge")
+												: t("homes.edit.instructions.editedBadge") }}
+										</span>
+										<UButton
+											size="sm"
+											variant="outline"
+											color="neutral"
+											icon="i-lucide-refresh-cw"
+											:loading="retranslating"
+											@click="retranslateInstructions()"
+										>
+											{{ t("homes.edit.instructions.retranslate") }}
+										</UButton>
+									</div>
+								</div>
+
+								<TiptapEditor v-if="activeInstructionsLocale === 'de'" v-model="formInstructions.de" />
+								<TiptapEditor v-else v-model="formInstructions.fr" />
+							</div>
 						</div>
 
 						<!-- Files Section -->
