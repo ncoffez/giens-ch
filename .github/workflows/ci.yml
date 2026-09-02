@@ -51,6 +51,8 @@ jobs:
         env:
           FIREBASE_FRONTEND_KEY: ${{ secrets.FIREBASE_FRONTEND_KEY }}
           FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_ISSUES_TOKEN: ${{ secrets.GH_ISSUES_TOKEN }}
           WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
           DEPLOY_KEY: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
@@ -58,6 +60,8 @@ jobs:
           missing=()
           [ -n "$FIREBASE_FRONTEND_KEY" ] || missing+=("secret FIREBASE_FRONTEND_KEY")
           [ -n "$FIREBASE_ADMIN_KEY" ] || missing+=("secret FIREBASE_ADMIN_KEY")
+          [ -n "$GEMINI_API_KEY" ] || missing+=("secret GEMINI_API_KEY (document extraction, search text and Anleitung translation silently do nothing without it)")
+          [ -n "$GH_ISSUES_TOKEN" ] || missing+=("secret GH_ISSUES_TOKEN (error reports answer 503 without it)")
 
           if [ -z "$DEPLOY_KEY" ] && { [ -z "$WIF_PROVIDER" ] || [ -z "$WIF_SERVICE_ACCOUNT" ]; }; then
             missing+=("a deploy credential: either vars GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_DEPLOY_SERVICE_ACCOUNT, or secret FIREBASE_DEPLOY_SERVICE_ACCOUNT")
@@ -79,7 +83,6 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL || 'https://giens.ch' }}
           GITHUB_REPO: ${{ vars.GH_REPO || github.repository }}
           STORAGE_BUCKET: ${{ vars.STORAGE_BUCKET }}
-          UNSPLASH_API_KEY: ${{ secrets.UNSPLASH_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           DOCUMENT_TRANSLATION_LANGUAGES: ${{ vars.DOCUMENT_TRANSLATION_LANGUAGES }}
