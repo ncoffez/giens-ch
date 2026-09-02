@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys race; supersede stale PR checks.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  id-token: write # Workload Identity Federation
+
+env:
+  FIREBASE_PROJECT: giens-ch
+  FIREBASE_TOOLS_VERSION: "15.28.2"
+
+jobs:
+  build:
+    name: Build${{ github.event_name == 'pull_request' && '' || ' and deploy' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Use the pinned npm version
+        run: npm install --global npm@12.0.2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the fast test suite
+        run: npm run test:fast
+
+      # Production deploys must fail loudly on a missing credential rather than
+      # shipping a build with an empty runtime config.
+      - name: Check required secrets
+        if: github.event_name != 'pull_request'
+        env:
+          FIREBASE_FRONTEND_KEY: ${{ secrets.FIREBASE_FRONTEND_KEY }}
+          FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          DEPLOY_KEY: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          missing=()
+          [ -n "$FIREBASE_FRONTEND_KEY" ] || missing+=("secret FIREBASE_FRONTEND_KEY")
+          [ -n "$FIREBASE_ADMIN_KEY" ] || missing+=("secret FIREBASE_ADMIN_KEY")
+
+          if [ -z "$DEPLOY_KEY" ] && { [ -z "$WIF_PROVIDER" ] || [ -z "$WIF_SERVICE_ACCOUNT" ]; }; then
+            missing+=("a deploy credential: either vars GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_DEPLOY_SERVICE_ACCOUNT, or secret FIREBASE_DEPLOY_SERVICE_ACCOUNT")
+          fi
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            for entry in "${missing[@]}"; do
+              echo "::error::Missing $entry"
+            done
+            exit 1
+          fi
+
+      # nuxt.config.ts reads these through runtimeConfig, so they are baked into
+      # the bundle at build time — the deployed function has no other source.
+      - name: Build
+        env:
+          FIREBASE_FRONTEND_KEY: ${{ secrets.FIREBASE_FRONTEND_KEY }}
+          FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://giens.ch' }}
+          GITHUB_REPO: ${{ vars.GH_REPO || github.repository }}
+          STORAGE_BUCKET: ${{ vars.STORAGE_BUCKET }}
+          UNSPLASH_API_KEY: ${{ secrets.UNSPLASH_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          DOCUMENT_TRANSLATION_LANGUAGES: ${{ vars.DOCUMENT_TRANSLATION_LANGUAGES }}
+          GITHUB_ISSUES_TOKEN: ${{ secrets.GH_ISSUES_TOKEN }}
+        run: npm run build
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        if: github.event_name != 'pull_request' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER != ''
+        uses: google-github-actions/auth@v2.1.7
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Authenticate to Google Cloud (service account key)
+        if: github.event_name != 'pull_request' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER == ''
+        uses: google-github-actions/auth@v2.1.7
+        with:
+          credentials_json: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
+
+      # Mirrors the `deploy` script in package.json. Extensions are deliberately
+      # not in --only: they are managed by hand, not from CI.
+      - name: Deploy to Firebase
+        if: github.event_name != 'pull_request'
+        run: |
+          npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
+            --project "$FIREBASE_PROJECT" \
+            --only firestore,functions,hosting \
+            --non-interactive

@@ -47,6 +47,30 @@
 				{ "fieldPath": "folderId", "order": "ASCENDING" },
 				{ "fieldPath": "size", "order": "DESCENDING" }
 			]
+		},
+		{
+			"collectionGroup": "homes",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "enabled", "order": "ASCENDING" },
+				{ "fieldPath": "name", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "homes",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "ownerIds", "arrayConfig": "CONTAINS" },
+				{ "fieldPath": "name", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "homeShares",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "homeId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
 		}
 	],
 	"fieldOverrides": []
