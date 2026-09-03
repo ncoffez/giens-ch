@@ -73,6 +73,7 @@ export const PUBLIC_PAGE_CONTENT_IDS = {
 		"travel-shopping-cards",
 		"travel-laundry-card",
 		"travel-excursion-cards",
+		"travel-links",
 	],
 } as const;
 

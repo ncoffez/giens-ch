@@ -190,6 +190,12 @@ export interface MarketItem {
 	description: string;
 }
 
+export interface LinkItem {
+	title: string;
+	description: string;
+	url: string;
+}
+
 export interface JourneyStep {
 	eyebrow?: string;
 	title: string;

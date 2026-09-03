@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { FeatureCard, MarketItem } from "../../types";
+import type { FeatureCard, LinkItem, MarketItem } from "../../types";
 
 const { t } = useI18n();
 
@@ -112,6 +112,8 @@ const marketItems = publicPageBundle.createDataSection<MarketItem[]>("travel-mar
 const shoppingCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-shopping-cards", defaultShoppingCards);
 const laundryCard = publicPageBundle.createDataSection<FeatureCard[]>("travel-laundry-card", defaultLaundryCard);
 const excursionCards = publicPageBundle.createDataSection<FeatureCard[]>("travel-excursion-cards", defaultExcursionCards);
+const defaultLinks: LinkItem[] = [];
+const links = publicPageBundle.createDataSection<LinkItem[]>("travel-links", defaultLinks);
 const hoveredMarketKey = ref<string | null>(null);
 const expandedMarketKey = ref<string | null>(null);
 const marketDescriptionMaxLength = 160;
@@ -591,6 +593,60 @@ function getMarketDescription(market: MarketItem | null) {
 					</div>
 				</ClientOnly>
 			</div>
+		</section>
+
+		<section id="links" class="max-w-screen-xl mx-auto px-4 scroll-mt-32">
+			<UiTitle :subtitle="t('travel.links.subtitle')" :title="t('travel.links.title')" />
+
+			<div class="flex items-center justify-end gap-2 mt-4">
+				<template v-if="links.canEdit.value && !links.isEditing.value">
+					<UButton color="neutral" variant="outline" icon="i-lucide-edit" size="sm" @click="links.startEditing()">
+						{{ t("editor.edit") }}
+					</UButton>
+				</template>
+				<template v-else-if="links.isEditing.value">
+					<UButton color="neutral" variant="ghost" size="sm" :disabled="links.isSaving.value" @click="links.cancelEditing()">
+						{{ t("editor.cancel") }}
+					</UButton>
+					<UButton color="primary" icon="i-lucide-save" size="sm" :loading="links.isSaving.value" @click="links.save()">
+						{{ t("editor.save") }}
+					</UButton>
+				</template>
+			</div>
+
+			<div v-if="links.status.value === 'pending'" class="flex justify-center py-8">
+				<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+			</div>
+			<template v-else>
+				<div v-if="links.data.value.length" class="grid grid-cols-1 gap-4 mt-8 md:grid-cols-2">
+					<a
+						v-for="link in links.data.value"
+						:key="link.url"
+						:href="link.url"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex items-start justify-between gap-4 p-5 rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 transition-colors hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/10"
+					>
+						<div>
+							<h3 class="font-bold text-base mb-1 text-stone-900 dark:text-white">
+								{{ link.title }}
+							</h3>
+							<p class="text-stone-500 text-sm">
+								{{ link.description }}
+							</p>
+						</div>
+						<UIcon
+							name="i-lucide-arrow-up-right"
+							class="w-5 h-5 shrink-0 text-stone-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
+						/>
+					</a>
+				</div>
+				<ClientOnly v-if="links.isEditing.value">
+					<div class="mt-8">
+						<UiLazyLinksEditor v-model="links.data.value" />
+					</div>
+				</ClientOnly>
+			</template>
 		</section>
 	</div>
 </template>

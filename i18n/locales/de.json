@@ -55,7 +55,8 @@
     "admin": "Verwaltung",
     "login": "Login",
     "logout": "Logout",
-    "search": "Suchen"
+    "search": "Suchen",
+    "menu": "Menü"
   },
   "homes": {
     "preview": {
@@ -653,6 +654,10 @@
         "title": "Le Levant",
         "description": "Die östlichste Insel mit charmantem Dorf und Naturstränden. Bekannt für das Iles du Levant."
       }
+    },
+    "links": {
+      "subtitle": "Weiterführende Informationen",
+      "title": "Nützliche Links"
     }
   },
   "editor": {
@@ -763,6 +768,32 @@
     "documentTypes": {
       "global": "Gemeinsame Dokumente",
       "owner": "Eigentümer-Dokument"
+    }
+  },
+  "mobileMenu": {
+    "title": "Menü",
+    "description": "Navigation und Suche",
+    "openLabel": "Menü öffnen",
+    "searchPlaceholder": "Suchen oder navigieren...",
+    "searching": "Suche läuft...",
+    "noResults": "Keine Treffer gefunden.",
+    "sections": {
+      "admin": "Verwaltung"
+    }
+  },
+  "admin": {
+    "nav": {
+      "homes": "Häuser",
+      "users": "Benutzer",
+      "labels": "Labels",
+      "trash": "Papierkorb",
+      "settings": "Einstellungen",
+      "back": "Zurück zur Seite"
+    },
+    "layout": {
+      "kicker": "Kontrollzentrum",
+      "title": "Administration",
+      "lead": "Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort."
     }
   },
   "ownerDocuments": {

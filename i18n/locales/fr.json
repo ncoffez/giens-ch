@@ -55,7 +55,8 @@
     "admin": "Administration",
     "login": "Connexion",
     "logout": "Déconnexion",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "menu": "Menu"
   },
   "homes": {
     "preview": {
@@ -653,6 +654,10 @@
         "title": "Le Levant",
         "description": "L'île la plus orientale avec un charmant village et des plages naturelles. Connue pour les Îles du Levant."
       }
+    },
+    "links": {
+      "subtitle": "Pour aller plus loin",
+      "title": "Liens utiles"
     }
   },
   "editor": {
@@ -763,6 +768,32 @@
     "documentTypes": {
       "global": "Documents partagés",
       "owner": "Document propriétaire"
+    }
+  },
+  "mobileMenu": {
+    "title": "Menu",
+    "description": "Navigation et recherche",
+    "openLabel": "Ouvrir le menu",
+    "searchPlaceholder": "Rechercher ou naviguer...",
+    "searching": "Recherche en cours...",
+    "noResults": "Aucun résultat trouvé.",
+    "sections": {
+      "admin": "Administration"
+    }
+  },
+  "admin": {
+    "nav": {
+      "homes": "Maisons",
+      "users": "Utilisateurs",
+      "labels": "Libellés",
+      "trash": "Corbeille",
+      "settings": "Réglages",
+      "back": "Retour au site"
+    },
+    "layout": {
+      "kicker": "Centre de contrôle",
+      "title": "Administration",
+      "lead": "Utilisateurs, maisons, visibilité et processus internes au même endroit."
     }
   },
   "ownerDocuments": {
