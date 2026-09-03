@@ -8,8 +8,14 @@ interface PublicPageBundleResponse {
 	sections: Record<string, PageContent>;
 }
 
+type ContentDefault = string | (() => string);
+
 function cloneDefault<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value));
+}
+
+function resolveContentDefault(defaultContent: ContentDefault): string {
+	return typeof defaultContent === "function" ? defaultContent() : defaultContent;
 }
 
 function extractLocalizedString(data: PageContent | null | undefined, locale: string): string {
@@ -78,14 +84,14 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 		});
 	};
 
-	function createContentSection(contentId: string, defaultContent = "") {
+	function createContentSection(contentId: string, defaultContent: ContentDefault = "") {
 		const isEditing = ref(false);
 		const isSaving = ref(false);
-		const content = ref(defaultContent);
-		const originalContent = ref(defaultContent);
+		const content = ref(resolveContentDefault(defaultContent));
+		const originalContent = ref(resolveContentDefault(defaultContent));
 
 		const syncFromBundle = () => {
-			content.value = extractLocalizedString(sections.value[contentId], activeLocale.value) || defaultContent;
+			content.value = extractLocalizedString(sections.value[contentId], activeLocale.value) || resolveContentDefault(defaultContent);
 			originalContent.value = content.value;
 		};
 
