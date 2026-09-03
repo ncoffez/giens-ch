@@ -37,6 +37,34 @@ test.describe("Critical User Flows", () => {
 
 		const mobileNav = page.locator("[data-mobile-nav]");
 		await expect(mobileNav).toBeVisible();
+		await expect(mobileNav.getByRole("link", { name: "Home" })).toBeVisible();
+		await expect(mobileNav.getByRole("link", { name: "Entdecken" })).toBeVisible();
+		await expect(mobileNav.getByRole("link", { name: "Organisatorisches" })).toBeVisible();
+		await expect(mobileNav.getByRole("button", { name: "Menü öffnen" })).toBeVisible();
+		await expect(mobileNav.getByRole("link", { name: "Anreise" })).toHaveCount(0);
+	});
+
+	test("mobile menu sheet opens with search and logged-out destinations", async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 667 });
+		await page.goto("/");
+		await page.waitForLoadState("networkidle");
+
+		const menuButton = page.getByRole("button", { name: "Menü öffnen" });
+		await expect(menuButton).toBeVisible();
+		await menuButton.click();
+		await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+
+		const menu = page.locator("[data-mobile-menu]");
+		await expect(menu).toBeVisible({ timeout: 10_000 });
+		await expect(page.getByPlaceholder("Suchen oder navigieren...")).toBeVisible();
+		await expect(menu.getByRole("heading")).toHaveCount(0);
+		await expect(menu.getByRole("link", { name: "Anreise" })).toBeVisible();
+		await expect(menu.getByRole("link", { name: "Login" })).toBeVisible();
+		await expect(menu.getByRole("link", { name: "Eigentümer-Dokumente" })).toHaveCount(0);
+
+		await menu.getByRole("link", { name: "Anreise" }).click();
+		await expect(page).toHaveURL(/\/travel/);
+		await expect(page.locator("[data-mobile-menu]")).toBeHidden();
 	});
 
 	test("mobile navigation moves to a side rail in landscape mobile view", async ({ page }) => {

@@ -13,7 +13,7 @@ function handleSubmitted() {
 			The trigger is always visible: neutral and unobtrusive while everything
 			works, red as soon as an error has been captured on this page.
 		-->
-		<div class="fixed bottom-24 right-4 z-[70] md:bottom-6">
+		<div class="fixed bottom-24 right-4 z-[70] lg:bottom-6">
 			<UButton
 				:color="reporter.hasActiveError.value ? 'error' : 'neutral'"
 				:variant="reporter.hasActiveError.value ? 'solid' : 'subtle'"

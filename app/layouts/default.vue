@@ -103,9 +103,14 @@
 			</div>
 		</header>
 
-		<!-- Search Modal (accessible from mobile) -->
+		<!-- Search Modal (desktop ⌘K / header) -->
 		<ClientOnly>
 			<UiLazySearchModal v-if="isSearchMounted" />
+		</ClientOnly>
+
+		<!-- Mobile "Menü" bottom sheet (navigation + search) -->
+		<ClientOnly>
+			<UiLazyMobileMenu v-if="isMobileMenuMounted" />
 		</ClientOnly>
 
 		<!-- Main Content -->
@@ -137,6 +142,7 @@ const nuxtApp = useNuxtApp();
 const colorMode = useColorMode();
 const { canAccessHomes, fetchSettings, fetchUserPreference } = useFeatureFlags();
 const { openSearch, isMounted: isSearchMounted } = useSearchModal();
+const { isMounted: isMobileMenuMounted } = useMobileMenu();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 const authInitialized = computed(() => import.meta.client ? nuxtApp.$authInitialized?.value ?? false : false);
