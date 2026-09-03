@@ -11,7 +11,7 @@ const { waitForAuth, getFreshToken } = useAuthReady();
 const route = useRoute();
 const toast = useToast();
 const localePath = useLocalePath();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const homeId = computed(() => route.params.id as string);
 const home = ref<Home | null>(null);
@@ -80,13 +80,15 @@ const contactModalTitle = computed(() => {
 		: t("homes.edit.contactModal.editTitle");
 });
 
-const fetchHome = async () => {
+const fetchHome = async (options?: { preserveInstructionsTab?: boolean }) => {
 	try {
 		await waitForAuth();
 		loading.value = true;
 		error.value = null;
 		const authToken = await getFreshToken();
 		console.log("[edit-home] Fetching home:", homeId.value);
+		const previousTab = activeInstructionsLocale.value;
+		const isRefetch = home.value !== null;
 
 		const [homeData, sharesData] = await Promise.all([
 			$fetch(`/api/homes/${homeId.value}`, {
@@ -106,11 +108,15 @@ const fetchHome = async () => {
 		formWifiPassword.value = home.value.wifiPassword || "";
 		const byLocale = home.value.instructionsByLocale || {};
 		instructionsSourceLocale.value = home.value.instructionsSourceLocale || "de";
-		activeInstructionsLocale.value = instructionsSourceLocale.value;
 		formInstructions.de = byLocale.de ?? (instructionsSourceLocale.value === "de" ? home.value.instructions || "" : "");
 		formInstructions.fr = byLocale.fr ?? (instructionsSourceLocale.value === "fr" ? home.value.instructions || "" : "");
 		instructionsMeta.value = home.value.instructionsMeta || {};
 		formContacts.value = [...(home.value.contacts || [])];
+		if (options?.preserveInstructionsTab || isRefetch) {
+			activeInstructionsLocale.value = previousTab;
+		} else {
+			activeInstructionsLocale.value = instructionsSourceLocale.value;
+		}
 
 		// Get latest active share for preview
 		const activeShare = shares.value.find(s => !s.revoked && new Date(s.expiresAt) > new Date());
@@ -143,7 +149,8 @@ const saveBasicInfo = async (options?: { forceTranslate?: boolean }) => {
 			},
 		});
 		toast.add({ title: t("homes.edit.toasts.saved"), color: "success" });
-		await fetchHome();
+		await fetchHome({ preserveInstructionsTab: true });
+		activeInstructionsLocale.value = targetInstructionsLocale.value;
 	} catch (e: unknown) {
 		toast.add({ title: t("homes.edit.toasts.saveError"), description: getFetchError(e), color: "error" });
 	} finally {
@@ -276,6 +283,12 @@ const openPreview = () => {
 		window.open(localePath(`/homes/${homeId.value}/preview`), "_blank");
 	}
 };
+
+watch(activeSection, (section) => {
+	if (section === "instructions" && (locale.value === "fr" || locale.value === "de")) {
+		activeInstructionsLocale.value = locale.value === "fr" ? "fr" : "de";
+	}
+});
 
 onMounted(fetchHome);
 </script>
