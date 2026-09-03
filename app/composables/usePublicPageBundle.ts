@@ -1,5 +1,7 @@
 import type { PageContent, LocalizedContent } from "../../types";
 import { isSourceEditableLocale } from "../utils/contentEditing";
+import { htmlForLocale } from "../utils/htmlForLocale";
+import { publicHtmlDefaults } from "../utils/publicHtmlDefaults";
 
 type PublicPageKey = "home" | "travel" | "entdecken";
 
@@ -8,8 +10,18 @@ interface PublicPageBundleResponse {
 	sections: Record<string, PageContent>;
 }
 
+type ContentDefault = string | (() => string);
+
 function cloneDefault<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value));
+}
+
+function resolveContentDefault(contentId: string, defaultContent: ContentDefault, locale: string): string {
+	const mapped = publicHtmlDefaults[contentId];
+	if (mapped) {
+		return htmlForLocale(locale, mapped);
+	}
+	return typeof defaultContent === "function" ? defaultContent() : defaultContent;
 }
 
 function extractLocalizedString(data: PageContent | null | undefined, locale: string): string {
@@ -78,14 +90,15 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 		});
 	};
 
-	function createContentSection(contentId: string, defaultContent = "") {
+	function createContentSection(contentId: string, defaultContent: ContentDefault = "") {
 		const isEditing = ref(false);
 		const isSaving = ref(false);
-		const content = ref(defaultContent);
-		const originalContent = ref(defaultContent);
+		const content = ref(resolveContentDefault(contentId, defaultContent, activeLocale.value));
+		const originalContent = ref(resolveContentDefault(contentId, defaultContent, activeLocale.value));
 
 		const syncFromBundle = () => {
-			content.value = extractLocalizedString(sections.value[contentId], activeLocale.value) || defaultContent;
+			content.value = extractLocalizedString(sections.value[contentId], activeLocale.value)
+				|| resolveContentDefault(contentId, defaultContent, activeLocale.value);
 			originalContent.value = content.value;
 		};
 
