@@ -111,11 +111,22 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
 
-      # Mirrors the `deploy` script in package.json. The GitHub deploy
-      # identity can ship indexes, functions, and hosting — not Storage
-      # (firebasestorage.defaultBucket.get) and not Security Rules
-      # (firebaserules.googleapis.com). Deploy those locally:
-      # `npm run deploy:rules`.
+      # firebase-tools compiles firestore.rules whenever that key is present,
+      # even for firestore:indexes. The GitHub identity cannot call
+      # firebaserules.googleapis.com or firebasestorage.defaultBucket.get.
+      # Drop those keys on the runner only; git is unchanged. Ship rules
+      # locally with `npm run deploy:rules`.
+      - name: Strip security-rules keys from firebase.json
+        if: github.event_name != 'pull_request'
+        run: |
+          node -e "
+          const fs = require('fs');
+          const config = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
+          if (config.firestore) delete config.firestore.rules;
+          delete config.storage;
+          fs.writeFileSync('firebase.json', JSON.stringify(config, null, 2) + '\n');
+          "
+
       - name: Deploy to Firebase
         if: github.event_name != 'pull_request'
         run: |
