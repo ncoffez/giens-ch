@@ -46,4 +46,10 @@ describe("admin API auth contract", () => {
 		expect(source).not.toMatch(/\.\.\.\s*user\b/);
 		expect(source).not.toContain("passwordHash");
 	});
+
+	it("uses requireAdmin for settings and public-page content writes", () => {
+		expect(readFileSync("server/api/settings.update.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/content/[id].post.ts", "utf8")).toContain("requireAdmin");
+		expect(existsSync("server/api/admin/homes/migrate-multi-owner.post.ts")).toBe(false);
+	});
 });

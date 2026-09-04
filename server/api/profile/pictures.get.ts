@@ -1,12 +1,9 @@
-import { auth, storage } from "../../useFirebaseAdmin";
+import { storage } from "../../useFirebaseAdmin";
+import { requireSignedIn } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
-		if (!idToken) throw createError({ statusCode: 401, message: "Unauthorized" });
-
-		const decodedToken = await auth.verifyIdToken(idToken);
-		const uid = decodedToken.uid;
+		const { uid } = await requireSignedIn(event);
 
 		const bucket = storage.bucket();
 		// Look in the new history subfolder

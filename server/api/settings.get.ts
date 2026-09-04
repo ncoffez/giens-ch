@@ -1,4 +1,4 @@
-import { getGlobalSettings, updateGlobalSettings } from "../utils/homes";
+import { getGlobalSettings } from "../utils/homes";
 
 export default defineEventHandler(async (event) => {
 	try {

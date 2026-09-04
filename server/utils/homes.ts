@@ -119,6 +119,31 @@ export async function incrementShareAccess(shareId: string): Promise<void> {
 	}, { merge: true });
 }
 
+export interface GlobalSettingsPatch {
+	maxHomeNumber?: number;
+	washingMachineUse?: string;
+	homesFeatureGloballyEnabled?: boolean;
+}
+
+export function pickGlobalSettingsPatch(body: unknown): GlobalSettingsPatch {
+	if (!body || typeof body !== "object") return {};
+
+	const input = body as Record<string, unknown>;
+	const patch: GlobalSettingsPatch = {};
+
+	if (input.maxHomeNumber !== undefined) {
+		patch.maxHomeNumber = input.maxHomeNumber as number;
+	}
+	if (input.washingMachineUse !== undefined) {
+		patch.washingMachineUse = input.washingMachineUse as string;
+	}
+	if (input.homesFeatureGloballyEnabled !== undefined) {
+		patch.homesFeatureGloballyEnabled = input.homesFeatureGloballyEnabled as boolean;
+	}
+
+	return patch;
+}
+
 export async function getGlobalSettings(): Promise<{
 	id: string;
 	maxHomeNumber: number;
@@ -151,22 +176,17 @@ export async function getGlobalSettings(): Promise<{
 	return defaultSettings;
 }
 
-export async function updateGlobalSettings(settings: Partial<{
-	maxHomeNumber: number;
-	washingMachineUse: string;
-	homesFeatureGloballyEnabled: boolean;
-}>): Promise<{
+export async function updateGlobalSettings(settings: GlobalSettingsPatch): Promise<{
 	id: string;
 	maxHomeNumber: number;
 	washingMachineUse: string;
 	homesFeatureGloballyEnabled: boolean;
 	updatedAt: string;
 }> {
-	const updated = {
-		...settings,
+	const patch = pickGlobalSettingsPatch(settings);
+	await db.collection("settings").doc("global").set({
+		...patch,
 		updatedAt: new Date().toISOString(),
-	};
-
-	await db.collection("settings").doc("global").set(updated, { merge: true });
+	}, { merge: true });
 	return getGlobalSettings();
 }

@@ -1,42 +1,23 @@
-import { auth } from "../useFirebaseAdmin";
-import { getGlobalSettings, updateGlobalSettings } from "../utils/homes";
+import { requireAdmin } from "../utils/auth";
+import { pickGlobalSettingsPatch, updateGlobalSettings } from "../utils/homes";
 
 export default defineEventHandler(async (event) => {
-	try {
-		const body = await readBody(event);
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
+	await requireAdmin(event);
 
-		if (!idToken) {
-			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
+	const body = await readBody(event);
+	const patch = pickGlobalSettingsPatch(body);
 
-		const decodedToken = await auth.verifyIdToken(idToken);
-
-		if (!decodedToken.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
-
-		const { maxHomeNumber, washingMachineUse, homesFeatureGloballyEnabled } = body;
-
-		if (maxHomeNumber !== undefined && (typeof maxHomeNumber !== "number" || maxHomeNumber < 1)) {
-			throw createError({ statusCode: 400, message: "maxHomeNumber must be a positive number" });
-		}
-
-		if (washingMachineUse !== undefined && typeof washingMachineUse !== "string") {
-			throw createError({ statusCode: 400, message: "washingMachineUse must be a string" });
-		}
-
-		if (homesFeatureGloballyEnabled !== undefined && typeof homesFeatureGloballyEnabled !== "boolean") {
-			throw createError({ statusCode: 400, message: "homesFeatureGloballyEnabled must be a boolean" });
-		}
-
-		const updatedSettings = await updateGlobalSettings({ maxHomeNumber, washingMachineUse, homesFeatureGloballyEnabled });
-		return updatedSettings;
-	} catch (e: unknown) {
-		const error = e instanceof Error ? e : new Error(String(e));
-		throw createError({
-			statusCode: (error as { statusCode?: number }).statusCode || 500,
-			message: error.message || "Internal Server Error",
-		});
+	if (patch.maxHomeNumber !== undefined && (typeof patch.maxHomeNumber !== "number" || patch.maxHomeNumber < 1)) {
+		throw createError({ statusCode: 400, message: "maxHomeNumber must be a positive number" });
 	}
+
+	if (patch.washingMachineUse !== undefined && typeof patch.washingMachineUse !== "string") {
+		throw createError({ statusCode: 400, message: "washingMachineUse must be a string" });
+	}
+
+	if (patch.homesFeatureGloballyEnabled !== undefined && typeof patch.homesFeatureGloballyEnabled !== "boolean") {
+		throw createError({ statusCode: 400, message: "homesFeatureGloballyEnabled must be a boolean" });
+	}
+
+	return updateGlobalSettings(patch);
 });

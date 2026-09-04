@@ -1,16 +1,12 @@
-import { auth, storage } from "../../useFirebaseAdmin";
+import { storage } from "../../useFirebaseAdmin";
 import crypto from "crypto";
 import { createTokenizedDownloadUrl } from "../../utils/storage";
+import { requireSignedIn } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
-		if (!idToken) {
-			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
+		await requireSignedIn(event);
 
-		await auth.verifyIdToken(idToken);
-		
 		const body = await readBody(event);
 		if (!body) {
 			throw createError({ statusCode: 400, message: "Empty body" });

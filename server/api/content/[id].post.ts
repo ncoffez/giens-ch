@@ -1,4 +1,5 @@
-import { db, auth } from "../../useFirebaseAdmin";
+import { db } from "../../useFirebaseAdmin";
+import { requireAdmin } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -8,18 +9,8 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 400, message: "Content ID is required" });
 		}
 
+		const claims = await requireAdmin(event);
 		const body = await readBody(event);
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
-
-		if (!idToken) {
-			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
-
-		const decodedToken = await auth.verifyIdToken(idToken);
-
-		if (!decodedToken.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
 
 		const germanContent = body.content || "";
 
@@ -28,7 +19,7 @@ export default defineEventHandler(async (event) => {
 		const updateData = {
 			content: germanContent,
 			updatedAt: new Date().toISOString(),
-			updatedBy: decodedToken.uid,
+			updatedBy: claims.uid,
 		};
 
 		await db.collection("content").doc(contentId).set(updateData, { merge: true });

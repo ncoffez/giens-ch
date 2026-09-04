@@ -40,11 +40,3 @@ export async function requireAdmin(event: H3Event) {
 	}
 	return claims;
 }
-
-export async function getUserPermission(event: H3Event): Promise<"public" | "private"> {
-	const claims = await getUserClaims(event);
-	if (!claims) return "public";
-
-	const isReader = !!(claims.admin || claims.publisher || claims.owner || claims.reader);
-	return isReader ? "private" : "public";
-}

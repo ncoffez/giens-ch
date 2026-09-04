@@ -1,22 +1,11 @@
 import { auth } from "../../useFirebaseAdmin";
 import sharp from "sharp";
+import { requireSignedIn } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	console.log("[Profile Upload] Request received");
 
-	// 1. Auth Guard
-	const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
-	if (!idToken) {
-		throw createError({ statusCode: 401, message: "Kein Authentifizierungs-Token gefunden." });
-	}
-
-	let uid: string;
-	try {
-		const decodedToken = await auth.verifyIdToken(idToken);
-		uid = decodedToken.uid;
-	} catch (e: unknown) {
-		throw createError({ statusCode: 401, message: "Sitzung abgelaufen." });
-	}
+	const { uid } = await requireSignedIn(event);
 
 	// 2. Payload Guard
 	const rawBody = await readRawBody(event);
