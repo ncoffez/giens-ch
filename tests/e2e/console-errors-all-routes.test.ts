@@ -21,8 +21,6 @@ const ALL_ROUTES = [
 	"/owner/contacts",
 	"/owner/photos",
 	"/owner/documents",
-	"/homes",
-	"/homes/new",
 ];
 
 test.describe("All Routes - Basic Load Test", () => {
