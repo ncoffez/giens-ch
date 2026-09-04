@@ -1,7 +1,20 @@
 <script lang="ts" setup>
 const toast = useToast();
 const { authorizedFetch } = useApi();
-const { data: labels, status, refresh } = useFetch<any[]>("/api/labels");
+const labels = ref<Array<{ id: string; name?: string; title?: string; private?: boolean }>>([]);
+const status = ref<"pending" | "success" | "error">("pending");
+
+const refresh = async () => {
+	status.value = "pending";
+	try {
+		labels.value = await authorizedFetch("/api/admin/labels");
+		status.value = "success";
+	} catch {
+		status.value = "error";
+	}
+};
+
+onMounted(refresh);
 
 const isCreatingLabel = ref(false);
 const newLabelId = ref("");

@@ -22,15 +22,28 @@ export default defineEventHandler(async (event) => {
 		firestoreUsersMap.set(doc.id, doc.data());
 	});
 
-	const users = authUsers.map(user => {
+	const users = authUsers.map((user) => {
 		const firestoreData = firestoreUsersMap.get(user.uid);
+		const claims = user.customClaims || {};
 		return {
-			...user,
+			uid: user.uid,
+			email: user.email,
+			displayName: firestoreData?.displayName || user.displayName,
 			photoURL: firestoreData?.photoURL || user.photoURL,
-			displayName: firestoreData?.displayName || user.displayName
+			emailVerified: user.emailVerified,
+			disabled: user.disabled,
+			admin: !!claims.admin,
+			publisher: !!claims.publisher,
+			owner: !!claims.owner,
+			reader: !!claims.reader,
+			customClaims: {
+				admin: !!claims.admin,
+				publisher: !!claims.publisher,
+				owner: !!claims.owner,
+				reader: !!claims.reader,
+			},
 		};
 	});
 
-	console.log(`API Users: fetched and merged ${users.length} users`);
 	return users;
 });

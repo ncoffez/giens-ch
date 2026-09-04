@@ -92,7 +92,7 @@ export function mockUsersApiEndpoint(users = []) {
  * Mocks labels API endpoint
  */
 export function mockLabelsApiEndpoint() {
-	return mockApiEndpoint("/api/labels", "GET", () => [
+	return mockApiEndpoint("/api/admin/labels", "GET", () => [
 		{ id: "events", name: "Events", private: false },
 		{ id: "markt", name: "Markt", private: false },
 		{ id: "eigentuemerversammlung", name: "Eigentümerversammlung", private: true },

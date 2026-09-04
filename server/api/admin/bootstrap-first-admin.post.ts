@@ -6,8 +6,9 @@ export default defineEventHandler(async (event) => {
 		const claims = await getUserClaims(event);
 
 		const secret = getHeader(event, "X-Bootstrap-Secret");
+		const expected = process.env.BOOTSTRAP_SECRET;
 
-		if (secret !== process.env.BOOTSTRAP_SECRET) {
+		if (!expected || expected.length < 16 || secret !== expected) {
 			throw createError({ statusCode: 401, message: "Invalid bootstrap secret" });
 		}
 

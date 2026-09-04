@@ -1,7 +1,5 @@
 import type { Ref } from "vue";
 import type { Auth, User } from "firebase/auth";
-import type { Firestore } from "firebase/firestore";
-import type { Functions } from "firebase/functions";
 
 declare module "#app" {
 	interface NuxtApp {
@@ -15,8 +13,6 @@ declare module "#app" {
 		$authInitialized: Ref<boolean>;
 		$isAuthInitializing: Ref<boolean>;
 		$ensureAuth: () => Promise<Auth>;
-		$ensureFirestore: () => Promise<Firestore>;
-		$ensureFunctions: () => Promise<Functions>;
 		$getAuthToken: (forceRefresh?: boolean) => Promise<string | null>;
 		$signOut: () => Promise<void>;
 		$hasRole: (role: string) => boolean;
@@ -35,8 +31,6 @@ declare module "vue" {
 		$authInitialized: Ref<boolean>;
 		$isAuthInitializing: Ref<boolean>;
 		$ensureAuth: () => Promise<Auth>;
-		$ensureFirestore: () => Promise<Firestore>;
-		$ensureFunctions: () => Promise<Functions>;
 		$getAuthToken: (forceRefresh?: boolean) => Promise<string | null>;
 		$signOut: () => Promise<void>;
 		$hasRole: (role: string) => boolean;

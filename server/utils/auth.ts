@@ -27,6 +27,14 @@ export async function requireSignedIn(event: H3Event) {
 	return claims;
 }
 
+export async function requireAdmin(event: H3Event) {
+	const claims = await requireSignedIn(event);
+	if (!claims.admin) {
+		throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
+	}
+	return claims;
+}
+
 export async function getUserPermission(event: H3Event): Promise<"public" | "private"> {
 	const claims = await getUserClaims(event);
 	if (!claims) return "public";

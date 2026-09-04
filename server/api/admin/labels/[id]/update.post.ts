@@ -1,16 +1,8 @@
-import { auth, db } from "../../../../useFirebaseAdmin";
+import { db } from "../../../../useFirebaseAdmin";
+import { requireAdmin } from "../../../../utils/auth";
 
 export default defineEventHandler(async (event) => {
-	const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
-
-	if (!idToken) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const decodedToken = await auth.verifyIdToken(idToken);
-	if (!decodedToken.admin) {
-		throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-	}
+	await requireAdmin(event);
 
 	const labelId = getRouterParam(event, "id");
 	if (!labelId) {

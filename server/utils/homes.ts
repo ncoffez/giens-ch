@@ -129,7 +129,14 @@ export async function getGlobalSettings(): Promise<{
 	const doc = await db.collection("settings").doc("global").get();
 
 	if (doc.exists) {
-		return { id: doc.id, ...doc.data() } as any;
+		const data = doc.data() || {};
+		return {
+			id: doc.id,
+			maxHomeNumber: typeof data.maxHomeNumber === "number" ? data.maxHomeNumber : 20,
+			washingMachineUse: typeof data.washingMachineUse === "string" ? data.washingMachineUse : "",
+			homesFeatureGloballyEnabled: data.homesFeatureGloballyEnabled === true,
+			updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : "",
+		};
 	}
 
 	const defaultSettings = {
@@ -161,6 +168,5 @@ export async function updateGlobalSettings(settings: Partial<{
 	};
 
 	await db.collection("settings").doc("global").set(updated, { merge: true });
-	const updatedDoc = await db.collection("settings").doc("global").get();
-	return { id: updatedDoc.id, ...updatedDoc.data() } as any;
+	return getGlobalSettings();
 }

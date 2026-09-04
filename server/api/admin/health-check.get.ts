@@ -1,7 +1,10 @@
 import admin from "firebase-admin";
 import { db, auth } from "../../useFirebaseAdmin";
+import { requireAdmin } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
+	await requireAdmin(event);
+
 	const health = {
 		timestamp: new Date().toISOString(),
 		firebaseAdminInitialized: false,

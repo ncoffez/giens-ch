@@ -1,7 +1,5 @@
 import type { FirebaseApp } from "firebase/app";
 import type { Auth, User } from "firebase/auth";
-import type { Firestore } from "firebase/firestore";
-import type { Functions } from "firebase/functions";
 
 const currentUser = ref<User | null>(null);
 const claims = ref<Record<string, any>>({});
@@ -17,8 +15,6 @@ const userPermission = computed(() => (isReader.value ? "private" : "public"));
 
 let appPromise: Promise<FirebaseApp> | null = null;
 let authPromise: Promise<Auth> | null = null;
-let firestorePromise: Promise<Firestore> | null = null;
-let functionsPromise: Promise<Functions> | null = null;
 let authReadyPromise: Promise<void> | null = null;
 
 function getFirebaseConfig() {
@@ -93,30 +89,6 @@ async function ensureAuth() {
 	return authPromise;
 }
 
-async function ensureFirestore() {
-	if (!firestorePromise) {
-		firestorePromise = (async () => {
-			const app = await ensureFirebaseApp();
-			const { getFirestore } = await import("firebase/firestore");
-			return getFirestore(app);
-		})();
-	}
-
-	return firestorePromise;
-}
-
-async function ensureFunctions() {
-	if (!functionsPromise) {
-		functionsPromise = (async () => {
-			const app = await ensureFirebaseApp();
-			const { getFunctions } = await import("firebase/functions");
-			return getFunctions(app, "europe-west6");
-		})();
-	}
-
-	return functionsPromise;
-}
-
 async function getAuthToken(forceRefresh = false) {
 	const auth = await ensureAuth();
 	const user = auth.currentUser;
@@ -150,8 +122,6 @@ export default defineNuxtPlugin(() => {
 			userPermission,
 			hasRole: (role: string) => !!claims.value[role],
 			ensureAuth,
-			ensureFirestore,
-			ensureFunctions,
 			getAuthToken,
 			signOut,
 			isAuthInitializing,

@@ -25,7 +25,7 @@ describe("firestore.rules", () => {
 
 describe("Admin labels page", () => {
 	it("renders existing labels from the API", async () => {
-		registerEndpoint("/api/labels", {
+		registerEndpoint("/api/admin/labels", {
 			method: "GET",
 			handler: () => mockLabels,
 		});
@@ -43,7 +43,7 @@ describe("Admin labels page", () => {
 	it("creates a label through the admin API instead of the client SDK", async () => {
 		const created: Array<Record<string, unknown>> = [];
 
-		registerEndpoint("/api/labels", {
+		registerEndpoint("/api/admin/labels", {
 			method: "GET",
 			handler: () => mockLabels,
 		});

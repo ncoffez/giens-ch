@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-const { getUserClaims, requireSignedIn } = await import('../../server/utils/auth');
+const { getUserClaims, requireAdmin, requireSignedIn } = await import('../../server/utils/auth');
 
 vi.mock("h3", () => ({
 	getHeader: vi.fn((event, name) => {
@@ -63,5 +63,21 @@ describe("requireSignedIn", () => {
   it("throws 401 when there is no token", async () => {
     const mockEvent = { node: { req: { headers: {} } } } as any;
     await expect(requireSignedIn(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
+  });
+});
+
+describe("requireAdmin", () => {
+  it("returns claims for an admin token", async () => {
+    const mockAuth = vi.mocked((await import("../../server/useFirebaseAdmin")).auth).verifyIdToken;
+    mockAuth.mockResolvedValue({ admin: true, sub: "test", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
+    const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
+    await expect(requireAdmin(mockEvent)).resolves.toMatchObject({ admin: true, uid: "test" });
+  });
+
+  it("throws 403 for a signed-in non-admin", async () => {
+    const mockAuth = vi.mocked((await import("../../server/useFirebaseAdmin")).auth).verifyIdToken;
+    mockAuth.mockResolvedValue({ admin: false, sub: "test", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
+    const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
+    await expect(requireAdmin(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
   });
 });

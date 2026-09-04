@@ -28,12 +28,6 @@ export default defineNuxtPlugin(() => {
 			ensureAuth: async () => {
 				throw new Error("Firebase Auth is not available during server rendering.");
 			},
-			ensureFirestore: async () => {
-				throw new Error("Firestore is not available during server rendering.");
-			},
-			ensureFunctions: async () => {
-				throw new Error("Firebase Functions is not available during server rendering.");
-			},
 			getAuthToken: async () => null,
 			signOut: async () => undefined,
 			isAuthInitializing,
