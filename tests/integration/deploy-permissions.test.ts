@@ -12,15 +12,15 @@ function jsonResponse(status) {
 }
 
 describe("deploy IAM probe", () => {
-	it("never looks up the default bucket", () => {
+	it("never looks up a Storage bucket", () => {
 		const urls = PERMISSION_PROBES.map((probe) => probe.url({
 			projectId: "giens-ch",
 			bucket: "giens-ch.appspot.com",
 		}));
 
 		expect(urls.join(" ")).not.toContain("defaultBucket");
-		expect(urls.some((url) => url.includes("giens-ch.appspot.com"))).toBe(true);
-		expect(urls.some((url) => url.endsWith(":test"))).toBe(true);
+		expect(urls.join(" ")).not.toContain("firebasestorage.googleapis.com");
+		expect(urls.every((url) => url.endsWith(":test"))).toBe(true);
 	});
 
 	it("maps a rules 403 to firebaserules.admin", () => {
@@ -31,11 +31,12 @@ describe("deploy IAM probe", () => {
 		expect(interpretProbe(probe, 200)).toBeNull();
 	});
 
-	it("maps a storage 403 to firebasestorage.admin", () => {
-		const probe = PERMISSION_PROBES.find((item) => item.id === "storage-bucket");
+	it("compiles Storage rules through the same :test API", () => {
+		const probe = PERMISSION_PROBES.find((item) => item.id === "storage-rules-test");
 
-		expect(interpretProbe(probe, 403)).toContain("roles/firebasestorage.admin");
-		expect(interpretProbe(probe, 200)).toBeNull();
+		expect(probe.body()).toContain("service firebase.storage");
+		expect(interpretProbe(probe, 403)).toContain("roles/firebaserules.admin");
+		expect(interpretProbe(probe, 400)).toBeNull();
 	});
 
 	it("accepts live 200s from both APIs", async () => {
@@ -92,12 +93,6 @@ describe("deploy IAM probe", () => {
 		const probe = PERMISSION_PROBES.find((item) => item.id === "firestore-rules-test");
 
 		expect(interpretProbe(probe, 401)).toContain("not authenticated");
-	});
-
-	it("maps a missing pinned bucket to a firebase.json problem", () => {
-		const probe = PERMISSION_PROBES.find((item) => item.id === "storage-bucket");
-
-		expect(interpretProbe(probe, 404)).toContain("pin storage[].bucket");
 	});
 
 	it("records a network error without leaking the token", async () => {

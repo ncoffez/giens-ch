@@ -1,11 +1,13 @@
 /**
  * Live IAM probe for github-deploy.
  *
- * Static file checks cannot see a role being removed in GCP. This hits the
- * two APIs that 403'd CI (rules :test and Storage v1alpha bucket get) with
- * the current access token and maps failures to the role that is missing.
+ * Static file checks cannot see a role being removed in GCP. firebase-tools
+ * compiles Firestore and Storage rules via firebaserules :test. The v1alpha
+ * bucket GET is the call that 403s even with firebasestorage.admin — we pin
+ * the bucket in firebase.json so deploy never makes it, and this probe must
+ * not make it either.
  *
- * Never calls defaultBucket.get. Never prints the token.
+ * Never prints the token.
  */
 
 import {
@@ -13,7 +15,7 @@ import {
 	EXPECTED_STORAGE_BUCKET,
 } from "./check-deploy-config.mjs";
 
-const MINIMAL_DENY_RULES = [
+const MINIMAL_FIRESTORE_RULES = [
 	"rules_version = '2';",
 	"service cloud.firestore {",
 	"  match /databases/{database}/documents {",
@@ -22,9 +24,18 @@ const MINIMAL_DENY_RULES = [
 	"}",
 ].join("\n");
 
-export const PERMISSION_PROBES = [
-	{
-		id: "firestore-rules-test",
+const MINIMAL_STORAGE_RULES = [
+	"rules_version = '2';",
+	"service firebase.storage {",
+	"  match /b/{bucket}/o {",
+	"    match /{allPaths=**} { allow read, write: if false; }",
+	"  }",
+	"}",
+].join("\n");
+
+function rulesTestProbe(id, fileName, content) {
+	return {
+		id,
 		role: "roles/firebaserules.admin",
 		method: "POST",
 		url({ projectId }) {
@@ -33,7 +44,7 @@ export const PERMISSION_PROBES = [
 		body() {
 			return JSON.stringify({
 				source: {
-					files: [{ name: "firestore.rules", content: MINIMAL_DENY_RULES }],
+					files: [{ name: fileName, content }],
 				},
 			});
 		},
@@ -42,18 +53,12 @@ export const PERMISSION_PROBES = [
 			// the permission we care about. 401/403 are the deploy-killing cases.
 			return status !== 401 && status !== 403 && status !== 0;
 		},
-	},
-	{
-		id: "storage-bucket",
-		role: "roles/firebasestorage.admin",
-		method: "GET",
-		url({ projectId, bucket }) {
-			return `https://firebasestorage.googleapis.com/v1alpha/projects/${projectId}/buckets/${bucket}`;
-		},
-		ok(status) {
-			return status === 200;
-		},
-	},
+	};
+}
+
+export const PERMISSION_PROBES = [
+	rulesTestProbe("firestore-rules-test", "firestore.rules", MINIMAL_FIRESTORE_RULES),
+	rulesTestProbe("storage-rules-test", "storage.rules", MINIMAL_STORAGE_RULES),
 ];
 
 export function interpretProbe(probe, status) {
@@ -63,9 +68,6 @@ export function interpretProbe(probe, status) {
 	}
 	if (status === 401) {
 		return `github-deploy is not authenticated for ${probe.id}`;
-	}
-	if (probe.id === "storage-bucket" && status === 404) {
-		return `Storage bucket ${EXPECTED_STORAGE_BUCKET} was not found; pin storage[].bucket in firebase.json`;
 	}
 	return `github-deploy got HTTP ${status} from ${probe.id} (need ${probe.role})`;
 }
@@ -183,5 +185,5 @@ if (process.argv[1] && process.argv[1].endsWith("check-deploy-permissions.mjs"))
 
 	console.log("Deploy IAM probe ok.");
 	console.log(`Rules compile API: firebaserules.googleapis.com projects/${EXPECTED_PROJECT_ID}:test`);
-	console.log(`Storage bucket: ${EXPECTED_STORAGE_BUCKET}`);
+	console.log(`Pinned Storage bucket (not probed): ${EXPECTED_STORAGE_BUCKET}`);
 }
