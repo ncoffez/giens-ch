@@ -2,7 +2,8 @@ import { db } from "../../../../useFirebaseAdmin";
 import { getUserClaims } from "../../../../utils/auth";
 import { buildTranslatedDocumentFileName, buildTranslatedDocumentHtml } from "../../../../utils/documentExport";
 import { buildDocumentProcessingId } from "../../../../utils/documentProcessing";
-import { getHomeById, isHomeOwner } from "../../../../utils/homes";
+import { getHomeById } from "../../../../utils/homes";
+import { canManageHomeFiles } from "../../../../utils/fileAccess";
 
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
@@ -18,12 +19,10 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const owner = await isHomeOwner(homeId, claims.uid);
-	if (!owner) {
+	const home = await getHomeById(homeId);
+	if (!canManageHomeFiles(claims, home)) {
 		throw createError({ statusCode: 403, message: "Forbidden" });
 	}
-
-	const home = await getHomeById(homeId);
 	if (!home) {
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}

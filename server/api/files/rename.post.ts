@@ -1,19 +1,19 @@
-import { db, auth } from "../../useFirebaseAdmin";
+import { db } from "../../useFirebaseAdmin";
+import { getUserClaims } from "../../utils/auth";
+import { canAdminGlobalDocuments } from "../../utils/fileAccess";
 import { buildDocumentSearchFields } from "../../utils/documentSearch";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
 export default defineEventHandler(async (event) => {
 	try {
 		const body = await readBody(event);
-		const idToken = event.headers.get("authorization")?.split("Bearer ")[1];
+		const claims = await getUserClaims(event);
 
-		if (!idToken) {
+		if (!claims) {
 			throw createError({ statusCode: 401, message: "Unauthorized" });
 		}
 
-		const decodedToken = await auth.verifyIdToken(idToken);
-
-		if (!decodedToken.admin) {
+		if (!canAdminGlobalDocuments(claims)) {
 			throw createError({ statusCode: 403, message: "Forbidden: Admin only" });
 		}
 

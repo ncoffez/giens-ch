@@ -1,5 +1,6 @@
 import { db } from "../../../../useFirebaseAdmin";
-import { isHomeOwner, getHomeById } from "../../../../utils/homes";
+import { getHomeById } from "../../../../utils/homes";
+import { canManageHomeFiles } from "../../../../utils/fileAccess";
 import { getUserClaims } from "../../../../utils/auth";
 import { buildDocumentProcessingId } from "../../../../utils/documentProcessing";
 import { moveHomeFileBetweenVisibilities } from "../../../../utils/homeFiles";
@@ -26,15 +27,13 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-	if (!isOwner) {
+	const home = await getHomeById(homeId);
+	if (!canManageHomeFiles(claims, home)) {
 		throw createError({
 			statusCode: 403,
 			message: "Forbidden: You cannot move files in this home",
 		});
 	}
-
-	const home = await getHomeById(homeId);
 	if (!home) {
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}

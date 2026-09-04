@@ -2,6 +2,7 @@ import { db } from "../useFirebaseAdmin";
 import type { Home, HomeShare } from "../../types";
 import crypto from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
+import { canManageHomeFiles } from "./fileAccess";
 
 export async function getHomesForUser(userId: string): Promise<Home[]> {
 	const snapshot = await db
@@ -59,8 +60,7 @@ export async function deleteHome(homeId: string): Promise<void> {
 
 export async function isHomeOwner(homeId: string, userId: string): Promise<boolean> {
 	const home = await getHomeById(homeId);
-	if (!home) return false;
-	return home.ownerIds.includes(userId);
+	return canManageHomeFiles({ uid: userId }, home);
 }
 
 export async function createShareLink(

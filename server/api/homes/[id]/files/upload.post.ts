@@ -1,5 +1,6 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
-import { isHomeOwner, getHomeById } from "../../../../utils/homes";
+import { getHomeById } from "../../../../utils/homes";
+import { canManageHomeFiles } from "../../../../utils/fileAccess";
 import { getUserClaims } from "../../../../utils/auth";
 import { buildDocumentSearchFieldsFromBuffer } from "../../../../utils/documentSearch";
 import { buildDocumentProcessingRecord } from "../../../../utils/documentProcessing";
@@ -24,16 +25,13 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-
-	if (!isOwner) {
+	const home = await getHomeById(homeId);
+	if (!canManageHomeFiles(claims, home)) {
 		throw createError({
 			statusCode: 403,
 			message: "Forbidden: You cannot upload files to this home",
 		});
 	}
-
-	const home = await getHomeById(homeId);
 	if (!home) {
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}

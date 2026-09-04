@@ -1,5 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { canAdminGlobalDocuments } from "../../utils/fileAccess";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -7,7 +8,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.admin) {
+	if (!canAdminGlobalDocuments(claims)) {
 		throw createError({ statusCode: 403, message: "Only admins can restore files" });
 	}
 

@@ -1,5 +1,6 @@
 import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { canReadGlobalDocuments } from "../../utils/fileAccess";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
 const DEFAULT_LIMIT = 50;
@@ -82,7 +83,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.reader && !claims.publisher && !claims.owner && !claims.admin) {
+	if (!canReadGlobalDocuments(claims)) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 

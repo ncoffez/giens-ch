@@ -1,5 +1,6 @@
 import { auth, db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { canAdminGlobalDocuments } from "../../utils/fileAccess";
 
 const SIGNED_URL_EXPIRY_MINUTES = 5;
 
@@ -9,7 +10,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.admin) {
+	if (!canAdminGlobalDocuments(claims)) {
 		throw createError({ statusCode: 403, message: "Only admins can view trash" });
 	}
 

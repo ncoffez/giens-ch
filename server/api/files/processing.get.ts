@@ -1,5 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
+import { canReadGlobalDocuments } from "../../utils/fileAccess";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
 export default defineEventHandler(async (event) => {
@@ -8,7 +9,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.reader && !claims.publisher && !claims.owner && !claims.admin) {
+	if (!canReadGlobalDocuments(claims)) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
