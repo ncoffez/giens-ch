@@ -3,9 +3,12 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "bucket": "giens-ch.appspot.com",
+      "rules": "storage.rules"
+    }
+  ],
   "functions": [
     {
       "source": ".output/server",
