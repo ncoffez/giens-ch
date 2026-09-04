@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
+describe("firestore.rules", () => {
+	const rules = readFileSync("firestore.rules", "utf8");
+
+	it("denies all client SDK access", () => {
+		expect(rules).toMatch(/allow read, write:\s*if false/);
+		expect(rules).not.toMatch(/allow read, write:\s*if true/);
+		expect(rules).not.toContain("request.auth");
+	});
+});
+
 describe("storage.rules", () => {
 	const rules = readFileSync("storage.rules", "utf8");
 

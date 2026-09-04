@@ -10,7 +10,7 @@ on:
 # Never let two deploys race; supersede stale PR checks.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -43,6 +43,11 @@ jobs:
 
       - name: Run the fast test suite
         run: npm run test:fast
+
+      # Fails in seconds if firebase.json / ci.yml drift back to a deploy
+      # that needs defaultBucket.get or a stripped rules file.
+      - name: Check deploy config contract
+        run: node scripts/check-deploy-config.mjs
 
       # Production deploys must fail loudly on a missing credential rather than
       # shipping a build with an empty runtime config.
@@ -111,15 +116,32 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
 
-      # Mirrors `npm run deploy`. github-deploy has firebaserules.admin and
-      # firebasestorage.admin so this can compile and release rules too.
+      # Hits the two APIs that 403 when github-deploy loses firebaserules.admin
+      # or firebasestorage.admin. Fails in seconds with the missing role name.
+      - name: Check deploy IAM
+        if: github.event_name != 'pull_request'
+        run: node scripts/check-deploy-permissions.mjs
+
+      # Mirrors `npm run deploy`. github-deploy needs firebaserules.admin
+      # and firebasestorage.admin. firebase.json must pin storage[].bucket
+      # or this 403s on defaultBucket.get before Functions start.
       # Extensions stay out of --only; those are managed by hand.
-      - name: Deploy to Firebase
+      # Rules+indexes first: a permission miss fails in ~30s, not after a
+      # four-minute Functions upload.
+      - name: Deploy Firestore and Storage rules
         if: github.event_name != 'pull_request'
         run: |
           npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
             --project "$FIREBASE_PROJECT" \
-            --only firestore,functions,hosting,storage \
+            --only firestore,storage \
+            --non-interactive
+
+      - name: Deploy functions and hosting
+        if: github.event_name != 'pull_request'
+        run: |
+          npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
+            --project "$FIREBASE_PROJECT" \
+            --only functions,hosting \
             --non-interactive
 
       # The only check that proves the runtime credentials actually work: an SSR

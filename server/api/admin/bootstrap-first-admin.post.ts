@@ -1,5 +1,5 @@
 import { auth } from "../../useFirebaseAdmin";
-import { getUserClaims } from "../../utils/auth";
+import { bootstrapSecretMatches, getUserClaims } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 		const secret = getHeader(event, "X-Bootstrap-Secret");
 		const expected = process.env.BOOTSTRAP_SECRET;
 
-		if (!expected || expected.length < 16 || secret !== expected) {
+		if (!bootstrapSecretMatches(expected, secret)) {
 			throw createError({ statusCode: 401, message: "Invalid bootstrap secret" });
 		}
 

@@ -8,7 +8,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Install dependencies:** `npm install`
 - **Start development server:** `npm run dev`
 - **Build for production:** `npm run build`
-- **Deploy to Firebase:** `npm run deploy`. This script now uses `firebase deploy` with `predeploy` hooks in `firebase.json` that automatically handle `npm run build` and dependency staging in `.output/server/node_modules`.
+- **Deploy to Firebase:** Prefer GitHub Actions on `main`. `npm run deploy` from a laptop bakes local `.env` into Functions. CI deploys Firestore+Storage first (permission canary), then Functions+Hosting. `github-deploy@giens-ch.iam.gserviceaccount.com` needs the roles in `scripts/check-deploy-config.mjs` (`firebaserules.admin` and `firebasestorage.admin` included). Do not grant `roles/firebase.admin` or Owner. `firebase.json` must pin `storage[].bucket` to `giens-ch.appspot.com` so CI never calls `defaultBucket.get`.
 
 ### Testing & Linting
 - **Framework:**
@@ -162,6 +162,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Secrets:** Never commit `.env` files or hardcode API keys. Access secrets via `useRuntimeConfig()`.
 - **Admin Access:** Always verify `decodedToken.admin` in server routes that modify global state or access user data.
 - **Client Validation:** Don't rely solely on client-side middleware; always verify permissions on the server.
+- **Deploy IAM:** A missing `firebaserules.admin` / `firebasestorage.admin` role fails CI in the "Check deploy IAM" step, not after a Functions upload. Keep `firestore.rules` deny-all; the Admin SDK bypasses those rules.
 
 ## 7. Development Workflow for Agents
 

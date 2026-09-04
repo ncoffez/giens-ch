@@ -27,6 +27,12 @@ export async function requireSignedIn(event: H3Event) {
 	return claims;
 }
 
+export function bootstrapSecretMatches(expected: unknown, provided: unknown): boolean {
+	return typeof expected === "string"
+		&& expected.length >= 16
+		&& expected === provided;
+}
+
 export async function requireAdmin(event: H3Event) {
 	const claims = await requireSignedIn(event);
 	if (!claims.admin) {

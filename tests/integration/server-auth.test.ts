@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-const { getUserClaims, requireAdmin, requireSignedIn } = await import('../../server/utils/auth');
+const { bootstrapSecretMatches, getUserClaims, requireAdmin, requireSignedIn } = await import('../../server/utils/auth');
 
 vi.mock("h3", () => ({
 	getHeader: vi.fn((event, name) => {
@@ -64,6 +64,19 @@ describe("requireSignedIn", () => {
     const mockEvent = { node: { req: { headers: {} } } } as any;
     await expect(requireSignedIn(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
   });
+});
+
+describe("bootstrapSecretMatches", () => {
+	it("rejects a missing or short secret so an unset env cannot bootstrap", () => {
+		expect(bootstrapSecretMatches(undefined, undefined)).toBe(false);
+		expect(bootstrapSecretMatches("", "")).toBe(false);
+		expect(bootstrapSecretMatches("short", "short")).toBe(false);
+	});
+
+	it("accepts a matching secret of at least 16 characters", () => {
+		expect(bootstrapSecretMatches("1234567890abcdef", "1234567890abcdef")).toBe(true);
+		expect(bootstrapSecretMatches("1234567890abcdef", "other")).toBe(false);
+	});
 });
 
 describe("requireAdmin", () => {

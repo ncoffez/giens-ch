@@ -1,4 +1,5 @@
 import { auth } from "../useFirebaseAdmin";
+import { toAdminUserListItem } from "../utils/adminUsers";
 import { getUserClaims } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
@@ -24,25 +25,7 @@ export default defineEventHandler(async (event) => {
 
 	const users = authUsers.map((user) => {
 		const firestoreData = firestoreUsersMap.get(user.uid);
-		const claims = user.customClaims || {};
-		return {
-			uid: user.uid,
-			email: user.email,
-			displayName: firestoreData?.displayName || user.displayName,
-			photoURL: firestoreData?.photoURL || user.photoURL,
-			emailVerified: user.emailVerified,
-			disabled: user.disabled,
-			admin: !!claims.admin,
-			publisher: !!claims.publisher,
-			owner: !!claims.owner,
-			reader: !!claims.reader,
-			customClaims: {
-				admin: !!claims.admin,
-				publisher: !!claims.publisher,
-				owner: !!claims.owner,
-				reader: !!claims.reader,
-			},
-		};
+		return toAdminUserListItem(user, firestoreData);
 	});
 
 	return users;
