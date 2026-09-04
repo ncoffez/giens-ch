@@ -111,16 +111,17 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
 
-      # Mirrors the `deploy` script in package.json. Storage rules and
-      # Extensions stay out of --only: the GitHub deploy identity cannot
-      # call firebasestorage.defaultBucket.get. Ship storage rules locally
-      # with `npm run deploy:storage`.
+      # Mirrors the `deploy` script in package.json. The GitHub deploy
+      # identity can ship indexes, functions, and hosting — not Storage
+      # (firebasestorage.defaultBucket.get) and not Security Rules
+      # (firebaserules.googleapis.com). Deploy those locally:
+      # `npm run deploy:rules`.
       - name: Deploy to Firebase
         if: github.event_name != 'pull_request'
         run: |
           npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
             --project "$FIREBASE_PROJECT" \
-            --only firestore,functions,hosting \
+            --only firestore:indexes,functions,hosting \
             --non-interactive
 
       # The only check that proves the runtime credentials actually work: an SSR
