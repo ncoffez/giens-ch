@@ -16,7 +16,7 @@ This document serves as a guide for agentic coding agents operating in this repo
   - E2E Tests: Playwright
 - **Run all tests:**
   - Fast integration suite: `npm run test:fast`
-  - Smoke E2E: `npm run test:e2e` or `npm run test:e2e:smoke`
+  - Smoke E2E: `npm run test:e2e`
   - Full cross-browser E2E: `npm run test:e2e:full`
 - **Run a single test:**
   - Integration: `npx vitest run tests/integration/home.test.ts`
@@ -24,8 +24,8 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Console Error Detection:** E2E tests automatically detect browser console errors on all routes. Never commit changes that cause console errors.
 - **STRICT MANDATE:** Run the appropriate tier for the change you made, and run the full cross-browser suite before release, deployment, or major UI refactors.
 - **Current Status:**
-  - Integration: A minimal regression suite exists in `tests/integration/`
-  - E2E: Console error detection on all routes (32 pages)
+  - Integration: Vitest suite in `tests/integration/`
+  - E2E: Playwright smoke on public/critical routes; full suite is cross-browser
 - **Guideline:** Mock Firebase and Nuxt App as demonstrated in `tests/setup.ts` and existing tests.
 
 ### Coverage Requirements
@@ -122,7 +122,7 @@ This document serves as a guide for agentic coding agents operating in this repo
 - **Prop Types:**
     - Ensure props like `rows` on `<UTextarea>` are numeric: `:rows="4"` (correct) vs `rows="4"` (warning).
 - Common components: `<UButton>`, `<UInput>`, `<UCard>`, `<UIcon>`, `<UModal>`.
-- Custom UI wrappers are in `app/components/ui/` (e.g., `<UiTitle>`, `<UiSummary>`). Always check here before creating a new basic UI component.
+- Custom UI wrappers are in `app/components/ui/` (e.g., `<UiTitle>`). Always check here before creating a new basic UI component.
 
 ### Icon System
 - **Format:** Use `i-lucide-icon` with Lucide icons (e.g., `name="i-lucide-home"`, `name="i-lucide-handshake"`).
@@ -188,65 +188,9 @@ This document serves as a guide for agentic coding agents operating in this repo
 | Routing, auth, middleware, file access, share links | `npm run test:fast && npm run test:e2e` |
 | Major UI refactor, deployment, release candidate | `npm run build && npm run test:e2e:full && npm run test:coverage` |
 
-### Console Error Detection
+### E2E smoke
 
-The E2E test suite automatically monitors browser console for errors on all routes:
-
-**Test Files:**
-- `tests/e2e/console-errors-public.test.ts` - Public routes only
-- `tests/e2e/console-errors-all-routes.test.ts` - All 32 routes including auth routes
-- `tests/e2e/console-errors-critical-flows.test.ts` - Critical user flows with console checking
-
-**Console Monitor Helper (`tests/helpers/console-monitor.ts`):**
-- Captures `console.error` and `console.warn` messages
-- Captures uncaught exceptions
-- Filters无害 warnings (hydration mismatches)
-- Attaches console logs to test report on failure
-- Provides clear error summaries
-
-**Example Console Error Output:**
-```
-Console errors found on /profile/me:
-  - [Icon] failed to load icon 'lucide:arrow-left'
-  - Error: Cannot read properties of undefined (reading 'value')
-```
-
-### Resource Error Detection
-
-The E2E test suite now detects broken resources (images, CSS, fonts, scripts):
-
-**Test Files:**
-- `tests/e2e/resource-errors-all-routes.test.ts` - Checks all 30 routes for broken resources
-
-**Resource Monitor Helper (`tests/helpers/resource-monitor.ts`):**
-- Monitors HTTP response failures (404, 403, 500, etc.)
-- Monitors request failures (aborted, failed)
-- Catches network-level resource loading errors
-- Monitors console errors related to resources
-- Types: Image, CSS, Font, Script, Stylesheet
-- Attaches detailed failure reports to test outputs
-
-**Example Resource Error Output:**
-```
-Resource Failures Summary:
-  Images: 3
-  CSS: 0
-  Fonts: 1
-  Scripts: 0
-  Other: 0
-  Total: 4
-
-Failures:
-  - [IMAGE] http://localhost:3000/broken-image.jpg
-    Status: 404
-    Error: HTTP 404
-```
-
-**After Every Code Change:**
-1. Run `npm run test:e2e` to check for console errors
-2. Run `npm run test:e2e` to check for broken resources
-3. Verify no broken resources in any route
-4. Fix all errors before declaring work complete
+`npm run test:e2e` loads public and critical routes in Chromium and asserts they render. It does not currently attach a console/resource monitor helper. Hunt regressions by walking the same routes a user would.
 
 ---
 
