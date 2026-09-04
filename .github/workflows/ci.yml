@@ -111,28 +111,15 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_DEPLOY_SERVICE_ACCOUNT }}
 
-      # firebase-tools compiles firestore.rules whenever that key is present,
-      # even for firestore:indexes. The GitHub identity cannot call
-      # firebaserules.googleapis.com or firebasestorage.defaultBucket.get.
-      # Drop those keys on the runner only; git is unchanged. Ship rules
-      # locally with `npm run deploy:rules`.
-      - name: Strip security-rules keys from firebase.json
-        if: github.event_name != 'pull_request'
-        run: |
-          node -e "
-          const fs = require('fs');
-          const config = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
-          if (config.firestore) delete config.firestore.rules;
-          delete config.storage;
-          fs.writeFileSync('firebase.json', JSON.stringify(config, null, 2) + '\n');
-          "
-
+      # Mirrors `npm run deploy`. github-deploy has firebaserules.admin and
+      # firebasestorage.admin so this can compile and release rules too.
+      # Extensions stay out of --only; those are managed by hand.
       - name: Deploy to Firebase
         if: github.event_name != 'pull_request'
         run: |
           npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
             --project "$FIREBASE_PROJECT" \
-            --only firestore:indexes,functions,hosting \
+            --only firestore,functions,hosting,storage \
             --non-interactive
 
       # The only check that proves the runtime credentials actually work: an SSR
