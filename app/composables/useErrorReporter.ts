@@ -46,7 +46,8 @@ export function useErrorReporter() {
 	const lastCapturedAt = useState<number>("error-report-last-captured-at", () => 0);
 	const autoReportedSignatures = useState<Record<string, string>>("error-report-auto-reported", () => ({}));
 
-	const canCreateIssue = computed(() => Boolean(runtimeConfig.public.GITHUB_REPO));
+	const isSignedIn = computed(() => Boolean(nuxtApp.$currentUser?.value));
+	const canCreateIssue = computed(() => Boolean(runtimeConfig.public.GITHUB_REPO) && isSignedIn.value);
 
 	function recordAction(action: Omit<ErrorReportAction, "timestamp">) {
 		actions.value = [
@@ -128,6 +129,7 @@ export function useErrorReporter() {
 		}
 
 		try {
+			const token = await nuxtApp.$getAuthToken?.();
 			const result = await $fetch<{
 				id: string;
 				githubIssueNumber?: number;
@@ -135,6 +137,7 @@ export function useErrorReporter() {
 			}>("/api/error-events", {
 				method: "POST",
 				body: { report },
+				headers: token ? { Authorization: `Bearer ${token}` } : {},
 			});
 
 			autoReportedSignatures.value = {
@@ -218,6 +221,7 @@ export function useErrorReporter() {
 		manualReport,
 		dialogReport,
 		hasActiveError,
+		isSignedIn,
 		canCreateIssue,
 		isDialogOpen,
 		recordAction,

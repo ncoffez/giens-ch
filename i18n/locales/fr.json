@@ -41,7 +41,8 @@
     "manualReportLabel": "Retour",
     "manualReportSummary": "Vous signalez un problème ou une suggestion d'amélioration.",
     "manualReportDescription": "Décrivez brièvement ce qui n'a pas fonctionné. Les informations sur la page et sur vos dernières actions sont transmises automatiquement.",
-    "manualWhatHappenedPlaceholder": "Décrivez ce qui n'a pas fonctionné ou ce que vous souhaiteriez voir différemment."
+    "manualWhatHappenedPlaceholder": "Décrivez ce qui n'a pas fonctionné ou ce que vous souhaiteriez voir différemment.",
+    "loginToReport": "Veuillez vous connecter pour envoyer un rapport."
   },
   "nav": {
     "home": "Accueil",

@@ -118,7 +118,7 @@ jobs:
         run: |
           npx --yes firebase-tools@"$FIREBASE_TOOLS_VERSION" deploy \
             --project "$FIREBASE_PROJECT" \
-            --only firestore,functions,hosting \
+            --only firestore,functions,hosting,storage \
             --non-interactive
 
       # The only check that proves the runtime credentials actually work: an SSR

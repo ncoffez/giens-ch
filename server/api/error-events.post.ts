@@ -8,9 +8,11 @@ import {
 	shouldSkipAutomaticGithubIssue,
 } from "../../app/utils/errorReporting";
 import { createGithubIssue } from "../utils/githubIssues";
+import { getUserClaims } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
 	const config = useRuntimeConfig(event);
+	const claims = await getUserClaims(event);
 	const body = await readBody(event);
 	const report = body?.report;
 
@@ -39,7 +41,7 @@ export default defineEventHandler(async (event) => {
 		let status = shouldSkipGithub ? "ignored" : "captured";
 		let githubIssueError: string | null = null;
 
-		if (!shouldSkipGithub && githubConfig) {
+		if (!shouldSkipGithub && githubConfig && claims) {
 			try {
 				const labels = createGithubIssueLabels(report);
 				const issue = await createGithubIssue(githubConfig, {

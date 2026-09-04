@@ -13,12 +13,13 @@ describe("firestore.rules", () => {
 	const rules = readFileSync("firestore.rules", "utf8");
 
 	it("denies default client access", () => {
-		expect(rules).toMatch(/allow read, write:\s*if false/);
-		expect(rules).not.toMatch(/allow read, write:\s*if true/);
+		const withoutComments = rules.replace(/\/\/.*$/gm, "");
+		expect(withoutComments).toMatch(/allow read, write:\s*if false/);
+		expect(withoutComments).not.toMatch(/allow read, write:\s*if true/);
 	});
 
-	it("keeps label writes behind the admin claim", () => {
-		expect(rules).toContain("request.auth.token.admin == true");
+	it("has no client-side exceptions", () => {
+		expect(rules).not.toContain("request.auth.token.admin");
 	});
 });
 

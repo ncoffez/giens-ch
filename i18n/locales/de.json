@@ -41,7 +41,8 @@
     "manualReportLabel": "Rückmeldung",
     "manualReportSummary": "Sie melden ein Problem oder einen Verbesserungsvorschlag.",
     "manualReportDescription": "Beschreiben Sie kurz, was nicht funktioniert hat. Angaben zur Seite und zu Ihren letzten Schritten werden automatisch mitgeschickt.",
-    "manualWhatHappenedPlaceholder": "Beschreiben Sie, was nicht funktioniert hat oder was Sie sich anders wünschen."
+    "manualWhatHappenedPlaceholder": "Beschreiben Sie, was nicht funktioniert hat oder was Sie sich anders wünschen.",
+    "loginToReport": "Bitte zuerst anmelden, um eine Fehlermeldung zu senden."
   },
   "nav": {
     "home": "Home",

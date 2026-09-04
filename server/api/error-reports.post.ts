@@ -6,8 +6,11 @@ import {
 	createIssueBody,
 } from "../../app/utils/errorReporting";
 import { addGithubIssueLabels, createGithubIssue, createGithubIssueComment } from "../utils/githubIssues";
+import { requireSignedIn } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
+	await requireSignedIn(event);
+
 	const config = useRuntimeConfig(event);
 	const token = config.GITHUB_ISSUES_TOKEN;
 	const repo = config.public.GITHUB_REPO;

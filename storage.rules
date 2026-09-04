@@ -1,41 +1,20 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Uploads go through Nitro + the Admin SDK, which bypasses these rules.
+// Profile pictures are referenced as public media URLs (no download token).
 service firebase.storage {
-  match /b/{bucket}/o {
-  
-    // Tiptap Editor Uploads
-    match /editor-uploads/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-  
-    // Profile Pictures
-    match /profile-pictures/{uid} {
-      allow read: if true; // Publicly readable
-      allow write: if request.auth != null && request.auth.uid == uid; // Only owner can write
-    }
-    match /profile-pictures/{uid}/history/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == uid;
-    }
-    
-    // Home Photos - Public read (guests view via share links)
-    match /homes/{homeId}/photos/{allPaths=**} {
-      allow read: if true;
-      allow write: if false; // Server-side only via Admin SDK
-    }
-    
-    // Home Files - Private, only accessible via signed URLs from server
-    match /homes/{homeId}/files/{allPaths=**} {
-      allow read, write: if false; // Server-side only via Admin SDK with signed URLs
-    }
-    
-    // Global Files - Private, only accessible via signed URLs from server
-    match /global-files/{allPaths=**} {
-      allow read, write: if false; // Server-side only via Admin SDK with signed URLs
-    }
-  }
+	match /b/{bucket}/o {
+		match /profile-pictures/{uid} {
+			allow read: if true;
+			allow write: if false;
+		}
+		match /profile-pictures/{uid}/history/{allPaths=**} {
+			allow read: if true;
+			allow write: if false;
+		}
+
+		match /{allPaths=**} {
+			allow read, write: if false;
+		}
+	}
 }

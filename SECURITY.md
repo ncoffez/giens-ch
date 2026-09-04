@@ -22,11 +22,12 @@ visibility, and treat the leaked credentials as compromised.
 
 ## Rules
 
-- **Firestore:** client SDK access is denied except admin writes to `labels`.
-  All other reads/writes go through Nitro (`server/api/**`) with the Admin SDK,
-  which bypasses rules. Do not deploy `allow read, write: if true`.
-- **Storage:** profile pictures are public-read / owner-write. Home and global
-  files are server-only (signed URLs). Editor uploads require a signed-in user.
+- **Firestore:** client SDK access is denied. All reads/writes go through
+  Nitro (`server/api/**`) with the Admin SDK, which bypasses rules. Do not
+  deploy `allow read, write: if true`.
+- **Storage:** profile pictures are public-read (avatars on public pages).
+  Everything else, including editor uploads and house files, is server-only
+  (Admin SDK and signed/tokenized URLs). Client writes are denied.
 - **Firebase web API key:** expected to be in the client bundle. The rules
   above are what protect data, not hiding the key.
 
@@ -34,7 +35,9 @@ visibility, and treat the leaked credentials as compromised.
 
 `GITHUB_ISSUES_TOKEN` must be a **fine-grained PAT** limited to this repository
 with **Issues: Read and write** only. Do not use a classic `repo` token. The
-token is a GitHub Actions secret; it is not in the client bundle.
+token is a GitHub Actions secret; it is not in the client bundle. Creating or
+commenting on issues requires a signed-in user; anonymous visits are stored in
+Firestore only.
 
 ## Reporting a vulnerability
 

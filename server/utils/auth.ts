@@ -1,5 +1,5 @@
 import { auth } from "../useFirebaseAdmin";
-import { H3Event, getHeader } from "h3";
+import { H3Event, createError, getHeader } from "h3";
 
 export async function getUserClaims(event: H3Event) {
 	const authHeader = getHeader(event, "Authorization");
@@ -17,6 +17,14 @@ export async function getUserClaims(event: H3Event) {
 		console.error("Error verifying ID token:", error);
 		return null;
 	}
+}
+
+export async function requireSignedIn(event: H3Event) {
+	const claims = await getUserClaims(event);
+	if (!claims) {
+		throw createError({ statusCode: 401, message: "Unauthorized" });
+	}
+	return claims;
 }
 
 export async function getUserPermission(event: H3Event): Promise<"public" | "private"> {

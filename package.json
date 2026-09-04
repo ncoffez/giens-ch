@@ -16,7 +16,7 @@
     "preview:prod": "NITRO_PRESET=node-server nuxt preview --host 127.0.0.1 --port 3000",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "deploy": "npm run build && firebase deploy --project giens-ch --only firestore,functions,hosting",
+    "deploy": "npm run build && firebase deploy --project giens-ch --only firestore,functions,hosting,storage",
     "deploy:full": "npm run build && firebase deploy --project giens-ch",
     "start": "nuxt preview",
     "test": "vitest",

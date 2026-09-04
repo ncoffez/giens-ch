@@ -16,6 +16,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const toast = useAppToast();
+const { authorizedFetch } = useApi();
+const reporter = useErrorReporter();
 const userNotes = ref("");
 const isSubmitting = ref(false);
 const createdIssueNumber = ref<number | null>(null);
@@ -45,13 +47,13 @@ async function submitReport() {
 		return;
 	}
 
-	if (!hasUserNotes.value) {
+	if (!hasUserNotes.value || !reporter.canCreateIssue.value) {
 		return;
 	}
 
 	isSubmitting.value = true;
 	try {
-		const result = await $fetch<{ number: number; url: string; action: "created" | "commented" }>("/api/error-reports", {
+		const result = await authorizedFetch<{ number: number; url: string; action: "created" | "commented" }>("/api/error-reports", {
 			method: "POST",
 			body: {
 				report: props.report,
@@ -122,6 +124,10 @@ async function submitReport() {
 			</div>
 		</details>
 
+		<p v-if="!reporter.canCreateIssue.value" class="text-sm text-stone-500 dark:text-stone-400">
+			{{ t("error.loginToReport") }}
+		</p>
+
 		<div class="flex items-center justify-between gap-3">
 			<p v-if="createdIssueNumber" class="text-sm text-emerald-600 dark:text-emerald-400">
 				{{ t(submissionAction === "commented" ? "error.issueCommented" : "error.issueCreated", { number: createdIssueNumber }) }}
@@ -130,7 +136,7 @@ async function submitReport() {
 				<UButton
 					color="primary"
 					icon="i-lucide-bug"
-					:disabled="!hasUserNotes"
+					:disabled="!hasUserNotes || !reporter.canCreateIssue.value"
 					:loading="isSubmitting"
 					@click="submitReport"
 				>
