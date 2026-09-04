@@ -58,7 +58,7 @@ export default defineNuxtConfig({
 		public: {
 			FIREBASE_FRONTEND_KEY: process.env.FIREBASE_FRONTEND_KEY,
 			SITE_URL: process.env.SITE_URL || "https://giens.ch",
-			GITHUB_REPO: process.env.GITHUB_REPO || "ncoffez/giens-ch",
+			GITHUB_REPO: process.env.GITHUB_REPO,
 		},
 		FIREBASE_ADMIN_KEY: process.env.FIREBASE_ADMIN_KEY,
 		GEMINI_API_KEY: process.env.GEMINI_API_KEY,

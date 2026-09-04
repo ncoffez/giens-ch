@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Client access is denied by default. The app reads and writes Firestore
+// through the Nitro Admin SDK (server/api/**), which bypasses these rules.
+// The labels exception exists only for the admin labels UI until it is fully
+// served by /api/admin/labels; even then, writes require the admin claim.
+service cloud.firestore {
+	match /databases/{database}/documents {
+		match /labels/{labelId} {
+			allow read, write: if request.auth != null
+				&& request.auth.token.admin == true;
+		}
+
+		match /{document=**} {
+			allow read, write: if false;
+		}
+	}
+}

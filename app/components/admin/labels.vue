@@ -1,8 +1,6 @@
 <script lang="ts" setup>
-import { doc, updateDoc, addDoc, collection } from "firebase/firestore";
-
-const { $ensureFirestore } = useNuxtApp();
 const toast = useToast();
+const { authorizedFetch } = useApi();
 const { data: labels, status, refresh } = useFetch<any[]>("/api/labels");
 
 const isCreatingLabel = ref(false);
@@ -11,8 +9,10 @@ const isPending = ref(false);
 
 const updateLabel = async (id: string, currentPrivacy: boolean) => {
 	try {
-		const db = await $ensureFirestore();
-		await updateDoc(doc(db, `labels/${id}`), { private: !currentPrivacy });
+		await authorizedFetch(`/api/admin/labels/${id}/update`, {
+			method: "POST",
+			body: { private: !currentPrivacy },
+		});
 		toast.add({
 			title: "Aktualisiert",
 			description: `Sichtbarkeit für '${id}' wurde geändert.`,
@@ -22,7 +22,7 @@ const updateLabel = async (id: string, currentPrivacy: boolean) => {
 	} catch (error: unknown) {
 		toast.add({
 			title: "Fehler",
-			description: error.message,
+			description: getFetchError(error),
 			color: "error"
 		});
 	}
@@ -40,20 +40,18 @@ const createLabel = async () => {
 
 	isPending.value = true;
 	try {
-		const db = await $ensureFirestore();
 		const labelId = newLabelId.value.trim().toLowerCase();
-		const labelTitle = labelId.charAt(0).toUpperCase() + labelId.slice(1);
-		
-		await addDoc(collection(db, "labels"), {
-			id: labelId,
-			title: labelTitle,
-			name: labelId,
-			private: false
-		});
-		
+		const created = await authorizedFetch<{ id: string; title?: string }>(
+			"/api/admin/labels",
+			{
+				method: "POST",
+				body: { id: labelId },
+			},
+		);
+
 		toast.add({
 			title: "Erfolgreich",
-			description: `Label '${labelTitle}' wurde erstellt.`,
+			description: `Label '${created.title || created.id}' wurde erstellt.`,
 			color: "success"
 		});
 		newLabelId.value = "";
@@ -62,7 +60,7 @@ const createLabel = async () => {
 	} catch (error: unknown) {
 		toast.add({
 			title: "Fehler",
-			description: error.message,
+			description: getFetchError(error),
 			color: "error"
 		});
 	} finally {

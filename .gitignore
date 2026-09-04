@@ -30,6 +30,11 @@ coverage/
 *firebase-adminsdk*.json
 *-service-account*.json
 
+# Auth dumps, office briefs, generated reports — not source
+Users.json
+*.docx
+reports/
+
 # Local env files
 .env
 .env.*
