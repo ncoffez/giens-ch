@@ -1,8 +1,10 @@
 import { db } from "../useFirebaseAdmin";
 import type { SearchDocument, SearchFeature, SearchHeading, SearchPage, SearchResult, SearchTimeline } from "../../app/utils/search";
 import { searchCollections } from "../../app/utils/search";
+import { formatMemoriamPeriod, memoriamBioForLocale } from "../../app/utils/memoriam";
 import { getHomesForUser } from "./homes";
 import { buildDocumentProcessingId } from "./documentProcessing";
+import { listMemoriamEntries } from "./memoriam";
 
 interface ContentDocument {
 	id: string;
@@ -86,6 +88,7 @@ const PAGE_TEXT = {
 		profile: { label: "Profil", context: "Persönliche Angaben und Kontoeinstellungen" },
 		admin: { label: "Verwaltung", context: "Benutzer, Häuser und Systembereiche verwalten" },
 		login: { label: "Login", context: "Anmelden und auf geschützte Inhalte zugreifen" },
+		memoriam: { label: "In Memoriam", context: "Zum Gedenken an Eigentümerinnen und Eigentümer der Résidence" },
 	},
 	fr: {
 		home: { label: "Accueil", context: "Calme méditerranéen et communauté sur la presqu'île de Giens" },
@@ -98,6 +101,7 @@ const PAGE_TEXT = {
 		profile: { label: "Profil", context: "Informations personnelles et réglages du compte" },
 		admin: { label: "Administration", context: "Gérer les utilisateurs, maisons et paramètres" },
 		login: { label: "Connexion", context: "Se connecter pour accéder aux contenus protégés" },
+		memoriam: { label: "In Memoriam", context: "En mémoire des propriétaires de la Résidence" },
 	},
 } as const;
 
@@ -304,6 +308,25 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 			usageKey: "page:/my-homes",
 			keywords: ["hauser", "häuser", "homes", "maisons"],
 		});
+		pages.push({
+			id: "page-memoriam",
+			label: copy.memoriam.label,
+			context: copy.memoriam.context,
+			to: "/organisatorisches#in-memoriam",
+			icon: "i-lucide-flower-2",
+			usageKey: "page:/organisatorisches#in-memoriam",
+			keywords: [
+				"memoriam",
+				"in memoriam",
+				"gedenken",
+				"andenken",
+				"souvenir",
+				"memoire",
+				"mémoire",
+				"verstorben",
+				"commemoration",
+			],
+		});
 	}
 
 	if (isAuthenticated) {
@@ -497,18 +520,40 @@ async function loadSearchDocuments(locale: string, claims: SearchClaims | null):
 	return [...ownerDocuments, ...globalDocuments];
 }
 
+async function loadMemoriamSearchHeadings(locale: string, claims: SearchClaims | null): Promise<SearchHeading[]> {
+	if (!(claims?.owner || claims?.admin)) return [];
+
+	const entries = await listMemoriamEntries();
+	const pageLabel = PAGE_TEXT[getLocaleKey(locale)].memoriam.label;
+
+	return entries.map((entry) => {
+		const bio = stripHtml(memoriamBioForLocale(entry, locale)).substring(0, 100);
+		const period = formatMemoriamPeriod(entry.periodFrom, entry.periodTo);
+		const context = [pageLabel, period, bio].filter(Boolean).join(" · ");
+
+		return {
+			id: `memoriam-${entry.id}`,
+			text: entry.name,
+			context,
+			page: pageLabel,
+			pagePath: "/organisatorisches#in-memoriam",
+		};
+	});
+}
+
 export async function buildUnifiedSearchResults(query: string, options: SearchCatalogOptions): Promise<SearchResult[]> {
 	const trimmedQuery = query.trim();
 	if (!trimmedQuery) return [];
 
-	const [{ headings, features, timeline }, documents] = await Promise.all([
+	const [{ headings, features, timeline }, documents, memoriamHeadings] = await Promise.all([
 		loadContentSearchIndex(options.locale),
 		loadSearchDocuments(options.locale, options.claims),
+		loadMemoriamSearchHeadings(options.locale, options.claims),
 	]);
 
 	return searchCollections({
 		pages: buildSearchPages(options.locale, options.claims),
-		headings,
+		headings: [...headings, ...memoriamHeadings],
 		features,
 		timeline,
 		documents,

@@ -10,6 +10,7 @@ describe("Admin layout", () => {
 		expect(chips.text()).toContain("Häuser");
 		expect(chips.text()).toContain("Benutzer");
 		expect(chips.text()).toContain("Labels");
+		expect(chips.text()).toContain("In Memoriam");
 		expect(chips.text()).toContain("Papierkorb");
 		expect(chips.text()).toContain("Einstellungen");
 		expect(chips.text()).not.toContain("Zurück zur Seite");

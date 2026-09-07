@@ -7,7 +7,7 @@ const localePath = useLocalePath();
 const nuxtApp = useNuxtApp();
 const { t } = useI18n();
 const { canAccessHomes } = useFeatureFlags();
-const { loadDocuments, searchAll, searchResults, getRecommendations, getDocumentRecommendations, recordSelection, isLoading, isSearching, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
+const { loadDocuments, startSearch, searchAll, searchResults, getRecommendations, getDocumentRecommendations, recordSelection, isLoading, isSearching, canAccessDocuments, canAccessOwnerDocuments } = useSearchData();
 
 const searchQuery = ref("");
 const hasLoaded = ref(false);
@@ -139,6 +139,22 @@ const staticPageItems = computed<SearchPaletteItem[]>(() => {
 				icon: "i-lucide-building-2",
 				type: "page",
 				usageKey: "page:/my-homes",
+			},
+		});
+	}
+
+	if (isOwner.value) {
+		items.push({
+			label: t("memoriam.title"),
+			icon: "i-lucide-flower-2",
+			to: localePath("/organisatorisches") + "#in-memoriam",
+			searchResult: {
+				id: "page-memoriam",
+				label: t("memoriam.title"),
+				to: "/organisatorisches#in-memoriam",
+				icon: "i-lucide-flower-2",
+				type: "page",
+				usageKey: "page:/organisatorisches#in-memoriam",
 			},
 		});
 	}
@@ -294,6 +310,7 @@ const groups = computed(() => {
 			id: "matched-pages",
 			label: t("search.sections.pages"),
 			items: pageItems.value,
+			ignoreFilter: true,
 		});
 	}
 
@@ -302,6 +319,7 @@ const groups = computed(() => {
 			id: "headings",
 			label: t("search.sections.headings"),
 			items: headingItems.value,
+			ignoreFilter: true,
 		});
 	}
 
@@ -318,6 +336,7 @@ const groups = computed(() => {
 			id: "documents",
 			label: t("search.sections.documents"),
 			items: documentItems.value,
+			ignoreFilter: true,
 		});
 	}
 
@@ -326,6 +345,7 @@ const groups = computed(() => {
 			id: "features",
 			label: t("search.sections.information"),
 			items: featureItems.value,
+			ignoreFilter: true,
 		});
 	}
 
@@ -353,6 +373,7 @@ async function handleOpen(isOpen: boolean) {
 watch(open, handleOpen);
 
 watch(searchQuery, (value, _, onCleanup) => {
+	startSearch(value);
 	const timer = window.setTimeout(async () => {
 		await searchAll(value);
 	}, 180);
@@ -405,7 +426,13 @@ onMounted(() => {
 					close
 					:loading="isLoading || isSearching"
 					@update:model-value="onSelect"
-					@update:open="open = $event" />
+					@update:open="open = $event"
+				>
+					<template #empty>
+						<span v-if="isSearching || isLoading">{{ t("search.searching") }}</span>
+						<span v-else>{{ t("search.noResults") }}</span>
+					</template>
+				</UCommandPalette>
 			</div>
 		</template>
 	</UModal>

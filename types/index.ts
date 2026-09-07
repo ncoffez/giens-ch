@@ -201,3 +201,20 @@ export interface JourneyStep {
 	title: string;
 	detail: string;
 }
+
+export interface MemoriamEntry {
+	id: string;
+	name: string;
+	photos: string[];
+	/** German source HTML. */
+	bio: string;
+	bioByLocale?: Partial<Record<"de" | "fr", string>>;
+	/** Year (YYYY) or date (YYYY-MM-DD). */
+	periodFrom: string;
+	/** Year (YYYY) or date (YYYY-MM-DD). */
+	periodTo: string;
+	/** Lower numbers appear first. Unset entries fall back to 0. */
+	sortOrder: number;
+	createdAt: string;
+	updatedAt: string;
+}

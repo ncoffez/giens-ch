@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const nuxtApp = useNuxtApp();
+const isOwner = computed(() => import.meta.client ? !!nuxtApp.$isOwner?.value : false);
 
 const organisatorischesContent = await usePageContent("organisatorisches");
 const showTranslationReadonlyNotice = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false) && !organisatorischesContent.canEdit.value);
@@ -130,5 +131,9 @@ useHead({
 				</div>
 			</template>
 		</section>
+
+		<ClientOnly>
+			<MemoriamSection v-if="isOwner" />
+		</ClientOnly>
 	</div>
 </template>

@@ -41,6 +41,16 @@ describe("MobileMenuSheet", () => {
 		expect(menu.open.value).toBe(false);
 	});
 
+	it("shows searching instead of an empty state while a query is in flight", async () => {
+		const { component } = await mountOpenSheet();
+
+		await component.get("input").setValue("xyz-no-match-123");
+		await nextTick();
+
+		expect(component.text()).toContain("Suche läuft...");
+		expect(component.text()).not.toContain("Keine Treffer gefunden.");
+	});
+
 	it("shows an empty search state and clears the query when the sheet closes", async () => {
 		const { component, menu } = await mountOpenSheet();
 

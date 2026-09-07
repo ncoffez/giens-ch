@@ -159,6 +159,13 @@ export function buildAdminNavigationItems(
 			active: isUnderPath(routePath, "/admin/labels"),
 		},
 		{
+			id: "admin-memoriam",
+			label: t("admin.nav.memoriam"),
+			to: localePath("/admin/memoriam"),
+			icon: "i-lucide-flower-2",
+			active: isUnderPath(routePath, "/admin/memoriam"),
+		},
+		{
 			id: "admin-trash",
 			label: t("admin.nav.trash"),
 			to: localePath("/admin/trash"),

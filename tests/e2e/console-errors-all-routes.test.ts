@@ -16,6 +16,7 @@ const ALL_ROUTES = [
 	"/admin/homes",
 	"/admin/users",
 	"/admin/labels",
+	"/admin/memoriam",
 	"/admin/settings",
 	"/owner",
 	"/owner/contacts",
