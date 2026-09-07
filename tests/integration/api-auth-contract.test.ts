@@ -52,4 +52,14 @@ describe("admin API auth contract", () => {
 		expect(readFileSync("server/api/content/[id].post.ts", "utf8")).toContain("requireAdmin");
 		expect(existsSync("server/api/admin/homes/migrate-multi-owner.post.ts")).toBe(false);
 	});
+
+	it("keeps memoriam reads owner-only and writes admin-only", () => {
+		expect(readFileSync("server/api/memoriam.get.ts", "utf8")).toContain("requireOwnerOrAdmin");
+		expect(readFileSync("server/api/admin/memoriam.get.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/admin/memoriam.post.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/admin/memoriam/[id]/update.post.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/admin/memoriam/[id]/delete.post.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/admin/memoriam/[id]/photos/upload.post.ts", "utf8")).toContain("requireAdmin");
+		expect(readFileSync("server/api/admin/memoriam/[id]/photos/delete.post.ts", "utf8")).toContain("requireAdmin");
+	});
 });

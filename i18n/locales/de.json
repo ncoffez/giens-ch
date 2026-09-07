@@ -787,6 +787,7 @@
       "homes": "Häuser",
       "users": "Benutzer",
       "labels": "Labels",
+      "memoriam": "In Memoriam",
       "trash": "Papierkorb",
       "settings": "Einstellungen",
       "back": "Zurück zur Seite"
@@ -795,7 +796,53 @@
       "kicker": "Kontrollzentrum",
       "title": "Administration",
       "lead": "Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort."
+    },
+    "memoriam": {
+      "kicker": "Gedenken",
+      "title": "In Memoriam",
+      "lead": "Gedenkartikel zu verstorbenen Eigentümerinnen und Eigentümern der Résidence.",
+      "create": "Neuer Eintrag",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "empty": "Noch keine Einträge",
+      "emptyHint": "Legen Sie den ersten Gedenkartikel an.",
+      "name": "Name",
+      "namePlaceholder": "Vor- und Nachname",
+      "bio": "Lauftext",
+      "bioHint": "Nur auf Deutsch erfassen. Beim Speichern wird automatisch ins Französische übersetzt.",
+      "periodFrom": "In der Résidence von",
+      "periodTo": "bis",
+      "periodHint": "Jahr (1990) oder Datum (1990-06-15).",
+      "photos": "Fotos",
+      "photosHint": "Bis zu {count} Fotos.",
+      "addPhotos": "Fotos hinzufügen",
+      "confirmDelete": "Diesen Eintrag wirklich löschen?",
+      "toasts": {
+        "saved": "Eintrag gespeichert",
+        "deleted": "Eintrag gelöscht",
+        "created": "Eintrag erstellt",
+        "saveFailed": "Speichern fehlgeschlagen",
+        "deleteFailed": "Löschen fehlgeschlagen",
+        "loadFailed": "Einträge konnten nicht geladen werden",
+        "nameRequired": "Bitte einen Namen angeben",
+        "photoUploaded": "Foto hochgeladen",
+        "photoFailed": "Foto konnte nicht hochgeladen werden",
+        "photoDeleted": "Foto entfernt",
+        "imagesOnly": "Nur Bilder können hochgeladen werden",
+        "maxSize": "Maximale Dateigrösse: 10 MB",
+        "maxPhotos": "Maximal {count} Fotos"
+      }
     }
+  },
+  "memoriam": {
+    "title": "In Memoriam",
+    "subtitle": "Zum Gedenken",
+    "emptyTitle": "Noch keine Einträge",
+    "emptyText": "Gedenkartikel erscheinen hier, sobald sie erfasst sind.",
+    "periodLabel": "In der Résidence",
+    "manage": "Einträge verwalten"
   },
   "ownerDocuments": {
     "title": "Eigentümer-Dokumente",

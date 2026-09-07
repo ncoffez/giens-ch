@@ -787,6 +787,7 @@
       "homes": "Maisons",
       "users": "Utilisateurs",
       "labels": "Libellés",
+      "memoriam": "In Memoriam",
       "trash": "Corbeille",
       "settings": "Réglages",
       "back": "Retour au site"
@@ -795,7 +796,53 @@
       "kicker": "Centre de contrôle",
       "title": "Administration",
       "lead": "Utilisateurs, maisons, visibilité et processus internes au même endroit."
+    },
+    "memoriam": {
+      "kicker": "Mémoire",
+      "title": "In Memoriam",
+      "lead": "Articles commémoratifs dédiés aux propriétaires disparus de la Résidence.",
+      "create": "Nouvelle entrée",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "empty": "Aucune entrée pour le moment",
+      "emptyHint": "Créez le premier article commémoratif.",
+      "name": "Nom",
+      "namePlaceholder": "Prénom et nom",
+      "bio": "Texte",
+      "bioHint": "Saisir uniquement en allemand. L’enregistrement lance la traduction automatique vers le français.",
+      "periodFrom": "À la Résidence de",
+      "periodTo": "à",
+      "periodHint": "Année (1990) ou date (1990-06-15).",
+      "photos": "Photos",
+      "photosHint": "Jusqu’à {count} photos.",
+      "addPhotos": "Ajouter des photos",
+      "confirmDelete": "Voulez-vous vraiment supprimer cette entrée ?",
+      "toasts": {
+        "saved": "Entrée enregistrée",
+        "deleted": "Entrée supprimée",
+        "created": "Entrée créée",
+        "saveFailed": "Échec de l’enregistrement",
+        "deleteFailed": "Échec de la suppression",
+        "loadFailed": "Impossible de charger les entrées",
+        "nameRequired": "Veuillez indiquer un nom",
+        "photoUploaded": "Photo téléversée",
+        "photoFailed": "Impossible de téléverser la photo",
+        "photoDeleted": "Photo retirée",
+        "imagesOnly": "Seules les images peuvent être téléversées",
+        "maxSize": "Taille maximale : 10 Mo",
+        "maxPhotos": "Maximum {count} photos"
+      }
     }
+  },
+  "memoriam": {
+    "title": "In Memoriam",
+    "subtitle": "En mémoire",
+    "emptyTitle": "Aucune entrée pour le moment",
+    "emptyText": "Les articles commémoratifs apparaîtront ici une fois saisis.",
+    "periodLabel": "À la Résidence",
+    "manage": "Gérer les entrées"
   },
   "ownerDocuments": {
     "title": "Documents des propriétaires",

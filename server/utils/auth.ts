@@ -40,3 +40,11 @@ export async function requireAdmin(event: H3Event) {
 	}
 	return claims;
 }
+
+export async function requireOwnerOrAdmin(event: H3Event) {
+	const claims = await requireSignedIn(event);
+	if (!claims.admin && !claims.owner) {
+		throw createError({ statusCode: 403, message: "Forbidden: Owner access required" });
+	}
+	return claims;
+}

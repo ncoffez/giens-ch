@@ -24,6 +24,7 @@ describe("navigation helpers", () => {
 		"admin.nav.homes": "Häuser",
 		"admin.nav.users": "Benutzer",
 		"admin.nav.labels": "Labels",
+		"admin.nav.memoriam": "In Memoriam",
 		"admin.nav.trash": "Papierkorb",
 		"admin.nav.settings": "Einstellungen",
 	}[key] ?? key);
@@ -149,6 +150,7 @@ describe("navigation helpers", () => {
 				"admin-homes",
 				"admin-users",
 				"admin-labels",
+				"admin-memoriam",
 				"admin-trash",
 				"admin-settings",
 			]);
@@ -186,6 +188,20 @@ describe("navigation helpers", () => {
 
 			expect(items.find((item) => item.id === "admin-homes")?.active).toBe(true);
 			expect(items.filter((item) => item.active)).toHaveLength(1);
+		});
+
+		it("lists In Memoriam in admin navigation only", () => {
+			const items = buildAdminNavigationItems(t, localePath, "/admin/memoriam");
+
+			expect(items.find((item) => item.id === "admin-memoriam")).toMatchObject({
+				label: "In Memoriam",
+				to: "/admin/memoriam",
+				active: true,
+			});
+			expect(buildPublicNavigationItems(t, localePath, "/organisatorisches").map((item) => item.label))
+				.not.toContain("In Memoriam");
+			expect(buildMobileTabItems(t, localePath, "/organisatorisches").map((item) => item.label))
+				.not.toContain("In Memoriam");
 		});
 	});
 });

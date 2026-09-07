@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-const { bootstrapSecretMatches, getUserClaims, requireAdmin, requireSignedIn } = await import('../../server/utils/auth');
+const { bootstrapSecretMatches, getUserClaims, requireAdmin, requireOwnerOrAdmin, requireSignedIn } = await import('../../server/utils/auth');
 
 vi.mock("h3", () => ({
 	getHeader: vi.fn((event, name) => {
@@ -92,5 +92,33 @@ describe("requireAdmin", () => {
     mockAuth.mockResolvedValue({ admin: false, sub: "test", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
     const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
     await expect(requireAdmin(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
+  });
+});
+
+describe("requireOwnerOrAdmin", () => {
+  it("returns claims for an owner token", async () => {
+    const mockAuth = vi.mocked((await import("../../server/useFirebaseAdmin")).auth).verifyIdToken;
+    mockAuth.mockResolvedValue({ owner: true, sub: "owner-1", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
+    const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
+    await expect(requireOwnerOrAdmin(mockEvent)).resolves.toMatchObject({ owner: true, uid: "owner-1" });
+  });
+
+  it("returns claims for an admin without the owner claim", async () => {
+    const mockAuth = vi.mocked((await import("../../server/useFirebaseAdmin")).auth).verifyIdToken;
+    mockAuth.mockResolvedValue({ admin: true, sub: "admin-1", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
+    const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
+    await expect(requireOwnerOrAdmin(mockEvent)).resolves.toMatchObject({ admin: true, uid: "admin-1" });
+  });
+
+  it("throws 401 when there is no token", async () => {
+    const mockEvent = { node: { req: { headers: {} } } } as any;
+    await expect(requireOwnerOrAdmin(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
+  });
+
+  it("throws 403 for a signed-in non-owner", async () => {
+    const mockAuth = vi.mocked((await import("../../server/useFirebaseAdmin")).auth).verifyIdToken;
+    mockAuth.mockResolvedValue({ reader: true, sub: "reader-1", iat: 1, exp: 2, auth_time: 1, firebase: { identities: {} } } as any);
+    const mockEvent = { node: { req: { headers: { authorization: "Bearer valid" } } } } as any;
+    await expect(requireOwnerOrAdmin(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
   });
 });
