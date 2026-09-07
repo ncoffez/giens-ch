@@ -69,6 +69,7 @@ const {
 	reorderMemoriamEntries,
 	updateMemoriamEntry,
 } = await import("../../server/utils/memoriam");
+const { buildSearchPages } = await import("../../server/utils/siteSearch");
 
 describe("memoriam access", () => {
 	it("lets owners and admins read, but not guests or other roles", () => {
@@ -82,6 +83,15 @@ describe("memoriam access", () => {
 		expect(canWriteMemoriam(null)).toBe(false);
 		expect(canWriteMemoriam({ owner: true })).toBe(false);
 		expect(canWriteMemoriam({ admin: true })).toBe(true);
+	});
+
+	it("indexes In Memoriam in search for owners, not guests", () => {
+		const ownerPages = buildSearchPages("de", { owner: true });
+		const guestPages = buildSearchPages("de", null);
+
+		expect(ownerPages.some((page) => page.id === "page-memoriam")).toBe(true);
+		expect(ownerPages.find((page) => page.id === "page-memoriam")?.to).toBe("/organisatorisches#in-memoriam");
+		expect(guestPages.some((page) => page.id === "page-memoriam")).toBe(false);
 	});
 });
 

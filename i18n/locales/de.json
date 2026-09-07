@@ -756,6 +756,8 @@
 		"title": "Suchen",
 		"subtitle": "Springen Sie direkt zu Seiten, Überschriften und Dokumenten, auf die Sie Zugriff haben.",
 		"placeholder": "Seiten, Inhalte und Dokumente durchsuchen...",
+		"searching": "Suche läuft...",
+		"noResults": "Keine Treffer gefunden.",
 		"sections": {
       "recommendations": "Empfohlen",
       "pages": "Schnellzugriff",

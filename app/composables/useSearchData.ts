@@ -107,10 +107,23 @@ export function useSearchData() {
 		}
 	};
 
+	const startSearch = (query: string) => {
+		if (!query.trim()) {
+			activeSearchRequest++;
+			searchResults.value = [];
+			isSearching.value = false;
+			return;
+		}
+
+		isSearching.value = true;
+	};
+
 	const searchAll = async (query: string) => {
 		const trimmedQuery = query.trim();
 		if (!trimmedQuery) {
+			activeSearchRequest++;
 			searchResults.value = [];
+			isSearching.value = false;
 			return;
 		}
 
@@ -194,6 +207,7 @@ export function useSearchData() {
 		isLoading: readonly(isLoadingRecommendations),
 		isSearching: readonly(isSearching),
 		loadDocuments,
+		startSearch,
 		searchAll,
 		getRecommendations,
 		recordSelection,

@@ -124,6 +124,8 @@ const translations: Record<string, string> = {
 	"admin.layout.kicker": "Kontrollzentrum",
 	"admin.layout.title": "Administration",
 	"admin.layout.lead": "Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort.",
+	"search.searching": "Suche läuft...",
+	"search.noResults": "Keine Treffer gefunden.",
 	"search.sections.pages": "Schnellzugriff",
 	"search.sections.headings": "Überschriften",
 	"search.sections.information": "Informationen",

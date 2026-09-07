@@ -38,6 +38,15 @@ const pages: SearchPage[] = [
 		usageKey: "page:/travel",
 		keywords: ["anreise", "auto", "zug"],
 	},
+	{
+		id: "page-memoriam",
+		label: "In Memoriam",
+		context: "Zum Gedenken an Eigentümerinnen und Eigentümer",
+		to: "/organisatorisches#in-memoriam",
+		icon: "i-lucide-flower-2",
+		usageKey: "page:/organisatorisches#in-memoriam",
+		keywords: ["memoriam", "gedenken", "souvenir"],
+	},
 ];
 
 const headings: SearchHeading[] = [
@@ -54,6 +63,13 @@ const headings: SearchHeading[] = [
 		context: "Märkte und Dorfleben",
 		page: "Découvrir",
 		pagePath: "/entdecken",
+	},
+	{
+		id: "memoriam-anna",
+		text: "Anna Meier",
+		context: "In Memoriam · 1990–2010",
+		page: "In Memoriam",
+		pagePath: "/organisatorisches#in-memoriam",
 	},
 ];
 
@@ -124,6 +140,14 @@ describe("search utilities", () => {
 
 		expect(wifiResults.some((result) => result.type === "heading" && result.to === "/organisatorisches#wifi")).toBe(true);
 		expect(marketResults.some((result) => result.type === "heading" && result.to === "/entdecken#markets")).toBe(true);
+	});
+
+	it("finds the In Memoriam section and named entries", () => {
+		const sectionResults = search("gedenken");
+		const nameResults = search("anna meier");
+
+		expect(sectionResults.some((result) => result.type === "page" && result.to === "/organisatorisches#in-memoriam")).toBe(true);
+		expect(nameResults.some((result) => result.type === "heading" && result.to === "/organisatorisches#in-memoriam")).toBe(true);
 	});
 
 	it("preserves existing section hashes instead of appending duplicate anchors", () => {

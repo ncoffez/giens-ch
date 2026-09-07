@@ -125,6 +125,7 @@ onBeforeUnmount(unbindLightbox);
 <template>
 	<section
 		v-if="isOwner"
+		id="in-memoriam"
 		data-memoriam-section
 		class="max-w-screen-lg mx-auto px-4"
 	>

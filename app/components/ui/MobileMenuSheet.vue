@@ -21,7 +21,7 @@ const localePath = useLocalePath();
 const route = useRoute();
 const { t } = useI18n();
 const nuxtApp = useNuxtApp();
-const { loadDocuments, searchAll, searchResults, isLoading, isSearching, canAccessDocuments, recordSelection } = useSearchData();
+const { loadDocuments, startSearch, searchAll, searchResults, isLoading, isSearching, canAccessDocuments, recordSelection } = useSearchData();
 
 const query = ref("");
 const hasLoadedDocuments = ref(false);
@@ -98,6 +98,7 @@ watch(() => route.fullPath, () => {
 });
 
 watch(query, (value, _, onCleanup) => {
+	startSearch(value);
 	const timer = window.setTimeout(async () => {
 		await searchAll(value);
 	}, 180);

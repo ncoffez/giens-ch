@@ -756,6 +756,8 @@
 		"title": "Rechercher",
 		"subtitle": "Accédez directement aux pages, titres et documents auxquels vous avez accès.",
 		"placeholder": "Rechercher des pages, contenus et documents...",
+		"searching": "Recherche en cours...",
+		"noResults": "Aucun résultat trouvé.",
 		"sections": {
       "recommendations": "Recommandé",
       "pages": "Accès rapide",
