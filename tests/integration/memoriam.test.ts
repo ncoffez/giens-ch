@@ -66,6 +66,7 @@ const {
 	sortMemoriamEntries,
 	createMemoriamEntry,
 	listMemoriamEntries,
+	reorderMemoriamEntries,
 	updateMemoriamEntry,
 } = await import("../../server/utils/memoriam");
 
@@ -140,9 +141,10 @@ describe("memoriam records", () => {
 		expect(entry.bioByLocale.de).toBe("<p>Hallo</p>");
 		expect(entry.bioByLocale.fr).toBeUndefined();
 		expect(entry.photos).toEqual([]);
+		expect(entry.sortOrder).toBe(0);
 	});
 
-	it("sorts by residence end, then start, then name", () => {
+	it("sorts by residence end, then start, then name when sortOrder is equal", () => {
 		const sorted = sortMemoriamEntries([
 			serializeMemoriamEntry("1", { name: "Berta", periodFrom: "1980", periodTo: "2000" }),
 			serializeMemoriamEntry("2", { name: "Anna", periodFrom: "1990", periodTo: "2010" }),
@@ -150,6 +152,16 @@ describe("memoriam records", () => {
 		]);
 
 		expect(sorted.map((entry) => entry.name)).toEqual(["Anna", "Clara", "Berta"]);
+	});
+
+	it("sorts by explicit sortOrder first", () => {
+		const sorted = sortMemoriamEntries([
+			serializeMemoriamEntry("1", { name: "Last", sortOrder: 2, periodTo: "1990" }),
+			serializeMemoriamEntry("2", { name: "First", sortOrder: 0, periodTo: "2010" }),
+			serializeMemoriamEntry("3", { name: "Middle", sortOrder: 1, periodTo: "2000" }),
+		]);
+
+		expect(sorted.map((entry) => entry.name)).toEqual(["First", "Middle", "Last"]);
 	});
 
 	it("creates an entry and translates the German bio", async () => {
@@ -170,6 +182,18 @@ describe("memoriam records", () => {
 		const updated = await updateMemoriamEntry(created.id, { name: "Anna M." }, "admin-1");
 		expect(updated.name).toBe("Anna M.");
 		expect(updated.bioByLocale?.fr).toBe("<p>Texte français</p>");
+	});
+
+	it("persists a manual list order", async () => {
+		await createMemoriamEntry({ name: "Reorder A", periodFrom: "1990" }, "admin-1");
+		await createMemoriamEntry({ name: "Reorder B", periodFrom: "1991" }, "admin-1");
+		const listed = await listMemoriamEntries();
+		const reversed = [...listed].reverse().map((entry) => entry.id);
+
+		const reordered = await reorderMemoriamEntries(reversed);
+
+		expect(reordered.map((entry) => entry.id)).toEqual(reversed);
+		expect(reordered.map((entry) => entry.sortOrder)).toEqual(reversed.map((_, index) => index));
 	});
 });
 
@@ -245,6 +269,52 @@ describe("memoriam UI", () => {
 
 		expect(document.body.textContent || "").toContain("Lauftext");
 		expect(document.body.textContent || "").toContain("Speichern");
-		expect(document.body.textContent || "").toContain("In der Résidence von");
+		expect(document.body.textContent || "").toContain("Zeitraum in der Résidence");
+		expect(document.body.textContent || "").toContain("Von");
+		expect(document.body.textContent || "").toContain("Bis");
+	});
+
+	it("shows reorder controls when several entries exist", async () => {
+		registerEndpoint("/api/admin/memoriam", {
+			method: "GET",
+			handler: () => [
+				{
+					id: "a1",
+					name: "Anna Meier",
+					photos: [],
+					bio: "",
+					periodFrom: "1990",
+					periodTo: "2010",
+					sortOrder: 0,
+					createdAt: "",
+					updatedAt: "",
+				},
+				{
+					id: "a2",
+					name: "Peter Keller",
+					photos: [],
+					bio: "",
+					periodFrom: "1980",
+					periodTo: "2000",
+					sortOrder: 1,
+					createdAt: "",
+					updatedAt: "",
+				},
+			],
+		});
+
+		const component = await mountSuspended(AdminMemoriamPage);
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		expect(component.text()).toContain("Reihenfolge mit den Pfeilen ändern.");
+		expect(component.findAll("[data-memoriam-move-up]").length).toBeGreaterThan(0);
+		expect(component.findAll("[data-memoriam-move-down]").length).toBeGreaterThan(0);
+	});
+
+	it("previews selected photos immediately and opens a lightbox on the public section", () => {
+		expect(readFileSync("app/pages/admin/memoriam.vue", "utf8")).toContain("createObjectURL");
+		expect(readFileSync("app/pages/admin/memoriam.vue", "utf8")).toContain("previewUrl");
+		expect(readFileSync("app/components/memoriam/MemoriamSection.vue", "utf8")).toContain("data-memoriam-lightbox");
+		expect(readFileSync("app/components/memoriam/MemoriamSection.vue", "utf8")).toContain("openLightbox");
 	});
 });

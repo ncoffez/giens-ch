@@ -812,9 +812,13 @@
       "namePlaceholder": "Prénom et nom",
       "bio": "Texte",
       "bioHint": "Saisir uniquement en allemand. L’enregistrement lance la traduction automatique vers le français.",
-      "periodFrom": "À la Résidence de",
-      "periodTo": "à",
+      "period": "Période à la Résidence",
+      "periodFrom": "De",
+      "periodTo": "À",
       "periodHint": "Année (1990) ou date (1990-06-15).",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "orderHint": "Modifiez l’ordre avec les flèches.",
       "photos": "Photos",
       "photosHint": "Jusqu’à {count} photos.",
       "addPhotos": "Ajouter des photos",
@@ -832,7 +836,9 @@
         "photoDeleted": "Photo retirée",
         "imagesOnly": "Seules les images peuvent être téléversées",
         "maxSize": "Taille maximale : 10 Mo",
-        "maxPhotos": "Maximum {count} photos"
+        "maxPhotos": "Maximum {count} photos",
+        "reordered": "Ordre enregistré",
+        "reorderFailed": "Impossible d’enregistrer l’ordre"
       }
     }
   },
@@ -842,7 +848,11 @@
     "emptyTitle": "Aucune entrée pour le moment",
     "emptyText": "Les articles commémoratifs apparaîtront ici une fois saisis.",
     "periodLabel": "À la Résidence",
-    "manage": "Gérer les entrées"
+    "manage": "Gérer les entrées",
+    "openImage": "Agrandir l’image",
+    "closeImage": "Fermer l’image",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante"
   },
   "ownerDocuments": {
     "title": "Documents des propriétaires",

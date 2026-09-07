@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { MemoriamEntry } from "../../../types";
 import { formatMemoriamPeriod } from "~/utils/memoriam";
+import { isSameOrder, movePhoto } from "~/utils/photoOrder";
+
+interface PendingPhoto {
+	id: string;
+	file: File;
+	previewUrl: string;
+}
 
 definePageMeta({
 	middleware: ["is-admin"],
@@ -19,8 +26,9 @@ const loading = ref(true);
 const saving = ref(false);
 const showForm = ref(false);
 const editingId = ref<string | null>(null);
-const pendingFiles = ref<File[]>([]);
+const pendingPhotos = ref<PendingPhoto[]>([]);
 const photoInput = ref<HTMLInputElement | null>(null);
+const reordering = ref(false);
 
 const form = reactive({
 	name: "",
@@ -51,6 +59,13 @@ const fetchEntries = async () => {
 	}
 };
 
+const revokePendingPreviews = () => {
+	for (const photo of pendingPhotos.value) {
+		URL.revokeObjectURL(photo.previewUrl);
+	}
+	pendingPhotos.value = [];
+};
+
 const resetForm = () => {
 	editingId.value = null;
 	form.name = "";
@@ -58,7 +73,7 @@ const resetForm = () => {
 	form.periodFrom = "";
 	form.periodTo = "";
 	form.photos = [];
-	pendingFiles.value = [];
+	revokePendingPreviews();
 	if (photoInput.value) photoInput.value.value = "";
 };
 
@@ -74,7 +89,7 @@ const openEdit = (entry: MemoriamEntry) => {
 	form.periodFrom = entry.periodFrom;
 	form.periodTo = entry.periodTo;
 	form.photos = [...entry.photos];
-	pendingFiles.value = [];
+	revokePendingPreviews();
 	showForm.value = true;
 };
 
@@ -91,16 +106,17 @@ const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
 });
 
 const uploadPendingPhotos = async (entryId: string) => {
-	const files = [...pendingFiles.value];
-	pendingFiles.value = [];
+	const photos = [...pendingPhotos.value];
+	pendingPhotos.value = [];
 
-	for (const file of files) {
-		const dataUrl = await fileToDataUrl(file);
+	for (const photo of photos) {
+		const dataUrl = await fileToDataUrl(photo.file);
 		await $fetch(`/api/admin/memoriam/${entryId}/photos/upload`, {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
-			body: { file: dataUrl, type: file.type },
+			body: { file: dataUrl, type: photo.file.type },
 		});
+		URL.revokeObjectURL(photo.previewUrl);
 	}
 };
 
@@ -141,7 +157,7 @@ const saveEntry = async () => {
 			entryId = created.id;
 		}
 
-		if (pendingFiles.value.length && entryId) {
+		if (pendingPhotos.value.length && entryId) {
 			await uploadPendingPhotos(entryId);
 		}
 
@@ -212,7 +228,7 @@ const onPhotosSelected = (event: Event) => {
 	const files = Array.from(target.files || []);
 	if (!files.length) return;
 
-	const currentCount = form.photos.length + pendingFiles.value.length;
+	const currentCount = form.photos.length + pendingPhotos.value.length;
 	if (currentCount + files.length > MAX_PHOTOS) {
 		toast.add({ title: t("admin.memoriam.toasts.maxPhotos", { count: MAX_PHOTOS }), color: "error" });
 		target.value = "";
@@ -231,15 +247,52 @@ const onPhotosSelected = (event: Event) => {
 		return;
 	}
 
-	pendingFiles.value = [...pendingFiles.value, ...files];
+	pendingPhotos.value = [
+		...pendingPhotos.value,
+		...files.map((file) => ({
+			id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+			file,
+			previewUrl: URL.createObjectURL(file),
+		})),
+	];
 	target.value = "";
 };
 
-const removePendingFile = (index: number) => {
-	pendingFiles.value = pendingFiles.value.filter((_, fileIndex) => fileIndex !== index);
+const removePendingPhoto = (id: string) => {
+	const photo = pendingPhotos.value.find((item) => item.id === id);
+	if (photo) URL.revokeObjectURL(photo.previewUrl);
+	pendingPhotos.value = pendingPhotos.value.filter((item) => item.id !== id);
+};
+
+const moveEntry = async (from: number, to: number) => {
+	const next = movePhoto(entries.value, from, to);
+	if (isSameOrder(next, entries.value)) return;
+
+	const previous = [...entries.value];
+	entries.value = next;
+	reordering.value = true;
+
+	try {
+		await waitForAuth();
+		entries.value = await $fetch<MemoriamEntry[]>("/api/admin/memoriam/reorder", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${token.value}` },
+			body: { ids: next.map((entry) => entry.id) },
+		});
+	} catch (e: unknown) {
+		entries.value = previous;
+		toast.add({
+			title: t("admin.memoriam.toasts.reorderFailed"),
+			description: getFetchError(e),
+			color: "error",
+		});
+	} finally {
+		reordering.value = false;
+	}
 };
 
 onMounted(fetchEntries);
+onBeforeUnmount(revokePendingPreviews);
 </script>
 
 <template>
@@ -270,12 +323,37 @@ onMounted(fetchEntries);
 			<p class="text-sm text-stone-500 mt-2">{{ t("admin.memoriam.emptyHint") }}</p>
 		</div>
 
-		<div v-else class="space-y-4">
+		<template v-else>
+		<p v-if="entries.length > 1" class="mb-4 text-sm text-stone-500">{{ t("admin.memoriam.orderHint") }}</p>
+
+		<div class="space-y-4">
 			<div
-				v-for="entry in entries"
+				v-for="(entry, index) in entries"
 				:key="entry.id"
 				class="flex flex-col gap-4 rounded-2xl border border-stone-200/80 bg-white/90 p-4 sm:flex-row sm:items-center dark:border-stone-700 dark:bg-stone-800/70 md:rounded-[1.5rem] md:p-5"
 			>
+				<div v-if="entries.length > 1" class="flex sm:flex-col gap-1 shrink-0">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-lucide-chevron-up"
+						size="sm"
+						:disabled="reordering || index === 0"
+						:aria-label="t('admin.memoriam.moveUp')"
+						data-memoriam-move-up
+						@click="moveEntry(index, index - 1)"
+					/>
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-lucide-chevron-down"
+						size="sm"
+						:disabled="reordering || index === entries.length - 1"
+						:aria-label="t('admin.memoriam.moveDown')"
+						data-memoriam-move-down
+						@click="moveEntry(index, index + 1)"
+					/>
+				</div>
 				<img
 					v-if="entry.photos[0]"
 					:src="entry.photos[0]"
@@ -304,6 +382,7 @@ onMounted(fetchEntries);
 				</div>
 			</div>
 		</div>
+		</template>
 
 		<UModal
 			v-model:open="showForm"
@@ -321,13 +400,17 @@ onMounted(fetchEntries);
 						/>
 					</UFormField>
 
-					<div class="grid gap-4 sm:grid-cols-2">
-						<UFormField :label="t('admin.memoriam.periodFrom')" :description="t('admin.memoriam.periodHint')">
-							<UInput v-model="form.periodFrom" size="lg" class="w-full" placeholder="1990" />
-						</UFormField>
-						<UFormField :label="t('admin.memoriam.periodTo')">
-							<UInput v-model="form.periodTo" size="lg" class="w-full" placeholder="2010-06-15" />
-						</UFormField>
+					<div class="space-y-3">
+						<p class="text-sm font-medium">{{ t("admin.memoriam.period") }}</p>
+						<p class="text-sm text-stone-500">{{ t("admin.memoriam.periodHint") }}</p>
+						<div class="grid gap-4 sm:grid-cols-2 sm:items-end">
+							<UFormField :label="t('admin.memoriam.periodFrom')">
+								<UInput v-model="form.periodFrom" size="lg" class="w-full" placeholder="1990" />
+							</UFormField>
+							<UFormField :label="t('admin.memoriam.periodTo')">
+								<UInput v-model="form.periodTo" size="lg" class="w-full" placeholder="2010-06-15" />
+							</UFormField>
+						</div>
 					</div>
 
 					<UFormField
@@ -346,18 +429,17 @@ onMounted(fetchEntries);
 								/>
 							</div>
 							<div
-								v-for="(file, index) in pendingFiles"
-								:key="`${file.name}-${index}`"
-								class="relative flex h-24 w-24 items-center justify-center rounded-xl border border-dashed border-stone-300 px-2 text-center text-xs text-stone-500"
+								v-for="photo in pendingPhotos"
+								:key="photo.id"
+								class="relative"
 							>
-								<span class="line-clamp-3">{{ file.name }}</span>
+								<img :src="photo.previewUrl" alt="" class="h-24 w-24 rounded-xl object-cover">
 								<UButton
 									icon="i-lucide-x"
-									color="neutral"
-									variant="ghost"
+									color="error"
 									size="xs"
 									class="absolute -right-2 -top-2"
-									@click="removePendingFile(index)"
+									@click="removePendingPhoto(photo.id)"
 								/>
 							</div>
 						</div>

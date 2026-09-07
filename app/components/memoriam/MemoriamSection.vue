@@ -51,6 +51,75 @@ function bioHtml(entry: MemoriamEntry) {
 function periodLabel(entry: MemoriamEntry) {
 	return formatMemoriamPeriod(entry.periodFrom, entry.periodTo);
 }
+
+const lightbox = ref<{ photos: string[]; name: string; index: number } | null>(null);
+const lightboxPhoto = computed(() => {
+	if (!lightbox.value) return null;
+	return lightbox.value.photos[lightbox.value.index] || null;
+});
+
+function bindLightbox() {
+	if (!import.meta.client) return;
+	document.addEventListener("keydown", handleLightboxKeydown);
+	document.body.style.overflow = "hidden";
+}
+
+function unbindLightbox() {
+	if (!import.meta.client) return;
+	document.removeEventListener("keydown", handleLightboxKeydown);
+	document.body.style.overflow = "";
+}
+
+function openLightbox(entry: MemoriamEntry, index: number) {
+	if (!entry.photos.length) return;
+	const wasClosed = lightbox.value === null;
+	lightbox.value = {
+		photos: entry.photos,
+		name: entry.name,
+		index,
+	};
+	if (wasClosed) bindLightbox();
+}
+
+function closeLightbox() {
+	lightbox.value = null;
+	unbindLightbox();
+}
+
+function showPreviousPhoto() {
+	if (!lightbox.value || lightbox.value.photos.length < 2) return;
+	const count = lightbox.value.photos.length;
+	lightbox.value = {
+		...lightbox.value,
+		index: (lightbox.value.index - 1 + count) % count,
+	};
+}
+
+function showNextPhoto() {
+	if (!lightbox.value || lightbox.value.photos.length < 2) return;
+	const count = lightbox.value.photos.length;
+	lightbox.value = {
+		...lightbox.value,
+		index: (lightbox.value.index + 1) % count,
+	};
+}
+
+function handleLightboxKeydown(event: KeyboardEvent) {
+	if (!lightbox.value) return;
+	if (event.key === "Escape") {
+		closeLightbox();
+		return;
+	}
+	if (event.key === "ArrowLeft") {
+		showPreviousPhoto();
+		return;
+	}
+	if (event.key === "ArrowRight") {
+		showNextPhoto();
+	}
+}
+
+onBeforeUnmount(unbindLightbox);
 </script>
 
 <template>
@@ -92,12 +161,19 @@ function periodLabel(entry: MemoriamEntry) {
 				class="grid gap-6 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-8 rounded-[1.75rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 md:p-8"
 			>
 				<div class="space-y-3">
-					<img
+					<button
 						v-if="entry.photos[0]"
-						:src="entry.photos[0]"
-						:alt="entry.name"
-						class="w-full aspect-square object-cover rounded-2xl bg-stone-100 dark:bg-stone-800"
+						type="button"
+						class="block w-full cursor-zoom-in"
+						:aria-label="t('memoriam.openImage')"
+						@click="openLightbox(entry, 0)"
 					>
+						<img
+							:src="entry.photos[0]"
+							:alt="entry.name"
+							class="w-full aspect-square object-cover rounded-2xl bg-stone-100 dark:bg-stone-800"
+						>
+					</button>
 					<div
 						v-else
 						class="w-full aspect-square rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
@@ -105,13 +181,20 @@ function periodLabel(entry: MemoriamEntry) {
 						<UIcon name="i-lucide-user" class="w-10 h-10 text-stone-300" />
 					</div>
 					<div v-if="entry.photos.length > 1" class="grid grid-cols-3 gap-2">
-						<img
-							v-for="photo in entry.photos.slice(1, 4)"
+						<button
+							v-for="(photo, photoIndex) in entry.photos.slice(1)"
 							:key="photo"
-							:src="photo"
-							:alt="entry.name"
-							class="aspect-square object-cover rounded-lg bg-stone-100 dark:bg-stone-800"
+							type="button"
+							class="cursor-zoom-in"
+							:aria-label="t('memoriam.openImage')"
+							@click="openLightbox(entry, photoIndex + 1)"
 						>
+							<img
+								:src="photo"
+								:alt="entry.name"
+								class="aspect-square object-cover rounded-lg bg-stone-100 dark:bg-stone-800"
+							>
+						</button>
 					</div>
 				</div>
 
@@ -128,5 +211,50 @@ function periodLabel(entry: MemoriamEntry) {
 				</div>
 			</article>
 		</div>
+
+		<Teleport to="body">
+			<div
+				v-if="lightboxPhoto"
+				class="fixed inset-0 z-[80] flex items-center justify-center bg-black/92 p-4 md:p-8"
+				data-memoriam-lightbox
+				@click="closeLightbox"
+			>
+				<button
+					type="button"
+					class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+					:aria-label="t('memoriam.closeImage')"
+					@click.stop="closeLightbox"
+				>
+					<UIcon name="i-lucide-x" class="h-5 w-5" />
+				</button>
+
+				<button
+					v-if="lightbox && lightbox.photos.length > 1"
+					type="button"
+					class="absolute left-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+					:aria-label="t('memoriam.previousImage')"
+					@click.stop="showPreviousPhoto"
+				>
+					<UIcon name="i-lucide-chevron-left" class="h-5 w-5" />
+				</button>
+
+				<img
+					:src="lightboxPhoto"
+					:alt="lightbox?.name"
+					class="max-h-[92vh] max-w-[92vw] rounded-[1.5rem] object-contain shadow-2xl"
+					@click.stop
+				>
+
+				<button
+					v-if="lightbox && lightbox.photos.length > 1"
+					type="button"
+					class="absolute right-4 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+					:aria-label="t('memoriam.nextImage')"
+					@click.stop="showNextPhoto"
+				>
+					<UIcon name="i-lucide-chevron-right" class="h-5 w-5" />
+				</button>
+			</div>
+		</Teleport>
 	</section>
 </template>

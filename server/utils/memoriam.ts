@@ -96,6 +96,7 @@ export function serializeMemoriamEntry(id: string, data: Record<string, unknown>
 		},
 		periodFrom: typeof data?.periodFrom === "string" ? data.periodFrom : "",
 		periodTo: typeof data?.periodTo === "string" ? data.periodTo : "",
+		sortOrder: typeof data?.sortOrder === "number" && Number.isFinite(data.sortOrder) ? data.sortOrder : 0,
 		createdAt: typeof data?.createdAt === "string" ? data.createdAt : "",
 		updatedAt: typeof data?.updatedAt === "string" ? data.updatedAt : "",
 	};
@@ -109,6 +110,7 @@ function periodSortKey(value: string): string {
 
 export function sortMemoriamEntries(entries: MemoriamEntry[]): MemoriamEntry[] {
 	return [...entries].sort((a, b) => {
+		if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
 		const to = periodSortKey(b.periodTo).localeCompare(periodSortKey(a.periodTo));
 		if (to !== 0) return to;
 		const from = periodSortKey(b.periodFrom).localeCompare(periodSortKey(a.periodFrom));
@@ -168,6 +170,8 @@ export async function createMemoriamEntry(
 	const now = new Date().toISOString();
 	const id = crypto.randomUUID();
 	const bioFields = await resolveMemoriamBio(parsed.bio ?? "");
+	const existing = await listMemoriamEntries();
+	const sortOrder = existing.reduce((max, entry) => Math.max(max, entry.sortOrder), -1) + 1;
 
 	const record = {
 		id,
@@ -176,6 +180,7 @@ export async function createMemoriamEntry(
 		...bioFields,
 		periodFrom: parsed.periodFrom ?? "",
 		periodTo: parsed.periodTo ?? "",
+		sortOrder,
 		createdAt: now,
 		updatedAt: now,
 		createdBy: uid,
@@ -277,6 +282,31 @@ export async function addMemoriamPhoto(
 	});
 
 	return { url };
+}
+
+export async function reorderMemoriamEntries(ids: string[]): Promise<MemoriamEntry[]> {
+	if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== "string" || !id.trim())) {
+		throw createError({ statusCode: 400, message: "ids must be a list of entry IDs" });
+	}
+
+	const uniqueIds = new Set(ids);
+	if (uniqueIds.size !== ids.length) {
+		throw createError({ statusCode: 400, message: "ids must be unique" });
+	}
+
+	const existing = await listMemoriamEntries();
+	const existingIds = new Set(existing.map((entry) => entry.id));
+	if (ids.length !== existing.length || ids.some((id) => !existingIds.has(id))) {
+		throw createError({ statusCode: 400, message: "ids must include every memoriam entry once" });
+	}
+
+	const now = new Date().toISOString();
+	await Promise.all(ids.map((id, index) => db.collection(MEMORIAM_COLLECTION).doc(id).update({
+		sortOrder: index,
+		updatedAt: now,
+	})));
+
+	return listMemoriamEntries();
 }
 
 export async function removeMemoriamPhoto(id: string, photoUrl: string): Promise<void> {

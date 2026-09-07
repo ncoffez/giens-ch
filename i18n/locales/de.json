@@ -812,9 +812,13 @@
       "namePlaceholder": "Vor- und Nachname",
       "bio": "Lauftext",
       "bioHint": "Nur auf Deutsch erfassen. Beim Speichern wird automatisch ins Französische übersetzt.",
-      "periodFrom": "In der Résidence von",
-      "periodTo": "bis",
+      "period": "Zeitraum in der Résidence",
+      "periodFrom": "Von",
+      "periodTo": "Bis",
       "periodHint": "Jahr (1990) oder Datum (1990-06-15).",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "orderHint": "Reihenfolge mit den Pfeilen ändern.",
       "photos": "Fotos",
       "photosHint": "Bis zu {count} Fotos.",
       "addPhotos": "Fotos hinzufügen",
@@ -832,7 +836,9 @@
         "photoDeleted": "Foto entfernt",
         "imagesOnly": "Nur Bilder können hochgeladen werden",
         "maxSize": "Maximale Dateigrösse: 10 MB",
-        "maxPhotos": "Maximal {count} Fotos"
+        "maxPhotos": "Maximal {count} Fotos",
+        "reordered": "Reihenfolge gespeichert",
+        "reorderFailed": "Reihenfolge konnte nicht gespeichert werden"
       }
     }
   },
@@ -842,7 +848,11 @@
     "emptyTitle": "Noch keine Einträge",
     "emptyText": "Gedenkartikel erscheinen hier, sobald sie erfasst sind.",
     "periodLabel": "In der Résidence",
-    "manage": "Einträge verwalten"
+    "manage": "Einträge verwalten",
+    "openImage": "Bild vergrössern",
+    "closeImage": "Bild schliessen",
+    "previousImage": "Vorheriges Bild",
+    "nextImage": "Nächstes Bild"
   },
   "ownerDocuments": {
     "title": "Eigentümer-Dokumente",

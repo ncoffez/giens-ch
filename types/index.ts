@@ -213,6 +213,8 @@ export interface MemoriamEntry {
 	periodFrom: string;
 	/** Year (YYYY) or date (YYYY-MM-DD). */
 	periodTo: string;
+	/** Lower numbers appear first. Unset entries fall back to 0. */
+	sortOrder: number;
 	createdAt: string;
 	updatedAt: string;
 }
