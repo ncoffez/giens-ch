@@ -23,17 +23,6 @@ export interface AdminUser extends User {
 	};
 }
 
-export interface Label {
-	id: string;
-	name?: string;
-	private: boolean;
-}
-
-export interface Author {
-	id: string;
-	name: string;
-}
-
 export interface HomeFile {
 	id: string;
 	name: string;

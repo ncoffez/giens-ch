@@ -77,7 +77,6 @@ const translations: Record<string, string> = {
 	"mobileMenu.sections.admin": "Verwaltung",
 	"admin.nav.homes": "Häuser",
 	"admin.nav.users": "Benutzer",
-	"admin.nav.labels": "Labels",
 	"admin.nav.memoriam": "In Memoriam",
 	"admin.nav.trash": "Papierkorb",
 	"admin.nav.settings": "Einstellungen",

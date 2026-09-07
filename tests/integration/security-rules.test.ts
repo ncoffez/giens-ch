@@ -8,6 +8,7 @@ describe("firestore.rules", () => {
 		expect(rules).toMatch(/allow read, write:\s*if false/);
 		expect(rules).not.toMatch(/allow read, write:\s*if true/);
 		expect(rules).not.toContain("request.auth");
+		expect(rules).not.toContain("request.auth.token.admin");
 	});
 });
 
