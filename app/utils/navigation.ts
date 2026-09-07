@@ -152,13 +152,6 @@ export function buildAdminNavigationItems(
 			active: isUnderPath(routePath, "/admin/users") || pathWithoutLocale(routePath) === "/admin",
 		},
 		{
-			id: "admin-labels",
-			label: t("admin.nav.labels"),
-			to: localePath("/admin/labels"),
-			icon: "i-lucide-tags",
-			active: isUnderPath(routePath, "/admin/labels"),
-		},
-		{
 			id: "admin-memoriam",
 			label: t("admin.nav.memoriam"),
 			to: localePath("/admin/memoriam"),

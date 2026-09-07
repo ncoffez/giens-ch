@@ -23,7 +23,6 @@ describe("navigation helpers", () => {
 		"mobileMenu.sections.admin": "Verwaltung",
 		"admin.nav.homes": "Häuser",
 		"admin.nav.users": "Benutzer",
-		"admin.nav.labels": "Labels",
 		"admin.nav.memoriam": "In Memoriam",
 		"admin.nav.trash": "Papierkorb",
 		"admin.nav.settings": "Einstellungen",
@@ -149,7 +148,6 @@ describe("navigation helpers", () => {
 			expect(admin?.items.map((item) => item.id)).toEqual([
 				"admin-homes",
 				"admin-users",
-				"admin-labels",
 				"admin-memoriam",
 				"admin-trash",
 				"admin-settings",

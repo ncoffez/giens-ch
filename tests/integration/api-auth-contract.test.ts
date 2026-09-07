@@ -37,6 +37,10 @@ describe("admin API auth contract", () => {
 		expect(existsSync("server/api/hello.ts")).toBe(false);
 		expect(existsSync("server/api/labels.ts")).toBe(false);
 		expect(existsSync("server/api/authors.ts")).toBe(false);
+		expect(existsSync("server/api/admin/labels.get.ts")).toBe(false);
+		expect(existsSync("server/api/admin/labels.post.ts")).toBe(false);
+		expect(existsSync("server/api/admin/labels")).toBe(false);
+		expect(existsSync("app/pages/admin/labels.vue")).toBe(false);
 	});
 
 	it("does not spread Firebase Auth UserRecord onto /api/users", () => {

@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t d">
-&#x9;<title id="t">Résidence Beausoleil</title>
-&#x9;<desc id="d">Sonne über dem Meer.</desc>
-&#x9;<defs><clipPath id="c"><rect width="64" height="64" rx="14"></rect></clipPath></defs>
-&#x9;<g clip-path="url(#c)">
-&#x9;&#x9;<rect width="64" height="64" fill="#226E78"></rect>
-&#x9;&#x9;<circle cx="32" cy="29" r="16" fill="#F4F0E6"></circle>
-&#x9;&#x9;<rect y="50" width="64" height="14" fill="#F4F0E6"></rect>
-&#x9;</g>
+	<title id="t">Résidence Beausoleil</title>
+	<desc id="d">Halbsonne über zwei Wellen.</desc>
+	<defs><clipPath id="c"><rect width="64" height="64" rx="14"></rect></clipPath></defs>
+	<g clip-path="url(#c)">
+		<rect width="64" height="64" fill="#226E78"></rect>
+		<path d="M8 28a24 24 0 0 1 48 0z" fill="#F4F0E6"></path>
+		<rect x="0" y="38.5" width="64" height="6.5" fill="#F4F0E6"></rect>
+		<rect x="0" y="51" width="64" height="6.5" fill="#F4F0E6"></rect>
+	</g>
 </svg>
