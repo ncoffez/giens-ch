@@ -158,6 +158,7 @@ onBeforeUnmount(unbindLightbox);
 		<div v-else class="space-y-10">
 			<article
 				v-for="entry in entries"
+				:id="`memoriam-${entry.id}`"
 				:key="entry.id"
 				class="grid gap-6 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-8 rounded-[1.75rem] border border-[var(--app-border)] bg-[var(--app-surface)] p-5 md:p-8"
 			>

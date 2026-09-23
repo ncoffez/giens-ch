@@ -228,6 +228,7 @@ const navigationItems = computed<NavigationMenuItem[]>(() =>
 		route.path,
 		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
 		true,
+		import.meta.client && isOwner.value,
 	),
 );
 
@@ -238,6 +239,7 @@ const compactNavigationItems = computed<NavigationMenuItem[]>(() =>
 		route.path,
 		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
 		false,
+		import.meta.client && isOwner.value,
 	),
 );
 

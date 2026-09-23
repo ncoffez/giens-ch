@@ -2,6 +2,7 @@
 definePageMeta({ middleware: ["home-owner"] });
 
 import type { Home, HomeShare, HomeContact } from "~/types";
+import { instructionEditorLocale, instructionHtmlHasText, shouldAutoTranslateInstructions } from "~/utils/instructionLocale";
 import HomeFiles from "~/components/homes/HomeFiles.vue";
 import HomePhotos from "~/components/homes/HomePhotos.vue";
 import HomeShareLinks from "~/components/homes/HomeShareLinks.vue";
@@ -31,6 +32,7 @@ const instructionsSourceLocale = ref<"de" | "fr">("de");
 const activeInstructionsLocale = ref<"de" | "fr">("de");
 const instructionsMeta = ref<Partial<Record<"de" | "fr", { auto: boolean; translatedAt?: string }>>>({});
 const retranslating = ref(false);
+const autoTranslateAttempted = ref(false);
 
 const instructionsLocaleOptions = computed(() => [
 	{ value: "de" as const, label: t("homes.edit.instructions.languages.de") },
@@ -284,11 +286,41 @@ const openPreview = () => {
 	}
 };
 
-watch(activeSection, (section) => {
-	if (section === "instructions" && (locale.value === "fr" || locale.value === "de")) {
-		activeInstructionsLocale.value = locale.value === "fr" ? "fr" : "de";
-	}
+const missingTranslationNotice = computed(() => {
+	if (isViewingSourceLocale.value) return false;
+	return !instructionHtmlHasText(formInstructions[activeInstructionsLocale.value]);
 });
+
+function syncInstructionEditorLocale() {
+	if (activeSection.value !== "instructions") return;
+	activeInstructionsLocale.value = instructionEditorLocale(locale.value);
+	void ensureMissingInstructionTranslation();
+}
+
+async function ensureMissingInstructionTranslation() {
+	const sourceLocale = instructionsSourceLocale.value;
+	const targetLocale = targetInstructionsLocale.value;
+	if (!shouldAutoTranslateInstructions({
+		loading: loading.value,
+		saving: saving.value || retranslating.value,
+		alreadyAttempted: autoTranslateAttempted.value,
+		viewingLocale: activeInstructionsLocale.value,
+		sourceLocale,
+		sourceHtml: formInstructions[sourceLocale],
+		targetHtml: formInstructions[targetLocale],
+	})) {
+		return;
+	}
+
+	autoTranslateAttempted.value = true;
+	await saveBasicInfo({ forceTranslate: true });
+}
+
+watch(homeId, () => {
+	autoTranslateAttempted.value = false;
+});
+
+watch([activeSection, locale, loading], syncInstructionEditorLocale);
 
 onMounted(fetchHome);
 </script>
@@ -534,6 +566,9 @@ onMounted(fetchHome);
 								<p class="mt-2 flex items-center gap-2 text-sm text-[var(--app-muted)]">
 									<UIcon name="i-lucide-languages" class="w-4 h-4 shrink-0" />
 									{{ t("homes.edit.instructions.translationHint") }}
+								</p>
+								<p v-if="missingTranslationNotice" class="mt-2 text-sm text-[var(--app-muted)]">
+									{{ t("homes.edit.instructions.translatingMissing") }}
 								</p>
 							</div>
 

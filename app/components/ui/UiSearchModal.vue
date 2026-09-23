@@ -147,14 +147,14 @@ const staticPageItems = computed<SearchPaletteItem[]>(() => {
 		items.push({
 			label: t("memoriam.title"),
 			icon: "i-lucide-flower-2",
-			to: localePath("/organisatorisches") + "#in-memoriam",
+			to: localePath("/memoriam"),
 			searchResult: {
 				id: "page-memoriam",
 				label: t("memoriam.title"),
-				to: "/organisatorisches#in-memoriam",
+				to: "/memoriam",
 				icon: "i-lucide-flower-2",
 				type: "page",
-				usageKey: "page:/organisatorisches#in-memoriam",
+				usageKey: "page:/memoriam",
 			},
 		});
 	}

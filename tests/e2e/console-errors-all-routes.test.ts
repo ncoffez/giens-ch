@@ -8,6 +8,7 @@ const ALL_ROUTES = [
 	"/register",
 	"/reset-password",
 	"/organisatorisches",
+	"/memoriam",
 	"/profile",
 	"/profile/me",
 	"/profile/me/password",

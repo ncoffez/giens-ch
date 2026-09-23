@@ -50,6 +50,7 @@
     "travel": "Anreise",
     "entdecken": "Entdecken",
     "organisatorisches": "Organisatorisches",
+    "memoriam": "In Memoriam",
     "documents": "Dokumente",
     "profile": "Profil",
     "myHomes": "Mein Haus",
@@ -125,6 +126,7 @@
         "autoBadge": "Automatisch übersetzt",
         "editedBadge": "Manuell angepasst",
         "retranslate": "Neu übersetzen",
+        "translatingMissing": "Für diese Sprache liegt noch keine Fassung vor. Sie wird jetzt automatisch übersetzt.",
         "languages": {
           "de": "Deutsch",
           "fr": "Französisch"
