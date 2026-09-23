@@ -60,6 +60,7 @@ const translations: Record<string, string> = {
 	"nav.travel": "Anreise",
 	"nav.entdecken": "Entdecken",
 	"nav.organisatorisches": "Organisatorisches",
+	"nav.memoriam": "In Memoriam",
 	"nav.documents": "Dokumente",
 	"nav.profile": "Profil",
 	"nav.myHomes": "Meine Häuser",

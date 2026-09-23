@@ -312,9 +312,9 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 			id: "page-memoriam",
 			label: copy.memoriam.label,
 			context: copy.memoriam.context,
-			to: "/organisatorisches#in-memoriam",
+			to: "/memoriam",
 			icon: "i-lucide-flower-2",
-			usageKey: "page:/organisatorisches#in-memoriam",
+			usageKey: "page:/memoriam",
 			keywords: [
 				"memoriam",
 				"in memoriam",
@@ -536,7 +536,7 @@ async function loadMemoriamSearchHeadings(locale: string, claims: SearchClaims |
 			text: entry.name,
 			context,
 			page: pageLabel,
-			pagePath: "/organisatorisches#in-memoriam",
+			pagePath: "/memoriam",
 		};
 	});
 }

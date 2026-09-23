@@ -50,6 +50,7 @@
     "travel": "Comment venir",
     "entdecken": "Découvrir",
     "organisatorisches": "Organisation",
+    "memoriam": "In Memoriam",
     "documents": "Documents",
     "profile": "Profil",
     "myHomes": "Ma maison",
@@ -125,6 +126,7 @@
         "autoBadge": "Traduit automatiquement",
         "editedBadge": "Modifié manuellement",
         "retranslate": "Traduire à nouveau",
+        "translatingMissing": "Il n'existe pas encore de version dans cette langue. La traduction démarre automatiquement.",
         "languages": {
           "de": "allemand",
           "fr": "français"

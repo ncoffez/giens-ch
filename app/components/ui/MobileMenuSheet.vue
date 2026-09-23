@@ -27,6 +27,7 @@ const query = ref("");
 const hasLoadedDocuments = ref(false);
 
 const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
+const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 
 const loginPath = computed(() => ({
@@ -39,6 +40,7 @@ const loginPath = computed(() => ({
 const menuFlags = computed<MobileMenuFlags>(() => ({
 	isLoggedIn: !!currentUser.value,
 	canAccessDocuments: canAccessDocuments.value,
+	canAccessMemoriam: isOwner.value,
 	isAdmin: isAdmin.value,
 }));
 

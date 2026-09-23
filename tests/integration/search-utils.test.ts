@@ -42,9 +42,9 @@ const pages: SearchPage[] = [
 		id: "page-memoriam",
 		label: "In Memoriam",
 		context: "Zum Gedenken an Eigentümerinnen und Eigentümer",
-		to: "/organisatorisches#in-memoriam",
+		to: "/memoriam",
 		icon: "i-lucide-flower-2",
-		usageKey: "page:/organisatorisches#in-memoriam",
+		usageKey: "page:/memoriam",
 		keywords: ["memoriam", "gedenken", "souvenir"],
 	},
 ];
@@ -69,7 +69,7 @@ const headings: SearchHeading[] = [
 		text: "Anna Meier",
 		context: "In Memoriam · 1990–2010",
 		page: "In Memoriam",
-		pagePath: "/organisatorisches#in-memoriam",
+		pagePath: "/memoriam",
 	},
 ];
 
@@ -146,8 +146,8 @@ describe("search utilities", () => {
 		const sectionResults = search("gedenken");
 		const nameResults = search("anna meier");
 
-		expect(sectionResults.some((result) => result.type === "page" && result.to === "/organisatorisches#in-memoriam")).toBe(true);
-		expect(nameResults.some((result) => result.type === "heading" && result.to === "/organisatorisches#in-memoriam")).toBe(true);
+		expect(sectionResults.some((result) => result.type === "page" && result.to === "/memoriam")).toBe(true);
+		expect(nameResults.some((result) => result.type === "heading" && result.to === "/memoriam#memoriam-anna")).toBe(true);
 	});
 
 	it("preserves existing section hashes instead of appending duplicate anchors", () => {

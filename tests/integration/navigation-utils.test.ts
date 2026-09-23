@@ -13,6 +13,7 @@ describe("navigation helpers", () => {
 		"nav.home": "Home",
 		"nav.travel": "Anreise",
 		"nav.entdecken": "Entdecken",
+		"nav.memoriam": "In Memoriam",
 		"nav.documents": "Dokumente",
 		"nav.organisatorisches": "Organisatorisches",
 		"nav.profile": "Profil",
@@ -33,6 +34,7 @@ describe("navigation helpers", () => {
 	const noAccess: MobileMenuFlags = {
 		isLoggedIn: false,
 		canAccessDocuments: false,
+		canAccessMemoriam: false,
 		isAdmin: false,
 	};
 
@@ -58,6 +60,27 @@ describe("navigation helpers", () => {
 			"Dokumente",
 		]);
 		expect(items[4]?.active).toBe(true);
+	});
+
+	it("places In Memoriam immediately before documents for owners", () => {
+		const items = buildNavigationItems(t, localePath, "/memoriam", true, true, true);
+
+		expect(items.map((item) => item.label)).toEqual([
+			"Home",
+			"Anreise",
+			"Entdecken",
+			"Organisatorisches",
+			"In Memoriam",
+			"Dokumente",
+		]);
+		expect(items[4]?.active).toBe(true);
+		expect(items[5]?.active).toBe(false);
+	});
+
+	it("does not highlight the owner page on the admin memoriam route", () => {
+		const items = buildNavigationItems(t, localePath, "/admin/memoriam", true, true, true);
+
+		expect(items.find((item) => item.label === "In Memoriam")?.active).toBe(false);
 	});
 
 	it("keeps compact navigation in the same order without home", () => {
@@ -110,6 +133,30 @@ describe("navigation helpers", () => {
 			expect(sections[0]?.items.map((item) => item.id)).toEqual(["travel", "documents", "login"]);
 			expect(sections[0]?.items.find((item) => item.id === "documents")?.active).toBe(true);
 			expect(sections[0]?.items.some((item) => item.id === "owner-documents")).toBe(false);
+		});
+
+		it("places In Memoriam beside documents for owners", () => {
+			const sections = buildMobileMenuSections(
+				t,
+				(path: string) => `/fr${path === "/" ? "" : path}`,
+				"/fr/memoriam",
+				{ ...noAccess, isLoggedIn: true, canAccessDocuments: true, canAccessMemoriam: true },
+				loginPath,
+			);
+
+			expect(sections[0]?.items.map((item) => item.id)).toEqual([
+				"travel",
+				"memoriam",
+				"documents",
+				"my-homes",
+				"profile",
+				"logout",
+			]);
+			expect(sections[0]?.items.find((item) => item.id === "memoriam")).toMatchObject({
+				label: "In Memoriam",
+				to: "/fr/memoriam",
+				active: true,
+			});
 		});
 
 		it("shows my-homes for any logged-in user, regardless of the homes feature flag", () => {

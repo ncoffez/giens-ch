@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { AdminUser } from "../../../types";
+import { sortAdminUsers, toggleSortDirection, type AdminUserSortKey, type SortDirection } from "~/utils/adminUserSort";
 
 const toast = useToast();
 const localePath = useLocalePath();
@@ -50,8 +51,22 @@ const newUser = ref({
 	displayName: ""
 });
 
+const sortKey = ref<AdminUserSortKey>("name");
+const sortDirection = ref<SortDirection>("asc");
+const sortedUsers = computed(() => sortAdminUsers(users.value || [], sortKey.value, sortDirection.value));
+
+function setUserSort(key: AdminUserSortKey) {
+	if (sortKey.value === key) {
+		sortDirection.value = toggleSortDirection(sortDirection.value);
+		return;
+	}
+
+	sortKey.value = key;
+	sortDirection.value = "asc";
+}
+
 const columns = [
-		{ id: "user", header: "Benutzer" },
+		{ id: "user", header: "Name" },
 		{ id: "roles", header: "Rollen" },
 		{ accessorKey: "disabled", id: "status", header: "Status" },
 		{ id: "actions", header: "" }
@@ -230,7 +245,37 @@ const getItems = (row: AdminUser) => [
 		</div>
 		
 		<div v-else-if="users && users.length > 0" class="-mx-3 overflow-hidden md:mx-0 md:rounded-[1.75rem] md:border md:border-[var(--app-border)] md:bg-white/70 md:dark:bg-white/[0.03]">
-			<UTable :data="users" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-stone-500' }">
+			<UTable :data="sortedUsers" :columns="columns" :ui="{ td: 'py-3 px-4', th: 'py-3 px-4 text-sm font-bold uppercase tracking-wider text-stone-500' }">
+				<template #user-header>
+					<button
+						type="button"
+						class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wider hover:text-[var(--app-text)]"
+						@click="setUserSort('name')"
+					>
+						Name
+						<UIcon v-if="sortKey === 'name'" :name="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3.5 h-3.5" />
+					</button>
+				</template>
+				<template #roles-header>
+					<button
+						type="button"
+						class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wider hover:text-[var(--app-text)]"
+						@click="setUserSort('role')"
+					>
+						Rollen
+						<UIcon v-if="sortKey === 'role'" :name="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3.5 h-3.5" />
+					</button>
+				</template>
+				<template #status-header>
+					<button
+						type="button"
+						class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wider hover:text-[var(--app-text)]"
+						@click="setUserSort('status')"
+					>
+						Status
+						<UIcon v-if="sortKey === 'status'" :name="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'" class="w-3.5 h-3.5" />
+					</button>
+				</template>
 				<template #user-cell="{ row }">
 					<div class="flex items-center gap-4">
 						<UAvatar :src="row.original.photoURL" :alt="row.original.displayName || row.original.email" size="md" class="ring-2 ring-gray-50 dark:ring-gray-800" />

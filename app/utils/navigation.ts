@@ -41,7 +41,8 @@ export function buildNavigationItems(
 	localePath: (path: string) => string,
 	routePath: string,
 	canAccessDocuments: boolean,
-	includeHome: boolean
+	includeHome: boolean,
+	canAccessMemoriam = false,
 ): NavigationMenuItem[] {
 	const items: NavigationMenuItem[] = [];
 
@@ -58,7 +59,16 @@ export function buildNavigationItems(
 
 	items.push(...buildPublicNavigationItems(t, localePath, routePath));
 
-	// Documents closes the menu: Home > Anreise > Entdecken > Organisatorisches > Dokumente.
+	// Owner pages close the menu: … Organisatorisches > In Memoriam > Dokumente.
+	if (canAccessMemoriam) {
+		items.push(createPrimaryNavigationItem(
+			t("nav.memoriam"),
+			localePath("/memoriam"),
+			"i-lucide-flower-2",
+			isMemoriamPage(routePath),
+		));
+	}
+
 	if (canAccessDocuments) {
 		items.push(createPrimaryNavigationItem(
 			t("nav.documents"),
@@ -107,6 +117,11 @@ function pathWithoutLocale(path: string): string {
 	return path.replace(/^\/fr/, "") || "/";
 }
 
+function isMemoriamPage(routePath: string): boolean {
+	const path = pathWithoutLocale(routePath);
+	return path === "/memoriam" || path.startsWith("/memoriam/");
+}
+
 function isUnderPath(routePath: string, prefix: string): boolean {
 	return pathWithoutLocale(routePath).startsWith(prefix);
 }
@@ -128,6 +143,7 @@ export interface MobileMenuSection {
 export interface MobileMenuFlags {
 	isLoggedIn: boolean;
 	canAccessDocuments: boolean;
+	canAccessMemoriam: boolean;
 	isAdmin: boolean;
 }
 
@@ -196,6 +212,16 @@ export function buildMobileMenuSections(
 			active: isUnderPath(routePath, "/travel"),
 		},
 	];
+
+	if (flags.canAccessMemoriam) {
+		mainItems.push({
+			id: "memoriam",
+			label: t("nav.memoriam"),
+			to: localePath("/memoriam"),
+			icon: "i-lucide-flower-2",
+			active: isMemoriamPage(routePath),
+		});
+	}
 
 	if (flags.canAccessDocuments) {
 		mainItems.push({

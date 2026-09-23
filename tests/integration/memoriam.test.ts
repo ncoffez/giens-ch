@@ -90,7 +90,7 @@ describe("memoriam access", () => {
 		const guestPages = buildSearchPages("de", null);
 
 		expect(ownerPages.some((page) => page.id === "page-memoriam")).toBe(true);
-		expect(ownerPages.find((page) => page.id === "page-memoriam")?.to).toBe("/organisatorisches#in-memoriam");
+		expect(ownerPages.find((page) => page.id === "page-memoriam")?.to).toBe("/memoriam");
 		expect(guestPages.some((page) => page.id === "page-memoriam")).toBe(false);
 	});
 });
@@ -213,11 +213,12 @@ describe("memoriam UI", () => {
 		expect(component.find("[data-memoriam-section]").exists()).toBe(false);
 	});
 
-	it("keeps the organisatorisches embed behind ClientOnly and owner visibility", () => {
-		const source = readFileSync("app/pages/organisatorisches.vue", "utf8");
-		expect(source).toContain("MemoriamSection");
-		expect(source).toContain("ClientOnly");
-		expect(source).toContain('v-if="isOwner"');
+	it("keeps In Memoriam on an owner-only page next to documents", () => {
+		const page = readFileSync("app/pages/memoriam.vue", "utf8");
+		expect(page).toContain('middleware: ["is-owner"]');
+		expect(page).toContain("MemoriamSection");
+		expect(page).toContain("ClientOnly");
+		expect(readFileSync("app/pages/organisatorisches.vue", "utf8")).not.toContain("MemoriamSection");
 	});
 
 	it("does not add a public navigation item", () => {
@@ -232,6 +233,7 @@ describe("memoriam UI", () => {
 		);
 
 		expect(source).toContain("admin-memoriam");
+		expect(source).toContain('localePath("/memoriam")');
 		expect(publicNav.toLowerCase()).not.toContain("memoriam");
 		expect(mobileTabs.toLowerCase()).not.toContain("memoriam");
 	});
