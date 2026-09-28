@@ -64,6 +64,15 @@ const contactForm = ref({
 const ownerContacts = computed(() => formContacts.value.filter((contact) => contact.isOwner));
 const additionalContacts = computed(() => formContacts.value.filter((contact) => !contact.isOwner));
 const isEditingOwnerContact = computed(() => Boolean(editingContact.value?.isOwner));
+const { can, refresh: refreshPermissions } = useSitePermissions();
+const sectionPermissions: Record<string, string> = {
+	links: "home.links.manage",
+	photos: "home.photos.upload",
+	wifi: "home.wifi.edit",
+	contacts: "home.contacts.manage",
+	instructions: "home.instructions.edit",
+	files: "home.files.upload",
+};
 const sectionItems = computed(() => [
 	{ id: "links", label: t("homes.edit.sections.links"), icon: "i-lucide-link" },
 	{ id: "photos", label: t("homes.edit.sections.photos"), icon: "i-lucide-image" },
@@ -71,7 +80,17 @@ const sectionItems = computed(() => [
 	{ id: "contacts", label: t("homes.edit.sections.contacts"), icon: "i-lucide-users" },
 	{ id: "instructions", label: t("homes.edit.sections.instructions"), icon: "i-lucide-file-text" },
 	{ id: "files", label: t("homes.edit.sections.files"), icon: "i-lucide-folder" },
-]);
+].filter((section) => can(sectionPermissions[section.id] || "")));
+
+if (import.meta.client) {
+	void refreshPermissions();
+}
+
+watch(sectionItems, (items) => {
+	if (!items.some((item) => item.id === activeSection.value) && items[0]) {
+		activeSection.value = items[0].id as typeof activeSection.value;
+	}
+});
 const contactModalTitle = computed(() => {
 	if (!editingContact.value) {
 		return t("homes.edit.contactModal.createTitle");

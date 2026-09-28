@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -9,10 +9,6 @@ export default defineEventHandler(async (event) => {
 
 		if (!claims) {
 			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
-
-		if (!canAdminGlobalDocuments(claims)) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin only" });
 		}
 
 		const { fileId, targetFolderId } = body;
@@ -31,6 +27,9 @@ export default defineEventHandler(async (event) => {
 		if (!fileDoc.exists) {
 			throw createError({ statusCode: 404, message: "File not found" });
 		}
+
+		await assertDocumentAction(claims, fileDoc.data()?.folderId || null, "move");
+		await assertDocumentAction(claims, targetFolderId || null, "upload");
 
 		if (targetFolderId) {
 			const folderDoc = await db.collection("globalFolders").doc(targetFolderId).get();

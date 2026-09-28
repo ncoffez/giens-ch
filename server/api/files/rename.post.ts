@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 import { buildDocumentSearchFields } from "../../utils/documentSearch";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
@@ -11,10 +11,6 @@ export default defineEventHandler(async (event) => {
 
 		if (!claims) {
 			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
-
-		if (!canAdminGlobalDocuments(claims)) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin only" });
 		}
 
 		const { fileId, newName } = body;
@@ -36,6 +32,7 @@ export default defineEventHandler(async (event) => {
 		}
 
 		const existingData = fileDoc.data() as Record<string, any>;
+		await assertDocumentAction(claims, existingData.folderId || null, "rename");
 		const processingRef = db.collection("documentProcessing").doc(buildDocumentProcessingId("global", fileId));
 		const processingDoc = await processingRef.get();
 

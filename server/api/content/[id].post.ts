@@ -1,5 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { requireAdmin } from "../../utils/auth";
+import { requireAreaPermission } from "../../utils/permissionAccess";
+import { permissionKeyForContentId } from "../../utils/content";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -9,7 +11,10 @@ export default defineEventHandler(async (event) => {
 			throw createError({ statusCode: 400, message: "Content ID is required" });
 		}
 
-		const claims = await requireAdmin(event);
+		const permissionKey = permissionKeyForContentId(contentId);
+		const claims = permissionKey
+			? (await requireAreaPermission(event, permissionKey)).claims
+			: await requireAdmin(event);
 		const body = await readBody(event);
 
 		const germanContent = body.content || "";

@@ -1,7 +1,5 @@
 import { db } from "../../../../useFirebaseAdmin";
-import { getHomeById } from "../../../../utils/homes";
-import { canManageHomeFiles } from "../../../../utils/fileAccess";
-import { getUserClaims } from "../../../../utils/auth";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { buildDocumentProcessingId } from "../../../../utils/documentProcessing";
 import { moveHomeFileBetweenVisibilities } from "../../../../utils/homeFiles";
 
@@ -22,21 +20,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Target visibility must be shared or private" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const home = await getHomeById(homeId);
-	if (!canManageHomeFiles(claims, home)) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot move files in this home",
-		});
-	}
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
+	const { home } = await assertHomeSection(event, homeId, "home.files.upload");
 
 	const file = [...(home.files || []), ...(home.privateFiles || [])].find((entry) => entry.id === body.fileId);
 	if (!file) {

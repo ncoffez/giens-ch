@@ -5,6 +5,15 @@ import { formatMemoriamPeriod, memoriamBioForLocale } from "../../app/utils/memo
 import { getHomesForUser } from "./homes";
 import { buildDocumentProcessingId } from "./documentProcessing";
 import { listMemoriamEntries } from "./memoriam";
+import { loadFolderRefs, loadPermissionConfig } from "./permissionConfig";
+import {
+	EMPTY_PERMISSION_CONFIG,
+	canAccessDocuments,
+	canEnterAdminShell,
+	canPerform,
+	canPerformFolderAction,
+	type SitePermissionConfig,
+} from "../../shared/sitePermissions";
 
 interface ContentDocument {
 	id: string;
@@ -227,13 +236,18 @@ function buildFolderPath(foldersById: Map<string, SearchableGlobalFolder>, folde
 	return segments.join(" / ");
 }
 
-export function buildSearchPages(locale: string, claims: SearchClaims | null): SearchPage[] {
+export function buildSearchPages(
+	locale: string,
+	claims: SearchClaims | null,
+	config: SitePermissionConfig = EMPTY_PERMISSION_CONFIG,
+): SearchPage[] {
 	const copy = PAGE_TEXT[getLocaleKey(locale)];
 	const isAuthenticated = Boolean(claims);
-	const canAccessDocuments = Boolean(claims?.admin || claims?.publisher || claims?.owner || claims?.reader);
-	const canAccessOwnerDocuments = Boolean(claims?.admin || claims?.owner);
+	const canAccessDocumentPages = canAccessDocuments(config, [], claims);
+	const canAccessOwnerDocumentPages = canPerform(config, claims, "home.files.upload");
+	const canViewMemoriam = canPerform(config, claims, "memoriam.view");
 	const isOwner = Boolean(claims?.owner || claims?.admin);
-	const isAdmin = Boolean(claims?.admin);
+	const canOpenAdmin = canEnterAdminShell(config, claims);
 
 	const pages: SearchPage[] = [
 		{
@@ -274,7 +288,7 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 		},
 	];
 
-	if (canAccessDocuments) {
+	if (canAccessDocumentPages) {
 		pages.push({
 			id: "page-documents",
 			label: copy.documents.label,
@@ -286,7 +300,7 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 		});
 	}
 
-	if (canAccessOwnerDocuments) {
+	if (canAccessOwnerDocumentPages) {
 		pages.push({
 			id: "page-owner-documents",
 			label: copy.ownerDocuments.label,
@@ -308,6 +322,9 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 			usageKey: "page:/my-homes",
 			keywords: ["hauser", "häuser", "homes", "maisons"],
 		});
+	}
+
+	if (canViewMemoriam) {
 		pages.push({
 			id: "page-memoriam",
 			label: copy.memoriam.label,
@@ -341,7 +358,7 @@ export function buildSearchPages(locale: string, claims: SearchClaims | null): S
 		});
 	}
 
-	if (isAdmin) {
+	if (canOpenAdmin) {
 		pages.push({
 			id: "page-admin",
 			label: copy.admin.label,
@@ -431,8 +448,12 @@ export async function loadContentSearchIndex(locale: string) {
 }
 
 async function loadSearchDocuments(locale: string, claims: SearchClaims | null): Promise<SearchDocument[]> {
-	const canAccessDocuments = Boolean(claims?.admin || claims?.publisher || claims?.owner || claims?.reader);
-	if (!canAccessDocuments) return [];
+	const [permissionConfig, folderRefs] = await Promise.all([
+		loadPermissionConfig(),
+		loadFolderRefs(),
+	]);
+	const canAccessDocumentTree = canAccessDocuments(permissionConfig, folderRefs, claims);
+	if (!canAccessDocumentTree) return [];
 
 	const localeKey = getLocaleKey(locale);
 	const sharedLabel = localeKey === "fr" ? "Documents partagés" : "Gemeinsame Dokumente";
@@ -458,6 +479,7 @@ async function loadSearchDocuments(locale: string, claims: SearchClaims | null):
 			...(doc.data() as Omit<SearchableGlobalFile, "id">),
 		}))
 		.filter((file) => !file.deletedAt)
+		.filter((file) => canPerformFolderAction(permissionConfig, folderRefs, claims, file.folderId || null, "open"))
 		.map((file) => {
 			const folderPath = buildFolderPath(foldersById, file.folderId || null);
 			const processing = globalProcessing.get(buildDocumentProcessingId("global", file.id));
@@ -477,11 +499,12 @@ async function loadSearchDocuments(locale: string, claims: SearchClaims | null):
 			};
 		});
 
-	if (!(claims?.owner || claims?.admin) || !claims.uid) {
+	const ownerUid = claims?.uid;
+	if (!canPerform(permissionConfig, claims, "home.files.upload") || !ownerUid) {
 		return globalDocuments;
 	}
 
-	const homes = await getHomesForUser(claims.uid);
+	const homes = await getHomesForUser(ownerUid);
 	const ownerFiles = homes.flatMap((home) => [...(home.files || []), ...(home.privateFiles || [])].map((file) => ({
 		homeId: home.id,
 		homeName: home.name,
@@ -521,7 +544,8 @@ async function loadSearchDocuments(locale: string, claims: SearchClaims | null):
 }
 
 async function loadMemoriamSearchHeadings(locale: string, claims: SearchClaims | null): Promise<SearchHeading[]> {
-	if (!(claims?.owner || claims?.admin)) return [];
+	const permissionConfig = await loadPermissionConfig();
+	if (!canPerform(permissionConfig, claims, "memoriam.view")) return [];
 
 	const entries = await listMemoriamEntries();
 	const pageLabel = PAGE_TEXT[getLocaleKey(locale)].memoriam.label;
@@ -551,15 +575,16 @@ export async function buildUnifiedSearchResults(query: string, options: SearchCa
 		loadMemoriamSearchHeadings(options.locale, options.claims),
 	]);
 
+	const permissionConfig = await loadPermissionConfig();
 	return searchCollections({
-		pages: buildSearchPages(options.locale, options.claims),
+		pages: buildSearchPages(options.locale, options.claims, permissionConfig),
 		headings: [...headings, ...memoriamHeadings],
 		features,
 		timeline,
 		documents,
 		query: trimmedQuery,
 		locale: options.locale,
-		canAccessDocuments: Boolean(options.claims?.admin || options.claims?.publisher || options.claims?.owner || options.claims?.reader),
+		canAccessDocuments: canAccessDocuments(permissionConfig, [], options.claims),
 		getUsageCount: () => 0,
 	});
 }

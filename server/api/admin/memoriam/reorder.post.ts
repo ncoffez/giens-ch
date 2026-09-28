@@ -1,8 +1,8 @@
-import { requireAdmin } from "../../../utils/auth";
+import { requireAreaPermission } from "../../../utils/permissionAccess";
 import { reorderMemoriamEntries } from "../../../utils/memoriam";
 
 export default defineEventHandler(async (event) => {
-	await requireAdmin(event);
+	await requireAreaPermission(event, "memoriam.manage");
 	const body = await readBody(event);
 	return reorderMemoriamEntries(body?.ids);
 });

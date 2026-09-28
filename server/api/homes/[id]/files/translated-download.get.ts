@@ -1,10 +1,7 @@
 import { db } from "../../../../useFirebaseAdmin";
-import { getUserClaims } from "../../../../utils/auth";
 import { buildTranslatedDocumentFileName, buildTranslatedDocumentHtml } from "../../../../utils/documentExport";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { buildDocumentProcessingId } from "../../../../utils/documentProcessing";
-import { getHomeById } from "../../../../utils/homes";
-import { canManageHomeFiles } from "../../../../utils/fileAccess";
-
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
 	const fileId = getQuery(event).fileId as string | undefined;
@@ -14,18 +11,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Home ID, file ID and locale are required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const home = await getHomeById(homeId);
-	if (!canManageHomeFiles(claims, home)) {
-		throw createError({ statusCode: 403, message: "Forbidden" });
-	}
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
+	const { home } = await assertHomeSection(event, homeId, "home.files.upload");
 
 	const isPrivate = getQuery(event).private === "true";
 	const file = (isPrivate ? (home.privateFiles || []) : (home.files || [])).find((entry) => entry.id === fileId);

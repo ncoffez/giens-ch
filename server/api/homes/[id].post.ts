@@ -1,5 +1,5 @@
-import { getHomeById, updateHome, isHomeOwner } from "../../utils/homes";
-import { getUserClaims } from "../../utils/auth";
+import { getHomeById, updateHome } from "../../utils/homes";
+import { assertHomeUpdate } from "../../utils/permissionAccess";
 import { detectHtmlLanguage, translateHtml } from "../../utils/htmlTranslation";
 import {
 	INSTRUCTION_LOCALES,
@@ -17,19 +17,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Home ID is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-
-	if (!isOwner) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot edit this home",
-		});
-	}
+	await assertHomeUpdate(event, homeId, body);
 
 	// The photo array is rewritten wholesale when the gallery order changes, so
 	// reject anything that is not a plain list of URLs before it reaches the doc.

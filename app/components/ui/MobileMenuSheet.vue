@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { SearchResult } from "../../utils/search";
+import { ADMIN_SHELL_KEYS } from "../../../shared/sitePermissions";
 import { buildMobileMenuSections, type MobileMenuFlags } from "../../utils/navigation";
 import { sanitizeRedirectPath } from "../../utils/redirect";
 
@@ -26,8 +27,7 @@ const { loadDocuments, startSearch, searchAll, searchResults, isLoading, isSearc
 const query = ref("");
 const hasLoadedDocuments = ref(false);
 
-const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
-const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
+const { can } = useSitePermissions();
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 
 const loginPath = computed(() => ({
@@ -40,12 +40,16 @@ const loginPath = computed(() => ({
 const menuFlags = computed<MobileMenuFlags>(() => ({
 	isLoggedIn: !!currentUser.value,
 	canAccessDocuments: canAccessDocuments.value,
-	canAccessMemoriam: isOwner.value,
-	isAdmin: isAdmin.value,
+	canAccessMemoriam: can("memoriam.view"),
+	isAdmin: ADMIN_SHELL_KEYS.some((key) => can(key)),
 }));
 
 const sections = computed(() =>
-	buildMobileMenuSections(t, localePath, route.path, menuFlags.value, loginPath.value),
+	buildMobileMenuSections(t, localePath, route.path, menuFlags.value, loginPath.value)
+		.map((section) => section.id === "admin"
+			? { ...section, items: section.items.filter((item) => !item.permission || can(item.permission)) }
+			: section)
+		.filter((section) => section.items.length > 0),
 );
 
 type ResultGroup = { id: string; label: string; items: MenuSearchResult[] };

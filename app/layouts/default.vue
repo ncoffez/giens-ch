@@ -132,6 +132,7 @@
 
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
+import { ADMIN_SHELL_KEYS } from "../../shared/sitePermissions";
 import { buildNavigationItems, buildPublicNavigationItems } from "../utils/navigation";
 import { sanitizeRedirectPath } from "../utils/redirect";
 
@@ -146,10 +147,8 @@ const { isMounted: isMobileMenuMounted } = useMobileMenu();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 const authInitialized = computed(() => import.meta.client ? nuxtApp.$authInitialized?.value ?? false : false);
-const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
-const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
-const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher?.value ?? false : false);
-const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
+const { can, refresh: refreshPermissions } = useSitePermissions();
+const canEnterAdmin = computed(() => ADMIN_SHELL_KEYS.some((key) => can(key)));
 const userDisplayName = computed(() =>
 	(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? "Profil"
 );
@@ -179,7 +178,7 @@ watch([authInitialized, currentUser], async ([initialized, user]) => {
 	}
 
 	hasLoadedUserFlags.value = true;
-	await Promise.all([fetchSettings(), fetchUserPreference()]);
+	await Promise.all([fetchSettings(), fetchUserPreference(), refreshPermissions()]);
 });
 
 const currentThemeIcon = computed(() => {
@@ -226,9 +225,9 @@ const navigationItems = computed<NavigationMenuItem[]>(() =>
 		t,
 		localePath,
 		route.path,
-		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
+		import.meta.client && can("documents.access"),
 		true,
-		import.meta.client && isOwner.value,
+		import.meta.client && can("memoriam.view"),
 	),
 );
 
@@ -237,9 +236,9 @@ const compactNavigationItems = computed<NavigationMenuItem[]>(() =>
 		t,
 		localePath,
 		route.path,
-		import.meta.client && (isOwner.value || isReader.value || isPublisher.value),
+		import.meta.client && can("documents.access"),
 		false,
-		import.meta.client && isOwner.value,
+		import.meta.client && can("memoriam.view"),
 	),
 );
 
@@ -277,7 +276,7 @@ const userItems = computed(() => {
 		});
 	}
 
-	if (import.meta.client && isAdmin.value) {
+	if (import.meta.client && canEnterAdmin.value) {
 		items.push({
 			label: t("nav.admin"),
 			to: localePath("/admin"),

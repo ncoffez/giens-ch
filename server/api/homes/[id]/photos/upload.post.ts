@@ -1,6 +1,6 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
-import { isHomeOwner, getHomeById } from "../../../../utils/homes";
-import { getUserClaims } from "../../../../utils/auth";
+import { getHomeById } from "../../../../utils/homes";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 
 const MAX_PHOTOS = 30;
 
@@ -16,19 +16,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "File is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-
-	if (!isOwner) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot upload photos to this home",
-		});
-	}
+	await assertHomeSection(event, homeId, "home.photos.upload");
 
 	const home = await getHomeById(homeId);
 	if (!home) {

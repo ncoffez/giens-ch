@@ -1,6 +1,5 @@
-import { isHomeOwner } from "../../../../utils/homes";
 import { revokeShareLink } from "../../../../utils/homes";
-import { getUserClaims } from "../../../../utils/auth";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
@@ -14,19 +13,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Share ID is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-
-	if (!isOwner) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot revoke share links for this home",
-		});
-	}
+	await assertHomeSection(event, homeId, "home.links.manage");
 
 	await revokeShareLink(body.shareId);
 	return { success: true };

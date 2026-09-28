@@ -2,6 +2,10 @@ import type { Ref } from "vue";
 import type { Auth, User } from "firebase/auth";
 
 declare module "#app" {
+	interface PageMeta {
+		permission?: string;
+	}
+
 	interface NuxtApp {
 		$currentUser: Ref<User | null>;
 		$token: Ref<string | null>;

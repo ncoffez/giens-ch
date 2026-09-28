@@ -1,6 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canReadGlobalDocuments } from "../../utils/fileAccess";
+import { documentAccessForClaims } from "../../utils/permissionAccess";
+import { canPerformFolderAction } from "../../../shared/sitePermissions";
 
 interface GlobalSearchFile {
 	id: string;
@@ -44,7 +45,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!canReadGlobalDocuments(claims)) {
+	const access = await documentAccessForClaims(claims);
+	if (!access.allowed) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
@@ -65,6 +67,7 @@ export default defineEventHandler(async (event) => {
 			...(doc.data() as Omit<GlobalSearchFile, "id">),
 		}))
 		.filter((file) => !file.deletedAt)
+		.filter((file) => canPerformFolderAction(access.config, access.folders, claims, file.folderId || null, "open"))
 		.map((file) => ({
 			id: file.id,
 			name: file.name,

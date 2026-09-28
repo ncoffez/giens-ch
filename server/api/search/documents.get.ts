@@ -2,6 +2,8 @@ import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { getHomesForUser } from "../../utils/homes";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
+import { documentAccessForClaims } from "../../utils/permissionAccess";
+import { canPerform, canPerformFolderAction } from "../../../shared/sitePermissions";
 
 interface SearchDocumentResponseItem {
 	id: string;
@@ -146,7 +148,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.reader && !claims.publisher && !claims.owner && !claims.admin) {
+	const access = await documentAccessForClaims(claims);
+	if (!access.allowed && !claims.owner && !claims.admin) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
@@ -176,6 +179,7 @@ export default defineEventHandler(async (event) => {
 			...(doc.data() as Omit<SearchableGlobalFile, "id">),
 		}))
 		.filter((file) => !file.deletedAt)
+		.filter((file) => canPerformFolderAction(access.config, access.folders, claims, file.folderId || null, "open"))
 		.map((file) => {
 			const folderPath = buildFolderPath(foldersById, file.folderId || null);
 			const processing = globalProcessing.get(buildDocumentProcessingId("global", file.id));
@@ -205,7 +209,7 @@ export default defineEventHandler(async (event) => {
 
 	const ownerDocuments: Array<SearchDocumentResponseItem & { score: number }> = [];
 
-	if (claims.owner || claims.admin) {
+	if (canPerform(access.config, claims, "home.files.upload")) {
 		const homes = await getHomesForUser(claims.uid);
 		const ownerFiles = homes.flatMap((home) => [...(home.files || []), ...(home.privateFiles || [])].map((file) => ({
 			homeId: home.id,

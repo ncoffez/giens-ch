@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -9,10 +9,6 @@ export default defineEventHandler(async (event) => {
 
 		if (!claims) {
 			throw createError({ statusCode: 401, message: "Unauthorized" });
-		}
-
-		if (!canAdminGlobalDocuments(claims)) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin only" });
 		}
 
 		const { folderId, newName } = body;
@@ -32,6 +28,8 @@ export default defineEventHandler(async (event) => {
 		if (!folderDoc.exists) {
 			throw createError({ statusCode: 404, message: "Folder not found" });
 		}
+
+		await assertDocumentAction(claims, folderId, "rename");
 
 		await folderRef.update({
 			name: trimmedName,

@@ -1,4 +1,5 @@
 import { db, auth } from "../../../../useFirebaseAdmin";
+import { requireAreaPermission } from "../../../../utils/permissionAccess";
 import { cleanContact, syncHomeContacts } from "../../../../utils/homeContacts";
 
 async function syncOwnerClaims() {
@@ -71,11 +72,7 @@ async function revokeOwnerClaimIfNoHomes(uid: string) {
 
 export default defineEventHandler(async (event) => {
 	try {
-		const claims = await getUserClaims(event);
-
-		if (!claims || !claims.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
+		await requireAreaPermission(event, "admin.homes.manage");
 
 		const homeId = getRouterParam(event, "id");
 		const body = await readBody(event);

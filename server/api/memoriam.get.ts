@@ -1,7 +1,7 @@
-import { requireOwnerOrAdmin } from "../utils/auth";
+import { requireAreaPermission } from "../utils/permissionAccess";
 import { listMemoriamEntries } from "../utils/memoriam";
 
 export default defineEventHandler(async (event) => {
-	await requireOwnerOrAdmin(event);
+	await requireAreaPermission(event, "memoriam.view");
 	return listMemoriamEntries();
 });

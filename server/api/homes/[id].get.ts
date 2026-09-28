@@ -1,6 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
-import { getHomeById, isHomeOwner } from "../../utils/homes";
-import { getUserClaims } from "../../utils/auth";
+import { getHomeById } from "../../utils/homes";
+import { assertHomeReadable } from "../../utils/permissionAccess";
+import { canEditHomeSection } from "../../../shared/sitePermissions";
 import { cleanContact, syncHomeContacts } from "../../utils/homeContacts";
 
 export default defineEventHandler(async (event) => {
@@ -10,20 +11,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "Home ID is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const isOwner = await isHomeOwner(homeId, claims.uid);
-
-	if (!isOwner) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You don't have access to this home",
-		});
-	}
-
+	const access = await assertHomeReadable(event, homeId);
 	const home = await getHomeById(homeId);
 	if (!home) {
 		throw createError({ statusCode: 404, message: "Home not found" });
@@ -38,5 +26,26 @@ export default defineEventHandler(async (event) => {
 		await db.collection("homes").doc(homeId).update({ contacts: cleanedContacts });
 	}
 
-	return home;
+	const response = { ...home };
+	if (!canEditHomeSection(access.config, access.claims, access.listed, "home.wifi.edit")) {
+		response.wifiSSID = "";
+		response.wifiPassword = "";
+	}
+	if (!canEditHomeSection(access.config, access.claims, access.listed, "home.instructions.edit")) {
+		response.instructions = "";
+		response.instructionsByLocale = {};
+	}
+	if (!canEditHomeSection(access.config, access.claims, access.listed, "home.photos.upload")) {
+		response.photos = [];
+	}
+	if (!canEditHomeSection(access.config, access.claims, access.listed, "home.files.upload")) {
+		response.files = [];
+		response.privateFiles = [];
+		response.folders = [];
+	}
+	if (!canEditHomeSection(access.config, access.claims, access.listed, "home.contacts.manage")) {
+		response.contacts = [];
+	}
+
+	return response;
 });

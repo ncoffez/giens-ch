@@ -1,18 +1,10 @@
 import { auth, db, storage } from "../../useFirebaseAdmin";
-import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { requireAreaPermission } from "../../utils/permissionAccess";
 
 const SIGNED_URL_EXPIRY_MINUTES = 5;
 
 export default defineEventHandler(async (event) => {
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!canAdminGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Only admins can view trash" });
-	}
+	await requireAreaPermission(event, "admin.trash.manage");
 
 	const filesSnapshot = await db.collection("globalFiles").where("deletedAt", "!=", null).get();
 

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { buildAdminNavigationItems } from "../utils/navigation";
 
-definePageMeta({ middleware: "is-admin" });
+definePageMeta({ middleware: ["admin-shell"] });
 
 const { t } = useI18n();
 const localePath = useLocalePath();
 const route = useRoute();
+const { can, loaded } = useSitePermissions();
 
 const adminDestinations = computed(() =>
-	buildAdminNavigationItems(t, localePath, route.path),
+	buildAdminNavigationItems(t, localePath, route.path)
+		.filter((item) => !loaded.value || !item.permission || can(item.permission)),
 );
 
 const sidebarItems = computed(() => [

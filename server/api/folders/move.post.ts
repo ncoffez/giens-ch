@@ -1,15 +1,11 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!canAdminGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Only admins can move folders" });
 	}
 
 	const body = await readBody(event);
@@ -33,6 +29,9 @@ export default defineEventHandler(async (event) => {
 	if (!folderDoc.exists) {
 		throw createError({ statusCode: 404, message: "Folder not found" });
 	}
+
+	await assertDocumentAction(claims, folderId, "move");
+	await assertDocumentAction(claims, targetParentId || null, "createFolder");
 
 	if (targetParentId) {
 		const targetFolderDoc = await db.collection("globalFolders").doc(targetParentId).get();

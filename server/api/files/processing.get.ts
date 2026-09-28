@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canReadGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
 export default defineEventHandler(async (event) => {
@@ -9,16 +9,17 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!canReadGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Access denied" });
-	}
-
 	const fileId = getQuery(event).fileId as string | undefined;
 	if (!fileId) {
 		throw createError({ statusCode: 400, message: "File ID is required" });
 	}
 
 	const locale = ((getQuery(event).locale as string) || "de").trim();
+	const fileDoc = await db.collection("globalFiles").doc(fileId).get();
+	if (!fileDoc.exists) {
+		throw createError({ statusCode: 404, message: "File not found" });
+	}
+	await assertDocumentAction(claims, fileDoc.data()?.folderId || null, "open");
 	const processingId = buildDocumentProcessingId("global", fileId);
 	const document = await db.collection("documentProcessing").doc(processingId).get();
 

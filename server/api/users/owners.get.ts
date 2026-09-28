@@ -1,12 +1,9 @@
 import { auth } from "../../useFirebaseAdmin";
+import { requireAnyAreaPermission } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const claims = await getUserClaims(event);
-
-		if (!claims || !claims.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
+		await requireAnyAreaPermission(event, ["admin.users.manage", "admin.homes.manage"]);
 
 		const allUsersResult = await auth.listUsers(1000);
 		const owners: Array<{ uid: string; email: string; displayName: string; photoURL?: string }> = [];

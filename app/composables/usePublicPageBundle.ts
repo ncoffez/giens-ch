@@ -58,8 +58,18 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 	const i18n = useI18n();
 	const sections = ref<Record<string, PageContent>>({});
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
+	const { can, refresh: refreshPermissions } = useSitePermissions();
 	const activeLocale = computed(() => i18n.locale?.value || "de");
-	const canEdit = computed(() => isAdmin.value && isSourceEditableLocale(activeLocale.value));
+	const permissionKey = page === "home"
+		? "page.home.edit"
+		: page === "travel"
+			? "page.travel.edit"
+			: "page.entdecken.edit";
+	const canEdit = computed(() => can(permissionKey) && isSourceEditableLocale(activeLocale.value));
+
+	if (import.meta.client) {
+		void refreshPermissions();
+	}
 
 	const fetchKey = computed(() => `public-page-content:${page}:${activeLocale.value}`);
 	const { data, status, refresh, error } = await useFetch<PublicPageBundleResponse>(() => `/api/page-content/${page}`, {

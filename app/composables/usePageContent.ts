@@ -9,12 +9,18 @@ export async function usePageContent(contentId: string) {
 	const i18n = useI18n();
 
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
+	const { can, refresh: refreshPermissions } = useSitePermissions();
 	const isEditing = ref(false);
 	const isSaving = ref(false);
 	const content = ref("");
 	const originalContent = ref("");
 	const activeLocale = computed(() => i18n.locale?.value || "de");
-	const canEdit = computed(() => isAdmin.value && isSourceEditableLocale(activeLocale.value));
+	const permissionKey = contentId === "organisatorisches" ? "page.organisatorisches.edit" : "";
+	const canEdit = computed(() => !!permissionKey && can(permissionKey) && isSourceEditableLocale(activeLocale.value));
+
+	if (import.meta.client) {
+		void refreshPermissions();
+	}
 	const fetchKey = computed(() => `content:${contentId}:${activeLocale.value}`);
 
 	const { data, status, refresh, error } = await useFetch<PageContent>(() => `/api/content/${contentId}`, {

@@ -1,7 +1,5 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
-import { getHomeById } from "../../../../utils/homes";
-import { canManageHomeFiles } from "../../../../utils/fileAccess";
-import { getUserClaims } from "../../../../utils/auth";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	const homeId = getRouterParam(event, "id");
@@ -15,21 +13,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "File ID is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const home = await getHomeById(homeId);
-	if (!canManageHomeFiles(claims, home)) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot delete files from this home",
-		});
-	}
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
+	const { home } = await assertHomeSection(event, homeId, "home.files.upload");
 
 	const isPrivate = !!body.private;
 	const sourceFiles = isPrivate ? (home.privateFiles || []) : (home.files || []);

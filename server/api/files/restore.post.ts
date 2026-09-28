@@ -1,16 +1,8 @@
 import { db } from "../../useFirebaseAdmin";
-import { getUserClaims } from "../../utils/auth";
-import { canAdminGlobalDocuments } from "../../utils/fileAccess";
+import { requireAreaPermission } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!canAdminGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Only admins can restore files" });
-	}
+	await requireAreaPermission(event, "admin.trash.manage");
 
 	const body = await readBody(event);
 	const { fileId } = body;

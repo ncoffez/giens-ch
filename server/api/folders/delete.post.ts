@@ -1,10 +1,8 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import {
-	canDeleteGlobalFolder,
-	collectGlobalFolderTree,
-	getGlobalFolderDeletionError,
-} from "../../utils/globalDocuments";
+import { collectGlobalFolderTree } from "../../utils/globalDocuments";
+import { assertDocumentAction } from "../../utils/permissionAccess";
+import { removeFolderPermissionOverrides } from "../../utils/permissionConfig";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -24,13 +22,10 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 404, message: "Folder not found" });
 	}
 
-	if (!canDeleteGlobalFolder(claims, rootFolderDoc.data())) {
-		throw createError({ statusCode: 403, message: "You can only delete your own folders" });
-	}
+	await assertDocumentAction(claims, folderId, "delete");
 
 	const folderIds = await collectGlobalFolderTree(folderId);
 	const ownedFolderIds = new Set<string>([folderId]);
-	const descendantFolderRecords = [];
 	const activeFileDocs = [];
 
 	for (const currentFolderId of folderIds) {
@@ -39,7 +34,6 @@ export default defineEventHandler(async (event) => {
 			if (!folderDoc.exists) {
 				continue;
 			}
-			descendantFolderRecords.push(folderDoc.data());
 			ownedFolderIds.add(currentFolderId);
 		}
 
@@ -49,17 +43,6 @@ export default defineEventHandler(async (event) => {
 				activeFileDocs.push(fileDoc);
 			}
 		}
-	}
-
-	const deletionError = getGlobalFolderDeletionError({
-		claims,
-		rootFolder: rootFolderDoc.data(),
-		descendantFolders: descendantFolderRecords,
-		activeFiles: activeFileDocs.map(fileDoc => fileDoc.data()),
-	});
-
-	if (deletionError) {
-		throw createError({ statusCode: 403, message: deletionError });
 	}
 
 	if (dryRun) {
@@ -82,6 +65,8 @@ export default defineEventHandler(async (event) => {
 			await db.collection("globalFolders").doc(currentFolderId).delete();
 		}
 	}
+
+	await removeFolderPermissionOverrides(folderIds);
 
 	return {
 		success: true,

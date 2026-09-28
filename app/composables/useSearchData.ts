@@ -31,15 +31,11 @@ const searchUsage = useLocalStorage<Record<string, number>>("search-usage", {});
 let activeSearchRequest = 0;
 
 export function useSearchData() {
-	const nuxtApp = useNuxtApp();
 	const { locale, t } = useI18n();
 
-	const isOwner = computed(() => import.meta.client ? nuxtApp.$isOwner?.value ?? false : false);
-	const isReader = computed(() => import.meta.client ? nuxtApp.$isReader?.value ?? false : false);
-	const isPublisher = computed(() => import.meta.client ? nuxtApp.$isPublisher?.value ?? false : false);
-	const isAdmin = computed(() => import.meta.client ? nuxtApp.$isAdmin?.value ?? false : false);
-	const canAccessDocuments = computed(() => isOwner.value || isReader.value || isPublisher.value || isAdmin.value);
-	const canAccessOwnerDocuments = computed(() => isOwner.value || isAdmin.value);
+	const { can } = useSitePermissions();
+	const canAccessDocuments = computed(() => can("documents.access"));
+	const canAccessOwnerDocuments = computed(() => can("home.files.upload"));
 
 	const buildGlobalDocumentRoute = (folderId: string | null, fileId: string) => {
 		const params = new URLSearchParams({ fileId });

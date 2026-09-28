@@ -132,6 +132,7 @@ export interface MobileMenuItem {
 	to: string | { path: string; query?: Record<string, string> };
 	icon: string;
 	active?: boolean;
+	permission?: string;
 }
 
 export interface MobileMenuSection {
@@ -158,6 +159,7 @@ export function buildAdminNavigationItems(
 			label: t("admin.nav.homes"),
 			to: localePath("/admin/homes"),
 			icon: "i-lucide-building-2",
+			permission: "admin.homes.manage",
 			active: isUnderPath(routePath, "/admin/homes"),
 		},
 		{
@@ -165,13 +167,23 @@ export function buildAdminNavigationItems(
 			label: t("admin.nav.users"),
 			to: localePath("/admin/users"),
 			icon: "i-lucide-users",
+			permission: "admin.users.manage",
 			active: isUnderPath(routePath, "/admin/users") || pathWithoutLocale(routePath) === "/admin",
+		},
+		{
+			id: "admin-permissions",
+			label: t("admin.nav.permissions"),
+			to: localePath("/admin/permissions"),
+			icon: "i-lucide-shield",
+			permission: "admin.permissions.manage",
+			active: isUnderPath(routePath, "/admin/permissions"),
 		},
 		{
 			id: "admin-memoriam",
 			label: t("admin.nav.memoriam"),
 			to: localePath("/admin/memoriam"),
 			icon: "i-lucide-flower-2",
+			permission: "memoriam.manage",
 			active: isUnderPath(routePath, "/admin/memoriam"),
 		},
 		{
@@ -179,6 +191,7 @@ export function buildAdminNavigationItems(
 			label: t("admin.nav.trash"),
 			to: localePath("/admin/trash"),
 			icon: "i-lucide-trash-2",
+			permission: "admin.trash.manage",
 			active: isUnderPath(routePath, "/admin/trash"),
 		},
 		{
@@ -186,6 +199,7 @@ export function buildAdminNavigationItems(
 			label: t("admin.nav.settings"),
 			to: localePath("/admin/settings"),
 			icon: "i-lucide-settings",
+			permission: "admin.settings.manage",
 			active: isUnderPath(routePath, "/admin/settings"),
 		},
 	];

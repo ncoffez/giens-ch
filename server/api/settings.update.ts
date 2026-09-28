@@ -1,8 +1,8 @@
-import { requireAdmin } from "../utils/auth";
+import { requireAreaPermission } from "../utils/permissionAccess";
 import { pickGlobalSettingsPatch, updateGlobalSettings } from "../utils/homes";
 
 export default defineEventHandler(async (event) => {
-	await requireAdmin(event);
+	await requireAreaPermission(event, "admin.settings.manage");
 
 	const body = await readBody(event);
 	const patch = pickGlobalSettingsPatch(body);

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-	middleware: ["is-admin"],
+	middleware: ["site-permission"],
+	permission: "admin.homes.manage",
 	render: "client",
 });
 
@@ -159,6 +160,11 @@ const getHomeItems = (home: any) => [
 			label: "Bearbeiten",
 			icon: "i-lucide-pencil",
 			onSelect: () => navigateTo(localePath(`/admin/homes/${home.id}/edit`)),
+		},
+		{
+			label: "Inhalt",
+			icon: "i-lucide-house",
+			onSelect: () => navigateTo(localePath(`/homes/${home.id}/edit`)),
 		},
 		{
 			label: home.enabled ? "Deaktivieren" : "Aktivieren",

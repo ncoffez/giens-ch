@@ -1,13 +1,9 @@
 import { db } from "../../../../useFirebaseAdmin";
-import { getUserClaims } from "../../../../utils/auth";
+import { requireAreaPermission } from "../../../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const claims = await getUserClaims(event);
-
-		if (!claims || !claims.admin) {
-			throw createError({ statusCode: 403, message: "Forbidden: Admin access required" });
-		}
+		await requireAreaPermission(event, "admin.homes.manage");
 
 		const homeId = getRouterParam(event, "id");
 

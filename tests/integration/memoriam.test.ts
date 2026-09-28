@@ -215,7 +215,7 @@ describe("memoriam UI", () => {
 
 	it("keeps In Memoriam on an owner-only page next to documents", () => {
 		const page = readFileSync("app/pages/memoriam.vue", "utf8");
-		expect(page).toContain('middleware: ["is-owner"]');
+		expect(page).toContain('permission: "memoriam.view"');
 		expect(page).toContain("MemoriamSection");
 		expect(page).toContain("ClientOnly");
 		expect(readFileSync("app/pages/organisatorisches.vue", "utf8")).not.toContain("MemoriamSection");

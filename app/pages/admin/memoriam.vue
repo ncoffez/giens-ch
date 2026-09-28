@@ -10,7 +10,8 @@ interface PendingPhoto {
 }
 
 definePageMeta({
-	middleware: ["is-admin"],
+	middleware: ["site-permission"],
+	permission: "memoriam.manage",
 	render: "client",
 });
 

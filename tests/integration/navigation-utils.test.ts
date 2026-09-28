@@ -195,6 +195,7 @@ describe("navigation helpers", () => {
 			expect(admin?.items.map((item) => item.id)).toEqual([
 				"admin-homes",
 				"admin-users",
+				"admin-permissions",
 				"admin-memoriam",
 				"admin-trash",
 				"admin-settings",

@@ -17,18 +17,18 @@ describe("admin API auth contract", () => {
 
 		for (const file of files) {
 			const source = readFileSync(file, "utf8");
-			expect(source, file).toMatch(/requireAdmin|requireSignedIn|getUserClaims|verifyIdToken/);
+			expect(source, file).toMatch(/requireAdmin|requireSignedIn|getUserClaims|verifyIdToken|requireAreaPermission|requireAnyAreaPermission/);
 		}
 	});
 
-	it("requires admin on every admin route except bootstrap", () => {
+	it("requires a permission check on every admin route except bootstrap", () => {
 		for (const file of adminApiFiles()) {
 			const source = readFileSync(file, "utf8");
 			if (file.endsWith("bootstrap-first-admin.post.ts")) {
 				expect(source).toContain("bootstrapSecretMatches");
 				continue;
 			}
-			expect(source, file).toMatch(/requireAdmin|claims\.admin|decodedToken\.admin/);
+			expect(source, file).toMatch(/requireAdmin|requireAreaPermission|requireAnyAreaPermission|claims\.admin|decodedToken\.admin/);
 		}
 	});
 
@@ -51,20 +51,26 @@ describe("admin API auth contract", () => {
 		expect(source).not.toContain("passwordHash");
 	});
 
-	it("uses requireAdmin for settings and public-page content writes", () => {
-		expect(readFileSync("server/api/settings.update.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/content/[id].post.ts", "utf8")).toContain("requireAdmin");
+	it("checks the permission matrix for settings and public-page content writes", () => {
+		expect(readFileSync("server/api/settings.update.ts", "utf8")).toContain("requireAreaPermission");
+		expect(readFileSync("server/api/settings.update.ts", "utf8")).toContain("admin.settings.manage");
+		expect(readFileSync("server/api/content/[id].post.ts", "utf8")).toContain("requireAreaPermission");
 		expect(existsSync("server/api/admin/homes/migrate-multi-owner.post.ts")).toBe(false);
 	});
 
-	it("keeps memoriam reads owner-only and writes admin-only", () => {
-		expect(readFileSync("server/api/memoriam.get.ts", "utf8")).toContain("requireOwnerOrAdmin");
-		expect(readFileSync("server/api/admin/memoriam.get.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam.post.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam/reorder.post.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam/[id]/update.post.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam/[id]/delete.post.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam/[id]/photos/upload.post.ts", "utf8")).toContain("requireAdmin");
-		expect(readFileSync("server/api/admin/memoriam/[id]/photos/delete.post.ts", "utf8")).toContain("requireAdmin");
+	it("checks memoriam view and manage through the permission matrix", () => {
+		expect(readFileSync("server/api/memoriam.get.ts", "utf8")).toContain("memoriam.view");
+		const writeFiles = [
+			"server/api/admin/memoriam.get.ts",
+			"server/api/admin/memoriam.post.ts",
+			"server/api/admin/memoriam/reorder.post.ts",
+			"server/api/admin/memoriam/[id]/update.post.ts",
+			"server/api/admin/memoriam/[id]/delete.post.ts",
+			"server/api/admin/memoriam/[id]/photos/upload.post.ts",
+			"server/api/admin/memoriam/[id]/photos/delete.post.ts",
+		];
+		for (const file of writeFiles) {
+			expect(readFileSync(file, "utf8"), file).toContain("memoriam.manage");
+		}
 	});
 });

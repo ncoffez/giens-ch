@@ -78,3 +78,15 @@ export const PUBLIC_PAGE_CONTENT_IDS = {
 } as const;
 
 export type PublicPageKey = keyof typeof PUBLIC_PAGE_CONTENT_IDS;
+
+export function permissionKeyForContentId(contentId: string): string | null {
+	if (contentId === "organisatorisches") return "page.organisatorisches.edit";
+	for (const [page, ids] of Object.entries(PUBLIC_PAGE_CONTENT_IDS) as Array<[PublicPageKey, readonly string[]]>) {
+		if (ids.includes(contentId)) {
+			if (page === "home") return "page.home.edit";
+			if (page === "travel") return "page.travel.edit";
+			if (page === "entdecken") return "page.entdecken.edit";
+		}
+	}
+	return null;
+}

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-owner"] });
+definePageMeta({
+	middleware: ["site-permission"],
+	permission: "memoriam.view",
+});
 
 const { t } = useI18n();
 

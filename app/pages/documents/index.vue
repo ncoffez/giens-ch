@@ -1,12 +1,38 @@
 <script setup lang="ts">
 import type { GlobalFile, GlobalFolder } from "../../../types";
+
+interface DocumentActionMap {
+	createFolder: boolean;
+	upload: boolean;
+	open: boolean;
+	rename: boolean;
+	move: boolean;
+	delete: boolean;
+}
+
+interface DocumentFolder extends GlobalFolder {
+	actions?: DocumentActionMap;
+}
+
+function emptyDocumentActions(): DocumentActionMap {
+	return {
+		createFolder: false,
+		upload: false,
+		open: false,
+		rename: false,
+		move: false,
+		delete: false,
+	};
+}
 import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg, truncateFileName } from "~/utils/fileTypes";
 
-definePageMeta({ middleware: ["is-logged-in"] });
+definePageMeta({
+	middleware: ["is-logged-in", "site-permission"],
+	permission: "documents.access",
+});
 
-const { $isAdmin, $isOwner, $currentUser } = useNuxtApp();
 const { waitForAuth, token } = useAuthReady();
 const { locale, t } = useI18n();
 const toast = useToast();
@@ -33,13 +59,15 @@ interface DocumentProcessingState {
 }
 
 const files = ref<GlobalFile[]>([]);
-const folders = ref<GlobalFolder[]>([]);
+const folders = ref<DocumentFolder[]>([]);
+const currentActions = ref<DocumentActionMap>(emptyDocumentActions());
+const rootActions = ref<DocumentActionMap>(emptyDocumentActions());
 const loading = ref(true);
 const error = ref<string | null>(null);
 
 const currentFolderId = ref<string | null>(null);
 const selectedFiles = ref<GlobalFile[]>([]);
-const selectedFolders = ref<GlobalFolder[]>([]);
+const selectedFolders = ref<DocumentFolder[]>([]);
 const dragover = ref(false);
 const downloadingFileId = ref<string | null>(null);
 const isRenameModalOpen = ref(false);
@@ -111,10 +139,17 @@ const translationStatusLabel = computed(() => {
 });
 const canDownloadTranslatedFile = computed(() => !!activeTranslation.value?.searchText && !!previewFile.value);
 const dateLocale = computed(() => locale.value === "fr" ? "fr-FR" : "de-CH");
-const currentUserId = computed(() => $currentUser?.value?.uid || "");
-const canManageDocuments = computed(() => !!($isAdmin.value || $isOwner.value));
-const canDeleteFile = (file: GlobalFile) => $isAdmin.value || (!!currentUserId.value && file.uploadedBy === currentUserId.value);
-const canDeleteFolder = (folder: GlobalFolder) => $isAdmin.value || (!!currentUserId.value && folder.createdBy === currentUserId.value);
+const canUploadDocuments = computed(() => currentActions.value.upload);
+const canCreateFolder = computed(() => currentActions.value.createFolder);
+const canManageDocuments = computed(() => canUploadDocuments.value || canCreateFolder.value);
+const canDeleteFile = (_file: GlobalFile) => currentActions.value.delete;
+const canDeleteFolder = (folder: DocumentFolder) => !!folder.actions?.delete;
+const canRenameSelection = computed(() => selectedFiles.value.length === 1 && selectedFolders.value.length === 0 && currentActions.value.rename);
+const canMoveSelection = computed(() => {
+	const filesCanMove = selectedFiles.value.length === 0 || currentActions.value.move;
+	const foldersCanMove = selectedFolders.value.every((folder) => !!folder.actions?.move);
+	return (selectedFiles.value.length + selectedFolders.value.length) > 0 && filesCanMove && foldersCanMove;
+});
 const canDeleteSelection = computed(() => {
 	return selectedFiles.value.every(file => canDeleteFile(file))
 		&& selectedFolders.value.every(folder => canDeleteFolder(folder));
@@ -434,7 +469,14 @@ const fetchData = async (folderId: string | null = null) => {
 		cursor.value = null;
 		hasMore.value = false;
 		
-		const data = await $fetch("/api/files", {
+		const data = await $fetch<{
+			files?: GlobalFile[];
+			folders?: DocumentFolder[];
+			actions?: DocumentActionMap;
+			rootActions?: DocumentActionMap;
+			nextCursor?: string | null;
+			hasMore?: boolean;
+		}>("/api/files", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { 
@@ -446,6 +488,8 @@ const fetchData = async (folderId: string | null = null) => {
 		});
 		files.value = data.files || [];
 		folders.value = data.folders || [];
+		currentActions.value = data.actions || emptyDocumentActions();
+		rootActions.value = data.rootActions || data.actions || emptyDocumentActions();
 		cursor.value = data.nextCursor || null;
 		hasMore.value = data.hasMore || false;
 		await focusHighlightedFile();
@@ -466,7 +510,11 @@ const loadMore = async () => {
 	
 	try {
 		isLoadingMore.value = true;
-		const data = await $fetch("/api/files", {
+		const data = await $fetch<{
+			files?: GlobalFile[];
+			nextCursor?: string | null;
+			hasMore?: boolean;
+		}>("/api/files", {
 			method: "POST",
 			headers: { Authorization: `Bearer ${token.value}` },
 			body: { 
@@ -520,7 +568,7 @@ watch(sentinelRef, (newRef) => {
 });
 
 const handleFileDrop = (e: DragEvent) => {
-	if (!canManageDocuments.value) return;
+	if (!canUploadDocuments.value) return;
 	dragover.value = false;
 	const droppedFiles = e.dataTransfer?.files;
 	if (droppedFiles) {
@@ -529,7 +577,7 @@ const handleFileDrop = (e: DragEvent) => {
 };
 
 const handleFileSelect = (e: Event) => {
-	if (!canManageDocuments.value) return;
+	if (!canUploadDocuments.value) return;
 	const target = e.target as HTMLInputElement;
 	if (target.files) {
 		uploadFiles(Array.from(target.files));
@@ -629,6 +677,7 @@ const uploadFiles = async (fileList: File[]) => {
 };
 
 const createFolderInline = () => {
+	if (!canCreateFolder.value) return;
 	const tempId = `temp-${Date.now()}`;
 	const newFolder: GlobalFolder = {
 		id: tempId,
@@ -908,19 +957,16 @@ const deleteFolder = async (folder: GlobalFolder) => {
 	}
 };
 
-const getFolderMenuItems = (folder: GlobalFolder) => {
+const getFolderMenuItems = (folder: DocumentFolder) => {
 	const items = [[{
 		label: t("documents.actions.copyLink"),
 		icon: "i-lucide-link",
 		onSelect: () => copyDeepLink({ folderId: folder.id }),
 	}]];
 
-	if (!$isAdmin.value && !canDeleteFolder(folder)) {
-		return items;
-	}
-
-	const adminItems = $isAdmin.value
-		? [[{
+	const manageItems = [];
+	if (folder.actions?.rename) {
+		manageItems.push({
 			label: t("documents.actions.rename"),
 			icon: "i-lucide-pencil",
 			onSelect: () => {
@@ -932,7 +978,10 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 					input?.select();
 				});
 			},
-		}, {
+		});
+	}
+	if (folder.actions?.move) {
+		manageItems.push({
 			label: t("documents.actions.move"),
 			icon: "i-lucide-folder-input",
 			onSelect: () => {
@@ -940,8 +989,8 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 				selectedFiles.value = [];
 				openMoveModal();
 			},
-		}]]
-		: [];
+		});
+	}
 
 	const deleteItems = canDeleteFolder(folder)
 		? [[{
@@ -952,7 +1001,7 @@ const getFolderMenuItems = (folder: GlobalFolder) => {
 		: [];
 
 	return [
-		...adminItems,
+		...(manageItems.length ? [manageItems] : []),
 		...items,
 		...deleteItems,
 	];
@@ -980,12 +1029,9 @@ const getFileMenuItems = (file: GlobalFile) => {
 		onSelect: () => copyDeepLink({ folderId: file.folderId, fileId: file.id }),
 	}]];
 
-	if (!$isAdmin.value && !canDeleteFile(file)) {
-		return items;
-	}
-
-	const adminItems = $isAdmin.value
-		? [[{
+	const manageItems = [];
+	if (currentActions.value.rename) {
+		manageItems.push({
 			label: t("documents.actions.rename"),
 			icon: "i-lucide-pencil",
 			onSelect: () => {
@@ -993,7 +1039,10 @@ const getFileMenuItems = (file: GlobalFile) => {
 				selectedFolders.value = [];
 				openRenameModal();
 			},
-		}, {
+		});
+	}
+	if (currentActions.value.move) {
+		manageItems.push({
 			label: t("documents.actions.move"),
 			icon: "i-lucide-folder-input",
 			onSelect: () => {
@@ -1001,8 +1050,9 @@ const getFileMenuItems = (file: GlobalFile) => {
 				selectedFolders.value = [];
 				openMoveModal();
 			},
-		}]]
-		: [];
+		});
+	}
+	const adminItems = manageItems.length ? [manageItems] : [];
 
 	const deleteItems = canDeleteFile(file)
 		? [[{
@@ -1206,6 +1256,7 @@ useHead({
 				</div>
 				<div v-if="canManageDocuments" class="flex items-center gap-2 shrink-0">
 					<UButton
+						v-if="canCreateFolder"
 						variant="soft"
 						color="neutral"
 						icon="i-lucide-folder-plus"
@@ -1213,7 +1264,7 @@ useHead({
 					>
 						<span class="hidden sm:inline">{{ t("documents.actions.newFolder") }}</span>
 					</UButton>
-					<label class="cursor-pointer">
+					<label v-if="canUploadDocuments" class="cursor-pointer">
 						<UButton
 							as="span"
 							color="primary"
@@ -1356,10 +1407,10 @@ useHead({
 							<UButton v-if="selectedFiles.length > 0" size="sm" variant="ghost" color="neutral" @click="downloadSelectedFiles" icon="i-lucide-download">
 								<span class="hidden md:inline">{{ t("documents.actions.download") }}</span>
 							</UButton>
-							<UButton v-if="$isAdmin && selectedFiles.length === 1 && selectedFolders.length === 0" size="sm" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
+							<UButton v-if="canRenameSelection" size="sm" variant="ghost" color="neutral" @click="openRenameModal" icon="i-lucide-pencil">
 								<span class="hidden md:inline">{{ t("documents.actions.rename") }}</span>
 							</UButton>
-							<UButton v-if="$isAdmin" size="sm" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
+							<UButton v-if="canMoveSelection" size="sm" variant="ghost" color="neutral" @click="openMoveModal" icon="i-lucide-folder-input">
 								<span class="hidden md:inline">{{ t("documents.actions.move") }}</span>
 							</UButton>
 							<UButton size="sm" variant="ghost" color="error" :disabled="!canDeleteSelection" @click="deleteSelectedItems" icon="i-lucide-trash-2">
@@ -1371,7 +1422,7 @@ useHead({
 
 					<div
 						class="min-h-[300px] bg-transparent md:bg-transparent"
-						:class="{ 'border-2 border-dashed border-primary bg-primary-50 dark:bg-primary-900/10': dragover && canManageDocuments }"
+						:class="{ 'border-2 border-dashed border-primary bg-primary-50 dark:bg-primary-900/10': dragover && canUploadDocuments }"
 						@dragover.prevent="dragover = true"
 						@dragleave.prevent="dragover = false"
 						@drop.prevent="handleFileDrop"
@@ -1379,7 +1430,7 @@ useHead({
 						<div v-if="sortedSubfolders.length === 0 && sortedFiles.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-stone-400">
 							<UIcon name="i-lucide-folder-open" class="w-12 h-12 md:w-16 md:h-16 mb-4" />
 							<p class="font-medium text-base md:text-lg">{{ t("documents.states.emptyTitle") }}</p>
-							<p v-if="canManageDocuments" class="text-xs md:text-sm mt-2 text-center px-4">{{ t("documents.states.emptyHint") }}</p>
+							<p v-if="canUploadDocuments" class="text-xs md:text-sm mt-2 text-center px-4">{{ t("documents.states.emptyHint") }}</p>
 						</div>
 
 						<div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-6">

@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canDeleteGlobalFile } from "../../utils/globalDocuments";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -28,9 +28,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "File is already in trash" });
 	}
 
-	if (!canDeleteGlobalFile(claims, fileData)) {
-		throw createError({ statusCode: 403, message: "You can only delete your own files" });
-	}
+	await assertDocumentAction(claims, fileData.folderId || null, "delete");
 
 	await fileRef.update({
 		deletedAt: new Date().toISOString(),

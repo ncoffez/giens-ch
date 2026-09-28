@@ -790,6 +790,7 @@
     "nav": {
       "homes": "Häuser",
       "users": "Benutzer",
+      "permissions": "Berechtigungen",
       "memoriam": "In Memoriam",
       "trash": "Papierkorb",
       "settings": "Einstellungen",
@@ -799,6 +800,68 @@
       "kicker": "Kontrollzentrum",
       "title": "Administration",
       "lead": "Benutzer, Häuser, Sichtbarkeit und interne Abläufe an einem Ort."
+    },
+    "permissions": {
+      "kicker": "Zugriff",
+      "title": "Berechtigungen",
+      "lead": "Die vier Rollen bleiben fest. Hier legen Sie fest, welche Rolle welchen Bereich und welche Aktion nutzen darf.",
+      "save": "Speichern",
+      "saved": "Berechtigungen gespeichert",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "loadFailed": "Berechtigungen konnten nicht geladen werden",
+      "locked": "Fest für Admins",
+      "inherited": "Geerbt",
+      "custom": "Eigene Zuweisung",
+      "resetFolder": "Wie Elternordner",
+      "foldersTitle": "Ordner unter Dokumente",
+      "foldersEmpty": "Noch keine Ordner. Neue Ordner übernehmen die Rechte des Bereichs Dokumente, bis Sie sie hier abweichend setzen.",
+      "foldersHint": "Ohne eigene Zuweisung gilt der Elternordner. Die Wurzel gilt für Dateien direkt unter Dokumente. Wer einen Ordner nicht öffnen darf, erreicht auch die Unterordner nicht.",
+      "roles": {
+        "admin": "Admin",
+        "publisher": "Publisher",
+        "owner": "Owner",
+        "reader": "Reader"
+      },
+      "groups": {
+        "public": "Öffentlicher Bereich",
+        "documents": "Dokumente",
+        "home": "Mein Haus",
+        "memoriam": "In Memoriam",
+        "admin": "Administration"
+      },
+      "rows": {
+        "page.home.edit": "Home bearbeiten",
+        "page.travel.edit": "Anreise bearbeiten",
+        "page.entdecken.edit": "Entdecken bearbeiten",
+        "page.organisatorisches.edit": "Organisatorisches bearbeiten",
+        "documents.createFolder": "Neuer Ordner",
+        "documents.upload": "Hochladen",
+        "documents.open": "Öffnen",
+        "documents.rename": "Umbenennen",
+        "documents.move": "Verschieben",
+        "documents.delete": "Löschen",
+        "home.links.manage": "Links verwalten",
+        "home.photos.upload": "Fotos hochladen",
+        "home.wifi.edit": "WLAN bearbeiten",
+        "home.contacts.manage": "Kontakte verwalten",
+        "home.instructions.edit": "Anleitungen bearbeiten",
+        "home.files.upload": "Dateien hochladen",
+        "memoriam.view": "In Memoriam lesen",
+        "memoriam.manage": "In Memoriam verwalten",
+        "admin.homes.manage": "Häuser verwalten",
+        "admin.trash.manage": "Papierkorb",
+        "admin.settings.manage": "Einstellungen",
+        "admin.users.manage": "Benutzerverwaltung",
+        "admin.permissions.manage": "Berechtigungen"
+      },
+      "actions": {
+        "createFolder": "Neuer Ordner",
+        "upload": "Hochladen",
+        "open": "Öffnen",
+        "rename": "Umbenennen",
+        "move": "Verschieben",
+        "delete": "Löschen"
+      }
     },
     "memoriam": {
       "kicker": "Gedenken",

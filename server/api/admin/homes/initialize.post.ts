@@ -1,9 +1,9 @@
 import { initializeHomes } from "../../../utils/homeInit";
-import { requireAdmin } from "../../../utils/auth";
+import { requireAreaPermission } from "../../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
-		await requireAdmin(event);
+		await requireAreaPermission(event, "admin.homes.manage");
 
 		const { maxHomeNumber } = getQuery(event);
 		const result = await initializeHomes(Number(maxHomeNumber) || 30);

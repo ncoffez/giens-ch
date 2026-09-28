@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { GlobalFile } from "../../../types";
 
-definePageMeta({ middleware: ["is-admin"] });
+definePageMeta({
+	middleware: ["site-permission"],
+	permission: "admin.trash.manage",
+});
 
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();

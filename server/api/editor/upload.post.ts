@@ -1,11 +1,17 @@
 import { storage } from "../../useFirebaseAdmin";
 import crypto from "crypto";
 import { createTokenizedDownloadUrl } from "../../utils/storage";
-import { requireSignedIn } from "../../utils/auth";
+import { requireAnyAreaPermission } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	try {
-		await requireSignedIn(event);
+		await requireAnyAreaPermission(event, [
+			"page.home.edit",
+			"page.travel.edit",
+			"page.entdecken.edit",
+			"page.organisatorisches.edit",
+			"home.instructions.edit",
+		]);
 
 		const body = await readBody(event);
 		if (!body) {

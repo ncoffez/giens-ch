@@ -78,37 +78,45 @@ describe("home file access", () => {
 });
 
 describe("file route auth contract", () => {
-	it("keeps global structural mutations admin-only", () => {
-		const files = [
-			"server/api/files/rename.post.ts",
-			"server/api/files/move.post.ts",
+	it("checks the document matrix for structural mutations and trash", () => {
+		const folderActions = [
+			["server/api/files/rename.post.ts", "rename"],
+			["server/api/files/move.post.ts", "move"],
+			["server/api/folders/rename.post.ts", "rename"],
+			["server/api/folders/move.post.ts", "move"],
+		];
+
+		for (const [file, action] of folderActions) {
+			const source = readFileSync(file, "utf8");
+			expect(source, file).toContain("assertDocumentAction");
+			expect(source, file).toContain(`"${action}"`);
+			expect(source, file).not.toContain("canManageGlobalDocuments");
+		}
+
+		for (const file of [
 			"server/api/files/restore.post.ts",
 			"server/api/files/trash.get.ts",
 			"server/api/files/permanent-delete.post.ts",
-			"server/api/folders/rename.post.ts",
-			"server/api/folders/move.post.ts",
-		];
-
-		for (const file of files) {
-			expect(readFileSync(file, "utf8"), file).toContain("canAdminGlobalDocuments");
-			expect(readFileSync(file, "utf8"), file).not.toContain("canManageGlobalDocuments");
+		]) {
+			expect(readFileSync(file, "utf8"), file).toContain("admin.trash.manage");
 		}
 	});
 
-	it("lets owners upload and delete their own global files", () => {
-		expect(readFileSync("server/api/files/upload.post.ts", "utf8")).toContain("canManageGlobalDocuments");
-		expect(readFileSync("server/api/files/delete.post.ts", "utf8")).toContain("canDeleteGlobalFile");
-		expect(readFileSync("server/api/folders/create.post.ts", "utf8")).toContain("canManageGlobalDocuments");
-		expect(readFileSync("server/api/folders/delete.post.ts", "utf8")).toContain("canDeleteGlobalFolder");
+	it("checks upload and delete against the document folder", () => {
+		expect(readFileSync("server/api/files/upload.post.ts", "utf8")).toContain("assertDocumentAction");
+		expect(readFileSync("server/api/files/delete.post.ts", "utf8")).toContain("\"delete\"");
+		expect(readFileSync("server/api/folders/create.post.ts", "utf8")).toContain("\"createFolder\"");
+		expect(readFileSync("server/api/folders/delete.post.ts", "utf8")).toContain("\"delete\"");
 	});
 
-	it("does not treat an admin claim as ownership of another home's files", () => {
+	it("checks home file routes against the house section and the house owner list", () => {
 		const homeFileRoutes = walkTs("server/api/homes").filter((file) => file.includes("[id]/files/"));
 
 		expect(homeFileRoutes.length).toBeGreaterThan(0);
 		for (const file of homeFileRoutes) {
 			const source = readFileSync(file, "utf8");
-			expect(source, file).toContain("canManageHomeFiles");
+			expect(source, file).toContain("assertHomeSection");
+			expect(source, file).toContain("home.files.upload");
 			expect(source, file).not.toMatch(/claims\.admin\s*\|\|/);
 			expect(source, file).not.toMatch(/if\s*\(\s*claims\.admin\s*\)/);
 		}

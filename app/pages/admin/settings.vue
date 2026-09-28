@@ -2,7 +2,10 @@
 import type { GlobalSettings } from "../../../types";
 import { useDebounceFn } from "@vueuse/core";
 
-definePageMeta({ middleware: ["is-admin"] });
+definePageMeta({
+	middleware: ["site-permission"],
+	permission: "admin.settings.manage",
+});
 
 const { $currentUser } = useNuxtApp();
 const { token } = useAuthReady();

@@ -1,6 +1,6 @@
 import { db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canReadGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 const SIGNED_URL_EXPIRY_MINUTES = 5;
 
@@ -8,10 +8,6 @@ export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!canReadGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
 	const fileId = getQuery(event).fileId as string;
@@ -25,6 +21,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const fileData = fileDoc.data();
+	await assertDocumentAction(claims, fileData?.folderId || null, "open");
 	if (!fileData?.storagePath) {
 		throw createError({ statusCode: 500, message: "File storage path not found" });
 	}

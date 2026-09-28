@@ -1,7 +1,5 @@
 import { db } from "../../../../useFirebaseAdmin";
-import { getHomeById } from "../../../../utils/homes";
-import { canManageHomeFiles } from "../../../../utils/fileAccess";
-import { getUserClaims } from "../../../../utils/auth";
+import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { buildDocumentProcessingId } from "../../../../utils/documentProcessing";
 import { buildDocumentSearchFields } from "../../../../utils/documentSearch";
 import { renameHomeFileInHome, sanitizeHomeFileName } from "../../../../utils/homeFiles";
@@ -23,21 +21,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "A valid file name is required" });
 	}
 
-	const claims = await getUserClaims(event);
-	if (!claims) {
-		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	const home = await getHomeById(homeId);
-	if (!canManageHomeFiles(claims, home)) {
-		throw createError({
-			statusCode: 403,
-			message: "Forbidden: You cannot rename files in this home",
-		});
-	}
-	if (!home) {
-		throw createError({ statusCode: 404, message: "Home not found" });
-	}
+	const { home } = await assertHomeSection(event, homeId, "home.files.upload");
 
 	const result = renameHomeFileInHome({ home, fileId: body.fileId, name });
 

@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canReadGlobalDocuments } from "../../utils/fileAccess";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 import { buildTranslatedDocumentFileName, buildTranslatedDocumentHtml } from "../../utils/documentExport";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 
@@ -8,10 +8,6 @@ export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
-	}
-
-	if (!canReadGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
 	const fileId = getQuery(event).fileId as string | undefined;
@@ -35,6 +31,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const file = fileDocument.data() as Record<string, any>;
+	await assertDocumentAction(claims, file.folderId || null, "open");
 	const processing = processingDocument.data() as Record<string, any>;
 	const translation = locale !== "de" ? processing.translations?.[locale] : null;
 

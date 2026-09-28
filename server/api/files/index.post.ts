@@ -1,6 +1,7 @@
 import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canReadGlobalDocuments } from "../../utils/fileAccess";
+import { actionsForFolder, documentAccessForClaims } from "../../utils/permissionAccess";
+import { canPerformFolderAction } from "../../../shared/sitePermissions";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
 const DEFAULT_LIMIT = 50;
@@ -83,7 +84,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!canReadGlobalDocuments(claims)) {
+	const access = await documentAccessForClaims(claims);
+	if (!access.allowed) {
 		throw createError({ statusCode: 403, message: "Access denied" });
 	}
 
@@ -97,12 +99,16 @@ export default defineEventHandler(async (event) => {
 	} = body || {};
 
 	const effectiveFolderId = folderId === undefined ? null : (folderId || null);
+	const canSeeCurrentFiles = canPerformFolderAction(access.config, access.folders, claims, effectiveFolderId, "open");
+	if (effectiveFolderId && !canSeeCurrentFiles) {
+		throw createError({ statusCode: 403, message: "Access denied" });
+	}
 
 	const foldersSnapshot = await db.collection("globalFolders").get();
 	const rawFolders = foldersSnapshot.docs.map((doc) => doc.data());
 
 	let filesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection("globalFiles");
-	filesQuery = filesQuery.where("folderId", "==", effectiveFolderId);
+	filesQuery = filesQuery.where("folderId", "==", canSeeCurrentFiles ? effectiveFolderId : "__none__");
 
 	const sortField = sortBy === "date" ? "uploadedAt" : sortBy;
 	filesQuery = filesQuery.orderBy(sortField, sortOrder);
@@ -119,9 +125,11 @@ export default defineEventHandler(async (event) => {
 	const filesSnapshot = await filesQuery.get();
 
 	const bucket = storage.bucket();
-	const rawFiles = filesSnapshot.docs
-		.map((doc) => ({ id: doc.id, ...doc.data() }))
-		.filter((doc: any) => !doc.deletedAt);
+	const rawFiles = canSeeCurrentFiles
+		? filesSnapshot.docs
+			.map((doc) => ({ id: doc.id, ...doc.data() }))
+			.filter((doc: any) => !doc.deletedAt)
+		: [];
 
 	const hasMore = rawFiles.length > limit;
 	const filesToProcess = hasMore ? rawFiles.slice(0, limit) : rawFiles;
@@ -213,10 +221,23 @@ export default defineEventHandler(async (event) => {
 		})
 	);
 
-	const folders = rawFolders.map((data: any) => ({
-		...data,
-		createdByName: data.createdBy ? userNames[data.createdBy] : undefined,
-	}));
+	const folders = rawFolders
+		.map((data: any) => ({
+			...data,
+			createdByName: data.createdBy ? userNames[data.createdBy] : undefined,
+		}))
+		.filter((folder: { id?: string }) => folder.id && canPerformFolderAction(access.config, access.folders, claims, folder.id, "open"))
+		.map((folder: { id: string }) => ({
+			...folder,
+			actions: actionsForFolder(access.config, access.folders, claims, folder.id),
+		}));
 
-	return { files, folders, nextCursor, hasMore };
+	return {
+		files: canSeeCurrentFiles ? files : [],
+		folders,
+		nextCursor: canSeeCurrentFiles ? nextCursor : null,
+		hasMore: canSeeCurrentFiles ? hasMore : false,
+		actions: actionsForFolder(access.config, access.folders, claims, effectiveFolderId),
+		rootActions: actionsForFolder(access.config, access.folders, claims, null),
+	};
 });

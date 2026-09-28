@@ -1,5 +1,7 @@
 import { getUserClaims } from "../../utils/auth";
 import { getHomesForUser } from "../../utils/homes";
+import { loadPermissionConfig } from "../../utils/permissionConfig";
+import { canPerform } from "../../../shared/sitePermissions";
 
 interface OwnerDocument {
 	id: string;
@@ -21,7 +23,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!claims.owner && !claims.admin) {
+	const permissionConfig = await loadPermissionConfig();
+	if (!canPerform(permissionConfig, claims, "home.files.upload")) {
 		throw createError({ statusCode: 403, message: "Forbidden" });
 	}
 

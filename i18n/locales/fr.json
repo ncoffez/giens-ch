@@ -790,6 +790,7 @@
     "nav": {
       "homes": "Maisons",
       "users": "Utilisateurs",
+      "permissions": "Autorisations",
       "memoriam": "In Memoriam",
       "trash": "Corbeille",
       "settings": "Réglages",
@@ -799,6 +800,68 @@
       "kicker": "Centre de contrôle",
       "title": "Administration",
       "lead": "Utilisateurs, maisons, visibilité et processus internes au même endroit."
+    },
+    "permissions": {
+      "kicker": "Accès",
+      "title": "Autorisations",
+      "lead": "Les quatre rôles restent fixes. Ici, vous décidez quel rôle peut utiliser quelle zone et quelle action.",
+      "save": "Enregistrer",
+      "saved": "Autorisations enregistrées",
+      "saveFailed": "L'enregistrement a échoué",
+      "loadFailed": "Les autorisations n'ont pas pu être chargées",
+      "locked": "Réservé aux admins",
+      "inherited": "Hérité",
+      "custom": "Attribution propre",
+      "resetFolder": "Comme le dossier parent",
+      "foldersTitle": "Dossiers sous Documents",
+      "foldersEmpty": "Aucun dossier pour l'instant. Les nouveaux dossiers reprennent les droits de la zone Documents, jusqu'à ce que vous les régliez ici.",
+      "foldersHint": "Sans attribution propre, le dossier parent s'applique. La racine vaut pour les fichiers directement sous Documents. Qui ne peut pas ouvrir un dossier n'atteint pas non plus ses sous-dossiers.",
+      "roles": {
+        "admin": "Admin",
+        "publisher": "Publisher",
+        "owner": "Owner",
+        "reader": "Reader"
+      },
+      "groups": {
+        "public": "Zone publique",
+        "documents": "Documents",
+        "home": "Ma maison",
+        "memoriam": "In Memoriam",
+        "admin": "Administration"
+      },
+      "rows": {
+        "page.home.edit": "Modifier l'accueil",
+        "page.travel.edit": "Modifier l'accès",
+        "page.entdecken.edit": "Modifier Découvrir",
+        "page.organisatorisches.edit": "Modifier l'organisation",
+        "documents.createFolder": "Nouveau dossier",
+        "documents.upload": "Téléverser",
+        "documents.open": "Ouvrir",
+        "documents.rename": "Renommer",
+        "documents.move": "Déplacer",
+        "documents.delete": "Supprimer",
+        "home.links.manage": "Gérer les liens",
+        "home.photos.upload": "Téléverser des photos",
+        "home.wifi.edit": "Modifier le Wi-Fi",
+        "home.contacts.manage": "Gérer les contacts",
+        "home.instructions.edit": "Modifier les consignes",
+        "home.files.upload": "Téléverser des fichiers",
+        "memoriam.view": "Lire In Memoriam",
+        "memoriam.manage": "Gérer In Memoriam",
+        "admin.homes.manage": "Gérer les maisons",
+        "admin.trash.manage": "Corbeille",
+        "admin.settings.manage": "Réglages",
+        "admin.users.manage": "Gestion des utilisateurs",
+        "admin.permissions.manage": "Autorisations"
+      },
+      "actions": {
+        "createFolder": "Nouveau dossier",
+        "upload": "Téléverser",
+        "open": "Ouvrir",
+        "rename": "Renommer",
+        "move": "Déplacer",
+        "delete": "Supprimer"
+      }
     },
     "memoriam": {
       "kicker": "Mémoire",

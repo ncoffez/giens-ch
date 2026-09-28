@@ -1,6 +1,6 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { canManageGlobalDocuments } from "../../utils/globalDocuments";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -8,12 +8,9 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!canManageGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Only admins and owners can create folders" });
-	}
-
 	const body = await readBody(event);
 	const { name, parentId } = body;
+	await assertDocumentAction(claims, parentId || null, "createFolder");
 
 	if (!name || typeof name !== "string" || name.trim().length === 0) {
 		throw createError({ statusCode: 400, message: "Folder name is required" });

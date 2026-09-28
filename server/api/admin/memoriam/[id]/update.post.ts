@@ -1,8 +1,8 @@
-import { requireAdmin } from "../../../../utils/auth";
+import { requireAreaPermission } from "../../../../utils/permissionAccess";
 import { updateMemoriamEntry } from "../../../../utils/memoriam";
 
 export default defineEventHandler(async (event) => {
-	const claims = await requireAdmin(event);
+	const { claims } = await requireAreaPermission(event, "memoriam.manage");
 	const id = getRouterParam(event, "id");
 
 	if (!id) {

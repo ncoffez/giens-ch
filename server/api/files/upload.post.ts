@@ -2,7 +2,7 @@ import { db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { buildDocumentSearchFieldsFromBuffer } from "../../utils/documentSearch";
 import { buildDocumentProcessingRecord } from "../../utils/documentProcessing";
-import { canManageGlobalDocuments } from "../../utils/globalDocuments";
+import { assertDocumentAction } from "../../utils/permissionAccess";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -15,11 +15,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
 	}
 
-	if (!canManageGlobalDocuments(claims)) {
-		throw createError({ statusCode: 403, message: "Only admins and owners can upload files" });
-	}
-
 	const body = await readBody(event);
+	await assertDocumentAction(claims, body?.folderId || null, "upload");
 	const { file: base64Data, name, type, size, folderId, lastModified } = body;
 
 	if (!base64Data || !name) {

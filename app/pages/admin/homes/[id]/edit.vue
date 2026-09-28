@@ -1,5 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ["is-admin"] });
+definePageMeta({
+	middleware: ["site-permission"],
+	permission: "admin.homes.manage",
+});
 
 const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
