@@ -9,7 +9,7 @@ import {
 	type DocumentAction,
 	type PermissionClaimSet,
 	type SitePermissionConfig,
-} from "../../shared/sitePermissions";
+} from "#shared/sitePermissions";
 import { requireSignedIn } from "./auth";
 import { canManageHomeFiles } from "./fileAccess";
 import { getHomeById } from "./homes";

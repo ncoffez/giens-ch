@@ -1,4 +1,4 @@
-import { ADMIN_SHELL_KEYS } from "../../shared/sitePermissions";
+import { ADMIN_SHELL_KEYS } from "#shared/sitePermissions";
 import { waitForAuthInitialization } from "../composables/useAuthReady";
 import { sanitizeRedirectPath } from "../utils/redirect";
 

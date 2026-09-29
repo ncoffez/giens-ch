@@ -1,6 +1,6 @@
 import { requireAreaPermission } from "../../utils/permissionAccess";
 import { loadFolderRefs, savePermissionConfig } from "../../utils/permissionConfig";
-import { sanitizePermissionConfig } from "../../../shared/sitePermissions";
+import { sanitizePermissionConfig } from "#shared/sitePermissions";
 
 export default defineEventHandler(async (event) => {
 	const { claims } = await requireAreaPermission(event, "admin.permissions.manage");

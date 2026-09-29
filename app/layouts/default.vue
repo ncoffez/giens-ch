@@ -132,7 +132,7 @@
 
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { ADMIN_SHELL_KEYS } from "../../shared/sitePermissions";
+import { ADMIN_SHELL_KEYS } from "#shared/sitePermissions";
 import { buildNavigationItems, buildPublicNavigationItems } from "../utils/navigation";
 import { sanitizeRedirectPath } from "../utils/redirect";
 

@@ -10,7 +10,7 @@ import {
 	permissionAuditLines,
 	resolvedGrants,
 	sanitizePermissionConfig,
-} from "../../shared/sitePermissions";
+} from "#shared/sitePermissions";
 
 const CONFIG_DOC = "sitePermissions/config";
 const AUDIT_LIMIT = 40;

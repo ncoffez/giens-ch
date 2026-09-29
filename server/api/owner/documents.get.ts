@@ -1,7 +1,7 @@
 import { getUserClaims } from "../../utils/auth";
 import { getHomesForUser } from "../../utils/homes";
 import { loadPermissionConfig } from "../../utils/permissionConfig";
-import { canPerform } from "../../../shared/sitePermissions";
+import { canPerform } from "#shared/sitePermissions";
 
 interface OwnerDocument {
 	id: string;

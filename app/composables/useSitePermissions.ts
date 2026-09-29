@@ -1,4 +1,4 @@
-import { EMPTY_PERMISSION_CONFIG, canAccessDocuments, canPerform } from "../../shared/sitePermissions";
+import { EMPTY_PERMISSION_CONFIG, canAccessDocuments, canPerform } from "#shared/sitePermissions";
 
 interface PermissionResponse {
 	actions: Record<string, boolean>;

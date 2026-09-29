@@ -1,6 +1,6 @@
 import { getUserClaims } from "../../utils/auth";
 import { loadFolderRefs, loadPermissionConfig } from "../../utils/permissionConfig";
-import { PERMISSION_ROWS, canAccessDocuments, canPerform } from "../../../shared/sitePermissions";
+import { PERMISSION_ROWS, canAccessDocuments, canPerform } from "#shared/sitePermissions";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);

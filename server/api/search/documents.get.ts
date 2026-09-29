@@ -3,7 +3,7 @@ import { getUserClaims } from "../../utils/auth";
 import { getHomesForUser } from "../../utils/homes";
 import { buildDocumentProcessingId } from "../../utils/documentProcessing";
 import { documentAccessForClaims } from "../../utils/permissionAccess";
-import { canPerform, canPerformFolderAction } from "../../../shared/sitePermissions";
+import { canPerform, canPerformFolderAction } from "#shared/sitePermissions";
 
 interface SearchDocumentResponseItem {
 	id: string;

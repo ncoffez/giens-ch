@@ -5,7 +5,7 @@ import {
 	type DocumentAction,
 	type RoleGrants,
 	type SiteRole,
-} from "../../../shared/sitePermissions";
+} from "#shared/sitePermissions";
 import {
 	permissionFolderChangeIndex,
 	permissionFolderPath,

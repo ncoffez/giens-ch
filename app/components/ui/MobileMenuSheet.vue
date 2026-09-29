@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { SearchResult } from "../../utils/search";
-import { ADMIN_SHELL_KEYS } from "../../../shared/sitePermissions";
+import { ADMIN_SHELL_KEYS } from "#shared/sitePermissions";
 import { buildMobileMenuSections, type MobileMenuFlags } from "../../utils/navigation";
 import { sanitizeRedirectPath } from "../../utils/redirect";
 

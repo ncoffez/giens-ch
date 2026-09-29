@@ -1,7 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { documentAccessForClaims } from "../../utils/permissionAccess";
-import { canPerformFolderAction } from "../../../shared/sitePermissions";
+import { canPerformFolderAction } from "#shared/sitePermissions";
 
 interface GlobalSearchFile {
 	id: string;

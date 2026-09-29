@@ -1,7 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { getHomeById } from "../../utils/homes";
 import { assertHomeReadable } from "../../utils/permissionAccess";
-import { canEditHomeSection } from "../../../shared/sitePermissions";
+import { canEditHomeSection } from "#shared/sitePermissions";
 import { cleanContact, syncHomeContacts } from "../../utils/homeContacts";
 
 export default defineEventHandler(async (event) => {

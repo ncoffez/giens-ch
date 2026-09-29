@@ -13,7 +13,7 @@ import {
 	canPerform,
 	canPerformFolderAction,
 	type SitePermissionConfig,
-} from "../../shared/sitePermissions";
+} from "#shared/sitePermissions";
 
 interface ContentDocument {
 	id: string;

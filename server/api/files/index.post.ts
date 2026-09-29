@@ -1,7 +1,7 @@
 import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { actionsForFolder, documentAccessForClaims } from "../../utils/permissionAccess";
-import { canPerformFolderAction } from "../../../shared/sitePermissions";
+import { canPerformFolderAction } from "#shared/sitePermissions";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
 const DEFAULT_LIMIT = 50;

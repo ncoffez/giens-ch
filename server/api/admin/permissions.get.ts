@@ -1,7 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { requireAreaPermission } from "../../utils/permissionAccess";
 import { buildPermissionCatalog, loadFolderRefs, loadPermissionRecord } from "../../utils/permissionConfig";
-import { DOCUMENT_ACTIONS, SITE_ROLES, folderActionGrants } from "../../../shared/sitePermissions";
+import { DOCUMENT_ACTIONS, SITE_ROLES, folderActionGrants } from "#shared/sitePermissions";
 
 export default defineEventHandler(async (event) => {
 	await requireAreaPermission(event, "admin.permissions.manage");
