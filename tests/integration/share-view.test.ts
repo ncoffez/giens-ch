@@ -41,6 +41,8 @@ describe("share view", () => {
 	it("uses a funnel layout and hides the bug report on the public link", () => {
 		expect(readFileSync("app/pages/homes/share/[token].vue", "utf8")).toContain('layout: "share"');
 		expect(readFileSync("app/layouts/share.vue", "utf8")).not.toContain("UNavigationMenu");
+		expect(readFileSync("app/layouts/share.vue", "utf8")).toContain("localePath('/')");
+		expect(readFileSync("app/layouts/share.vue", "utf8")).not.toContain("pointer-events-none");
 		expect(readFileSync("app/app.vue", "utf8")).toContain("/homes/share/");
 	});
 
