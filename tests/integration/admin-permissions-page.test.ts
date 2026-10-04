@@ -105,7 +105,8 @@ describe("Admin permissions folder tree", () => {
 		expect(savedBody).toEqual({ grants: {}, folders: {} });
 		await textIncludes(() => {
 			const box = component.find("[aria-label='Öffnen Reader']");
-			return (box.element as HTMLInputElement | undefined)?.checked ? "reader-on" : "";
+			if (!box.exists()) return "";
+			return (box.element as HTMLInputElement).checked ? "reader-on" : "";
 		}, "reader-on");
 		expect((component.get("[aria-label='Öffnen Reader']").element as HTMLInputElement).checked).toBe(true);
 		expect(component.get("[role='treeitem']").text()).not.toContain("Weiter unten");
