@@ -3,6 +3,7 @@ import type { Home, HomeShare, HomeContact } from "~/types";
 import HomeShareView from "~/components/homes/HomeShareView.vue";
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
 import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
+import { trackAnalyticsEvent } from "~/utils/analytics";
 
 definePageMeta({
 	layout: "share",
@@ -18,6 +19,23 @@ const { data, pending: loading, error } = await useAsyncData(
 const home = computed(() => data.value?.home || null);
 const contacts = computed(() => data.value?.contacts || []);
 const audience = computed(() => data.value?.share.audience === "prospect" ? "prospect" : "tenant");
+const reportedShareKey = ref("");
+if (import.meta.client) {
+	watch(
+		() => [loading.value, Boolean(error.value), home.value?.name, audience.value] as const,
+		() => {
+			if (loading.value || error.value || !home.value) return;
+			const key = `${audience.value}:${home.value.name}`;
+			if (reportedShareKey.value === key) return;
+			reportedShareKey.value = key;
+			trackAnalyticsEvent("share_view", {
+				audience: audience.value,
+				home_name: home.value.name,
+			});
+		},
+		{ immediate: true },
+	);
+}
 const errorMessage = computed(() => getFetchError(error.value) || "Fehler beim Laden");
 const siteUrl = runtimeConfig.public.SITE_URL;
 const defaultShareImage = buildAbsoluteSiteUrl("/photos/giens-hauser.jpeg", siteUrl);
