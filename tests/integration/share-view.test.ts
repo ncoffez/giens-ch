@@ -62,6 +62,10 @@ describe("share view", () => {
 		expect(view.text()).toContain("Sitzplatz");
 		expect(view.text()).toContain("TV");
 		expect(view.text()).toContain("Avenue des Arbanais");
+		expect(view.text()).toContain("Anreise");
+		expect(view.text()).toContain("Entdecken");
+		expect(view.html()).toContain('href="/travel"');
+		expect(view.html()).toContain('href="/entdecken"');
 		expect(view.html()).toContain("43.037673,6.145289");
 		expect(view.html()).toContain("output=embed");
 		expect(view.text()).not.toContain("geheim-pass");
@@ -85,6 +89,8 @@ describe("share view", () => {
 		expect(view.text()).toContain("WLAN");
 		expect(view.text()).toContain("Beausoleil");
 		expect(view.text()).not.toContain("Sitzplatz");
+		expect(view.text()).not.toContain("Rund um Giens");
+		expect(view.html()).not.toContain('href="/travel"');
 		expect(view.html()).not.toContain("output=embed");
 		expect(view.text()).not.toContain("geheim-pass");
 		expect(view.text()).toContain("Plan.pdf");

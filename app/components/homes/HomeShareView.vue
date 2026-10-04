@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
 });
 
 const { t, locale } = useI18n();
+const localePath = useLocalePath();
 const activePhoto = ref(0);
 const lightboxIndex = ref<number | null>(null);
 const showWifiPassword = ref(false);
@@ -36,6 +37,20 @@ const prospectFacts = [
 	{ icon: "i-lucide-sun", label: "share.facts.seating" },
 	{ icon: "i-lucide-tv", label: "share.facts.tv" },
 ] as const;
+const prospectLinks = computed(() => [
+	{
+		to: localePath("/travel"),
+		icon: "i-lucide-car",
+		label: "nav.travel",
+		lead: "share.contextTravel",
+	},
+	{
+		to: localePath("/entdecken"),
+		icon: "i-lucide-map",
+		label: "nav.entdecken",
+		lead: "share.contextDiscover",
+	},
+]);
 
 /**
  * The Anleitung is written in either German or French and the other language is
@@ -321,6 +336,28 @@ onBeforeUnmount(() => {
 						referrerpolicy="no-referrer-when-downgrade"
 						allowfullscreen
 					/>
+				</div>
+
+				<div class="app-card rounded-[2rem] p-6 md:p-7">
+					<h2 class="display-copy text-2xl font-bold">{{ t("share.contextTitle") }}</h2>
+					<p class="mt-1 text-sm app-muted">{{ t("share.contextLead") }}</p>
+					<div class="mt-5 grid gap-3 sm:grid-cols-2">
+						<NuxtLink
+							v-for="link in prospectLinks"
+							:key="link.to"
+							:to="link.to"
+							class="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/60 px-4 py-4 transition-colors hover:border-[var(--app-primary)] hover:bg-[var(--app-primary)]/5 dark:bg-white/3"
+						>
+							<span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--app-primary)]/10 text-[var(--app-primary)]">
+								<UIcon :name="link.icon" class="h-5 w-5" />
+							</span>
+							<span class="min-w-0">
+								<span class="block font-semibold">{{ t(link.label) }}</span>
+								<span class="block text-sm app-muted">{{ t(link.lead) }}</span>
+							</span>
+							<UIcon name="i-lucide-arrow-right" class="ml-auto h-4 w-4 shrink-0 text-stone-400" />
+						</NuxtLink>
+					</div>
 				</div>
 			</section>
 
