@@ -981,6 +981,16 @@
     "welcome": "Bienvenue",
     "guestIntro": "Toutes les informations utiles, les contacts et les documents importants de votre séjour réunis au même endroit.",
     "prospectIntro": "Un premier aperçu de ce logement.",
+    "factsTitle": "Le logement",
+    "facts": {
+      "bedrooms": "2 chambres",
+      "kitchen": "Cuisine",
+      "seating": "Terrasse",
+      "tv": "TV"
+    },
+    "locationTitle": "Situation",
+    "locationLead": "Avenue des Arbanais, sur la presqu'île de Giens.",
+    "openMap": "Ouvrir dans Google Maps",
     "gallery": "Galerie",
     "quickAccess": "Accès rapide",
     "contacts": "Contacts",

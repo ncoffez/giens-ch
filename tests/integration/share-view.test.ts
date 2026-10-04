@@ -55,6 +55,13 @@ describe("share view", () => {
 		});
 
 		expect(view.text()).toContain("Haus 4");
+		expect(view.text()).toContain("2 Schlafzimmer");
+		expect(view.text()).toContain("Küche");
+		expect(view.text()).toContain("Sitzplatz");
+		expect(view.text()).toContain("TV");
+		expect(view.text()).toContain("Avenue des Arbanais");
+		expect(view.html()).toContain("43.037673,6.145289");
+		expect(view.html()).toContain("output=embed");
 		expect(view.text()).not.toContain("geheim-pass");
 		expect(view.text()).not.toContain("Beausoleil");
 		expect(view.text()).not.toContain("Plan.pdf");
@@ -75,6 +82,8 @@ describe("share view", () => {
 
 		expect(view.text()).toContain("WLAN");
 		expect(view.text()).toContain("Beausoleil");
+		expect(view.text()).not.toContain("Sitzplatz");
+		expect(view.html()).not.toContain("output=embed");
 		expect(view.text()).not.toContain("geheim-pass");
 		expect(view.text()).toContain("Plan.pdf");
 		expect(view.text()).toContain("Patrik Auberson");

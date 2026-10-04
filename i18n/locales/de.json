@@ -981,6 +981,16 @@
     "welcome": "Willkommen",
     "guestIntro": "Alle wichtigen Informationen, Kontakte und Unterlagen für Ihren Aufenthalt auf einen Blick.",
     "prospectIntro": "Ein erster Eindruck dieser Wohnung.",
+    "factsTitle": "Die Wohnung",
+    "facts": {
+      "bedrooms": "2 Schlafzimmer",
+      "kitchen": "Küche",
+      "seating": "Sitzplatz",
+      "tv": "TV"
+    },
+    "locationTitle": "Lage",
+    "locationLead": "Avenue des Arbanais auf der Halbinsel Giens.",
+    "openMap": "In Google Maps öffnen",
     "gallery": "Galerie",
     "quickAccess": "Schnellzugriff",
     "contacts": "Kontaktpersonen",

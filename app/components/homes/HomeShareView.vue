@@ -2,6 +2,7 @@
 import type { Home, HomeContact, HomeFile, HomeShareAudience } from "~/types";
 import ContactCard from "~/components/homes/ContactCard.vue";
 import { getFileIcon, getFileIconBg, getFileIconColor } from "~/utils/fileTypes";
+import { prospectMapEmbedUrl, prospectMapLink } from "~/utils/prospectMap";
 
 /**
  * The guest view of a home. Rendered both from a public share link and from the
@@ -27,6 +28,14 @@ const passwordCopied = ref(false);
 const home = computed(() => props.home);
 const contacts = computed(() => props.contacts || []);
 const isProspect = computed(() => props.audience === "prospect");
+const mapEmbedUrl = computed(() => prospectMapEmbedUrl(locale.value));
+const mapLink = prospectMapLink();
+const prospectFacts = [
+	{ icon: "i-lucide-bed", label: "share.facts.bedrooms" },
+	{ icon: "i-lucide-utensils", label: "share.facts.kitchen" },
+	{ icon: "i-lucide-sun", label: "share.facts.seating" },
+	{ icon: "i-lucide-tv", label: "share.facts.tv" },
+] as const;
 
 /**
  * The Anleitung is written in either German or French and the other language is
@@ -267,6 +276,53 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 			</div>
+
+			<section v-if="isProspect" class="space-y-6">
+				<div class="app-card rounded-[2rem] p-6 md:p-7">
+					<h2 class="display-copy text-2xl font-bold">{{ t("share.factsTitle") }}</h2>
+					<ul class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+						<li
+							v-for="fact in prospectFacts"
+							:key="fact.label"
+							class="flex min-w-0 flex-col items-center gap-2 rounded-2xl border border-[var(--app-border)] bg-white/60 px-3 py-4 text-center dark:bg-white/3 sm:flex-row sm:py-3 sm:text-left"
+						>
+							<span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--app-primary)]/10 text-[var(--app-primary)]">
+								<UIcon :name="fact.icon" class="h-5 w-5" />
+							</span>
+							<span class="min-w-0 text-sm font-semibold leading-tight">{{ t(fact.label) }}</span>
+						</li>
+					</ul>
+				</div>
+
+				<div class="app-card overflow-hidden rounded-[2rem]">
+					<div class="flex flex-wrap items-center justify-between gap-3 p-6 md:p-7 md:pb-5">
+						<div>
+							<h2 class="display-copy flex items-center gap-2 text-2xl font-bold">
+								<UIcon name="i-lucide-map" class="h-5 w-5" />
+								{{ t("share.locationTitle") }}
+							</h2>
+							<p class="mt-1 text-sm app-muted">{{ t("share.locationLead") }}</p>
+						</div>
+						<UButton
+							:to="mapLink"
+							target="_blank"
+							color="neutral"
+							variant="soft"
+							icon="i-lucide-external-link"
+						>
+							{{ t("share.openMap") }}
+						</UButton>
+					</div>
+					<iframe
+						:src="mapEmbedUrl"
+						:title="t('share.locationTitle')"
+						class="h-80 w-full border-0 md:h-[28rem]"
+						loading="lazy"
+						referrerpolicy="no-referrer-when-downgrade"
+						allowfullscreen
+					/>
+				</div>
+			</section>
 
 			<!-- Contacts -->
 			<section v-if="!isProspect && contacts.length > 0" id="share-contacts" class="scroll-mt-6 space-y-4">
