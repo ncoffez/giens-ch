@@ -4,6 +4,10 @@ import HomeShareView from "~/components/homes/HomeShareView.vue";
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
 import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
 
+definePageMeta({
+	layout: "share",
+});
+
 const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
 const token = computed(() => route.params.token as string);
@@ -13,6 +17,7 @@ const { data, pending: loading, error } = await useAsyncData(
 );
 const home = computed(() => data.value?.home || null);
 const contacts = computed(() => data.value?.contacts || []);
+const audience = computed(() => data.value?.share.audience === "prospect" ? "prospect" : "tenant");
 const errorMessage = computed(() => getFetchError(error.value) || "Fehler beim Laden");
 const siteUrl = runtimeConfig.public.SITE_URL;
 const defaultShareImage = buildAbsoluteSiteUrl("/photos/giens-hauser.jpeg", siteUrl);
@@ -26,6 +31,10 @@ const shareTitle = computed(() => home.value ? `${home.value.name} | Résidence 
 const shareDescription = computed(() => {
 	if (!home.value) {
 		return "Gastzugang zur Résidence Beausoleil auf der Halbinsel Giens.";
+	}
+
+	if (audience.value === "prospect") {
+		return `${home.value.name}: ein erster Eindruck der Wohnung in der Résidence Beausoleil.`;
 	}
 
 	return `${home.value.name}: Kontakte, Hinweise, WLAN und wichtige Unterlagen für einen entspannten Aufenthalt am Meer.`;
@@ -93,6 +102,7 @@ useHead(() => ({
 			v-else-if="home"
 			:home="home"
 			:contacts="contacts"
+			:audience="audience"
 			:download-file="downloadFile"
 		/>
 	</div>

@@ -3,7 +3,7 @@ import type { HomeShare } from "~/types";
 
 const props = defineProps<{
 	homeId: string;
-	shares: HomeShare[];
+	shares: Array<HomeShare & { shareUrl?: string }>;
 }>();
 
 const emit = defineEmits<{
@@ -15,6 +15,7 @@ const toast = useToast();
 const { t, locale } = useI18n();
 
 const creating = ref(false);
+const renewing = ref(false);
 const durationPreset = ref<"7" | "30" | "unlimited" | "custom">("7");
 const customDays = ref(14);
 
@@ -38,12 +39,18 @@ const expirationDate = computed(() => {
 	});
 });
 
+const prospectShare = computed(() => {
+	return props.shares.find((share) => share.audience === "prospect" && !share.revoked) || null;
+});
+
+const tenantShares = computed(() => props.shares.filter((share) => share.audience !== "prospect"));
+
 const activeShares = computed(() => {
-	return props.shares.filter((s) => !s.revoked && new Date(s.expiresAt) > new Date());
+	return tenantShares.value.filter((share) => !share.revoked && Boolean(share.expiresAt) && new Date(share.expiresAt) > new Date());
 });
 
 const expiredOrRevokedShares = computed(() => {
-	return props.shares.filter((s) => s.revoked || new Date(s.expiresAt) <= new Date());
+	return tenantShares.value.filter((share) => share.revoked || !share.expiresAt || new Date(share.expiresAt) <= new Date());
 });
 
 const createShare = async () => {
@@ -65,6 +72,26 @@ const createShare = async () => {
 		toast.add({ title: t("homes.shareLinks.toasts.error"), description: getFetchError(e), color: "error" });
 	} finally {
 		creating.value = false;
+	}
+};
+
+const renewProspect = async () => {
+	if (!confirm(t("homes.shareLinks.confirmRenew"))) return;
+
+	try {
+		renewing.value = true;
+		const result = await $fetch<{ shareUrl: string }>(`/api/homes/${props.homeId}/share/renew`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${await getFreshToken()}` },
+		});
+		toast.add({ title: t("homes.shareLinks.toasts.renewed"), color: "success" });
+		emit("refresh");
+		await navigator.clipboard.writeText(result.shareUrl);
+		toast.add({ title: t("homes.shareLinks.toasts.copiedToClipboard"), color: "success" });
+	} catch (e: unknown) {
+		toast.add({ title: t("homes.shareLinks.toasts.error"), description: getFetchError(e), color: "error" });
+	} finally {
+		renewing.value = false;
 	}
 };
 
@@ -108,7 +135,52 @@ const durationOptions = [
 </script>
 
 <template>
-	<div class="space-y-6">
+	<div class="space-y-8">
+		<section v-if="prospectShare" class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6 space-y-4">
+			<div>
+				<h3 class="font-bold">{{ t("homes.shareLinks.prospectTitle") }}</h3>
+				<p class="text-sm text-stone-500 mt-2">{{ t("homes.shareLinks.prospectLead") }}</p>
+			</div>
+			<div class="flex items-center gap-2 text-sm text-stone-500">
+				<UIcon name="i-lucide-infinity" class="w-4 h-4" />
+				<span>{{ t("homes.shareLinks.noExpiry") }}</span>
+				<span class="text-stone-300">|</span>
+				<span>{{ t("homes.shareLinks.accessCount", { count: prospectShare.accessCount }) }}</span>
+			</div>
+			<code class="block text-xs p-2 bg-stone-50 dark:bg-stone-900 rounded-lg truncate">
+				{{ prospectShare.shareUrl }}
+			</code>
+			<div class="flex flex-wrap gap-2">
+				<UButton icon="i-lucide-copy" @click="copyLink(prospectShare.shareUrl || '')">
+					{{ t("homes.shareLinks.copy") }}
+				</UButton>
+				<UButton
+					variant="outline"
+					color="neutral"
+					icon="i-lucide-external-link"
+					:to="prospectShare.shareUrl"
+					target="_blank"
+				>
+					{{ t("homes.shareLinks.open") }}
+				</UButton>
+				<UButton
+					variant="outline"
+					color="neutral"
+					icon="i-lucide-refresh-cw"
+					:loading="renewing"
+					@click="renewProspect"
+				>
+					{{ t("homes.shareLinks.renew") }}
+				</UButton>
+			</div>
+		</section>
+
+		<section class="space-y-6">
+			<div>
+				<h3 class="font-bold text-lg">{{ t("homes.shareLinks.tenantTitle") }}</h3>
+				<p class="text-sm text-stone-500 mt-2">{{ t("homes.shareLinks.tenantLead") }}</p>
+			</div>
+
 		<!-- Create new share -->
 		<div class="bg-white dark:bg-stone-800 rounded-2xl border border-stone-100 dark:border-stone-700 p-6">
 			<h3 class="font-bold mb-4">{{ t("homes.shareLinks.createTitle") }}</h3>
@@ -223,5 +295,6 @@ const durationOptions = [
 				</div>
 			</div>
 		</details>
+		</section>
 	</div>
 </template>

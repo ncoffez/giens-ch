@@ -1,5 +1,5 @@
 import { storage } from "../../../../../useFirebaseAdmin";
-import { getHomeById, getShareLink } from "../../../../../utils/homes";
+import { getHomeById, getShareLink, shareAudience } from "../../../../../utils/homes";
 
 const SIGNED_URL_EXPIRY_MINUTES = 15;
 
@@ -14,6 +14,10 @@ export default defineEventHandler(async (event) => {
 	const share = await getShareLink(token);
 	if (!share) {
 		throw createError({ statusCode: 404, message: "Share link not found, expired, or revoked" });
+	}
+
+	if (shareAudience(share) === "prospect") {
+		throw createError({ statusCode: 403, message: "This link cannot download files" });
 	}
 
 	const home = await getHomeById(share.homeId);

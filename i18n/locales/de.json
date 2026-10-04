@@ -86,7 +86,7 @@
       },
       "links": {
         "title": "Links verwalten",
-        "description": "Erstellen Sie Links, die Sie mit Mietern teilen können."
+        "description": "Der Link für Interessenten ist immer da. Für Mieter geben Sie bei Bedarf einen weiteren Link frei."
       },
       "photos": {
         "title": "Fotos",
@@ -169,6 +169,15 @@
       }
     },
     "shareLinks": {
+      "prospectTitle": "Link für Interessenten",
+      "prospectLead": "Dieser Link bleibt gleich und läuft nicht ab. Er zeigt nur den Namen und die Fotos, ohne WLAN, Anleitung, Kontakte oder Dokumente. Ohne den Link ist die Seite nicht erreichbar.",
+      "tenantTitle": "Link für Mieter",
+      "tenantLead": "Für Gäste, die anreisen. Der Link enthält WLAN, Anleitung, Kontakte und Dokumente und läuft ab.",
+      "noExpiry": "Kein Ablaufdatum",
+      "copy": "Link kopieren",
+      "open": "Öffnen",
+      "renew": "Link erneuern",
+      "confirmRenew": "Der bisherige Link wird ungültig. Wirklich erneuern?",
       "createTitle": "Neuen Link erstellen",
       "durationLabel": "Gültigkeitsdauer",
       "customDaysPlaceholder": "Anzahl Tage",
@@ -196,6 +205,7 @@
         "copiedToClipboard": "Link in Zwischenablage kopiert",
         "copied": "Link kopiert",
         "revoked": "Link widerrufen",
+        "renewed": "Neuer Link erstellt",
         "error": "Fehler"
       }
     },
@@ -970,6 +980,7 @@
   "share": {
     "welcome": "Willkommen",
     "guestIntro": "Alle wichtigen Informationen, Kontakte und Unterlagen für Ihren Aufenthalt auf einen Blick.",
+    "prospectIntro": "Ein erster Eindruck dieser Wohnung.",
     "gallery": "Galerie",
     "quickAccess": "Schnellzugriff",
     "contacts": "Kontaktpersonen",

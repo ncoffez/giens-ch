@@ -62,7 +62,7 @@ describe("navigation helpers", () => {
 		expect(items[4]?.active).toBe(true);
 	});
 
-	it("places In Memoriam immediately before documents for owners", () => {
+	it("places documents before In Memoriam for owners", () => {
 		const items = buildNavigationItems(t, localePath, "/memoriam", true, true, true);
 
 		expect(items.map((item) => item.label)).toEqual([
@@ -70,11 +70,11 @@ describe("navigation helpers", () => {
 			"Anreise",
 			"Entdecken",
 			"Organisatorisches",
-			"In Memoriam",
 			"Dokumente",
+			"In Memoriam",
 		]);
-		expect(items[4]?.active).toBe(true);
-		expect(items[5]?.active).toBe(false);
+		expect(items[4]?.active).toBe(false);
+		expect(items[5]?.active).toBe(true);
 	});
 
 	it("does not highlight the owner page on the admin memoriam route", () => {
@@ -146,8 +146,8 @@ describe("navigation helpers", () => {
 
 			expect(sections[0]?.items.map((item) => item.id)).toEqual([
 				"travel",
-				"memoriam",
 				"documents",
+				"memoriam",
 				"my-homes",
 				"profile",
 				"logout",

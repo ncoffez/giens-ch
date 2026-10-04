@@ -4,7 +4,7 @@
 			<NuxtPage />
 		</NuxtLayout>
 		<ClientOnly>
-			<UiErrorReportCenter />
+			<UiErrorReportCenter v-if="showErrorReport" />
 		</ClientOnly>
 	</UApp>
 </template>
@@ -13,12 +13,14 @@
 import { buildAbsoluteSiteUrl } from "~/utils/seo";
 
 const i18n = useI18n();
+const route = useRoute();
 const runtimeConfig = useRuntimeConfig();
 const siteUrl = runtimeConfig.public.SITE_URL;
 const defaultTitle = "Résidence Beausoleil";
 const defaultDescription = "Mediterrane Ruhe, Gemeinschaft und gut gepflegte Ferienhäuser auf der Halbinsel Giens.";
 const defaultImage = buildAbsoluteSiteUrl("/photos/giens-hauser.jpeg", siteUrl);
 const activeLocale = computed(() => i18n.locale?.value || "de");
+const showErrorReport = computed(() => !route.path.replace(/^\/fr(?=\/)/, "").startsWith("/homes/share/"));
 
 useHead(() => ({
 	htmlAttrs: {

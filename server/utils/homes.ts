@@ -1,5 +1,5 @@
 import { db } from "../useFirebaseAdmin";
-import type { Home, HomeShare } from "../../types";
+import type { Home, HomeShare, HomeShareAudience } from "../../types";
 import crypto from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
 import { canManageHomeFiles } from "./fileAccess";
@@ -63,10 +63,50 @@ export async function isHomeOwner(homeId: string, userId: string): Promise<boole
 	return canManageHomeFiles({ uid: userId }, home);
 }
 
+export function shareAudience(share: Pick<HomeShare, "audience">): HomeShareAudience {
+	return share.audience === "prospect" ? "prospect" : "tenant";
+}
+
+/** A prospect link never expires. Older links without an audience stay tenant links. */
+export function isShareActive(share: HomeShare, now = new Date()): boolean {
+	if (share.revoked) return false;
+	if (shareAudience(share) === "prospect") return true;
+	if (!share.expiresAt) return false;
+	return new Date(share.expiresAt) > now;
+}
+
+/**
+ * What a share link may reveal. Prospects get the name and photos only.
+ * Stay details (WLAN, instructions, contacts, files) stay on tenant links.
+ */
+export function presentHomeForShare(home: Home, audience: HomeShareAudience): Home {
+	if (audience === "prospect") {
+		return {
+			id: home.id,
+			name: home.name,
+			ownerIds: [],
+			photos: home.photos || [],
+			files: [],
+			privateFiles: [],
+			folders: [],
+			enabled: home.enabled,
+			createdAt: home.createdAt,
+			updatedAt: home.updatedAt,
+		};
+	}
+
+	return {
+		...home,
+		files: (home.files || []).filter((file) => file.visibility !== "private"),
+		privateFiles: [],
+	};
+}
+
 export async function createShareLink(
 	homeId: string,
 	userId: string,
-	daysToExpire: number = 7
+	daysToExpire: number = 7,
+	audience: HomeShareAudience = "tenant",
 ): Promise<HomeShare> {
 	const shareId = crypto.randomUUID();
 	const now = new Date();
@@ -77,7 +117,8 @@ export async function createShareLink(
 		id: shareId,
 		homeId,
 		createdBy: userId,
-		expiresAt: expiresAt.toISOString(),
+		audience,
+		expiresAt: audience === "prospect" ? "" : expiresAt.toISOString(),
 		revoked: false,
 		accessCount: 0,
 		createdAt: now.toISOString(),
@@ -87,14 +128,32 @@ export async function createShareLink(
 	return share;
 }
 
+export async function createProspectShare(homeId: string, userId: string): Promise<HomeShare> {
+	return createShareLink(homeId, userId, 0, "prospect");
+}
+
+export async function ensureProspectShare(homeId: string, userId: string): Promise<HomeShare> {
+	const shares = await getShareLinksForHome(homeId);
+	const existing = shares.find((share) => share.audience === "prospect" && !share.revoked);
+	if (existing) return existing;
+	return createProspectShare(homeId, userId);
+}
+
+export async function renewProspectShare(homeId: string, userId: string): Promise<HomeShare> {
+	const shares = await getShareLinksForHome(homeId);
+	await Promise.all(shares
+		.filter((share) => share.audience === "prospect" && !share.revoked)
+		.map((share) => revokeShareLink(share.id)));
+	return createProspectShare(homeId, userId);
+}
+
 export async function getShareLink(shareId: string): Promise<HomeShare | null> {
 	const doc = await db.collection("homeShares").doc(shareId).get();
 	if (!doc.exists) return null;
 
 	const share = { id: doc.id, ...doc.data() } as HomeShare;
 
-	if (share.revoked) return null;
-	if (new Date(share.expiresAt) < new Date()) return null;
+	if (!isShareActive(share)) return null;
 
 	return share;
 }

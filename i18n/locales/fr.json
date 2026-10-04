@@ -86,7 +86,7 @@
       },
       "links": {
         "title": "Gérer les liens",
-        "description": "Créez des liens que vous pouvez partager avec les locataires."
+        "description": "Le lien pour les personnes intéressées existe toujours. Pour les locataires, vous ouvrez un lien supplémentaire au besoin."
       },
       "photos": {
         "title": "Photos",
@@ -169,6 +169,15 @@
       }
     },
     "shareLinks": {
+      "prospectTitle": "Lien pour les personnes intéressées",
+      "prospectLead": "Ce lien reste le même et n’a pas de date d’expiration. Il montre le nom et les photos, sans Wi-Fi, consignes, contacts ni documents. Sans le lien, la page n’est pas accessible.",
+      "tenantTitle": "Lien pour les locataires",
+      "tenantLead": "Pour les personnes qui séjournent. Le lien contient le Wi-Fi, les consignes, les contacts et les documents, et il expire.",
+      "noExpiry": "Sans date d’expiration",
+      "copy": "Copier le lien",
+      "open": "Ouvrir",
+      "renew": "Renouveler le lien",
+      "confirmRenew": "L’ancien lien ne fonctionnera plus. Le renouveler vraiment ?",
       "createTitle": "Créer un nouveau lien",
       "durationLabel": "Durée de validité",
       "customDaysPlaceholder": "Nombre de jours",
@@ -196,6 +205,7 @@
         "copiedToClipboard": "Lien copié dans le presse-papiers",
         "copied": "Lien copié",
         "revoked": "Lien révoqué",
+        "renewed": "Nouveau lien créé",
         "error": "Erreur"
       }
     },
@@ -970,6 +980,7 @@
   "share": {
     "welcome": "Bienvenue",
     "guestIntro": "Toutes les informations utiles, les contacts et les documents importants de votre séjour réunis au même endroit.",
+    "prospectIntro": "Un premier aperçu de ce logement.",
     "gallery": "Galerie",
     "quickAccess": "Accès rapide",
     "contacts": "Contacts",

@@ -59,22 +59,22 @@ export function buildNavigationItems(
 
 	items.push(...buildPublicNavigationItems(t, localePath, routePath));
 
-	// Owner pages close the menu: … Organisatorisches > In Memoriam > Dokumente.
-	if (canAccessMemoriam) {
-		items.push(createPrimaryNavigationItem(
-			t("nav.memoriam"),
-			localePath("/memoriam"),
-			"i-lucide-flower-2",
-			isMemoriamPage(routePath),
-		));
-	}
-
+	// Owner pages close the menu: … Organisation > Documents > In Memoriam.
 	if (canAccessDocuments) {
 		items.push(createPrimaryNavigationItem(
 			t("nav.documents"),
 			localePath("/documents"),
 			"i-lucide-folder",
 			routePath.startsWith("/documents") || routePath.startsWith("/fr/documents"),
+		));
+	}
+
+	if (canAccessMemoriam) {
+		items.push(createPrimaryNavigationItem(
+			t("nav.memoriam"),
+			localePath("/memoriam"),
+			"i-lucide-flower-2",
+			isMemoriamPage(routePath),
 		));
 	}
 
@@ -227,16 +227,6 @@ export function buildMobileMenuSections(
 		},
 	];
 
-	if (flags.canAccessMemoriam) {
-		mainItems.push({
-			id: "memoriam",
-			label: t("nav.memoriam"),
-			to: localePath("/memoriam"),
-			icon: "i-lucide-flower-2",
-			active: isMemoriamPage(routePath),
-		});
-	}
-
 	if (flags.canAccessDocuments) {
 		mainItems.push({
 			id: "documents",
@@ -244,6 +234,16 @@ export function buildMobileMenuSections(
 			to: localePath("/documents"),
 			icon: "i-lucide-folder",
 			active: isUnderPath(routePath, "/documents"),
+		});
+	}
+
+	if (flags.canAccessMemoriam) {
+		mainItems.push({
+			id: "memoriam",
+			label: t("nav.memoriam"),
+			to: localePath("/memoriam"),
+			icon: "i-lucide-flower-2",
+			active: isMemoriamPage(routePath),
 		});
 	}
 

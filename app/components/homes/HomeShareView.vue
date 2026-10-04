@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Home, HomeContact, HomeFile } from "~/types";
+import type { Home, HomeContact, HomeFile, HomeShareAudience } from "~/types";
 import ContactCard from "~/components/homes/ContactCard.vue";
 import { getFileIcon, getFileIconBg, getFileIconColor } from "~/utils/fileTypes";
 
@@ -8,11 +8,14 @@ import { getFileIcon, getFileIconBg, getFileIconColor } from "~/utils/fileTypes"
  * owner-only preview route, so it must not assume a share token exists: the page
  * passes in the data and the download handler.
  */
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	home: Home;
 	contacts: HomeContact[];
 	downloadFile: (fileId: string) => Promise<void> | void;
-}>();
+	audience?: HomeShareAudience;
+}>(), {
+	audience: "tenant",
+});
 
 const { t, locale } = useI18n();
 const activePhoto = ref(0);
@@ -23,6 +26,7 @@ const passwordCopied = ref(false);
 
 const home = computed(() => props.home);
 const contacts = computed(() => props.contacts || []);
+const isProspect = computed(() => props.audience === "prospect");
 
 /**
  * The Anleitung is written in either German or French and the other language is
@@ -112,29 +116,35 @@ const scrollToSection = (id: string) => {
 	document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-const quickAccessTiles = computed(() => [
-	{
-		key: "photos",
-		icon: "i-lucide-image",
-		label: t("share.summary.photos"),
-		count: home.value?.photos?.length || 0,
-		action: () => openLightbox(0),
-	},
-	{
-		key: "documents",
-		icon: "i-lucide-folder",
-		label: t("share.summary.documents"),
-		count: home.value?.files?.length || 0,
-		action: () => scrollToSection("share-documents"),
-	},
-	{
-		key: "contacts",
-		icon: "i-lucide-users",
-		label: t("share.summary.contacts"),
-		count: contacts.value.length,
-		action: () => scrollToSection("share-contacts"),
-	},
-]);
+const quickAccessTiles = computed(() => {
+	const tiles = [
+		{
+			key: "photos",
+			icon: "i-lucide-image",
+			label: t("share.summary.photos"),
+			count: home.value?.photos?.length || 0,
+			action: () => openLightbox(0),
+		},
+		{
+			key: "documents",
+			icon: "i-lucide-folder",
+			label: t("share.summary.documents"),
+			count: home.value?.files?.length || 0,
+			action: () => scrollToSection("share-documents"),
+		},
+		{
+			key: "contacts",
+			icon: "i-lucide-users",
+			label: t("share.summary.contacts"),
+			count: contacts.value.length,
+			action: () => scrollToSection("share-contacts"),
+		},
+	];
+
+	return isProspect.value ? tiles.filter((tile) => tile.key === "photos") : tiles;
+});
+
+const showSidePanel = computed(() => !isProspect.value || (home.value?.photos?.length || 0) > 1);
 
 /* ---------------------------------- Files ---------------------------------- */
 
@@ -178,7 +188,7 @@ onBeforeUnmount(() => {
 	<div>
 		<div class="max-w-screen-lg mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
 			<div class="app-card rounded-[2rem] overflow-hidden">
-				<div class="grid gap-0 md:grid-cols-[1.3fr_0.9fr]">
+				<div class="grid gap-0" :class="showSidePanel ? 'md:grid-cols-[1.3fr_0.9fr]' : ''">
 					<div class="relative min-h-[280px] md:min-h-[420px]">
 						<img
 							v-if="home.photos?.length"
@@ -195,12 +205,12 @@ onBeforeUnmount(() => {
 							</div>
 							<h1 class="display-copy text-4xl md:text-5xl font-bold tracking-[-0.05em] text-white text-balance">{{ home.name }}</h1>
 							<p class="mt-3 max-w-xl text-sm md:text-base text-white/82">
-								{{ t("share.guestIntro") }}
+								{{ isProspect ? t("share.prospectIntro") : t("share.guestIntro") }}
 							</p>
 						</div>
 					</div>
-					<div class="p-5 md:p-8 flex flex-col justify-between gap-6">
-						<div>
+					<div v-if="showSidePanel" class="p-5 md:p-8 flex flex-col justify-between gap-6">
+						<div v-if="!isProspect">
 							<p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-primary)] mb-3">
 								{{ t("share.quickAccess") }}
 							</p>
@@ -259,7 +269,7 @@ onBeforeUnmount(() => {
 			</div>
 
 			<!-- Contacts -->
-			<section v-if="contacts.length > 0" id="share-contacts" class="scroll-mt-6 space-y-4">
+			<section v-if="!isProspect && contacts.length > 0" id="share-contacts" class="scroll-mt-6 space-y-4">
 				<h2 class="display-copy text-2xl font-bold flex items-center gap-2">
 					<UIcon name="i-lucide-users" class="w-5 h-5" />
 					{{ t("share.contacts") }}
@@ -274,7 +284,7 @@ onBeforeUnmount(() => {
 			</section>
 
 			<!-- WiFi -->
-			<section v-if="home.wifiSSID || home.wifiPassword" class="app-card rounded-[2rem] p-6 md:p-7">
+			<section v-if="!isProspect && (home.wifiSSID || home.wifiPassword)" class="app-card rounded-[2rem] p-6 md:p-7">
 				<div class="flex items-center gap-3 mb-4">
 					<div class="p-3 bg-[var(--app-primary)]/10 rounded-2xl">
 						<UIcon name="i-lucide-wifi" class="w-5 h-5 text-[var(--app-primary)]" />
@@ -334,7 +344,7 @@ onBeforeUnmount(() => {
 			</section>
 
 			<!-- Instructions -->
-			<section v-if="instructionsHtml" class="app-card rounded-[2rem] p-6 md:p-7">
+			<section v-if="!isProspect && instructionsHtml" class="app-card rounded-[2rem] p-6 md:p-7">
 				<div class="flex items-center gap-3 mb-4">
 					<div class="p-3 bg-[var(--app-accent)]/12 rounded-2xl">
 						<UIcon name="i-lucide-file-text" class="w-5 h-5 text-[var(--app-accent)]" />
@@ -348,7 +358,7 @@ onBeforeUnmount(() => {
 			</section>
 
 			<!-- Files -->
-			<section v-if="home.files?.length" id="share-documents" class="app-card scroll-mt-6 rounded-[2rem] p-6 md:p-7">
+			<section v-if="!isProspect && home.files?.length" id="share-documents" class="app-card scroll-mt-6 rounded-[2rem] p-6 md:p-7">
 				<div class="flex items-center gap-3 mb-4">
 					<div class="p-3 bg-[var(--app-primary)]/10 rounded-2xl">
 						<UIcon name="i-lucide-folder" class="w-5 h-5 text-[var(--app-primary)]" />

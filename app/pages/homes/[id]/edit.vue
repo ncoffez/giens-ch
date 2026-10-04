@@ -139,8 +139,10 @@ const fetchHome = async (options?: { preserveInstructionsTab?: boolean }) => {
 			activeInstructionsLocale.value = instructionsSourceLocale.value;
 		}
 
-		// Get latest active share for preview
-		const activeShare = shares.value.find(s => !s.revoked && new Date(s.expiresAt) > new Date());
+		// Preview the full tenant view. The stable prospect link is opened from the links section.
+		const activeShare = shares.value.find((share) =>
+			share.audience !== "prospect" && !share.revoked && Boolean(share.expiresAt) && new Date(share.expiresAt) > new Date(),
+		);
 		if (activeShare) {
 			previewUrl.value = (activeShare as any).shareUrl;
 		}

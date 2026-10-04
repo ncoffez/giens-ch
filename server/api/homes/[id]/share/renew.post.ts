@@ -1,4 +1,4 @@
-import { ensureProspectShare, getShareLinksForHome } from "../../../../utils/homes";
+import { renewProspectShare } from "../../../../utils/homes";
 import { assertHomeSection } from "../../../../utils/permissionAccess";
 
 export default defineEventHandler(async (event) => {
@@ -9,18 +9,11 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const { claims } = await assertHomeSection(event, homeId, "home.links.manage");
-
-	await ensureProspectShare(homeId, claims.uid || "");
-	const shares = await getShareLinksForHome(homeId);
-
+	const share = await renewProspectShare(homeId, claims.uid || "");
 	const siteUrl = useRuntimeConfig().public.SITE_URL || "https://giens.ch";
 
-	// Add share URLs
-	const sharesWithUrls = shares.map((share) => ({
-		...share,
+	return {
+		share,
 		shareUrl: `${siteUrl}/homes/share/${share.id}`,
-	}));
-
-
-	return sharesWithUrls;
+	};
 });

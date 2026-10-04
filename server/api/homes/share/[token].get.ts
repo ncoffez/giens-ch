@@ -1,6 +1,5 @@
 import { db } from "../../../useFirebaseAdmin";
-import { getHomeById } from "../../../utils/homes";
-import { getShareLink, incrementShareAccess } from "../../../utils/homes";
+import { getHomeById, getShareLink, incrementShareAccess, presentHomeForShare, shareAudience } from "../../../utils/homes";
 import { cleanContact, syncHomeContacts } from "../../../utils/homeContacts";
 
 export default defineEventHandler(async (event) => {
@@ -42,13 +41,11 @@ export default defineEventHandler(async (event) => {
 		visibleContacts.push(contact);
 	}
 
+	const audience = shareAudience(share);
+
 	return {
-		home: {
-			...home,
-			files: (home.files || []).filter((file) => file.visibility !== "private"),
-			privateFiles: [],
-		},
+		home: presentHomeForShare(home, audience),
 		share,
-		contacts: visibleContacts,
+		contacts: audience === "prospect" ? [] : visibleContacts,
 	};
 });

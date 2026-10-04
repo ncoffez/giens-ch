@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Home } from "../../types";
 
 const docs = new Map<string, Record<string, unknown>>();
 
@@ -26,7 +27,7 @@ vi.mock("firebase-admin/firestore", () => ({
 	FieldValue: { increment: (n: number) => n },
 }));
 
-const { createShareLink, getShareLink } = await import("../../server/utils/homes");
+const { createProspectShare, createShareLink, getShareLink, isShareActive, presentHomeForShare } = await import("../../server/utils/homes");
 
 describe("share links", () => {
 	it("stores a link and returns it while it is valid", async () => {
@@ -73,5 +74,42 @@ describe("share links", () => {
 		await expect(getShareLink("revoked")).resolves.toBeNull();
 		await expect(getShareLink("expired")).resolves.toBeNull();
 		await expect(getShareLink("missing")).resolves.toBeNull();
+	});
+
+	it("keeps a prospect link active without an expiry", async () => {
+		const share = await createProspectShare("home-1", "owner-a");
+
+		expect(share.audience).toBe("prospect");
+		expect(share.expiresAt).toBe("");
+		expect(isShareActive(share)).toBe(true);
+		await expect(getShareLink(share.id)).resolves.toMatchObject({ audience: "prospect" });
+	});
+
+	it("shows prospects only the name and photos", () => {
+		const home = {
+			id: "home-1",
+			name: "Haus 4",
+			ownerIds: ["owner-a"],
+			photos: ["/haus.jpg"],
+			files: [{ id: "file-1", visibility: "shared", name: "Plan.pdf" }],
+			privateFiles: [],
+			folders: [],
+			wifiSSID: "Beausoleil",
+			wifiPassword: "geheim",
+			instructions: "<p>Die Alarmanlage</p>",
+			enabled: true,
+			createdAt: "2026-01-01T00:00:00.000Z",
+			updatedAt: "2026-01-01T00:00:00.000Z",
+		};
+
+		const prospect = presentHomeForShare(home as Home, "prospect");
+		expect(prospect).toMatchObject({ name: "Haus 4", photos: ["/haus.jpg"], files: [] });
+		expect(prospect.wifiPassword).toBeUndefined();
+		expect(prospect.instructions).toBeUndefined();
+		expect(prospect.ownerIds).toEqual([]);
+
+		const tenant = presentHomeForShare(home as Home, "tenant");
+		expect(tenant.wifiPassword).toBe("geheim");
+		expect(tenant.files).toHaveLength(1);
 	});
 });

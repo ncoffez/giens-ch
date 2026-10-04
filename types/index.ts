@@ -90,14 +90,19 @@ export interface Home {
 	ownerPhone?: string;
 }
 
+/** prospect: stable public overview. tenant: time-limited stay details. Missing means tenant. */
+export type HomeShareAudience = "prospect" | "tenant";
+
 export interface HomeShare {
 	id: string;
 	homeId: string;
 	createdBy: string;
+	/** Empty for a prospect link, which does not expire. */
 	expiresAt: string;
 	revoked: boolean;
 	accessCount: number;
 	createdAt: string;
+	audience?: HomeShareAudience;
 }
 
 export interface GlobalSettings {
