@@ -27,6 +27,7 @@ function emptyDocumentActions(): DocumentActionMap {
 import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg, truncateFileName } from "~/utils/fileTypes";
+import { compareFoldersWithYears } from "~/utils/folderSort";
 
 definePageMeta({
 	middleware: ["is-logged-in", "site-permission"],
@@ -182,15 +183,15 @@ const sortedImages = computed(() => {
 
 const sortedSubfolders = computed(() => {
 	const sorted = [...currentSubfolders.value, ...tempFolders.value.filter(f => f.parentId === currentFolderId.value)];
-	sorted.sort((a, b) => {
+	sorted.sort((a, b) => compareFoldersWithYears(a, b, (left, right) => {
 		let comparison = 0;
 		if (sortBy.value === "name") {
-			comparison = a.name.localeCompare(b.name, "de");
+			comparison = left.name.localeCompare(right.name, "de");
 		} else if (sortBy.value === "date") {
-			comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+			comparison = new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
 		}
 		return sortOrder.value === "asc" ? comparison : -comparison;
-	});
+	}));
 	return sorted;
 });
 
