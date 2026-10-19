@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import de from "../../i18n/locales/de.json";
-import fr from "../../i18n/locales/fr.json";
 import { formatMarketDays, getMarketDayKeys } from "../../app/utils/marketDays";
+
+// Read the raw JSON: the Nuxt test environment compiles imported locale files into message ASTs.
+const de = JSON.parse(readFileSync("i18n/locales/de.json", "utf8"));
+const fr = JSON.parse(readFileSync("i18n/locales/fr.json", "utf8"));
 
 function translator(messages: Record<string, unknown>) {
 	return (key: string) => {
