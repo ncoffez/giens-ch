@@ -624,12 +624,22 @@
         "stroll": "S'accorde bien avec une balade au bord de l'eau."
       },
       "days": {
+        "mon": "Lun",
         "tue": "Mar",
         "wed": "Mer",
         "thu": "Jeu",
         "fri": "Ven",
         "sat": "Sam",
         "sun": "Dim"
+      },
+      "daysShort": {
+        "mon": "lun.",
+        "tue": "mar.",
+        "wed": "mer.",
+        "thu": "jeu.",
+        "fri": "ven.",
+        "sat": "sam.",
+        "sun": "dim."
       }
     },
     "einkauf": {

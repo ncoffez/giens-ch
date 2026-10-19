@@ -624,6 +624,16 @@
         "stroll": "Gut kombinierbar mit einem Spaziergang am Wasser."
       },
       "days": {
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      },
+      "daysShort": {
+        "mon": "Mo",
         "tue": "Di",
         "wed": "Mi",
         "thu": "Do",
