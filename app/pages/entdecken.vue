@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { FeatureCard, LinkItem, MarketItem } from "../../types";
+import { formatMarketDays, getMarketDayKeys } from "~/utils/marketDays";
 
 const { t } = useI18n();
 
@@ -39,14 +40,14 @@ const defaultFreizeitCards: FeatureCard[] = [
 ];
 
 const defaultMarketItems: MarketItem[] = [
-	{ dayKey: "tue", label: "Giens", description: "Bio-Produkte, Blumen, regionale Spezialitäten und typische Erzeugerware aus der Provence." },
-	{ dayKey: "wed", label: "L'Ayguade", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte sowie Fleisch- und Wurstwaren." },
-	{ dayKey: "thu", label: "Carqueiranne", description: "Obst, Gemüse, Fisch, regionale Produkte, Blumen sowie etwas Mode und Accessoires." },
-	{ dayKey: "fri", label: "La Capte", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte, Blumen und etwas Textilware." },
-	{ dayKey: "sat", label: "Hyères", description: "Produzentenware, Obst, Gemüse, Käse, Bio-Produkte, Fisch und Blumen." },
-	{ dayKey: "sun", label: "Hyères-Port", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte und regionale Spezialitäten am Hafen." },
-	{ dayKey: "sun", label: "La Londe", description: "Obst, Gemüse, Käse, Bio- und Regionalprodukte, Fisch und Blumen." },
-	{ dayKey: "sun", label: "Flohmarkt (Marché aux Puces) in La Capte", description: "Trödel, Vintage-Stücke, Deko, Haushaltswaren und wechselnde Fundstücke." },
+	{ dayKeys: ["tue"], label: "Giens", description: "Bio-Produkte, Blumen, regionale Spezialitäten und typische Erzeugerware aus der Provence." },
+	{ dayKeys: ["wed"], label: "L'Ayguade", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte sowie Fleisch- und Wurstwaren." },
+	{ dayKeys: ["thu"], label: "Carqueiranne", description: "Obst, Gemüse, Fisch, regionale Produkte, Blumen sowie etwas Mode und Accessoires." },
+	{ dayKeys: ["fri"], label: "La Capte", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte, Blumen und etwas Textilware." },
+	{ dayKeys: ["sat"], label: "Hyères", description: "Produzentenware, Obst, Gemüse, Käse, Bio-Produkte, Fisch und Blumen." },
+	{ dayKeys: ["sun"], label: "Hyères-Port", description: "Obst, Gemüse, Käse, Fisch, Meeresfrüchte und regionale Spezialitäten am Hafen." },
+	{ dayKeys: ["sun"], label: "La Londe", description: "Obst, Gemüse, Käse, Bio- und Regionalprodukte, Fisch und Blumen." },
+	{ dayKeys: ["sun"], label: "Flohmarkt (Marché aux Puces) in La Capte", description: "Trödel, Vintage-Stücke, Deko, Haushaltswaren und wechselnde Fundstücke." },
 ];
 
 const defaultShoppingCards: FeatureCard[] = [
@@ -162,7 +163,7 @@ function getColorClasses(color: string) {
 }
 
 function marketCardKey(market: MarketItem) {
-	return `${market.dayKey}-${market.label}`;
+	return `${getMarketDayKeys(market).join(",")}-${market.label}`;
 }
 
 function toggleMarketDescription(market: MarketItem) {
@@ -373,7 +374,7 @@ function getMarketDescription(market: MarketItem | null) {
 							@click="toggleMarketDescription(market)"
 						>
 							<div class="text-[11px] font-bold uppercase tracking-wider text-primary">
-								{{ t(`travel.maerkte.days.${market.dayKey}`) }}
+								{{ formatMarketDays(getMarketDayKeys(market), t) }}
 							</div>
 							<div class="mt-1 font-semibold">
 								{{ market.label }}

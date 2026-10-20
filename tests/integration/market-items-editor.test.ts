@@ -17,8 +17,8 @@ describe("MarketItemsEditor", () => {
 
 		const updates = component.emitted("update:modelValue");
 		expect(updates).toBeTruthy();
-		expect(updates?.[0]?.[0]?.[0]).toMatchObject({
-			dayKey: "sun",
+		expect(updates?.[0]?.[0]?.[0]).toEqual({
+			dayKeys: ["sun"],
 			label: "La Capte",
 			description: "",
 		});

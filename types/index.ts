@@ -179,7 +179,9 @@ export interface TimelineItem {
 }
 
 export interface MarketItem {
-	dayKey: string;
+	dayKeys: string[];
+	/** Legacy single weekday, migrated to `dayKeys` on save. */
+	dayKey?: string;
 	label: string;
 	description: string;
 }

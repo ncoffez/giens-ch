@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MarketItem } from "../../types";
+import { getMarketDayKeys } from "~/utils/marketDays";
 
 const props = defineProps<{
 	modelValue: MarketItem[];
@@ -10,23 +11,29 @@ const emit = defineEmits<{
 }>();
 
 const dayOptions = [
-	{ value: "mon", label: "Montag" },
-	{ value: "tue", label: "Dienstag" },
-	{ value: "wed", label: "Mittwoch" },
-	{ value: "thu", label: "Donnerstag" },
-	{ value: "fri", label: "Freitag" },
-	{ value: "sat", label: "Samstag" },
-	{ value: "sun", label: "Sonntag" },
+	{ value: "mon", label: "Mo", title: "Montag" },
+	{ value: "tue", label: "Di", title: "Dienstag" },
+	{ value: "wed", label: "Mi", title: "Mittwoch" },
+	{ value: "thu", label: "Do", title: "Donnerstag" },
+	{ value: "fri", label: "Fr", title: "Freitag" },
+	{ value: "sat", label: "Sa", title: "Samstag" },
+	{ value: "sun", label: "So", title: "Sonntag" },
 ];
 
 const descriptionMaxLength = 160;
 
 function normalizeMarketItem(item: Partial<MarketItem>): MarketItem {
 	return {
-		dayKey: item.dayKey || "mon",
+		dayKeys: getMarketDayKeys(item),
 		label: item.label || "",
 		description: item.description || "",
 	};
+}
+
+function hasSameDayKeys(left: readonly string[], right: unknown) {
+	return Array.isArray(right)
+		&& left.length === right.length
+		&& left.every((dayKey, index) => dayKey === right[index]);
 }
 
 const items = computed({
@@ -40,7 +47,8 @@ watch(
 		const normalizedItems = value.map((item) => normalizeMarketItem(item));
 		const needsNormalization = normalizedItems.some((item, index) => {
 			const original = value[index];
-			return item.dayKey !== original.dayKey
+			return original.dayKey !== undefined
+				|| !hasSameDayKeys(item.dayKeys, original.dayKeys)
 				|| item.label !== original.label
 				|| item.description !== original.description;
 		});
@@ -86,6 +94,29 @@ function updateDescription(index: number, value: string) {
 	items.value = nextItems;
 }
 
+function isDaySelected(item: Partial<MarketItem>, dayKey: string) {
+	return getMarketDayKeys(item).includes(dayKey);
+}
+
+function toggleDay(index: number, dayKey: string) {
+	const nextItems = [...items.value];
+	const current = normalizeMarketItem(nextItems[index]);
+	const selected = current.dayKeys.includes(dayKey);
+
+	// At least one weekday stays selected.
+	if (selected && current.dayKeys.length === 1) return;
+
+	nextItems[index] = {
+		...current,
+		dayKeys: getMarketDayKeys({
+			dayKeys: selected
+				? current.dayKeys.filter((key) => key !== dayKey)
+				: [...current.dayKeys, dayKey],
+		}),
+	};
+	items.value = nextItems;
+}
+
 function getDescriptionValue(item: Partial<MarketItem>) {
 	return item.description || "";
 }
@@ -118,7 +149,7 @@ function getDescriptionValue(item: Partial<MarketItem>) {
 								Reihenfolge
 							</th>
 							<th class="border-b border-stone-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.18em] text-stone-500 dark:border-stone-800">
-								Wochentag
+								Wochentage
 							</th>
 							<th class="border-b border-stone-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.18em] text-stone-500 dark:border-stone-800">
 								Ort / Eintrag
@@ -134,7 +165,7 @@ function getDescriptionValue(item: Partial<MarketItem>) {
 					<tbody>
 						<tr
 							v-for="(item, index) in items"
-							:key="`${item.dayKey}-${index}`"
+							:key="index"
 							class="align-top"
 						>
 							<td class="border-b border-stone-200 px-4 py-3 text-sm text-stone-500 dark:border-stone-800 dark:text-stone-400">
@@ -147,7 +178,21 @@ function getDescriptionValue(item: Partial<MarketItem>) {
 								</div>
 							</td>
 							<td class="border-b border-stone-200 px-4 py-3 dark:border-stone-800">
-								<USelect v-model="item.dayKey" :items="dayOptions" class="min-w-36" />
+								<div class="flex min-w-60 flex-wrap gap-1" role="group" aria-label="Wochentage">
+									<UButton
+										v-for="day in dayOptions"
+										:key="day.value"
+										size="xs"
+										:color="isDaySelected(item, day.value) ? 'primary' : 'neutral'"
+										:variant="isDaySelected(item, day.value) ? 'solid' : 'outline'"
+										:title="day.title"
+										:aria-pressed="isDaySelected(item, day.value)"
+										class="min-w-8 justify-center"
+										@click="toggleDay(index, day.value)"
+									>
+										{{ day.label }}
+									</UButton>
+								</div>
 							</td>
 							<td class="border-b border-stone-200 px-4 py-3 dark:border-stone-800">
 								<UInput
