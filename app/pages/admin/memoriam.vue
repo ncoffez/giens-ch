@@ -2,6 +2,16 @@
 import type { MemoriamEntry } from "../../../types";
 import { formatMemoriamPeriod } from "~/utils/memoriam";
 import { isSameOrder, movePhoto } from "~/utils/photoOrder";
+import { resizeImageForUpload } from "~/utils/imageResize";
+import {
+	MAX_UPLOAD_BYTES,
+	UPLOAD_CONCURRENCY,
+	createByteProgress,
+	formatMegabytes,
+	readFileAsDataUrl,
+	runWithConcurrency,
+	uploadJsonWithProgress,
+} from "~/utils/uploadQueue";
 
 interface PendingPhoto {
 	id: string;
@@ -20,7 +30,9 @@ const { waitForAuth, token } = useAuthReady();
 const toast = useToast();
 
 const MAX_PHOTOS = 8;
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = MAX_UPLOAD_BYTES;
+const photoUploadLabel = ref("");
+const photoUploadPercent = ref(0);
 
 const entries = ref<MemoriamEntry[]>([]);
 const loading = ref(true);
@@ -99,25 +111,58 @@ const closeForm = () => {
 	resetForm();
 };
 
-const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-	const reader = new FileReader();
-	reader.onload = (event) => resolve(event.target?.result as string);
-	reader.onerror = reject;
-	reader.readAsDataURL(file);
-});
-
 const uploadPendingPhotos = async (entryId: string) => {
 	const photos = [...pendingPhotos.value];
 	pendingPhotos.value = [];
+	if (!photos.length) return;
 
-	for (const photo of photos) {
-		const dataUrl = await fileToDataUrl(photo.file);
-		await $fetch(`/api/admin/memoriam/${entryId}/photos/upload`, {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
-			body: { file: dataUrl, type: photo.file.type },
+	const progress = createByteProgress(photos.map((photo) => photo.file.size));
+	const refreshProgress = () => {
+		photoUploadPercent.value = progress.percent();
+		photoUploadLabel.value = t("admin.memoriam.uploadingPhotos", {
+			loaded: formatMegabytes(progress.loadedBytes()),
+			total: formatMegabytes(progress.totalBytes()),
 		});
-		URL.revokeObjectURL(photo.previewUrl);
+	};
+	refreshProgress();
+
+	// Downscaling and reading run in parallel (#39). The uploads themselves go
+	// one after the other, because the server appends photos in arrival order
+	// and In Memoriam has no reorder API for photos.
+	const prepared = await runWithConcurrency(photos, UPLOAD_CONCURRENCY, async (photo) => {
+		const file = await resizeImageForUpload(photo.file);
+		return { file, dataUrl: await readFileAsDataUrl(file) };
+	});
+
+	const results = await runWithConcurrency(photos, 1, async (photo, index) => {
+		try {
+			const preparedPhoto = prepared[index];
+			if (!preparedPhoto || preparedPhoto.status === "rejected") {
+				throw preparedPhoto?.reason || new Error("Foto konnte nicht gelesen werden");
+			}
+			return await uploadJsonWithProgress<{ url: string }>(`/api/admin/memoriam/${entryId}/photos/upload`, {
+				file: preparedPhoto.value.dataUrl,
+				type: preparedPhoto.value.file.type,
+			}, {
+				headers: { Authorization: `Bearer ${token.value}` },
+				onProgress: (fraction) => {
+					progress.update(index, fraction);
+					refreshProgress();
+				},
+			});
+		} finally {
+			progress.complete(index);
+			refreshProgress();
+			URL.revokeObjectURL(photo.previewUrl);
+		}
+	});
+
+	photoUploadLabel.value = "";
+	photoUploadPercent.value = 0;
+
+	const failed = results.find((result) => result.status === "rejected") as PromiseRejectedResult | undefined;
+	if (failed) {
+		throw failed.reason;
 	}
 };
 
@@ -474,6 +519,10 @@ onBeforeUnmount(revokePendingPreviews);
 
 			<template #footer>
 				<div class="flex w-full items-center justify-end gap-3">
+					<div v-if="photoUploadLabel" class="mr-auto flex min-w-0 items-center gap-2 text-xs text-stone-500">
+						<UProgress :model-value="photoUploadPercent" color="primary" size="xs" class="w-24 shrink-0" />
+						<span class="truncate tabular-nums">{{ photoUploadLabel }}</span>
+					</div>
 					<UButton color="neutral" variant="ghost" :disabled="saving" @click="closeForm">
 						{{ t("admin.memoriam.cancel") }}
 					</UButton>

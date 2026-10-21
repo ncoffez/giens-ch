@@ -28,6 +28,18 @@ import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg, truncateFileName } from "~/utils/fileTypes";
 import { compareFoldersWithYears } from "~/utils/folderSort";
+import {
+	MAX_UPLOAD_BYTES,
+	UPLOAD_CONCURRENCY,
+	createByteProgress,
+	enqueueDocumentProcessing,
+	findOversizedFiles,
+	formatMegabytes,
+	formatUploadLimit,
+	readFileAsDataUrl,
+	runWithConcurrency,
+	uploadJsonWithProgress,
+} from "~/utils/uploadQueue";
 
 definePageMeta({
 	middleware: ["is-logged-in", "site-permission"],
@@ -57,6 +69,10 @@ interface DocumentProcessingState {
 	translations?: Record<string, DocumentTranslationState>;
 	localizedText?: string;
 	localizedSummary?: string;
+	status?: "pending" | "processing" | "done" | "failed";
+	queuedAt?: string;
+	startedAt?: string;
+	error?: string | null;
 }
 
 const files = ref<GlobalFile[]>([]);
@@ -92,11 +108,17 @@ const uploadQueue = ref<{
 	completed: number;
 	currentFile: string | null;
 	isUploading: boolean;
+	percent: number;
+	loadedBytes: number;
+	totalBytes: number;
 }>({
 	total: 0,
 	completed: 0,
 	currentFile: null,
 	isUploading: false,
+	percent: 0,
+	loadedBytes: 0,
+	totalBytes: 0,
 });
 
 const editingFolderId = ref<string | null>(null);
@@ -407,14 +429,48 @@ const focusHighlightedFile = async () => {
 	}
 };
 
-const loadDocumentProcessing = async (file: GlobalFile | null) => {
-	documentProcessing.value = null;
-	processingError.value = null;
+const PROCESSING_POLL_MS = 5000;
+const PROCESSING_POLL_LIMIT = 60;
+const PENDING_GRACE_MS = 2 * 60 * 1000;
+const PROCESSING_STALE_MS = 10 * 60 * 1000;
+let processingPollTimer: ReturnType<typeof setTimeout> | null = null;
+const processingRetrying = ref(false);
+const isProcessingBusy = computed(() => documentProcessing.value?.status === "pending" || documentProcessing.value?.status === "processing");
+const isProcessingFailed = computed(() => documentProcessing.value?.status === "failed");
+
+const stopProcessingPoll = () => {
+	if (processingPollTimer) clearTimeout(processingPollTimer);
+	processingPollTimer = null;
+};
+
+const isProcessingStale = (processing: DocumentProcessingState) => {
+	const now = Date.now();
+	if (processing.status === "pending") {
+		return !processing.queuedAt || now - Date.parse(processing.queuedAt) > PENDING_GRACE_MS;
+	}
+	if (processing.status === "processing") {
+		return !processing.startedAt || now - Date.parse(processing.startedAt) > PROCESSING_STALE_MS;
+	}
+	return false;
+};
+
+const requestDocumentProcessing = (fileId: string, retry = false) => enqueueDocumentProcessing(() => $fetch("/api/files/process", {
+	method: "POST",
+	headers: { Authorization: `Bearer ${token.value}` },
+	body: { fileId, retry },
+}));
+
+const loadDocumentProcessing = async (file: GlobalFile | null, options: { poll?: number; silent?: boolean } = {}) => {
+	stopProcessingPoll();
+	if (!options.silent) {
+		documentProcessing.value = null;
+		processingError.value = null;
+	}
 
 	if (!file) return;
 
 	try {
-		processingLoading.value = true;
+		if (!options.silent) processingLoading.value = true;
 		const response = await $fetch<{ processing: DocumentProcessingState | null }>(`/api/files/processing`, {
 			headers: { Authorization: `Bearer ${token.value}` },
 			query: {
@@ -422,13 +478,48 @@ const loadDocumentProcessing = async (file: GlobalFile | null) => {
 				locale: activePreviewLocale.value,
 			},
 		});
+		if (previewFile.value?.id !== file.id) return;
 		documentProcessing.value = response.processing || null;
+		processingError.value = null;
+	} catch (e: unknown) {
+		if (!options.silent) processingError.value = getFetchError(e) || t("documents.processing.unavailable");
+	} finally {
+		if (!options.silent) processingLoading.value = false;
+	}
+
+	const processing = documentProcessing.value;
+	if (!processing || (processing.status !== "pending" && processing.status !== "processing")) return;
+
+	// A job nobody picked up (tab closed right after the upload, or a cut-off
+	// request) is started again from here (#39).
+	if (canUploadDocuments.value && isProcessingStale(processing)) {
+		void requestDocumentProcessing(file.id).catch(() => undefined);
+	}
+
+	const poll = (options.poll || 0) + 1;
+	if (poll > PROCESSING_POLL_LIMIT) return;
+	processingPollTimer = setTimeout(() => {
+		if (previewFile.value?.id === file.id) void loadDocumentProcessing(file, { poll, silent: true });
+	}, PROCESSING_POLL_MS);
+};
+
+const retryDocumentProcessing = async () => {
+	const file = previewFile.value;
+	if (!file) return;
+
+	try {
+		processingRetrying.value = true;
+		if (documentProcessing.value) documentProcessing.value = { ...documentProcessing.value, status: "processing", error: null };
+		await requestDocumentProcessing(file.id, true);
 	} catch (e: unknown) {
 		processingError.value = getFetchError(e) || t("documents.processing.unavailable");
 	} finally {
-		processingLoading.value = false;
+		processingRetrying.value = false;
+		await loadDocumentProcessing(file, { silent: true });
 	}
 };
+
+onBeforeUnmount(stopProcessingPoll);
 
 const loadPreview = async (file: GlobalFile | null) => {
 	previewFile.value = file;
@@ -586,76 +677,78 @@ const handleFileSelect = (e: Event) => {
 	(target as HTMLInputElement).value = "";
 };
 
-const uploadSingleFile = async (file: File): Promise<void> => {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = async () => {
-			try {
-				const base64 = reader.result as string;
-				await $fetch("/api/files/upload", {
-					method: "POST",
-					headers: { Authorization: `Bearer ${token.value}` },
-					body: {
-						file: base64,
-						name: file.name,
-						type: file.type,
-						size: file.size,
-						folderId: currentFolderId.value,
-						lastModified: file.lastModified,
-					},
-				});
-				resolve();
-			} catch (e: unknown) {
-				reject(e);
-			}
-		};
-		reader.onerror = () => reject(new Error("Failed to read file"));
-		reader.readAsDataURL(file);
+const uploadSingleFile = async (file: File, onProgress: (fraction: number) => void): Promise<GlobalFile> => {
+	const base64 = await readFileAsDataUrl(file);
+	return await uploadJsonWithProgress<GlobalFile>("/api/files/upload", {
+		file: base64,
+		name: file.name,
+		type: file.type,
+		size: file.size,
+		folderId: currentFolderId.value,
+		lastModified: file.lastModified,
+	}, {
+		headers: { Authorization: `Bearer ${token.value}` },
+		onProgress,
 	});
 };
 
 const uploadFiles = async (fileList: File[]) => {
 	if (fileList.length === 0) return;
 
+	const oversizedFiles = findOversizedFiles(fileList);
+	for (const file of oversizedFiles) {
+		toast.add({
+			title: t("documents.toasts.tooLarge", { name: file.name, limit: formatUploadLimit(MAX_UPLOAD_BYTES) }),
+			color: "error",
+		});
+	}
+	const acceptedFiles = fileList.filter((file) => !oversizedFiles.includes(file));
+	if (acceptedFiles.length === 0) return;
+
+	const progress = createByteProgress(acceptedFiles.map((file) => file.size));
+	const inFlight = new Set<string>();
+	const refreshProgress = () => {
+		uploadQueue.value.percent = progress.percent();
+		uploadQueue.value.loadedBytes = progress.loadedBytes();
+		uploadQueue.value.currentFile = inFlight.size ? [...inFlight].join(", ") : null;
+	};
+
 	uploadQueue.value = {
-		total: fileList.length,
+		total: acceptedFiles.length,
 		completed: 0,
 		currentFile: null,
 		isUploading: true,
+		percent: 0,
+		loadedBytes: 0,
+		totalBytes: progress.totalBytes(),
 	};
 
-	const CONCURRENCY_LIMIT = 3;
-	let errorCount = 0;
+	const results = await runWithConcurrency(acceptedFiles, UPLOAD_CONCURRENCY, async (file, index) => {
+		inFlight.add(file.name);
+		refreshProgress();
+		try {
+			const record = await uploadSingleFile(file, (fraction) => {
+				progress.update(index, fraction);
+				refreshProgress();
+			});
+			uploadQueue.value.completed++;
 
-	const uploadWithConcurrency = async (files: File[]) => {
-		const results: { success: boolean; fileName: string }[] = [];
-		
-		for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
-			const batch = files.slice(i, i + CONCURRENCY_LIMIT);
-			
-			const batchResults = await Promise.allSettled(
-				batch.map(async (file) => {
-					uploadQueue.value.currentFile = file.name;
-					await uploadSingleFile(file);
-					return { success: true, fileName: file.name };
-				})
-			);
-
-			for (const result of batchResults) {
-				if (result.status === "fulfilled") {
-					results.push(result.value);
-					uploadQueue.value.completed++;
-				} else {
-					errorCount++;
-					console.error("Upload failed:", result.reason);
-				}
+			// OCR and translation run after the upload, one request at a time (#39).
+			if (record?.id) {
+				void requestDocumentProcessing(record.id).catch((e: unknown) => console.warn(`Processing ${file.name} failed:`, e));
 			}
+			return record;
+		} finally {
+			inFlight.delete(file.name);
+			progress.complete(index);
+			refreshProgress();
 		}
-		
-		return results;
-	};
+	});
 
-	await uploadWithConcurrency(fileList);
+	const failed = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
+	for (const result of failed) {
+		console.error("Upload failed:", result.reason);
+	}
 
 	uploadQueue.value.isUploading = false;
 	uploadQueue.value.currentFile = null;
@@ -663,10 +756,11 @@ const uploadFiles = async (fileList: File[]) => {
 	await fetchData(currentFolderId.value);
 
 	const successCount = uploadQueue.value.completed;
+	const errorCount = failed.length + oversizedFiles.length;
 	if (errorCount > 0) {
 		toast.add({
 			title: `${successCount}/${fileList.length} Dateien hochgeladen`,
-			description: `${errorCount} fehlgeschlagen`,
+			description: failed[0] ? `${failed.length} fehlgeschlagen: ${getFetchError(failed[0].reason)}` : `${errorCount} fehlgeschlagen`,
 			color: "warning",
 		});
 	} else {
@@ -1284,19 +1378,27 @@ useHead({
 				<div class="flex items-center gap-4">
 					<div class="flex-1">
 						<div class="flex items-center justify-between mb-2">
-							<span class="text-sm font-medium text-stone-700 dark:text-stone-300">
-								{{ t("documents.states.uploadingCurrent", { file: uploadQueue.currentFile }) }}
+							<span class="min-w-0 truncate text-sm font-medium text-stone-700 dark:text-stone-300">
+								{{ uploadQueue.currentFile ? t("documents.states.uploadingCurrent", { file: uploadQueue.currentFile }) : t("documents.states.uploadSaving") }}
 							</span>
-							<span class="text-sm text-stone-500">
-								{{ uploadQueue.completed }}/{{ uploadQueue.total }}
+							<span class="shrink-0 text-sm text-stone-500 tabular-nums">
+								{{ uploadQueue.completed }}/{{ uploadQueue.total }} · {{ uploadQueue.percent }}%
 							</span>
 						</div>
-						<div class="h-2 bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden">
-							<div 
+						<div
+							class="h-2 bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden"
+							role="progressbar"
+							aria-valuemin="0"
+							aria-valuemax="100"
+							:aria-valuenow="uploadQueue.percent">
+							<div
 								class="h-full bg-primary transition-all duration-300 rounded-full"
-								:style="{ width: `${(uploadQueue.completed / uploadQueue.total) * 100}%` }"
+								:style="{ width: `${uploadQueue.percent}%` }"
 							/>
 						</div>
+						<p class="mt-1 text-xs text-stone-500 tabular-nums">
+							{{ t("documents.states.uploadedBytes", { loaded: formatMegabytes(uploadQueue.loadedBytes), total: formatMegabytes(uploadQueue.totalBytes) }) }}
+						</p>
 					</div>
 				</div>
 			</div>
@@ -1765,6 +1867,23 @@ useHead({
 								</div>
 								<div v-else-if="processingError" class="py-3 text-sm text-red-600">
 									{{ processingError }}
+								</div>
+								<div v-else-if="isProcessingBusy" class="flex items-center gap-3 py-5 text-sm text-[var(--app-muted)]">
+									<div class="h-5 w-5 shrink-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+									<span>{{ t("documents.processing.pending") }}</span>
+								</div>
+								<div v-else-if="isProcessingFailed" class="space-y-3 py-3">
+									<p class="text-sm text-red-600">{{ t("documents.processing.failed", { error: documentProcessing?.error || "" }) }}</p>
+									<UButton
+										v-if="canUploadDocuments"
+										color="neutral"
+										variant="soft"
+										size="xs"
+										icon="i-lucide-refresh-cw"
+										:loading="processingRetrying"
+										@click="retryDocumentProcessing">
+										{{ t("documents.processing.retry") }}
+									</UButton>
 								</div>
 								<div v-else-if="documentProcessing" class="space-y-3 pt-4">
 									<p v-if="previewSummaryText" class="text-sm font-medium text-[var(--app-text)]">

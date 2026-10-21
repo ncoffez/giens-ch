@@ -214,6 +214,7 @@
       "count": "{current} / {max} photos",
       "multiUpload": "Plusieurs fichiers possibles",
       "uploading": "Téléchargement... {current}/{total}",
+      "uploadedBytes": "{loaded} sur {total}",
       "photoAlt": "Photo {index}",
       "emptyTitle": "Aucune photo",
       "emptyDescription": "Téléchargez des photos visibles par les locataires",
@@ -225,7 +226,7 @@
       "toasts": {
         "maxPhotos": "Maximum {count} photos autorisées",
         "imagesOnly": "Seuls les fichiers image sont autorisés",
-        "maxSize": "Fichier trop volumineux (max. 10MB)",
+        "maxSize": "Fichier trop volumineux (max. 23 Mo)",
         "uploaded": "{count} photo(s) téléchargée(s)",
         "uploadFailed": "{count} téléchargement(s) échoué(s)",
         "deleted": "Photo supprimée",
@@ -236,7 +237,7 @@
     },
     "files": {
       "clickToUpload": "Cliquer pour téléverser",
-      "supportedFormats": "PDF, DOC, XLS et autres (max. 50MB)",
+      "supportedFormats": "PDF, DOC, XLS et autres (max. 23 Mo)",
       "multiUpload": "Plusieurs fichiers possibles",
       "privateHint": "Visible uniquement par les propriétaires et les administrateurs",
       "dragHint": "Les fichiers peuvent aussi être déplacés par glisser-déposer vers {target}.",
@@ -252,6 +253,7 @@
         "download": "Télécharger"
       },
       "uploading": "Téléchargement... {current}/{total}",
+      "uploadedBytes": "{loaded} sur {total}",
       "emptyTitle": "Aucun fichier",
       "sharedEmptyDescription": "Téléchargez des documents que les locataires pourront récupérer",
       "privateEmptyDescription": "Téléchargez des documents internes réservés aux propriétaires",
@@ -266,7 +268,7 @@
       },
       "confirmDelete": "Supprimer vraiment « {name} » ?",
       "toasts": {
-        "maxSize": "Fichier trop volumineux (max. 50MB)",
+        "maxSize": "Fichier trop volumineux (max. 23 Mo)",
         "uploaded": "{count} fichier(s) téléchargé(s)",
         "uploadFailed": "{count} téléchargement(s) échoué(s)",
         "deleted": "Fichier supprimé",
@@ -287,7 +289,7 @@
   "documents": {
     "title": "Documents partagés",
     "subtitle": "Fichiers, dossiers et téléchargements importants pour les propriétaires et l'administration.",
-    "maxFileSize": "max. 50MB",
+    "maxFileSize": "max. 23 Mo",
     "sort": {
       "label": "Trier :",
       "name": "Nom",
@@ -312,11 +314,13 @@
     },
     "states": {
       "uploadingCurrent": "Téléchargement : {file}",
+      "uploadedBytes": "{loaded} sur {total}",
+      "uploadSaving": "Enregistrement...",
       "loading": "Chargement...",
       "loadingMore": "Chargement supplémentaire...",
       "loadError": "Erreur lors du chargement",
       "emptyTitle": "Aucun fichier",
-      "emptyHint": "Glissez des fichiers ici ou cliquez sur « Télécharger » (max. 50MB)"
+      "emptyHint": "Glissez des fichiers ici ou cliquez sur « Télécharger » (max. 23 Mo)"
     },
     "actions": {
       "newFolder": "Nouveau dossier",
@@ -358,7 +362,10 @@
       "noAutoTranslation": "Aucune traduction automatique",
       "originalLanguage": "Langue d'origine",
       "translationLabel": "Traduction : {locale}",
-      "noTranslationForLanguage": "Aucune traduction pour cette langue"
+      "noTranslationForLanguage": "Aucune traduction pour cette langue",
+      "pending": "La reconnaissance de texte et la traduction sont en cours. Cela peut prendre une minute.",
+      "failed": "La reconnaissance de texte a échoué : {error}",
+      "retry": "Réessayer"
     },
     "modals": {
       "renameTitle": "Renommer le fichier",
@@ -377,6 +384,7 @@
       "deleteFolderNested": "{files} fichier(s) et {folders} sous-dossier(s) seront également supprimés."
     },
     "toasts": {
+      "tooLarge": "{name} est trop volumineux (max. {limit})",
       "linkCopied": "Lien copié",
       "translatedUnavailable": "Fichier traduit indisponible",
       "previewUnavailable": "Aperçu indisponible",
@@ -689,6 +697,8 @@
     "cancel": "Annuler",
     "upload": "Télécharger",
     "uploading": "Téléchargement du fichier...",
+    "uploadingCount": "Téléchargement... {current}/{total} · {loaded} sur {total_bytes}",
+    "tooLarge": "{name} est trop volumineux (max. {limit})",
     "dropFile": "Déposez le fichier ici",
     "demoText": "Texte de démonstration",
     "placeholder": "Écrivez quelque chose...",
@@ -943,8 +953,10 @@
       "photos": "Photos",
       "photosHint": "Jusqu’à {count} photos.",
       "addPhotos": "Ajouter des photos",
+      "uploadingPhotos": "Téléchargement des photos... {loaded} sur {total}",
       "confirmDelete": "Voulez-vous vraiment supprimer cette entrée ?",
       "toasts": {
+        "tooLarge": "{name} est trop volumineux (max. {limit})",
         "saved": "Entrée enregistrée",
         "deleted": "Entrée supprimée",
         "created": "Entrée créée",
@@ -956,7 +968,7 @@
         "photoFailed": "Impossible de téléverser la photo",
         "photoDeleted": "Photo retirée",
         "imagesOnly": "Seules les images peuvent être téléversées",
-        "maxSize": "Taille maximale : 10 Mo",
+        "maxSize": "Taille maximale : 23 Mo",
         "maxPhotos": "Maximum {count} photos",
         "reordered": "Ordre enregistré",
         "reorderFailed": "Impossible d’enregistrer l’ordre"

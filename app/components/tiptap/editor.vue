@@ -123,8 +123,8 @@
 		<div
 			v-if="uploading"
 			class="px-4 py-3 bg-[var(--app-surface)] border-b border-[var(--app-border)]">
-			<UProgress :value="uploadProgress" color="primary" size="sm" />
-			<p class="text-xs text-stone-500 mt-1">{{ t("editor.uploading") }}</p>
+			<UProgress :model-value="uploadProgress" color="primary" size="sm" />
+			<p class="text-xs text-stone-500 mt-1 tabular-nums">{{ uploadLabel || t("editor.uploading") }}</p>
 		</div>
 		
 		<!-- Drag overlay -->
@@ -138,7 +138,7 @@
 			</div>
 		</div>
 		
-		<input type="file" ref="fileInput" @change="handleFileChange" style="display: none" />
+		<input type="file" multiple ref="fileInput" @change="handleFileChange" style="display: none" />
 		<editor-content :editor="editor" />
 	</div>
 </template>
@@ -155,6 +155,18 @@ import Image from "@tiptap/extension-image";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import { FileAttachment } from "~/utils/tiptap/fileAttachment";
+import { resizeImageForUpload } from "~/utils/imageResize";
+import {
+	MAX_EDITOR_UPLOAD_BYTES,
+	UPLOAD_CONCURRENCY,
+	createByteProgress,
+	findOversizedFiles,
+	formatMegabytes,
+	formatUploadLimit,
+	readFileAsDataUrl,
+	runWithConcurrency,
+	uploadJsonWithProgress,
+} from "~/utils/uploadQueue";
 import { watchDeep } from "@vueuse/core";
 
 const model = defineModel({ default: "" });
@@ -162,6 +174,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const editor = ref<Editor>();
 const uploading = ref(false);
 const uploadProgress = ref(0);
+const uploadLabel = ref("");
 const isDragging = ref(false);
 
 const { token } = useAuthReady();
@@ -172,65 +185,109 @@ const triggerFileUpload = () => {
 	fileInput.value?.click();
 };
 
-const processFile = async (file: File) => {
-	uploading.value = true;
-	uploadProgress.value = 10;
+interface EditorUploadResponse {
+	url: string;
+	filename: string;
+	type: string;
+}
 
-	try {
-		const reader = new FileReader();
-		const base64Promise = new Promise<string>((resolve) => {
-			reader.onload = (e) => resolve(e.target?.result as string);
-			reader.readAsDataURL(file);
-		});
+const insertUploadedFile = (file: File, response: EditorUploadResponse) => {
+	if (file.type.startsWith("image/")) {
+		editor.value
+			?.chain()
+			.focus()
+			.setImage({ src: response.url, alt: response.filename })
+			.run();
+		return;
+	}
 
-		const base64 = await base64Promise;
-		uploadProgress.value = 40;
-
-		const response = await $fetch<any>("/api/editor/upload", {
-			method: "POST",
-			headers: { Authorization: `Bearer ${token.value}` },
-			body: {
-				filename: file.name,
-				file: base64,
+	// Inserted as one atomic node, so the attachment is selected and deleted
+	// as a whole instead of character by character.
+	editor.value?.chain().focus().insertContent([
+		{
+			type: "fileAttachment",
+			attrs: {
+				href: response.url,
+				name: file.name,
 				type: file.type,
 			},
+		},
+		{ type: "text", text: " " },
+	]).run();
+};
+
+const processFiles = async (selected: File[]) => {
+	if (!selected.length || uploading.value) return;
+
+	for (const file of findOversizedFiles(selected, MAX_EDITOR_UPLOAD_BYTES)) {
+		toast.error(t("editor.uploadFailed"), t("editor.tooLarge", { name: file.name, limit: formatUploadLimit(MAX_EDITOR_UPLOAD_BYTES) }), {
+			source: "editor-upload",
+		});
+	}
+	const files = selected.filter((file) => file.size <= MAX_EDITOR_UPLOAD_BYTES);
+	if (!files.length) {
+		if (fileInput.value) fileInput.value.value = "";
+		return;
+	}
+
+	uploading.value = true;
+	uploadProgress.value = 0;
+	const progress = createByteProgress(files.map((file) => file.size));
+	let completed = 0;
+	const refreshProgress = () => {
+		uploadProgress.value = progress.percent();
+		uploadLabel.value = t("editor.uploadingCount", {
+			current: completed,
+			total: files.length,
+			loaded: formatMegabytes(progress.loadedBytes()),
+			total_bytes: formatMegabytes(progress.totalBytes()),
+		});
+	};
+	refreshProgress();
+
+	try {
+		const results = await runWithConcurrency(files, UPLOAD_CONCURRENCY, async (file, index) => {
+			try {
+				// Inline images are downscaled before upload (#39); other files stay as they are.
+				const prepared = await resizeImageForUpload(file);
+				const base64 = await readFileAsDataUrl(prepared);
+				return await uploadJsonWithProgress<EditorUploadResponse>("/api/editor/upload", {
+					filename: file.name,
+					file: base64,
+					type: prepared.type,
+				}, {
+					headers: { Authorization: `Bearer ${token.value}` },
+					onProgress: (fraction) => {
+						progress.update(index, fraction);
+						refreshProgress();
+					},
+				});
+			} finally {
+				completed++;
+				progress.complete(index);
+				refreshProgress();
+			}
 		});
 
-		uploadProgress.value = 90;
+		// Insert in the order the files were picked, not the order they finished.
+		results.forEach((result, index) => {
+			const file = files[index]!;
+			if (result.status === "fulfilled") {
+				insertUploadedFile(file, result.value);
+				return;
+			}
 
-		if (file.type.startsWith("image/")) {
-			editor.value
-				?.chain()
-				.focus()
-				.setImage({ src: response.url, alt: response.filename })
-				.run();
-		} else {
-			// Inserted as one atomic node, so the attachment is selected and deleted
-			// as a whole instead of character by character.
-			editor.value?.chain().focus().insertContent([
-				{
-					type: "fileAttachment",
-					attrs: {
-						href: response.url,
-						name: file.name,
-						type: file.type,
-					},
-				},
-				{ type: "text", text: " " },
-			]).run();
-		}
-
-		uploadProgress.value = 100;
-	} catch (e: unknown) {
-		console.error("Upload failed", e);
-		const message = getFetchError(e) || t("editor.unknownError");
-		toast.error(t("editor.uploadFailed"), message, {
-			source: "editor-upload",
+			console.error("Upload failed", result.reason);
+			const message = getFetchError(result.reason) || t("editor.unknownError");
+			toast.error(t("editor.uploadFailed"), `${file.name}: ${message}`, {
+				source: "editor-upload",
+			});
 		});
 	} finally {
 		setTimeout(() => {
 			uploading.value = false;
 			uploadProgress.value = 0;
+			uploadLabel.value = "";
 		}, 500);
 		if (fileInput.value) fileInput.value.value = "";
 	}
@@ -238,16 +295,12 @@ const processFile = async (file: File) => {
 
 const handleFileChange = async (event: Event) => {
 	const target = event.target as HTMLInputElement;
-	const file = target.files?.[0];
-	if (!file) return;
-	await processFile(file);
+	await processFiles(Array.from(target.files || []));
 };
 
 const handleDrop = async (event: DragEvent) => {
 	isDragging.value = false;
-	const file = event.dataTransfer?.files[0];
-	if (!file) return;
-	await processFile(file);
+	await processFiles(Array.from(event.dataTransfer?.files || []));
 };
 
 const loadDemo = async () => {

@@ -3,6 +3,16 @@ import type { Home, HomeFile } from "~/types";
 import { canPreviewFile, getFileIcon, getFileIconColor, truncateFileName } from "~/utils/fileTypes";
 import { openAfterAsyncNavigation } from "~/utils/openSignedFile";
 import FilePreviewModal from "~/components/documents/FilePreviewModal.vue";
+import {
+	UPLOAD_CONCURRENCY,
+	createByteProgress,
+	enqueueDocumentProcessing,
+	findOversizedFiles,
+	formatMegabytes,
+	readFileAsDataUrl,
+	runWithConcurrency,
+	uploadJsonWithProgress,
+} from "~/utils/uploadQueue";
 
 const props = defineProps<{
 	home: Home;
@@ -26,6 +36,7 @@ const uploading = ref(false);
 const uploadProgress = ref(0);
 const uploadTotal = ref(0);
 const uploadCurrent = ref(0);
+const uploadedBytesLabel = ref("");
 
 const formatFileSize = (bytes: number) => {
 	if (bytes < 1024) return `${bytes} B`;
@@ -40,52 +51,68 @@ const getMoveActionLabel = (nextVisibility: "shared" | "private") => {
 };
 
 const uploadFileList = async (fileArray: File[]) => {
-	const oversizedFiles = fileArray.filter(f => f.size > 50 * 1024 * 1024);
+	const oversizedFiles = findOversizedFiles(fileArray);
 	if (oversizedFiles.length > 0) {
-		toast.add({ title: t("homes.files.toasts.maxSize"), color: "error" });
+		toast.add({ title: t("homes.files.toasts.maxSize"), description: oversizedFiles.map((file) => file.name).join(", "), color: "error" });
 		return;
 	}
+	if (!fileArray.length) return;
 
 	uploading.value = true;
 	uploadTotal.value = fileArray.length;
 	uploadCurrent.value = 0;
 	uploadProgress.value = 0;
+	const progress = createByteProgress(fileArray.map((file) => file.size));
+	uploadedBytesLabel.value = t("homes.files.uploadedBytes", { loaded: formatMegabytes(0), total: formatMegabytes(progress.totalBytes()) });
+	const refreshProgress = () => {
+		uploadProgress.value = progress.percent();
+		uploadedBytesLabel.value = t("homes.files.uploadedBytes", {
+			loaded: formatMegabytes(progress.loadedBytes()),
+			total: formatMegabytes(progress.totalBytes()),
+		});
+	};
 	const authToken = await getFreshToken();
+	const processUrl = `/api/homes/${props.home.id}/files/process`;
 
-	let successCount = 0;
-	let errorCount = 0;
-
-	for (let i = 0; i < fileArray.length; i++) {
-		const file = fileArray[i];
-		uploadCurrent.value = i + 1;
-		uploadProgress.value = Math.round(((i + 1) / fileArray.length) * 100);
-
+	const results = await runWithConcurrency(fileArray, UPLOAD_CONCURRENCY, async (file, index) => {
 		try {
-			const base64 = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = (e) => resolve(e.target?.result as string);
-				reader.onerror = reject;
-				reader.readAsDataURL(file);
-			});
-
-			await $fetch(`/api/homes/${props.home.id}/files/upload`, {
-				method: "POST",
+			const base64 = await readFileAsDataUrl(file);
+			const record = await uploadJsonWithProgress<HomeFile>(`/api/homes/${props.home.id}/files/upload`, {
+				file: base64,
+				name: file.name,
+				type: file.type,
+				size: file.size,
+				lastModified: file.lastModified,
+				private: isPrivate.value,
+			}, {
 				headers: { Authorization: `Bearer ${authToken}` },
-				body: {
-					file: base64,
-					name: file.name,
-					type: file.type,
-					size: file.size,
-					lastModified: file.lastModified,
-					private: isPrivate.value,
+				onProgress: (fraction) => {
+					progress.update(index, fraction);
+					refreshProgress();
 				},
 			});
-			successCount++;
+
+			// OCR and translation run after the upload, one request at a time (#39).
+			if (record?.id) {
+				void enqueueDocumentProcessing(() => $fetch(processUrl, {
+					method: "POST",
+					headers: { Authorization: `Bearer ${authToken}` },
+					body: { fileId: record.id },
+				})).catch((e: unknown) => console.warn(`Processing ${file.name} failed:`, e));
+			}
+			return record;
 		} catch (e: unknown) {
-			errorCount++;
 			console.error(`Failed to upload ${file.name}:`, e);
+			throw e;
+		} finally {
+			progress.complete(index);
+			uploadCurrent.value++;
+			refreshProgress();
 		}
-	}
+	});
+
+	const successCount = results.filter((result) => result.status === "fulfilled").length;
+	const errorCount = results.length - successCount;
 
 	uploading.value = false;
 
@@ -98,8 +125,10 @@ const uploadFileList = async (fileArray: File[]) => {
 	}
 
 	if (errorCount > 0) {
+		const firstError = results.find((result) => result.status === "rejected") as PromiseRejectedResult | undefined;
 		toast.add({
 			title: t("homes.files.toasts.uploadFailed", { count: errorCount }),
+			description: firstError ? getFetchError(firstError.reason) : undefined,
 			color: "error",
 		});
 	}
@@ -305,8 +334,9 @@ const closePreview = () => {
 						{{ t("homes.files.uploading", { current: uploadCurrent, total: uploadTotal }) }}
 					</p>
 					<div class="w-full max-w-xs mx-auto">
-						<UProgress :value="uploadProgress" color="primary" size="sm" />
+						<UProgress :model-value="uploadProgress" color="primary" size="sm" />
 					</div>
+					<p class="text-xs text-stone-400 tabular-nums">{{ uploadedBytesLabel }} · {{ uploadProgress }}%</p>
 				</div>
 				<div v-else class="space-y-3">
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />
