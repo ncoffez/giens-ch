@@ -2,8 +2,9 @@ import { storage } from "../../useFirebaseAdmin";
 import crypto from "crypto";
 import { createTokenizedDownloadUrl } from "../../utils/storage";
 import { requireAnyAreaPermission } from "../../utils/permissionAccess";
+import { withUploadTiming } from "../../utils/uploadTiming";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withUploadTiming("/api/editor/upload", async (event, timer) => {
 	try {
 		await requireAnyAreaPermission(event, [
 			"page.home.edit",
@@ -36,6 +37,7 @@ export default defineEventHandler(async (event) => {
 		}
 		
 		const buffer = Buffer.from(base64Data, "base64");
+		timer.set({ fileSize: buffer.length, contentType: type });
 
 		// 20MB limit
 		if (buffer.length > 20 * 1024 * 1024) {
@@ -52,12 +54,12 @@ export default defineEventHandler(async (event) => {
 		const fileRef = bucket.file(storagePath);
 		
 		try {
-			await fileRef.save(buffer, {
+			await timer.measure("storage", () => fileRef.save(buffer, {
 				contentType: type,
 				metadata: {
 					cacheControl: "public, max-age=31536000",
 				},
-			});
+			}));
 		} catch (e: unknown) {
 			const message = e instanceof Error ? e.message : "Unknown error";
 			throw createError({ statusCode: 503, message: `Speichern fehlgeschlagen: ${message}` });
@@ -70,7 +72,7 @@ export default defineEventHandler(async (event) => {
 		else if (type.includes("word") || type.includes("officedocument.wordprocessingml")) icon = "i-lucide-file-text";
 		else if (type.includes("sheet") || type.includes("excel")) icon = "i-lucide-file-spreadsheet";
 
-		const publicUrl = await createTokenizedDownloadUrl(bucket, storagePath);
+		const publicUrl = await timer.measure("storage", () => createTokenizedDownloadUrl(bucket, storagePath));
 
 		return {
 			url: publicUrl,
@@ -86,4 +88,4 @@ export default defineEventHandler(async (event) => {
 			message
 		});
 	}
-});
+}));
