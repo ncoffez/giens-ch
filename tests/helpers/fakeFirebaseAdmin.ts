@@ -93,6 +93,11 @@ export const fakeDb = {
 			doc: (id: string) => createDocRef(collectionName, id),
 		};
 	},
+	/** `db.doc("collection/id")`, as used for single config documents. */
+	doc(path: string) {
+		const [collectionName, id] = path.split("/");
+		return createDocRef(collectionName, id);
+	},
 	async getAll(...refs: DocRef[]) {
 		return Promise.all(refs.map((ref) => ref.get()));
 	},

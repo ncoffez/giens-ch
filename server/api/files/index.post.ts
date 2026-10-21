@@ -1,7 +1,7 @@
 import { db, storage, auth } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { actionsForFolder, documentAccessForClaims } from "../../utils/permissionAccess";
-import { canPerformFolderAction } from "#shared/sitePermissions";
+import { canDeleteDocumentItem, canPerformFolderAction, documentDeleteScope } from "#shared/sitePermissions";
 
 const SIGNED_URL_EXPIRY_MINUTES = 60;
 const DEFAULT_LIMIT = 50;
@@ -124,6 +124,8 @@ export default defineEventHandler(async (event) => {
 
 	const filesSnapshot = await filesQuery.get();
 
+	const fileDeleteScope = documentDeleteScope(access.config, access.folders, claims, effectiveFolderId);
+
 	const bucket = storage.bucket();
 	const rawFiles = canSeeCurrentFiles
 		? filesSnapshot.docs
@@ -217,6 +219,7 @@ export default defineEventHandler(async (event) => {
 				uploadedByName: data.uploadedBy ? userNames[data.uploadedBy] : undefined,
 				lastModified: data.lastModified,
 				storagePath: data.storagePath,
+				canDelete: canDeleteDocumentItem(fileDeleteScope, claims, data.uploadedBy),
 			};
 		})
 	);
@@ -230,6 +233,12 @@ export default defineEventHandler(async (event) => {
 		.map((folder: { id: string }) => ({
 			...folder,
 			actions: actionsForFolder(access.config, access.folders, claims, folder.id),
+			// Contents are checked on delete; this only hides the button for foreign folders.
+			canDelete: canDeleteDocumentItem(
+				documentDeleteScope(access.config, access.folders, claims, folder.id),
+				claims,
+				(folder as { createdBy?: unknown }).createdBy,
+			),
 		}));
 
 	return {

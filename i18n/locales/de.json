@@ -383,6 +383,11 @@
       "deleteFolder": "\"{name}\" wirklich löschen?",
       "deleteFolderNested": "Dabei werden auch {files} Datei(en) und {folders} Unterordner gelöscht."
     },
+    "errors": {
+      "deleteNotOwn": "Sie können nur Dateien und Ordner löschen, die Sie selbst hochgeladen bzw. erstellt haben.",
+      "deleteForeignContent": "Dieser Ordner enthält Dateien oder Ordner von anderen Personen. Nur wer alle Dokumente und Ordner löschen darf, kann ihn löschen.",
+      "deleteForbidden": "Sie haben keine Berechtigung, dies zu löschen."
+    },
     "toasts": {
       "tooLarge": "{name} ist zu gross (max. {limit})",
       "linkCopied": "Link kopiert",
@@ -897,7 +902,8 @@
           "open": "Öffnen",
           "rename": "Umbenennen",
           "move": "Verschieben",
-          "delete": "Löschen"
+          "deleteOwn": "Eigene Dokumente/Ordner löschen",
+          "delete": "Alle Dokumente/Ordner löschen"
         },
         "home": {
           "links": { "manage": "Links verwalten" },
@@ -925,7 +931,8 @@
         "open": "Öffnen",
         "rename": "Umbenennen",
         "move": "Verschieben",
-        "delete": "Löschen"
+        "deleteOwn": "Eigene Dokumente/Ordner löschen",
+        "delete": "Alle Dokumente/Ordner löschen"
       }
     },
     "memoriam": {

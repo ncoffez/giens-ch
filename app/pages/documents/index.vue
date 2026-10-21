@@ -7,6 +7,7 @@ interface DocumentActionMap {
 	open: boolean;
 	rename: boolean;
 	move: boolean;
+	deleteOwn: boolean;
 	delete: boolean;
 }
 
@@ -21,6 +22,7 @@ function emptyDocumentActions(): DocumentActionMap {
 		open: false,
 		rename: false,
 		move: false,
+		deleteOwn: false,
 		delete: false,
 	};
 }
@@ -28,6 +30,7 @@ import GalleryViewer from "~/components/documents/GalleryViewer.vue";
 import VideoPlayer from "~/components/documents/VideoPlayer.vue";
 import { getFileTypeName, getFileIcon, getFileIconColor, getFileIconBg, truncateFileName } from "~/utils/fileTypes";
 import { compareFoldersWithYears } from "~/utils/folderSort";
+import { documentDeleteErrorKey } from "~/utils/documentDelete";
 import {
 	MAX_UPLOAD_BYTES,
 	UPLOAD_CONCURRENCY,
@@ -165,8 +168,13 @@ const dateLocale = computed(() => locale.value === "fr" ? "fr-FR" : "de-CH");
 const canUploadDocuments = computed(() => currentActions.value.upload);
 const canCreateFolder = computed(() => currentActions.value.createFolder);
 const canManageDocuments = computed(() => canUploadDocuments.value || canCreateFolder.value);
-const canDeleteFile = (_file: GlobalFile) => currentActions.value.delete;
-const canDeleteFolder = (folder: DocumentFolder) => !!folder.actions?.delete;
+// The server decides per item: "delete" = everything, "deleteOwn" = own items only (#35).
+const canDeleteFile = (file: GlobalFile) => file.canDelete ?? currentActions.value.delete;
+const canDeleteFolder = (folder: DocumentFolder) => folder.canDelete ?? !!folder.actions?.delete;
+const deleteErrorText = (e: unknown) => {
+	const key = documentDeleteErrorKey(e);
+	return key ? t(key) : getFetchError(e);
+};
 const canRenameSelection = computed(() => selectedFiles.value.length === 1 && selectedFolders.value.length === 0 && currentActions.value.rename);
 const canMoveSelection = computed(() => {
 	const filesCanMove = selectedFiles.value.length === 0 || currentActions.value.move;
@@ -978,7 +986,7 @@ const deleteFile = async (file: GlobalFile) => {
 		selectedFiles.value = selectedFiles.value.filter(f => f.id !== file.id);
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: t("documents.toasts.deleteError"), description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.deleteError"), description: deleteErrorText(e), color: "error" });
 	}
 };
 
@@ -987,7 +995,13 @@ const deleteSelectedItems = async () => {
 	let warningText = t("documents.confirm.deleteSelection", { count: total });
 
 	if (selectedFolders.value.length > 0) {
-		const summaries = await Promise.all(selectedFolders.value.map(folder => getFolderDeleteSummary(folder.id)));
+		let summaries: Array<{ fileCount: number; folderCount: number }>;
+		try {
+			summaries = await Promise.all(selectedFolders.value.map(folder => getFolderDeleteSummary(folder.id)));
+		} catch (e: unknown) {
+			toast.add({ title: t("documents.toasts.deleteError"), description: deleteErrorText(e), color: "error" });
+			return;
+		}
 		const nestedFiles = summaries.reduce((sum, summary) => sum + summary.fileCount, 0);
 		const nestedFolders = summaries.reduce((sum, summary) => sum + summary.folderCount, 0);
 		if (nestedFiles > 0 || nestedFolders > 0) {
@@ -1008,7 +1022,7 @@ const deleteSelectedItems = async () => {
 			});
 			deletedCount += 1 + result.folderCount + result.fileCount;
 		} catch (e: unknown) {
-			toast.add({ title: t("documents.toasts.deleteNamedError", { name: folder.name }), description: getFetchError(e), color: "error" });
+			toast.add({ title: t("documents.toasts.deleteNamedError", { name: folder.name }), description: deleteErrorText(e), color: "error" });
 		}
 	}
 
@@ -1021,7 +1035,7 @@ const deleteSelectedItems = async () => {
 			});
 			deletedCount++;
 		} catch (e: unknown) {
-			toast.add({ title: t("documents.toasts.deleteNamedError", { name: file.name }), description: getFetchError(e), color: "error" });
+			toast.add({ title: t("documents.toasts.deleteNamedError", { name: file.name }), description: deleteErrorText(e), color: "error" });
 		}
 	}
 
@@ -1034,7 +1048,13 @@ const deleteSelectedItems = async () => {
 };
 
 const deleteFolder = async (folder: GlobalFolder) => {
-	const summary = await getFolderDeleteSummary(folder.id);
+	let summary: { fileCount: number; folderCount: number };
+	try {
+		summary = await getFolderDeleteSummary(folder.id);
+	} catch (e: unknown) {
+		toast.add({ title: t("documents.toasts.deleteError"), description: deleteErrorText(e), color: "error" });
+		return;
+	}
 	let warningText = t("documents.confirm.deleteFolder", { name: folder.name });
 	if (summary.fileCount > 0 || summary.folderCount > 0) {
 		warningText += `\n\n${t("documents.confirm.deleteFolderNested", { files: summary.fileCount, folders: summary.folderCount })}`;
@@ -1058,7 +1078,7 @@ const deleteFolder = async (folder: GlobalFolder) => {
 		selectedFolders.value = selectedFolders.value.filter(f => f.id !== folder.id);
 		fetchData(currentFolderId.value);
 	} catch (e: unknown) {
-		toast.add({ title: t("documents.toasts.deleteError"), description: getErrorMessage(e), color: "error" });
+		toast.add({ title: t("documents.toasts.deleteError"), description: deleteErrorText(e), color: "error" });
 	}
 };
 

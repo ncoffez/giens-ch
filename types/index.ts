@@ -130,6 +130,8 @@ export interface GlobalFile {
 	deletedAt?: string;
 	deletedBy?: string;
 	deletedByLabel?: string;
+	/** Set by POST /api/files: the signed-in user may delete this file (#35). */
+	canDelete?: boolean;
 	searchText?: string;
 	searchSummary?: string;
 	searchKeywords?: string[];
@@ -143,6 +145,8 @@ export interface GlobalFolder {
 	createdAt: string;
 	createdBy: string;
 	createdByName?: string;
+	/** Set by POST /api/files: the signed-in user may delete this folder (#35). */
+	canDelete?: boolean;
 }
 
 export interface LocalizedContent {

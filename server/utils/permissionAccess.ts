@@ -1,5 +1,6 @@
 import { createError, type H3Event } from "h3";
 import {
+	DOCUMENT_ACTIONS,
 	canAccessDocuments,
 	canEditHomeSection,
 	canEnterAdminShell,
@@ -180,9 +181,8 @@ export function actionsForFolder(
 	claims: PermissionClaimSet,
 	folderId: string | null,
 ) {
-	const actions = ["createFolder", "upload", "open", "rename", "move", "delete"] as const;
-	return Object.fromEntries(actions.map((action) => [
+	return Object.fromEntries(DOCUMENT_ACTIONS.map((action) => [
 		action,
 		canPerformFolderAction(config, folders, claims, folderId, action),
-	])) as Record<(typeof actions)[number], boolean>;
+	])) as Record<DocumentAction, boolean>;
 }
