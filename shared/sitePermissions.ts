@@ -2,7 +2,11 @@ export const SITE_ROLES = ["admin", "publisher", "owner", "reader"] as const;
 
 export type SiteRole = (typeof SITE_ROLES)[number];
 
-export const DOCUMENT_ACTIONS = ["createFolder", "upload", "open", "rename", "move", "delete"] as const;
+/**
+ * `deleteOwn` lets a role delete only files it uploaded and folders it created
+ * (issue #35). `delete` is the general right to delete everything.
+ */
+export const DOCUMENT_ACTIONS = ["createFolder", "upload", "open", "rename", "move", "deleteOwn", "delete"] as const;
 
 export type DocumentAction = (typeof DOCUMENT_ACTIONS)[number];
 
@@ -64,7 +68,8 @@ export const PERMISSION_ROWS: PermissionRow[] = [
 	{ key: "documents.open", group: "documents", locked: false, defaults: yes(true, false, true, true) },
 	{ key: "documents.rename", group: "documents", locked: false, defaults: adminOnly },
 	{ key: "documents.move", group: "documents", locked: false, defaults: adminOnly },
-	{ key: "documents.delete", group: "documents", locked: false, defaults: adminOwner },
+	{ key: "documents.deleteOwn", group: "documents", locked: false, defaults: adminOwner },
+	{ key: "documents.delete", group: "documents", locked: false, defaults: adminOnly },
 	{ key: "home.links.manage", group: "home", locked: false, defaults: adminOwner },
 	{ key: "home.photos.upload", group: "home", locked: false, defaults: adminOwner },
 	{ key: "home.wifi.edit", group: "home", locked: false, defaults: adminOwner },
@@ -320,6 +325,117 @@ export function sanitizePermissionConfig(
 	}
 
 	return { grants, folders };
+}
+
+/** Default of `documents.delete` before issue #35 split it into own/all. */
+const LEGACY_DELETE_DEFAULTS: RoleGrants = yes(true, false, true, false);
+
+function hasDeleteOwnEntries(config: SitePermissionConfig): boolean {
+	if (config.grants["documents.deleteOwn"]) return true;
+	return Object.values(config.folders).some((actions) => !!actions?.deleteOwn);
+}
+
+function splitLegacyDelete(legacy: RoleGrants): { deleteOwn: RoleGrants; delete: RoleGrants } {
+	return {
+		deleteOwn: { ...legacy },
+		delete: { ...emptyGrants(), admin: legacy.admin },
+	};
+}
+
+/**
+ * Configs saved before issue #35 only know `delete`, which meant "delete
+ * everything". Whoever had it keeps the right to delete their own items
+ * (`deleteOwn`); only admins keep deleting everything. A config that already
+ * has a `deleteOwn` entry is left alone, so later explicit choices stick.
+ */
+export function migrateLegacyDeletePermission(config: SitePermissionConfig): SitePermissionConfig {
+	if (hasDeleteOwnEntries(config)) return config;
+
+	const grants: Record<string, Partial<RoleGrants>> = { ...config.grants };
+	const legacyArea = config.grants["documents.delete"];
+	if (legacyArea && typeof legacyArea === "object") {
+		const split = splitLegacyDelete(normalizeGrants(legacyArea, LEGACY_DELETE_DEFAULTS));
+		grants["documents.deleteOwn"] = split.deleteOwn;
+		grants["documents.delete"] = split.delete;
+	}
+
+	const folders: Record<string, FolderActionOverride> = {};
+	for (const [folderId, actions] of Object.entries(config.folders)) {
+		if (!actions) continue;
+		const legacyFolder = actions.delete;
+		const complete = !!legacyFolder && SITE_ROLES.every((role) => typeof legacyFolder[role] === "boolean");
+		if (!complete) {
+			folders[folderId] = actions;
+			continue;
+		}
+		const split = splitLegacyDelete(normalizeGrants(legacyFolder));
+		folders[folderId] = { ...actions, deleteOwn: split.deleteOwn, delete: split.delete };
+	}
+
+	return { grants, folders };
+}
+
+export type DeleteScope = "all" | "own" | "none";
+
+/** How far `claims` may delete inside `folderId` (null = root). */
+export function documentDeleteScope(
+	config: SitePermissionConfig,
+	folders: FolderRef[],
+	claims: PermissionClaimSet | null | undefined,
+	folderId: string | null,
+): DeleteScope {
+	if (canPerformFolderAction(config, folders, claims, folderId, "delete")) return "all";
+	if (canPerformFolderAction(config, folders, claims, folderId, "deleteOwn")) return "own";
+	return "none";
+}
+
+/**
+ * An item is "own" only when its recorded creator is the signed-in user.
+ * Legacy items without `uploadedBy` / `createdBy` never count as own.
+ */
+export function isOwnDocumentItem(claims: PermissionClaimSet | null | undefined, creatorUid: unknown): boolean {
+	return !!claims?.uid && typeof creatorUid === "string" && creatorUid.length > 0 && creatorUid === claims.uid;
+}
+
+export function canDeleteDocumentItem(
+	scope: DeleteScope,
+	claims: PermissionClaimSet | null | undefined,
+	creatorUid: unknown,
+): boolean {
+	if (scope === "all") return true;
+	if (scope === "own") return isOwnDocumentItem(claims, creatorUid);
+	return false;
+}
+
+export type DeleteBlockReason = "forbidden" | "not-own" | "foreign-content";
+
+export interface FolderDeletionCheck {
+	scope: DeleteScope;
+	claims: PermissionClaimSet | null | undefined;
+	rootFolder: { createdBy?: unknown } | null | undefined;
+	descendantFolders?: Array<{ createdBy?: unknown } | null | undefined>;
+	activeFiles?: Array<{ uploadedBy?: unknown } | null | undefined>;
+}
+
+/**
+ * Why a folder (with everything inside) may not be deleted, or null.
+ * With only `deleteOwn`, the folder and every subfolder and active file in it
+ * must have been created by the user; otherwise the whole delete is refused,
+ * so nobody removes other people's documents by deleting a parent folder.
+ */
+export function folderDeletionBlock({
+	scope,
+	claims,
+	rootFolder,
+	descendantFolders = [],
+	activeFiles = [],
+}: FolderDeletionCheck): DeleteBlockReason | null {
+	if (scope === "all") return null;
+	if (scope === "none") return "forbidden";
+	if (!isOwnDocumentItem(claims, rootFolder?.createdBy)) return "not-own";
+	if (descendantFolders.some((folder) => !isOwnDocumentItem(claims, folder?.createdBy))) return "foreign-content";
+	if (activeFiles.some((file) => !isOwnDocumentItem(claims, file?.uploadedBy))) return "foreign-content";
+	return null;
 }
 
 export function permissionAuditLines(

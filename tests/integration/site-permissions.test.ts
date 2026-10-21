@@ -22,7 +22,9 @@ describe("site permission matrix", () => {
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, publisher, "page.travel.edit")).toBe(false);
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, publisher, "documents.open")).toBe(false);
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, reader, "documents.open")).toBe(true);
-		expect(canPerform(EMPTY_PERMISSION_CONFIG, owner, "documents.delete")).toBe(true);
+		expect(canPerform(EMPTY_PERMISSION_CONFIG, owner, "documents.deleteOwn")).toBe(true);
+		expect(canPerform(EMPTY_PERMISSION_CONFIG, owner, "documents.delete")).toBe(false);
+		expect(canPerform(EMPTY_PERMISSION_CONFIG, admin, "documents.delete")).toBe(true);
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, owner, "documents.rename")).toBe(false);
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, reader, "documents.upload")).toBe(false);
 		expect(canPerform(EMPTY_PERMISSION_CONFIG, owner, "home.wifi.edit")).toBe(true);

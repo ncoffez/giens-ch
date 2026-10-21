@@ -104,9 +104,10 @@ describe("file route auth contract", () => {
 
 	it("checks upload and delete against the document folder", () => {
 		expect(readFileSync("server/api/files/upload.post.ts", "utf8")).toContain("assertDocumentAction");
-		expect(readFileSync("server/api/files/delete.post.ts", "utf8")).toContain("\"delete\"");
+		expect(readFileSync("server/api/files/delete.post.ts", "utf8")).toContain("loadDeleteScope");
 		expect(readFileSync("server/api/folders/create.post.ts", "utf8")).toContain("\"createFolder\"");
-		expect(readFileSync("server/api/folders/delete.post.ts", "utf8")).toContain("\"delete\"");
+		expect(readFileSync("server/api/folders/delete.post.ts", "utf8")).toContain("loadDeleteScope");
+		expect(readFileSync("server/api/folders/delete.post.ts", "utf8")).toContain("folderDeletionBlock");
 	});
 
 	it("checks home file routes against the house section and the house owner list", () => {

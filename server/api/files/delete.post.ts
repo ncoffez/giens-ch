@@ -1,6 +1,7 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
-import { assertDocumentAction } from "../../utils/permissionAccess";
+import { deleteForbidden, loadDeleteScope } from "../../utils/documentDeletion";
+import { canDeleteDocumentItem } from "#shared/sitePermissions";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -28,7 +29,10 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, message: "File is already in trash" });
 	}
 
-	await assertDocumentAction(claims, fileData.folderId || null, "delete");
+	// "delete" removes any file; "deleteOwn" only files this user uploaded (#35).
+	const scope = await loadDeleteScope(claims, fileData.folderId || null);
+	if (scope === "none") throw deleteForbidden("forbidden");
+	if (!canDeleteDocumentItem(scope, claims, fileData.uploadedBy)) throw deleteForbidden("not-own");
 
 	await fileRef.update({
 		deletedAt: new Date().toISOString(),

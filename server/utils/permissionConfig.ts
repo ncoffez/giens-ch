@@ -7,6 +7,7 @@ import {
 	type FolderRef,
 	type PermissionAuditLine,
 	type SitePermissionConfig,
+	migrateLegacyDeletePermission,
 	permissionAuditLines,
 	resolvedGrants,
 	sanitizePermissionConfig,
@@ -31,10 +32,10 @@ interface StoredPermissionDocument {
 
 function readConfig(data: StoredPermissionDocument | undefined): SitePermissionConfig {
 	if (!data) return { grants: {}, folders: {} };
-	return {
+	return migrateLegacyDeletePermission({
 		grants: data.grants && typeof data.grants === "object" ? data.grants : {},
 		folders: data.folders && typeof data.folders === "object" ? data.folders : {},
-	};
+	});
 }
 
 export async function loadPermissionRecord(): Promise<{

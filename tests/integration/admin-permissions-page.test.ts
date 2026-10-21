@@ -162,4 +162,27 @@ describe("Admin permissions folder tree", () => {
 		expect(Object.keys(savedBody?.folders || {}).sort()).toEqual(["pool"]);
 		expect(savedBody?.folders?.pool).toHaveProperty("open");
 	});
+	it("shows deleting own items as its own matrix row, separate from deleting everything (#35)", async () => {
+		registerEndpoint("/api/admin/permissions", {
+			method: "GET",
+			handler: () => ({
+				rows: [
+					{ key: "documents.deleteOwn", group: "documents", locked: false, grants: { admin: true, publisher: false, owner: true, reader: false } },
+					{ key: "documents.delete", group: "documents", locked: false, grants: { admin: true, publisher: false, owner: false, reader: false } },
+				],
+				folders: [],
+			}),
+		});
+
+		const component = await mountSuspended(PermissionsPage);
+		await textIncludes(() => component.text(), "Eigene Dokumente/Ordner löschen");
+		expect(component.text()).toContain("Alle Dokumente/Ordner löschen");
+		expect(component.text()).not.toContain("rows.documents.deleteOwn");
+		const ownOwner = component.find("[aria-label='Eigene Dokumente/Ordner löschen Owner']");
+		const allOwner = component.find("[aria-label='Alle Dokumente/Ordner löschen Owner']");
+		expect(ownOwner.exists()).toBe(true);
+		expect(allOwner.exists()).toBe(true);
+		expect((ownOwner.element as HTMLInputElement).checked).toBe(true);
+		expect((allOwner.element as HTMLInputElement).checked).toBe(false);
+	});
 });

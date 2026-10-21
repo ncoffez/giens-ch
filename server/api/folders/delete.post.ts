@@ -1,8 +1,9 @@
 import { db } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { collectGlobalFolderTree } from "../../utils/globalDocuments";
-import { assertDocumentAction } from "../../utils/permissionAccess";
+import { deleteForbidden, loadDeleteScope } from "../../utils/documentDeletion";
 import { removeFolderPermissionOverrides } from "../../utils/permissionConfig";
+import { folderDeletionBlock } from "#shared/sitePermissions";
 
 export default defineEventHandler(async (event) => {
 	const claims = await getUserClaims(event);
@@ -22,10 +23,13 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 404, message: "Folder not found" });
 	}
 
-	await assertDocumentAction(claims, folderId, "delete");
+	// "delete" removes the whole tree; "deleteOwn" only a tree this user built (#35).
+	const scope = await loadDeleteScope(claims, folderId);
+	if (scope === "none") throw deleteForbidden("forbidden");
 
 	const folderIds = await collectGlobalFolderTree(folderId);
 	const ownedFolderIds = new Set<string>([folderId]);
+	const descendantFolders: Array<{ createdBy?: unknown }> = [];
 	const activeFileDocs = [];
 
 	for (const currentFolderId of folderIds) {
@@ -35,6 +39,7 @@ export default defineEventHandler(async (event) => {
 				continue;
 			}
 			ownedFolderIds.add(currentFolderId);
+			descendantFolders.push(folderDoc.data() || {});
 		}
 
 		const filesSnapshot = await db.collection("globalFiles").where("folderId", "==", currentFolderId).get();
@@ -44,6 +49,15 @@ export default defineEventHandler(async (event) => {
 			}
 		}
 	}
+
+	const blocked = folderDeletionBlock({
+		scope,
+		claims,
+		rootFolder: rootFolderDoc.data(),
+		descendantFolders,
+		activeFiles: activeFileDocs.map((fileDoc) => fileDoc.data()),
+	});
+	if (blocked) throw deleteForbidden(blocked);
 
 	if (dryRun) {
 		return {
