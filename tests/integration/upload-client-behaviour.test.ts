@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
  * Client-side upload behaviour for issue #39: multi-upload with a concurrency
  * limit, byte-based progress, and photo downscaling before upload.
  *
- * Tests marked `it.fails` describe the target behaviour; the implementation PR
- * adds app/utils/uploadQueue.ts and app/utils/imageResize.ts and flips them.
+ * The "target behaviour" blocks started as `it.fails` in the test PR and were
+ * flipped together with app/utils/uploadQueue.ts and app/utils/imageResize.ts.
  */
 
 const importTarget = async <T = any>(path: string): Promise<T> => await import(/* @vite-ignore */ path) as T;
@@ -53,13 +53,12 @@ describe("multi-upload: behaviour that must stay", () => {
 	});
 });
 
-describe("multi-upload: target behaviour (#39)", () => {
-	// PR B flips these from it.fails to it.
-	it.fails("lets the user pick several editor attachments at once", () => {
+describe("multi-upload: behaviour after #39", () => {
+	it("lets the user pick several editor attachments at once", () => {
 		expect(source(UPLOAD_UIS.editorAttachments)).toMatch(/type="file"[^>]*\bmultiple\b/);
 	});
 
-	it.fails("runs at most `limit` uploads at the same time and finishes all of them", async () => {
+	it("runs at most `limit` uploads at the same time and finishes all of them", async () => {
 		const { runWithConcurrency } = await importTarget("/app/utils/uploadQueue.ts");
 		let inFlight = 0;
 		let maxInFlight = 0;
@@ -88,7 +87,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		expect(results[6]).toMatchObject({ status: "fulfilled", value: "done-6" });
 	});
 
-	it.fails("starts the next upload as soon as one slot is free, not per batch", async () => {
+	it("starts the next upload as soon as one slot is free, not per batch", async () => {
 		const { runWithConcurrency } = await importTarget("/app/utils/uploadQueue.ts");
 		const started: number[] = [];
 		const gates = Array.from({ length: 4 }, () => deferred());
@@ -108,7 +107,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		await run;
 	});
 
-	it.fails("weights the progress bar by bytes, not by file count", async () => {
+	it("weights the progress bar by bytes, not by file count", async () => {
 		const { createByteProgress } = await importTarget("/app/utils/uploadQueue.ts");
 		const progress = createByteProgress([9_000_000, 1_000_000]);
 
@@ -121,7 +120,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		expect(progress.totalBytes()).toBe(10_000_000);
 	});
 
-	it.fails("moves through intermediate values for a single file", async () => {
+	it("moves through intermediate values for a single file", async () => {
 		const { createByteProgress } = await importTarget("/app/utils/uploadQueue.ts");
 		const progress = createByteProgress([4_000_000]);
 
@@ -134,7 +133,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		expect(progress.percent()).toBe(100);
 	});
 
-	it.fails("reports real upload progress from XMLHttpRequest", async () => {
+	it("reports real upload progress from XMLHttpRequest", async () => {
 		const { uploadJsonWithProgress } = await importTarget("/app/utils/uploadQueue.ts");
 		const instances: any[] = [];
 
@@ -178,7 +177,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		expect(fractions).toEqual([0.25, 1]);
 	});
 
-	it.fails("rejects with the server message so existing error toasts keep working", async () => {
+	it("rejects with the server message so existing error toasts keep working", async () => {
 		const { uploadJsonWithProgress } = await importTarget("/app/utils/uploadQueue.ts");
 		class FakeXhr {
 			upload = { onprogress: null };
@@ -201,7 +200,7 @@ describe("multi-upload: target behaviour (#39)", () => {
 		});
 	});
 
-	it.fails("rejects files over the real request limit before uploading", async () => {
+	it("rejects files over the real request limit before uploading", async () => {
 		const { MAX_UPLOAD_BYTES, findOversizedFiles } = await importTarget("/app/utils/uploadQueue.ts");
 		const small = { name: "a.pdf", size: 1024 };
 		const big = { name: "b.pdf", size: 30 * 1024 * 1024 };
@@ -211,15 +210,15 @@ describe("multi-upload: target behaviour (#39)", () => {
 		expect(findOversizedFiles([small, big])).toEqual([big]);
 	});
 
-	it.fails.each(Object.entries(UPLOAD_UIS))("%s uploads with byte progress and a concurrency limit", (_name, file) => {
+	it.each(Object.entries(UPLOAD_UIS))("%s uploads with byte progress and a concurrency limit", (_name, file) => {
 		const content = source(file);
 		expect(content).toContain("uploadJsonWithProgress");
 		expect(content).toContain("runWithConcurrency");
 	});
 });
 
-describe("photo downscaling: target behaviour (#39)", () => {
-	it.fails("scales the long edge down to 2560 px and keeps the aspect ratio", async () => {
+describe("photo downscaling: behaviour after #39", () => {
+	it("scales the long edge down to 2560 px and keeps the aspect ratio", async () => {
 		const { getResizedDimensions } = await importTarget("/app/utils/imageResize.ts");
 
 		expect(getResizedDimensions(6000, 4000, 2560)).toEqual({ width: 2560, height: 1707 });
@@ -227,7 +226,7 @@ describe("photo downscaling: target behaviour (#39)", () => {
 		expect(getResizedDimensions(1600, 1200, 2560)).toEqual({ width: 1600, height: 1200 });
 	});
 
-	it.fails("only touches formats the browser can re-encode", async () => {
+	it("only touches formats the browser can re-encode", async () => {
 		const { shouldResizeImage } = await importTarget("/app/utils/imageResize.ts");
 
 		expect(shouldResizeImage({ type: "image/jpeg" })).toBe(true);
@@ -239,7 +238,7 @@ describe("photo downscaling: target behaviour (#39)", () => {
 		expect(shouldResizeImage({ type: "application/pdf" })).toBe(false);
 	});
 
-	it.fails("downscales a large photo before upload", async () => {
+	it("downscales a large photo before upload", async () => {
 		const { resizeImageForUpload } = await importTarget("/app/utils/imageResize.ts");
 		const drawImage = vi.fn();
 		vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 6000, height: 4000, close: vi.fn() })));
@@ -262,7 +261,7 @@ describe("photo downscaling: target behaviour (#39)", () => {
 		expect(resized.lastModified).toBe(original.lastModified);
 	});
 
-	it.fails("leaves small photos, GIFs and documents untouched", async () => {
+	it("leaves small photos, GIFs and documents untouched", async () => {
 		const { resizeImageForUpload } = await importTarget("/app/utils/imageResize.ts");
 		vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ width: 1200, height: 800, close: vi.fn() })));
 
@@ -275,7 +274,7 @@ describe("photo downscaling: target behaviour (#39)", () => {
 		expect(await resizeImageForUpload(pdf)).toBe(pdf);
 	});
 
-	it.fails("falls back to the original when the browser cannot decode the image", async () => {
+	it("falls back to the original when the browser cannot decode the image", async () => {
 		const { resizeImageForUpload } = await importTarget("/app/utils/imageResize.ts");
 		vi.stubGlobal("createImageBitmap", vi.fn(async () => { throw new Error("decode failed"); }));
 
@@ -283,7 +282,7 @@ describe("photo downscaling: target behaviour (#39)", () => {
 		expect(await resizeImageForUpload(photo)).toBe(photo);
 	});
 
-	it.fails.each([
+	it.each([
 		UPLOAD_UIS.housePhotos,
 		UPLOAD_UIS.memoriamPhotos,
 		UPLOAD_UIS.editorAttachments,

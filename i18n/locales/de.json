@@ -214,6 +214,7 @@
       "count": "{current} / {max} Fotos",
       "multiUpload": "Mehrere Dateien möglich",
       "uploading": "Hochladen... {current}/{total}",
+      "uploadedBytes": "{loaded} von {total}",
       "photoAlt": "Foto {index}",
       "emptyTitle": "Keine Fotos",
       "emptyDescription": "Laden Sie Fotos hoch, die Mieter sehen können",
@@ -225,7 +226,7 @@
       "toasts": {
         "maxPhotos": "Maximal {count} Fotos erlaubt",
         "imagesOnly": "Nur Bilddateien erlaubt",
-        "maxSize": "Datei zu gross (max. 10MB)",
+        "maxSize": "Datei zu gross (max. 23 MB)",
         "uploaded": "{count} Foto(s) hochgeladen",
         "uploadFailed": "{count} Upload(s) fehlgeschlagen",
         "deleted": "Foto gelöscht",
@@ -236,7 +237,7 @@
     },
     "files": {
       "clickToUpload": "Klicken zum Hochladen",
-      "supportedFormats": "PDF, DOC, XLS und mehr (max. 50MB)",
+      "supportedFormats": "PDF, DOC, XLS und mehr (max. 23 MB)",
       "multiUpload": "Mehrere Dateien möglich",
       "privateHint": "Nur für Eigentümer und Administratoren sichtbar",
       "dragHint": "Dateien können auch per Drag-and-drop nach {target} verschoben werden.",
@@ -252,6 +253,7 @@
         "download": "Herunterladen"
       },
       "uploading": "Hochladen... {current}/{total}",
+      "uploadedBytes": "{loaded} von {total}",
       "emptyTitle": "Keine Dateien",
       "sharedEmptyDescription": "Laden Sie Dokumente hoch, die Mieter herunterladen können",
       "privateEmptyDescription": "Laden Sie interne Dokumente nur für Eigentümer hoch",
@@ -266,7 +268,7 @@
       },
       "confirmDelete": "\"{name}\" wirklich löschen?",
       "toasts": {
-        "maxSize": "Datei zu gross (max. 50MB)",
+        "maxSize": "Datei zu gross (max. 23 MB)",
         "uploaded": "{count} Datei(en) hochgeladen",
         "uploadFailed": "{count} Upload(s) fehlgeschlagen",
         "deleted": "Datei gelöscht",
@@ -287,7 +289,7 @@
   "documents": {
     "title": "Gemeinsame Unterlagen",
     "subtitle": "Wichtige Dateien, Ordner und Downloads für Eigentümer und Administration.",
-    "maxFileSize": "max. 50MB",
+    "maxFileSize": "max. 23 MB",
     "sort": {
       "label": "Sortieren:",
       "name": "Name",
@@ -312,11 +314,13 @@
     },
     "states": {
       "uploadingCurrent": "Lade hoch: {file}",
+      "uploadedBytes": "{loaded} von {total}",
+      "uploadSaving": "Wird gespeichert...",
       "loading": "Laden...",
       "loadingMore": "Lade weitere...",
       "loadError": "Fehler beim Laden",
       "emptyTitle": "Keine Dateien",
-      "emptyHint": "Ziehen Sie Dateien hierher oder klicken Sie auf \"Hochladen\" (max. 50MB)"
+      "emptyHint": "Ziehen Sie Dateien hierher oder klicken Sie auf \"Hochladen\" (max. 23 MB)"
     },
     "actions": {
       "newFolder": "Neuer Ordner",
@@ -358,7 +362,10 @@
       "noAutoTranslation": "Keine automatische Übersetzung",
       "originalLanguage": "Originalsprache",
       "translationLabel": "Übersetzung: {locale}",
-      "noTranslationForLanguage": "Keine Übersetzung für diese Sprache"
+      "noTranslationForLanguage": "Keine Übersetzung für diese Sprache",
+      "pending": "Texterkennung und Übersetzung laufen noch. Das kann eine Minute dauern.",
+      "failed": "Texterkennung fehlgeschlagen: {error}",
+      "retry": "Erneut versuchen"
     },
     "modals": {
       "renameTitle": "Datei umbenennen",
@@ -377,6 +384,7 @@
       "deleteFolderNested": "Dabei werden auch {files} Datei(en) und {folders} Unterordner gelöscht."
     },
     "toasts": {
+      "tooLarge": "{name} ist zu gross (max. {limit})",
       "linkCopied": "Link kopiert",
       "translatedUnavailable": "Übersetzte Datei nicht verfügbar",
       "previewUnavailable": "Vorschau nicht verfügbar",
@@ -689,6 +697,8 @@
     "cancel": "Abbrechen",
     "upload": "Upload",
     "uploading": "Datei wird hochgeladen...",
+    "uploadingCount": "Hochladen... {current}/{total} · {loaded} von {total_bytes}",
+    "tooLarge": "{name} ist zu gross (max. {limit})",
     "dropFile": "Datei hier ablegen",
     "demoText": "Demotext",
     "placeholder": "Schreiben Sie etwas...",
@@ -943,8 +953,10 @@
       "photos": "Fotos",
       "photosHint": "Bis zu {count} Fotos.",
       "addPhotos": "Fotos hinzufügen",
+      "uploadingPhotos": "Fotos werden hochgeladen... {loaded} von {total}",
       "confirmDelete": "Diesen Eintrag wirklich löschen?",
       "toasts": {
+        "tooLarge": "{name} ist zu gross (max. {limit})",
         "saved": "Eintrag gespeichert",
         "deleted": "Eintrag gelöscht",
         "created": "Eintrag erstellt",
@@ -956,7 +968,7 @@
         "photoFailed": "Foto konnte nicht hochgeladen werden",
         "photoDeleted": "Foto entfernt",
         "imagesOnly": "Nur Bilder können hochgeladen werden",
-        "maxSize": "Maximale Dateigrösse: 10 MB",
+        "maxSize": "Maximale Dateigrösse: 23 MB",
         "maxPhotos": "Maximal {count} Fotos",
         "reordered": "Reihenfolge gespeichert",
         "reorderFailed": "Reihenfolge konnte nicht gespeichert werden"

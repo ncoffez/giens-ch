@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import type { Home } from "~/types";
 import { isSameOrder, movePhoto } from "~/utils/photoOrder";
+import { resizeImageForUpload } from "~/utils/imageResize";
+import {
+	UPLOAD_CONCURRENCY,
+	createByteProgress,
+	findOversizedFiles,
+	formatMegabytes,
+	readFileAsDataUrl,
+	runWithConcurrency,
+	uploadJsonWithProgress,
+} from "~/utils/uploadQueue";
 
 const props = defineProps<{
 	home: Home;
@@ -18,6 +28,7 @@ const uploading = ref(false);
 const uploadProgress = ref(0);
 const uploadTotal = ref(0);
 const uploadCurrent = ref(0);
+const uploadedBytesLabel = ref("");
 const MAX_PHOTOS = 30;
 
 const uploadPhotos = async (event: Event) => {
@@ -39,45 +50,73 @@ const uploadPhotos = async (event: Event) => {
 		return;
 	}
 
-	const oversizedFiles = fileArray.filter(f => f.size > 10 * 1024 * 1024);
-	if (oversizedFiles.length > 0) {
-		toast.add({ title: t("homes.photos.toasts.maxSize"), color: "error" });
-		return;
-	}
-
 	await flushPendingOrder();
 
 	uploading.value = true;
 	uploadTotal.value = fileArray.length;
 	uploadCurrent.value = 0;
 	uploadProgress.value = 0;
+	const progress = createByteProgress(fileArray.map((file) => file.size));
+	const refreshProgress = () => {
+		uploadProgress.value = progress.percent();
+		uploadedBytesLabel.value = t("homes.photos.uploadedBytes", {
+			loaded: formatMegabytes(progress.loadedBytes()),
+			total: formatMegabytes(progress.totalBytes()),
+		});
+	};
+	refreshProgress();
 	const authToken = await getFreshToken();
+	const orderBefore = [...orderedPhotos.value];
 
-	let successCount = 0;
-	let errorCount = 0;
-
-	for (let i = 0; i < fileArray.length; i++) {
-		const file = fileArray[i];
-		uploadCurrent.value = i + 1;
-		uploadProgress.value = Math.round(((i + 1) / fileArray.length) * 100);
-
+	const results = await runWithConcurrency(fileArray, UPLOAD_CONCURRENCY, async (file, index) => {
 		try {
-			const base64 = await new Promise<string>((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = (e) => resolve(e.target?.result as string);
-				reader.onerror = reject;
-				reader.readAsDataURL(file);
-			});
-
-			await $fetch(`/api/homes/${props.home.id}/photos/upload`, {
-				method: "POST",
+			// A 6000 px phone photo goes up as ~0.5 MB instead of ~8 MB (#39).
+			const photo = await resizeImageForUpload(file);
+			if (findOversizedFiles([photo]).length) {
+				throw new Error(t("homes.photos.toasts.maxSize"));
+			}
+			const base64 = await readFileAsDataUrl(photo);
+			const response = await uploadJsonWithProgress<{ url: string }>(`/api/homes/${props.home.id}/photos/upload`, {
+				file: base64,
+				type: photo.type,
+			}, {
 				headers: { Authorization: `Bearer ${authToken}` },
-				body: { file: base64, type: file.type },
+				onProgress: (fraction) => {
+					progress.update(index, fraction);
+					refreshProgress();
+				},
 			});
-			successCount++;
+			return response.url;
 		} catch (e: unknown) {
-			errorCount++;
 			console.error(`Failed to upload ${file.name}:`, e);
+			throw e;
+		} finally {
+			progress.complete(index);
+			uploadCurrent.value++;
+			refreshProgress();
+		}
+	});
+
+	const uploadedUrls = results
+		.filter((result): result is PromiseFulfilledResult<string> => result.status === "fulfilled" && Boolean(result.value))
+		.map((result) => result.value);
+	const successCount = uploadedUrls.length;
+	const errorCount = results.length - successCount;
+
+	// Parallel uploads land in the order they finish; put them back in the
+	// order they were picked.
+	if (successCount > 1) {
+		const nextOrder = [...orderBefore, ...uploadedUrls];
+		try {
+			await $fetch(`/api/homes/${props.home.id}`, {
+				method: "POST",
+				headers: { Authorization: `Bearer ${await getFreshToken()}` },
+				body: { photos: nextOrder },
+			});
+			orderedPhotos.value = nextOrder;
+			confirmedOrder = nextOrder;
+		} catch (e: unknown) {
+			console.warn("Could not restore the upload order:", e);
 		}
 	}
 
@@ -93,8 +132,10 @@ const uploadPhotos = async (event: Event) => {
 	}
 
 	if (errorCount > 0) {
+		const firstError = results.find((result) => result.status === "rejected") as PromiseRejectedResult | undefined;
 		toast.add({
 			title: t("homes.photos.toasts.uploadFailed", { count: errorCount }),
+			description: firstError ? getFetchError(firstError.reason) : undefined,
 			color: "error",
 		});
 	}
@@ -255,8 +296,9 @@ const deletePhoto = async (photoUrl: string) => {
 						{{ t("homes.photos.uploading", { current: uploadCurrent, total: uploadTotal }) }}
 					</p>
 					<div class="w-full max-w-xs mx-auto">
-						<UProgress :value="uploadProgress" color="primary" size="sm" />
+						<UProgress :model-value="uploadProgress" color="primary" size="sm" />
 					</div>
+					<p class="text-xs text-stone-400 tabular-nums">{{ uploadedBytesLabel }} · {{ uploadProgress }}%</p>
 				</div>
 				<div v-else class="space-y-3">
 					<UIcon name="i-lucide-upload-cloud" class="w-10 h-10 mx-auto text-stone-400" />

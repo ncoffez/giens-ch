@@ -74,7 +74,10 @@ export default defineNuxtConfig({
 			httpsOptions: {
 				region: "europe-west6",
 				maxInstances: 5,
-				cpu: "gcf_gen1"
+				cpu: "gcf_gen1",
+				// Document processing (Gemini OCR + translation) runs inside a request
+				// since #39; long PDFs can take several minutes. Default is 60 s.
+				timeoutSeconds: 300,
 			},
 		},
 	},
