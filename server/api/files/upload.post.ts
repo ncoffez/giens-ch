@@ -3,13 +3,14 @@ import { getUserClaims } from "../../utils/auth";
 import { buildDocumentSearchFieldsFromBuffer } from "../../utils/documentSearch";
 import { buildDocumentProcessingRecord } from "../../utils/documentProcessing";
 import { assertDocumentAction } from "../../utils/permissionAccess";
+import { withUploadTiming } from "../../utils/uploadTiming";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
 const ALLOWED_VIDEO_TYPES = ["video/mp4"];
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withUploadTiming("/api/files/upload", async (event, timer) => {
 	const claims = await getUserClaims(event);
 	if (!claims) {
 		throw createError({ statusCode: 401, message: "Unauthorized" });
@@ -41,6 +42,7 @@ export default defineEventHandler(async (event) => {
 	const mimeType = matches[1];
 	const base64Content = matches[2];
 	const buffer = Buffer.from(base64Content, "base64");
+	timer.set({ fileSize: buffer.length, contentType: mimeType });
 
 	const fileId = crypto.randomUUID();
 	const timestamp = Date.now();
@@ -51,14 +53,14 @@ export default defineEventHandler(async (event) => {
 	const file = bucket.file(storagePath);
 	const config = useRuntimeConfig();
 
-	await file.save(buffer, {
+	await timer.measure("storage", () => file.save(buffer, {
 		metadata: {
 			contentType: mimeType,
 			metadata: {
 				uploadedBy: claims.uid,
 			},
 		},
-	});
+	}));
 
 	const fileRecord: Record<string, unknown> = {
 		id: fileId,
@@ -80,7 +82,7 @@ export default defineEventHandler(async (event) => {
 		}),
 	};
 
-	const processingRecord = await buildDocumentProcessingRecord({
+	const processingRecord = await timer.measure("processing", () => buildDocumentProcessingRecord({
 		scope: "global",
 		fileId,
 		name,
@@ -92,12 +94,12 @@ export default defineEventHandler(async (event) => {
 		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
 		geminiApiKey: config.GEMINI_API_KEY,
 		geminiModel: config.GEMINI_MODEL,
-	});
+	}));
 
-	await Promise.all([
+	await timer.measure("firestore", () => Promise.all([
 		db.collection("globalFiles").doc(fileId).set(fileRecord),
 		db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord),
-	]);
+	]));
 
 	return fileRecord;
-});
+}));

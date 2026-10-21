@@ -1,10 +1,11 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
 import { getHomeById } from "../../../../utils/homes";
 import { assertHomeSection } from "../../../../utils/permissionAccess";
+import { withUploadTiming } from "../../../../utils/uploadTiming";
 
 const MAX_PHOTOS = 30;
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withUploadTiming("/api/homes/[id]/photos/upload", async (event, timer) => {
 	const homeId = getRouterParam(event, "id");
 	const body = await readBody(event);
 
@@ -38,24 +39,27 @@ export default defineEventHandler(async (event) => {
 	const file = bucket.file(storagePath);
 	const base64Data = body.file.split(";base64,").pop();
 
-	await file.save(Buffer.from(base64Data, "base64"), {
+	const buffer = Buffer.from(base64Data, "base64");
+	timer.set({ fileSize: buffer.length, contentType: body.type || "image/jpeg" });
+
+	await timer.measure("storage", () => file.save(buffer, {
 		contentType: body.type || "image/jpeg",
-	});
+	}));
 
 	// Get signed URL
-	const [url] = await file.getSignedUrl({
+	const [url] = await timer.measure("storage", () => file.getSignedUrl({
 		action: "read",
 		expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
-	});
+	}));
 
 	// Add to home's photos array
-	await db
+	await timer.measure("firestore", () => db
 		.collection("homes")
 		.doc(homeId)
 		.update({
 			photos: [...(home.photos || []), url],
 			updatedAt: new Date().toISOString(),
-		});
+		}));
 
 	return { url };
-});
+}));

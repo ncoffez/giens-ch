@@ -3,10 +3,11 @@ import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { buildDocumentSearchFieldsFromBuffer } from "../../../../utils/documentSearch";
 import { buildDocumentProcessingRecord } from "../../../../utils/documentProcessing";
 import crypto from "crypto";
+import { withUploadTiming } from "../../../../utils/uploadTiming";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload", async (event, timer) => {
 	const homeId = getRouterParam(event, "id");
 	const body = await readBody(event);
 
@@ -39,10 +40,11 @@ export default defineEventHandler(async (event) => {
 	const file = bucket.file(storagePath);
 	const base64Data = body.file.split(";base64,").pop();
 	const buffer = Buffer.from(base64Data, "base64");
+	timer.set({ fileSize: buffer.length, contentType: body.type || "application/octet-stream" });
 
-	await file.save(buffer, {
+	await timer.measure("storage", () => file.save(buffer, {
 		contentType: body.type || "application/octet-stream",
-	});
+	}));
 
 	// Make the file public
 	try {
@@ -80,7 +82,7 @@ export default defineEventHandler(async (event) => {
 	};
 
 	const targetCollectionKey = visibility === "private" ? "privateFiles" : "files";
-	const processingRecord = await buildDocumentProcessingRecord({
+	const processingRecord = await timer.measure("processing", () => buildDocumentProcessingRecord({
 		scope: "owner",
 		fileId,
 		homeId,
@@ -94,9 +96,9 @@ export default defineEventHandler(async (event) => {
 		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
 		geminiApiKey: config.GEMINI_API_KEY,
 		geminiModel: config.GEMINI_MODEL,
-	});
+	}));
 
-	await Promise.all([
+	await timer.measure("firestore", () => Promise.all([
 		db
 			.collection("homes")
 			.doc(homeId)
@@ -105,7 +107,7 @@ export default defineEventHandler(async (event) => {
 			updatedAt: new Date().toISOString(),
 			}),
 		db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord),
-	]);
+	]));
 
 	return fileRecord;
-});
+}));
