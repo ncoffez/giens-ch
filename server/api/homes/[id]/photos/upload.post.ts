@@ -2,6 +2,7 @@ import { db, storage } from "../../../../useFirebaseAdmin";
 import { getHomeById } from "../../../../utils/homes";
 import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { withUploadTiming } from "../../../../utils/uploadTiming";
+import { MAX_UPLOAD_BYTES, formatUploadLimit } from "#shared/uploadLimits";
 
 const MAX_PHOTOS = 30;
 
@@ -24,11 +25,13 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/photos/uploa
 		throw createError({ statusCode: 404, message: "Home not found" });
 	}
 
+	const tooManyPhotos = () => createError({
+		statusCode: 400,
+		message: `Maximum ${MAX_PHOTOS} photos allowed`,
+	});
+
 	if ((home.photos?.length || 0) >= MAX_PHOTOS) {
-		throw createError({
-			statusCode: 400,
-			message: `Maximum ${MAX_PHOTOS} photos allowed`,
-		});
+		throw tooManyPhotos();
 	}
 
 	// Upload to Firebase Storage
@@ -42,6 +45,10 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/photos/uploa
 	const buffer = Buffer.from(base64Data, "base64");
 	timer.set({ fileSize: buffer.length, contentType: body.type || "image/jpeg" });
 
+	if (buffer.length > MAX_UPLOAD_BYTES) {
+		throw createError({ statusCode: 400, message: `File size exceeds ${formatUploadLimit(MAX_UPLOAD_BYTES)} limit` });
+	}
+
 	await timer.measure("storage", () => file.save(buffer, {
 		contentType: body.type || "image/jpeg",
 	}));
@@ -52,14 +59,25 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/photos/uploa
 		expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
 	}));
 
-	// Add to home's photos array
-	await timer.measure("firestore", () => db
-		.collection("homes")
-		.doc(homeId)
-		.update({
-			photos: [...(home.photos || []), url],
+	// Read and append in one transaction, so parallel uploads never drop a photo
+	// and the limit holds even when several photos arrive at once.
+	const homeRef = db.collection("homes").doc(homeId);
+	const added = await timer.measure("firestore", () => db.runTransaction(async (transaction) => {
+		const snapshot = await transaction.get(homeRef);
+		const photos = ((snapshot.data() || {}).photos || []) as string[];
+		if (photos.length >= MAX_PHOTOS) return false;
+
+		transaction.update(homeRef, {
+			photos: [...photos, url],
 			updatedAt: new Date().toISOString(),
-		}));
+		});
+		return true;
+	}));
+
+	if (!added) {
+		await file.delete().catch(() => undefined);
+		throw tooManyPhotos();
+	}
 
 	return { url };
 }));

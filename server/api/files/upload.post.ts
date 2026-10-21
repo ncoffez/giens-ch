@@ -1,14 +1,10 @@
 import { db, storage } from "../../useFirebaseAdmin";
 import { getUserClaims } from "../../utils/auth";
 import { buildDocumentSearchFieldsFromBuffer } from "../../utils/documentSearch";
-import { buildDocumentProcessingRecord } from "../../utils/documentProcessing";
+import { buildPendingDocumentProcessingRecord } from "../../utils/documentProcessingJobs";
 import { assertDocumentAction } from "../../utils/permissionAccess";
 import { withUploadTiming } from "../../utils/uploadTiming";
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-
-const ALLOWED_VIDEO_TYPES = ["video/mp4"];
+import { MAX_UPLOAD_BYTES, formatUploadLimit } from "#shared/uploadLimits";
 
 export default defineEventHandler(withUploadTiming("/api/files/upload", async (event, timer) => {
 	const claims = await getUserClaims(event);
@@ -24,13 +20,10 @@ export default defineEventHandler(withUploadTiming("/api/files/upload", async (e
 		throw createError({ statusCode: 400, message: "File data and name are required" });
 	}
 
-	const isVideo = ALLOWED_VIDEO_TYPES.includes(type);
-	const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_FILE_SIZE;
-
-	if (size && size > maxSize) {
+	if (size && size > MAX_UPLOAD_BYTES) {
 		throw createError({
 			statusCode: 400,
-			message: `File too large. Maximum ${isVideo ? "100MB" : "50MB"} allowed.`,
+			message: `File too large. Maximum ${formatUploadLimit(MAX_UPLOAD_BYTES)} allowed.`,
 		});
 	}
 
@@ -44,6 +37,13 @@ export default defineEventHandler(withUploadTiming("/api/files/upload", async (e
 	const buffer = Buffer.from(base64Content, "base64");
 	timer.set({ fileSize: buffer.length, contentType: mimeType });
 
+	if (buffer.length > MAX_UPLOAD_BYTES) {
+		throw createError({
+			statusCode: 400,
+			message: `File too large. Maximum ${formatUploadLimit(MAX_UPLOAD_BYTES)} allowed.`,
+		});
+	}
+
 	const fileId = crypto.randomUUID();
 	const timestamp = Date.now();
 	const sanitized = name.replace(/[^a-zA-Z0-9.-]/g, "_");
@@ -51,7 +51,6 @@ export default defineEventHandler(withUploadTiming("/api/files/upload", async (e
 
 	const bucket = storage.bucket();
 	const file = bucket.file(storagePath);
-	const config = useRuntimeConfig();
 
 	await timer.measure("storage", () => file.save(buffer, {
 		metadata: {
@@ -61,6 +60,18 @@ export default defineEventHandler(withUploadTiming("/api/files/upload", async (e
 			},
 		},
 	}));
+
+	const requestedSearch = {
+		searchText: typeof body.searchText === "string" ? body.searchText : "",
+		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : name,
+		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+	};
+	const searchFields = buildDocumentSearchFieldsFromBuffer({
+		name,
+		type: mimeType,
+		buffer,
+		...requestedSearch,
+	});
 
 	const fileRecord: Record<string, unknown> = {
 		id: fileId,
@@ -72,29 +83,19 @@ export default defineEventHandler(withUploadTiming("/api/files/upload", async (e
 		uploadedAt: new Date().toISOString(),
 		uploadedBy: claims.uid,
 		lastModified: typeof lastModified === "number" ? lastModified : undefined,
-		...buildDocumentSearchFieldsFromBuffer({
-			name,
-			type: mimeType,
-			buffer,
-			searchText: typeof body.searchText === "string" ? body.searchText : "",
-			searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : name,
-			searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
-		}),
+		...searchFields,
 	};
 
-	const processingRecord = await timer.measure("processing", () => buildDocumentProcessingRecord({
+	// OCR and translation run afterwards through /api/files/process (#39).
+	const processingRecord = buildPendingDocumentProcessingRecord({
 		scope: "global",
 		fileId,
 		name,
 		type: mimeType,
-		buffer,
-		searchText: typeof body.searchText === "string" ? body.searchText : "",
-		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : name,
-		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
-		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
-		geminiApiKey: config.GEMINI_API_KEY,
-		geminiModel: config.GEMINI_MODEL,
-	}));
+		storagePath,
+		...searchFields,
+		requestedSearch,
+	});
 
 	await timer.measure("firestore", () => Promise.all([
 		db.collection("globalFiles").doc(fileId).set(fileRecord),

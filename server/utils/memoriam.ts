@@ -276,10 +276,28 @@ export async function addMemoriamPhoto(
 		expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
 	});
 
-	await db.collection(MEMORIAM_COLLECTION).doc(id).update({
-		photos: [...existing.photos, url],
-		updatedAt: new Date().toISOString(),
+	// Read and append in one transaction, so parallel uploads never drop a photo.
+	const entryRef = db.collection(MEMORIAM_COLLECTION).doc(id);
+	const added = await db.runTransaction(async (transaction) => {
+		const snapshot = await transaction.get(entryRef);
+		if (!snapshot.exists) return false;
+		const photos = (snapshot.data()?.photos || []) as string[];
+		if (photos.length >= MAX_MEMORIAM_PHOTOS) return false;
+
+		transaction.update(entryRef, {
+			photos: [...photos, url],
+			updatedAt: new Date().toISOString(),
+		});
+		return true;
 	});
+
+	if (!added) {
+		await file.delete().catch(() => undefined);
+		throw createError({
+			statusCode: 400,
+			message: `Maximum ${MAX_MEMORIAM_PHOTOS} photos allowed`,
+		});
+	}
 
 	return { url };
 }

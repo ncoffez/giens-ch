@@ -103,7 +103,7 @@ export default defineEventHandler(async (event) => {
 				await Promise.all([
 					document.ref.update(fields),
 					processingRecord
-						? db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord)
+						? db.collection("documentProcessing").doc(processingRecord.id).set({ ...processingRecord, storagePath: data.storagePath, status: "done", finishedAt: new Date().toISOString() })
 						: Promise.resolve(),
 				]);
 				globalCounters.processed++;
@@ -178,7 +178,7 @@ export default defineEventHandler(async (event) => {
 						});
 
 						sourceFiles[index] = { ...file, ...fields };
-						await db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord);
+						await db.collection("documentProcessing").doc(processingRecord.id).set({ ...processingRecord, storagePath: file.storagePath, status: "done", finishedAt: new Date().toISOString() });
 						hasChanges = true;
 						ownerCounters.processed++;
 						if (fields.searchText) ownerCounters.extracted++;

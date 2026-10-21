@@ -16,8 +16,8 @@ import {
  * and deterministic. They assert causes (is Gemini awaited before the upload
  * answers? do concurrent uploads lose records?) rather than wall-clock times.
  *
- * Tests marked `it.fails` describe the target behaviour that the current code
- * does not have yet. The follow-up implementation PR flips them to `it`.
+ * The "target behaviour (#39)" block started as `it.fails` in the test PR and
+ * was flipped to `it` together with the implementation.
  */
 
 vi.mock("../../server/useFirebaseAdmin", async () => (await import("../helpers/fakeFirebaseAdmin")).fakeFirebaseAdmin);
@@ -259,20 +259,19 @@ describe("document upload: behaviour that must stay", () => {
 	});
 });
 
-describe("document upload: target behaviour (#39)", () => {
-	// PR B flips these from it.fails to it.
-	it.fails("answers before any Gemini call (global documents)", async () => {
+describe("document upload: behaviour after #39", () => {
+	it("answers before any Gemini call (global documents)", async () => {
 		await uploadGlobal();
 		expect(geminiFetch).not.toHaveBeenCalled();
 	});
 
-	it.fails("answers before any Gemini call (house files)", async () => {
+	it("answers before any Gemini call (house files)", async () => {
 		seedHome();
 		await uploadHomeFile("Plan.pdf");
 		expect(geminiFetch).not.toHaveBeenCalled();
 	});
 
-	it.fails("leaves a pending processing job behind the upload", async () => {
+	it("leaves a pending processing job behind the upload", async () => {
 		const record = await uploadGlobal();
 		expect(readDoc("documentProcessing", `global:${record.id}`)).toMatchObject({
 			status: "pending",
@@ -281,7 +280,7 @@ describe("document upload: target behaviour (#39)", () => {
 		});
 	});
 
-	it.fails("still succeeds when Gemini is down, and keeps the file", async () => {
+	it("still succeeds when Gemini is down, and keeps the file", async () => {
 		useGemini(() => geminiFailure());
 		const record = await uploadGlobal();
 
@@ -289,7 +288,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(fakeStorageState.has(record.storagePath)).toBe(true);
 	});
 
-	it.fails("runs OCR and translation afterwards and marks the job done", async () => {
+	it("runs OCR and translation afterwards and marks the job done", async () => {
 		const { processDocumentJob } = await importTarget("/server/utils/documentProcessingJobs.ts");
 		const record = await uploadGlobal();
 		expect(geminiFetch).not.toHaveBeenCalled();
@@ -308,7 +307,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(processing?.translations?.fr?.searchText).toBeTruthy();
 	});
 
-	it.fails("marks the job failed when Gemini fails, without orphaning the file", async () => {
+	it("marks the job failed when Gemini fails, without orphaning the file", async () => {
 		const { processDocumentJob } = await importTarget("/server/utils/documentProcessingJobs.ts");
 		const record = await uploadGlobal();
 		useGemini(() => geminiFailure());
@@ -322,7 +321,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(fakeStorageState.has(record.storagePath)).toBe(true);
 	});
 
-	it.fails("keeps a rename that happened while the job was pending", async () => {
+	it("keeps a rename that happened while the job was pending", async () => {
 		const { processDocumentJob } = await importTarget("/server/utils/documentProcessingJobs.ts");
 		const record = await uploadGlobal();
 		seedDoc("documentProcessing", `global:${record.id}`, {
@@ -335,7 +334,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(readDoc("documentProcessing", `global:${record.id}`)?.name).toBe("Umbenannt.pdf");
 	});
 
-	it.fails("keeps every house file when several upload at the same time", async () => {
+	it("keeps every house file when several upload at the same time", async () => {
 		seedHome();
 		await Promise.all(["A.pdf", "B.pdf", "C.pdf"].map((name) => uploadHomeFile(name)));
 
@@ -343,7 +342,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(names).toEqual(["A.pdf", "B.pdf", "C.pdf"]);
 	});
 
-	it.fails("keeps every house photo when several upload at the same time", async () => {
+	it("keeps every house photo when several upload at the same time", async () => {
 		seedHome();
 		const handler = await loadHandler("../../server/api/homes/[id]/photos/upload.post.ts");
 		await Promise.all([1, 2, 3].map((index) => handler({
@@ -354,7 +353,7 @@ describe("document upload: target behaviour (#39)", () => {
 		expect(readDoc("homes", "home-1")?.photos).toHaveLength(3);
 	});
 
-	it.fails("keeps every In Memoriam photo when several upload at the same time", async () => {
+	it("keeps every In Memoriam photo when several upload at the same time", async () => {
 		seedDoc("memoriam", "entry-1", { name: "Anna", bio: "", photos: [], order: 0, createdAt: "2026-01-01", updatedAt: "2026-01-01" });
 		const handler = await loadHandler("../../server/api/admin/memoriam/[id]/photos/upload.post.ts");
 		await Promise.all([1, 2, 3].map((index) => handler({
@@ -363,5 +362,97 @@ describe("document upload: target behaviour (#39)", () => {
 		})));
 
 		expect(readDoc("memoriam", "entry-1")?.photos).toHaveLength(3);
+	});
+	it("rejects files over the real request limit", async () => {
+		await expect(uploadGlobal({ size: 30 * 1024 * 1024 })).rejects.toMatchObject({ statusCode: 400 });
+		expect(fakeStorageState.size).toBe(0);
+	});
+
+	it("runs the job through the process route and reports the result", async () => {
+		const record = await uploadGlobal();
+		const handler = await loadHandler("../../server/api/files/process.post.ts");
+
+		await expect(handler({ body: { fileId: record.id } })).resolves.toEqual({ status: "done" });
+		// A second call does not run Gemini again.
+		const calls = geminiFetch.mock.calls.length;
+		await expect(handler({ body: { fileId: record.id } })).resolves.toEqual({ status: "done" });
+		expect(geminiFetch.mock.calls.length).toBe(calls);
+	});
+
+	it("answers 404 from the process route for an unknown file", async () => {
+		const handler = await loadHandler("../../server/api/files/process.post.ts");
+		await expect(handler({ body: { fileId: "missing" } })).rejects.toMatchObject({ statusCode: 404 });
+	});
+
+	it("runs house file jobs through the house process route", async () => {
+		seedHome();
+		const record = await uploadHomeFile("Plan.pdf");
+		const handler = await loadHandler("../../server/api/homes/[id]/files/process.post.ts");
+
+		await expect(handler({ params: { id: "home-1" }, body: { fileId: record.id } })).resolves.toEqual({ status: "done" });
+		expect(readDoc("documentProcessing", `owner:home-1:${record.id}`)).toMatchObject({ status: "done", homeId: "home-1", visibility: "shared" });
+	});
+
+	it("retries a failed job only when asked, and at most three times", async () => {
+		const { processDocumentJob } = await importTarget("/server/utils/documentProcessingJobs.ts");
+		const record = await uploadGlobal();
+		const id = `global:${record.id}`;
+		useGemini(() => geminiFailure());
+
+		await processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [] });
+		await expect(processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [] })).resolves.toEqual({ status: "failed" });
+		expect(readDoc("documentProcessing", id)?.attempts).toBe(1);
+
+		await processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [], retry: true });
+		await processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [], retry: true });
+		await processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [], retry: true });
+		expect(readDoc("documentProcessing", id)?.attempts).toBe(3);
+
+		useGemini(() => geminiResponse("Jetzt klappt es"));
+		await processDocumentJob(id, { geminiApiKey: "k", translationLanguages: [], retry: true });
+		expect(readDoc("documentProcessing", id)?.status).toBe("failed");
+	});
+
+	it("takes over a job that got cut off while processing", async () => {
+		const { canClaimDocumentProcessingJob, isDocumentProcessingStale, PROCESSING_STALE_MS } = await importTarget("/server/utils/documentProcessingJobs.ts");
+		const now = Date.parse("2026-10-21T10:00:00.000Z");
+		const recent = new Date(now - 60_000).toISOString();
+		const old = new Date(now - PROCESSING_STALE_MS - 1).toISOString();
+
+		expect(canClaimDocumentProcessingJob({ status: "pending" }, { now })).toBe(true);
+		expect(canClaimDocumentProcessingJob({ status: "processing", startedAt: recent }, { now })).toBe(false);
+		expect(canClaimDocumentProcessingJob({ status: "processing", startedAt: old }, { now })).toBe(true);
+		expect(canClaimDocumentProcessingJob({ status: "done" }, { now, retry: true })).toBe(false);
+		// Records from before #39 have no status: they are already processed.
+		expect(canClaimDocumentProcessingJob({}, { now })).toBe(false);
+
+		expect(isDocumentProcessingStale({ status: "pending", queuedAt: recent }, now)).toBe(false);
+		expect(isDocumentProcessingStale({ status: "pending", queuedAt: new Date(now - 3 * 60_000).toISOString() }, now)).toBe(true);
+		expect(isDocumentProcessingStale({ status: "done" }, now)).toBe(false);
+	});
+
+	it("logs a structured line for each processing run", async () => {
+		const { processDocumentJob } = await importTarget("/server/utils/documentProcessingJobs.ts");
+		const record = await uploadGlobal();
+		const lines: string[] = [];
+
+		await processDocumentJob(`global:${record.id}`, { geminiApiKey: "k", translationLanguages: ["fr"], log: (line: string) => lines.push(line) });
+
+		expect(lines).toHaveLength(1);
+		expect(JSON.parse(lines[0]!)).toMatchObject({ event: "document.processing", status: "done", scope: "global", fileSize: 13 });
+	});
+
+	it("rejects a house photo over the limit of 30 even when uploads race", async () => {
+		seedDoc("homes", "home-1", { name: "Haus 1", ownerIds: ["owner-1"], photos: Array.from({ length: 29 }, (_, i) => `p${i}`), enabled: true });
+		const handler = await loadHandler("../../server/api/homes/[id]/photos/upload.post.ts");
+		const results = await Promise.allSettled([1, 2].map((index) => handler({
+			params: { id: "home-1" },
+			body: { file: jpegDataUrl(`photo-${index}`), type: "image/jpeg" },
+		})));
+
+		expect(results.map((result) => result.status).sort()).toEqual(["fulfilled", "rejected"]);
+		expect(readDoc("homes", "home-1")?.photos).toHaveLength(30);
+		// The rejected photo does not stay behind in Storage.
+		expect([...fakeStorageState.keys()].filter((key) => key.startsWith("homes/home-1/photos/"))).toHaveLength(1);
 	});
 });

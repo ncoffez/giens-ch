@@ -1,11 +1,10 @@
 import { db, storage } from "../../../../useFirebaseAdmin";
 import { assertHomeSection } from "../../../../utils/permissionAccess";
 import { buildDocumentSearchFieldsFromBuffer } from "../../../../utils/documentSearch";
-import { buildDocumentProcessingRecord } from "../../../../utils/documentProcessing";
-import crypto from "crypto";
+import { buildPendingDocumentProcessingRecord } from "../../../../utils/documentProcessingJobs";
 import { withUploadTiming } from "../../../../utils/uploadTiming";
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+import { MAX_UPLOAD_BYTES, formatUploadLimit } from "#shared/uploadLimits";
+import crypto from "crypto";
 
 export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload", async (event, timer) => {
 	const homeId = getRouterParam(event, "id");
@@ -19,18 +18,18 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload
 		throw createError({ statusCode: 400, message: "File is required" });
 	}
 
-	const { claims, home } = await assertHomeSection(event, homeId, "home.files.upload");
+	const { claims } = await assertHomeSection(event, homeId, "home.files.upload");
 
-	if (body.size && body.size > MAX_FILE_SIZE) {
+	if (body.size && body.size > MAX_UPLOAD_BYTES) {
 		throw createError({
 			statusCode: 400,
-			message: `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`,
+			message: `File size exceeds ${formatUploadLimit(MAX_UPLOAD_BYTES)} limit`,
 		});
 	}
 
 	const now = new Date().toISOString();
 	const visibility = body.private ? "private" : "shared";
-	const config = useRuntimeConfig();
+	const contentType = body.type || "application/octet-stream";
 
 	// Upload to Firebase Storage
 	const bucket = storage.bucket();
@@ -40,10 +39,10 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload
 	const file = bucket.file(storagePath);
 	const base64Data = body.file.split(";base64,").pop();
 	const buffer = Buffer.from(base64Data, "base64");
-	timer.set({ fileSize: buffer.length, contentType: body.type || "application/octet-stream" });
+	timer.set({ fileSize: buffer.length, contentType });
 
 	await timer.measure("storage", () => file.save(buffer, {
-		contentType: body.type || "application/octet-stream",
+		contentType,
 	}));
 
 	// Make the file public
@@ -57,11 +56,23 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload
 	// Use public URL format
 	const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`;
 
+	const requestedSearch = {
+		searchText: typeof body.searchText === "string" ? body.searchText : "",
+		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : body.name,
+		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
+	};
+	const searchFields = buildDocumentSearchFieldsFromBuffer({
+		name: body.name,
+		type: contentType,
+		buffer,
+		...requestedSearch,
+	});
+
 	// Create file record
 	const fileRecord = {
 		id: fileId,
 		name: body.name,
-		type: body.type || "application/octet-stream",
+		type: contentType,
 		size: body.size || 0,
 		url: publicUrl,
 		folderId: body.folderId || null,
@@ -71,41 +82,37 @@ export default defineEventHandler(withUploadTiming("/api/homes/[id]/files/upload
 		lastModified: typeof body.lastModified === "number" ? body.lastModified : undefined,
 		storagePath,
 		visibility,
-		...buildDocumentSearchFieldsFromBuffer({
-			name: body.name,
-			type: body.type || "application/octet-stream",
-			buffer,
-			searchText: typeof body.searchText === "string" ? body.searchText : "",
-			searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : body.name,
-			searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
-		}),
+		...searchFields,
 	};
 
 	const targetCollectionKey = visibility === "private" ? "privateFiles" : "files";
-	const processingRecord = await timer.measure("processing", () => buildDocumentProcessingRecord({
+
+	// OCR and translation run afterwards through /api/homes/[id]/files/process (#39).
+	const processingRecord = buildPendingDocumentProcessingRecord({
 		scope: "owner",
 		fileId,
 		homeId,
 		visibility,
 		name: body.name,
-		type: body.type || "application/octet-stream",
-		buffer,
-		searchText: typeof body.searchText === "string" ? body.searchText : "",
-		searchSummary: typeof body.searchSummary === "string" ? body.searchSummary : body.name,
-		searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords : [],
-		translationLanguages: (config.DOCUMENT_TRANSLATION_LANGUAGES || "fr").split(",").map((value: string) => value.trim()).filter(Boolean),
-		geminiApiKey: config.GEMINI_API_KEY,
-		geminiModel: config.GEMINI_MODEL,
-	}));
+		type: contentType,
+		storagePath,
+		...searchFields,
+		requestedSearch,
+	});
+
+	const homeRef = db.collection("homes").doc(homeId);
 
 	await timer.measure("firestore", () => Promise.all([
-		db
-			.collection("homes")
-			.doc(homeId)
-			.update({
-			[targetCollectionKey]: [...((home as any)[targetCollectionKey] || []), fileRecord],
-			updatedAt: new Date().toISOString(),
-			}),
+		// Read and append in one transaction, so parallel uploads never drop a file.
+		db.runTransaction(async (transaction) => {
+			const snapshot = await transaction.get(homeRef);
+			const current = (snapshot.data() || {}) as Record<string, unknown>;
+			const existing = Array.isArray(current[targetCollectionKey]) ? current[targetCollectionKey] as unknown[] : [];
+			transaction.update(homeRef, {
+				[targetCollectionKey]: [...existing, fileRecord],
+				updatedAt: new Date().toISOString(),
+			});
+		}),
 		db.collection("documentProcessing").doc(processingRecord.id).set(processingRecord),
 	]));
 
