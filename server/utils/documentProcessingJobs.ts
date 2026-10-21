@@ -17,7 +17,11 @@ import {
 
 export type DocumentProcessingStatus = "pending" | "processing" | "done" | "failed";
 
-/** A job still "processing" after this long was cut off and may be claimed again. */
+/**
+ * A job still "processing" after this long was cut off and may be claimed again.
+ * Must stay well above the server function timeout (timeoutSeconds: 300 in
+ * nuxt.config.ts), otherwise a job that is still running could be started twice.
+ */
 export const PROCESSING_STALE_MS = 10 * 60 * 1000;
 export const MAX_PROCESSING_ATTEMPTS = 3;
 

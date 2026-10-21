@@ -456,3 +456,23 @@ describe("document upload: behaviour after #39", () => {
 		expect([...fakeStorageState.keys()].filter((key) => key.startsWith("homes/home-1/photos/"))).toHaveLength(1);
 	});
 });
+
+describe("processing timeouts stay consistent", () => {
+	it("keeps the stale threshold above the server function timeout", async () => {
+		const { PROCESSING_STALE_MS } = await importTarget("/server/utils/documentProcessingJobs.ts");
+		const config = readFileSync("nuxt.config.ts", "utf8");
+		const timeoutSeconds = Number(config.match(/timeoutSeconds:\s*(\d+)/)?.[1]);
+
+		expect(timeoutSeconds).toBe(300);
+		expect(PROCESSING_STALE_MS).toBeGreaterThan(timeoutSeconds * 1000);
+	});
+
+	it("polls the preview longer than a run and than the stale threshold", () => {
+		const page = readFileSync("app/pages/documents/index.vue", "utf8");
+		const pollMs = Number(page.match(/PROCESSING_POLL_MS = (\d+)/)?.[1]);
+		const pollLimit = Number(page.match(/PROCESSING_POLL_LIMIT = (\d+)/)?.[1]);
+
+		expect(pollMs * pollLimit).toBeGreaterThan(10 * 60 * 1000);
+		expect(page).toContain("PROCESSING_STALE_MS = 10 * 60 * 1000");
+	});
+});

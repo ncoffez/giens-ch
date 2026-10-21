@@ -430,10 +430,17 @@ const focusHighlightedFile = async () => {
 };
 
 const PROCESSING_POLL_MS = 5000;
-const PROCESSING_POLL_LIMIT = 60;
+// Poll for 12 minutes: longer than one run (server timeout 300 s) and than the
+// 10-minute stale threshold, so a cut-off job is restarted while the preview is open.
+const PROCESSING_POLL_LIMIT = 144;
+// "pending" means not started yet; a running job is "processing". Restarting a
+// pending job early is safe: the server claims each job in a transaction.
 const PENDING_GRACE_MS = 2 * 60 * 1000;
+// Must stay above the server function timeout (300 s); matches the server.
 const PROCESSING_STALE_MS = 10 * 60 * 1000;
 let processingPollTimer: ReturnType<typeof setTimeout> | null = null;
+// One restart request per file and page visit, not one per poll.
+const restartedProcessingIds = new Set<string>();
 const processingRetrying = ref(false);
 const isProcessingBusy = computed(() => documentProcessing.value?.status === "pending" || documentProcessing.value?.status === "processing");
 const isProcessingFailed = computed(() => documentProcessing.value?.status === "failed");
@@ -492,8 +499,11 @@ const loadDocumentProcessing = async (file: GlobalFile | null, options: { poll?:
 
 	// A job nobody picked up (tab closed right after the upload, or a cut-off
 	// request) is started again from here (#39).
-	if (canUploadDocuments.value && isProcessingStale(processing)) {
-		void requestDocumentProcessing(file.id).catch(() => undefined);
+	if (canUploadDocuments.value && isProcessingStale(processing) && !restartedProcessingIds.has(file.id)) {
+		restartedProcessingIds.add(file.id);
+		void requestDocumentProcessing(file.id)
+			.catch(() => undefined)
+			.finally(() => restartedProcessingIds.delete(file.id));
 	}
 
 	const poll = (options.poll || 0) + 1;
