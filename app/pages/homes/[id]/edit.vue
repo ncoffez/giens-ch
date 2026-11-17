@@ -64,7 +64,7 @@ const contactForm = ref({
 const ownerContacts = computed(() => formContacts.value.filter((contact) => contact.isOwner));
 const additionalContacts = computed(() => formContacts.value.filter((contact) => !contact.isOwner));
 const isEditingOwnerContact = computed(() => Boolean(editingContact.value?.isOwner));
-const { can, refresh: refreshPermissions } = useSitePermissions();
+const { can, refreshQuietly: refreshPermissions } = useSitePermissions();
 const sectionPermissions: Record<string, string> = {
 	links: "home.links.manage",
 	photos: "home.photos.upload",
