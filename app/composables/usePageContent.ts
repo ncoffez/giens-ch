@@ -9,7 +9,7 @@ export async function usePageContent(contentId: string) {
 	const i18n = useI18n();
 
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
-	const { can, refresh: refreshPermissions } = useSitePermissions();
+	const { can, refreshQuietly: refreshPermissions } = useSitePermissions();
 	const isEditing = ref(false);
 	const isSaving = ref(false);
 	const content = ref("");
