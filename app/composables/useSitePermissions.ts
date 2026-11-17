@@ -54,5 +54,16 @@ export function useSitePermissions() {
 		loadedFor.value = uid;
 	}
 
-	return { actions, loaded, can, refresh };
+	// Fire-and-forget variant for background refreshes: a dropped connection
+	// (e.g. "Failed to fetch") must not surface as an unhandled rejection.
+	// On failure the last known actions, or the claim-based fallback, stay in use.
+	async function refreshQuietly() {
+		try {
+			await refresh();
+		} catch (error) {
+			console.warn("[site-permissions] refresh failed", error);
+		}
+	}
+
+	return { actions, loaded, can, refresh, refreshQuietly };
 }
