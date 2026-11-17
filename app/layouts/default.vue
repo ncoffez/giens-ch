@@ -147,7 +147,7 @@ const { isMounted: isMobileMenuMounted } = useMobileMenu();
 
 const currentUser = computed(() => import.meta.client ? nuxtApp.$currentUser?.value ?? null : null);
 const authInitialized = computed(() => import.meta.client ? nuxtApp.$authInitialized?.value ?? false : false);
-const { can, refresh: refreshPermissions } = useSitePermissions();
+const { can, refreshQuietly: refreshPermissions } = useSitePermissions();
 const canEnterAdmin = computed(() => ADMIN_SHELL_KEYS.some((key) => can(key)));
 const userDisplayName = computed(() =>
 	(currentUser.value?.displayName || currentUser.value?.email || currentUser.value?.name || currentUser.value) ?? "Profil"
