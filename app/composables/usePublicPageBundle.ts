@@ -58,7 +58,7 @@ export async function usePublicPageBundle(page: PublicPageKey) {
 	const i18n = useI18n();
 	const sections = ref<Record<string, PageContent>>({});
 	const isAdmin = computed(() => (import.meta.client ? nuxtApp.$isAdmin?.value : false));
-	const { can, refresh: refreshPermissions } = useSitePermissions();
+	const { can, refreshQuietly: refreshPermissions } = useSitePermissions();
 	const activeLocale = computed(() => i18n.locale?.value || "de");
 	const permissionKey = page === "home"
 		? "page.home.edit"
