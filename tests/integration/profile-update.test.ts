@@ -27,7 +27,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: {},
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ displayName: "New Name" }),
 		});
 
@@ -48,7 +48,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-token" },
 			body: JSON.stringify({ displayName: "A" }),
 		});
 
@@ -76,7 +76,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-user-123-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-user-123-token" },
 			body: JSON.stringify({ displayName: "Updated Name" }),
 		});
 
@@ -95,7 +95,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-token" },
 			body: JSON.stringify({ displayName: "" }),
 		});
 
@@ -130,7 +130,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const updateResponse = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-user1-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-user1-token" },
 			body: JSON.stringify({ displayName: "New Name" }),
 		});
 
@@ -154,7 +154,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-token" },
 			body: JSON.stringify({ displayName: "   " }),
 		});
 
@@ -171,7 +171,7 @@ describe("Profile Update Integration Tests", () => {
 
 		const response = await fetch("/api/profile/update", {
 			method: "POST",
-			headers: { Authorization: "Bearer mock-token" },
+			headers: { "Content-Type": "application/json", Authorization: "Bearer mock-token" },
 			body: JSON.stringify({ displayName: "Valid Name" }),
 		});
 

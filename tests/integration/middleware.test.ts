@@ -3,6 +3,11 @@ import { ref } from "vue";
 
 const fetchMock = vi.hoisted(() => vi.fn());
 
+// Nuxt 4.7 auto-imports $fetch from "#build/fetch" (the old "#build/fetch.mjs" mock no longer applies).
+vi.mock("#build/fetch", () => ({
+	$fetch: fetchMock,
+}));
+
 vi.mock("#build/fetch.mjs", () => ({
 	$fetch: fetchMock,
 }));
